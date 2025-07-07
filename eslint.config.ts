@@ -15,8 +15,7 @@ export default tseslint.config(
       },
     },
     plugins: {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-explicit-any
-      '@stylistic': stylistic as any, // see issue https://github.com/eslint-stylistic/eslint-stylistic/issues/659
+      '@stylistic': stylistic,
       '@import': importPlugin,
     },
     rules: {
