@@ -7,10 +7,11 @@
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make",
+    "make": "yarn;electron-forge make;rm -rf .webpack",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "clean": "rm -rf .webpack && rm -rf out"
   },
   "author": {
     "name": "Aleksandr Pasharin",
@@ -27,21 +28,25 @@
     "@electron-forge/plugin-fuses": "^7.8.1",
     "@electron-forge/plugin-webpack": "^7.8.1",
     "@electron/fuses": "^1.8.0",
+    "@eslint/js": "^9.30.1",
+    "@stylistic/eslint-plugin": "^5.1.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "@vercel/webpack-asset-relocator-loader": "1.7.3",
     "css-loader": "^6.0.0",
     "electron": "37.2.0",
-    "eslint": "^8.0.1",
-    "eslint-plugin-import": "^2.25.0",
+    "eslint": "^9.30.1",
+    "eslint-plugin-import": "^2.32.0",
     "fork-ts-checker-webpack-plugin": "^7.2.13",
     "node-loader": "^2.0.0",
     "style-loader": "^3.0.0",
     "ts-loader": "^9.2.2",
     "ts-node": "^10.0.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.35.1"
   },
   "dependencies": {
+    "@types/electron-squirrel-startup": "^1.0.2",
     "electron-squirrel-startup": "^1.0.1"
   }
 }
