@@ -5,7 +5,7 @@
   "description": "My Electron application description",
   "main": ".webpack/main",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "DEV=true electron-forge start",
     "package": "electron-forge package",
     "make": "yarn;electron-forge make;rm -rf .webpack",
     "publish": "electron-forge publish",
@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@types/electron-squirrel-startup": "^1.0.2",
+    "dotenv": "^17.0.1",
     "electron-squirrel-startup": "^1.0.1"
   }
 }

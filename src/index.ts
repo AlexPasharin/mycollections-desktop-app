@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import { app, BrowserWindow } from 'electron';
 import electronSquirrelStartup from 'electron-squirrel-startup';
 
@@ -6,6 +7,8 @@ import electronSquirrelStartup from 'electron-squirrel-startup';
 // whether you're running in development or production).
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
+
+dotenv.config();
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (electronSquirrelStartup) {
@@ -25,8 +28,9 @@ const createWindow = async (): Promise<void> => {
   // and load the index.html of the app.
   await mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools({ mode: 'detach' });
+  if (process.env['DEV'] === 'true') {
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
+  }
 };
 
 // This method will be called when Electron has finished
