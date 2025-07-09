@@ -9,3 +9,6 @@ node_modules/
 
 # Electron-Forge
 out/
+
+# Generated Prisma Client
+prisma/generated

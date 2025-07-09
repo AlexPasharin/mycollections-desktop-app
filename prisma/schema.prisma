@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Artist {
+  id                String                  @id @default(uuid()) @map("artist_id") @db.Uuid
+  name              String
+  nameForSorting    String?                 @map("name_for_sorting")
+  parentArtists     ParentArtist[]          @relation("ParentArtist")
+  childArtists      ParentArtist[]          @relation("ChildArtist")
+  alternativeNames  AlternativeArtistName[]
+  partOfQueenFamily Boolean                 @default(false) @map("part_of_queen_family")
+  type              ArtistType
+
+  @@index([name])
+  @@map("artists")
+}
+
+model AlternativeArtistName {
+  id       String @id @default(uuid()) @map("name_id") @db.Uuid
+  name     String
+  artist   Artist @relation(fields: [artistId], references: [id])
+  artistId String @map("artist_id") @db.Uuid
+
+  @@index([name])
+  @@map("alternative_artist_names")
+}
+
+model ParentArtist {
+  parentArtist   Artist @relation("ParentArtist", fields: [parentArtistId], references: [id])
+  parentArtistId String @map("parent_artist_id") @db.Uuid
+  childArtist    Artist @relation("ChildArtist", fields: [childArtistId], references: [id])
+  childArtistId  String @map("child_artist_id") @db.Uuid
+
+  @@id([parentArtistId, childArtistId])
+  @@map("parent_artists")
+}
+
+enum ArtistType {
+  BAND
+  ARTIST
+  ORCHESTRA
+  DUET
+  SHOW_CAST
+  COMPOSER
+  SONG_WRITER
+  SONG_WRITER_TEAM
+  DIRECTOR
+  SERIES_CREATOR
+  COLLABORATION
+  CHOREOGRAPHER
+  CONDUCTOR
+  VARIOUS_ARTISTS
+}

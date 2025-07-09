@@ -1,4 +1,5 @@
-// See the Electron documentation for details on how to use preload scripts:
-// https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
+import { contextBridge, ipcRenderer } from 'electron';
 
-console.info('Hello from preload');
+contextBridge.exposeInMainWorld('data', {
+  getArtists: () => ipcRenderer.invoke('get-artists'),
+});

@@ -22,5 +22,5 @@
     "noEmit": true,
     "allowJs": false
   },
-  "exclude": [".webpack/**/*"]
+  "exclude": [".webpack/**/*", "prisma/generated/**/*"]
 }

@@ -7,7 +7,7 @@
   "scripts": {
     "start": "DEV=true electron-forge start",
     "package": "electron-forge package",
-    "make": "yarn;electron-forge make;rm -rf .webpack",
+    "make": "yarn; yarn clean; electron-forge make;rm -rf .webpack",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
     "typecheck": "tsc",
@@ -33,12 +33,14 @@
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "@vercel/webpack-asset-relocator-loader": "1.7.3",
+    "copy-webpack-plugin": "^13.0.0",
     "css-loader": "^6.0.0",
     "electron": "37.2.0",
     "eslint": "^9.30.1",
     "eslint-plugin-import": "^2.32.0",
     "fork-ts-checker-webpack-plugin": "^7.2.13",
     "node-loader": "^2.0.0",
+    "prisma": "^6.11.1",
     "style-loader": "^3.0.0",
     "ts-loader": "^9.2.2",
     "ts-node": "^10.0.0",
@@ -46,6 +48,7 @@
     "typescript-eslint": "^8.35.1"
   },
   "dependencies": {
+    "@prisma/client": "^6.11.1",
     "@types/electron-squirrel-startup": "^1.0.2",
     "dotenv": "^17.0.1",
     "electron-squirrel-startup": "^1.0.1"
