@@ -7,9 +7,13 @@ import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-nati
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { WebpackPlugin } from '@electron-forge/plugin-webpack';
 import type { ForgeConfig } from '@electron-forge/shared-types';
+import dotenv from 'dotenv';
 
 import { mainConfig } from './webpack.main.config';
 import { rendererConfig } from './webpack.renderer.config';
+
+
+dotenv.config();
 
 const config: ForgeConfig = {
   packagerConfig: {

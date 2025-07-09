@@ -4,7 +4,7 @@ import importPlugin from 'eslint-plugin-import';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['.webpack', 'out'] },
+  { ignores: ['.webpack', 'out', 'prisma/generated'] },
   eslint.configs.recommended,
   tseslint.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
