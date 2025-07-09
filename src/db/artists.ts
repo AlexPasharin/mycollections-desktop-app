@@ -27,19 +27,23 @@ export const getArtists = async () => {
     ];
 
     if (cursor) {
-      queryParts.push(Prisma.sql`
-        WHERE
-          (LOWER(COALESCE(name_for_sorting, name)), artist_id::text) > (${cursor.sort_key}, ${cursor.artist_id})
-      `);
+      queryParts.push(
+        Prisma.sql`
+          WHERE
+            (LOWER(COALESCE(name_for_sorting, name)), artist_id::text) > (${cursor.sort_key}, ${cursor.artist_id})
+        `
+      );
     }
 
-    queryParts.push(Prisma.sql`
-      ORDER BY
-        sort_key,
-        artist_id::text
-      LIMIT
-        ${BATCH_SIZE}
-    `);
+    queryParts.push(
+      Prisma.sql`
+        ORDER BY
+          sort_key,
+          artist_id::text
+        LIMIT
+          ${BATCH_SIZE}
+      `
+    );
 
     const query = Prisma.sql`${Prisma.join(queryParts, ' ')}`;
     const result = await client.$queryRaw<DBArtist[]>(query);
@@ -53,26 +57,6 @@ export const getArtists = async () => {
       }))
     );
   } while (cursor);
-
-  // const cursor = firstBatch.at(-1)!;
-  // const { artist_id, sort_key } = cursor;
-
-  // const secondBatch = await client.$queryRaw`
-  //   SELECT
-  //     artist_id,
-  //     name,
-  //     name_for_sorting,
-  //     LOWER(COALESCE(name_for_sorting, name)) AS sort_key
-  //   FROM
-  //     artists
-  //   WHERE
-  //     (LOWER(COALESCE(name_for_sorting, name)), artist_id::text) > (${sort_key}, ${artist_id})
-  //   ORDER BY
-  //     LOWER(COALESCE(name_for_sorting, name)),
-  //     artist_id::text
-  //   LIMIT
-  //     100
-  //   `;
 
   return artists;
 };
