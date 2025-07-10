@@ -13,7 +13,8 @@
     "typecheck": "tsc",
     "clean": "rm -rf .webpack && rm -rf out",
     "open-mac": "out/mycollections-desktop-app-darwin-x64/mycollections-desktop-app.app/Contents/MacOS/mycollections-desktop-app",
-    "make-open-mac": "yarn make; yarn open-mac"
+    "make-open-mac": "yarn make; yarn open-mac",
+    "prettify": "exec prettier --write ."
   },
   "author": {
     "name": "Aleksandr Pasharin",
@@ -44,6 +45,7 @@
     "eslint-plugin-import": "^2.32.0",
     "fork-ts-checker-webpack-plugin": "^7.2.13",
     "node-loader": "^2.0.0",
+    "prettier": "^3.6.2",
     "prisma": "^6.11.1",
     "style-loader": "^3.0.0",
     "ts-loader": "^9.2.2",
