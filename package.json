@@ -11,7 +11,9 @@
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
     "typecheck": "tsc",
-    "clean": "rm -rf .webpack && rm -rf out"
+    "clean": "rm -rf .webpack && rm -rf out",
+    "open-mac": "out/mycollections-desktop-app-darwin-x64/mycollections-desktop-app.app/Contents/MacOS/mycollections-desktop-app",
+    "make-open-mac": "yarn make; yarn open-mac"
   },
   "author": {
     "name": "Aleksandr Pasharin",
