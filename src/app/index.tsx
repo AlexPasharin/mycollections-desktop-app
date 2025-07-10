@@ -1,8 +1,8 @@
-import { createRoot } from 'react-dom/client';
+import { createRoot } from "react-dom/client";
 
-import App from './App';
+import App from "./App";
 
-import api from '../api';
+import api from "../api";
 
 const artists = await api.getArtists();
 

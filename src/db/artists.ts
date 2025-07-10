@@ -1,6 +1,6 @@
-import client from './client';
+import client from "./client";
 
-import { Prisma } from '../../prisma/generated';
+import { Prisma } from "../../prisma/generated";
 
 type DBArtist = {
   artist_id: string;
@@ -31,7 +31,7 @@ export const getArtists = async () => {
         Prisma.sql`
           WHERE
             (LOWER(COALESCE(name_for_sorting, name)), artist_id::text) > (${cursor.sort_key}, ${cursor.artist_id})
-        `
+        `,
       );
     }
 
@@ -42,10 +42,10 @@ export const getArtists = async () => {
           artist_id::text
         LIMIT
           ${BATCH_SIZE}
-      `
+      `,
     );
 
-    const query = Prisma.sql`${Prisma.join(queryParts, ' ')}`;
+    const query = Prisma.sql`${Prisma.join(queryParts, " ")}`;
     const result = await client.$queryRaw<DBArtist[]>(query);
 
     cursor = result.at(-1);
@@ -54,7 +54,7 @@ export const getArtists = async () => {
       ...result.map(({ artist_id, name }) => ({
         id: artist_id,
         name,
-      }))
+      })),
     );
   } while (cursor);
 
