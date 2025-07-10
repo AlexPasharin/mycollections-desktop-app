@@ -6,4 +6,5 @@ To delete `.webpack` and `out` folders, run `yarn clean`.
 
 Useful commands:
 `yarn prisma generate` - Generate types and prisma client to reflect current state of `prisma/schema.prisma`
+
 `yarn prisma migrate dev` - run migrations
