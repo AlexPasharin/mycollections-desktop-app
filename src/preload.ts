@@ -1,5 +1,9 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
-contextBridge.exposeInMainWorld('data', {
+import type { API } from './api';
+
+const api: API = {
   getArtists: () => ipcRenderer.invoke('get-artists'),
-});
+};
+
+contextBridge.exposeInMainWorld('api', api);
