@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import type { FC } from "react";
 
 type Props = {
   artists: { name: string; id: string }[];
