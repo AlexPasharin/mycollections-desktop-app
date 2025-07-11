@@ -14,7 +14,7 @@
     "clean": "rm -rf .webpack && rm -rf out",
     "open-mac": "out/mycollections-desktop-app-darwin-x64/mycollections-desktop-app.app/Contents/MacOS/mycollections-desktop-app",
     "make-open-mac": "yarn make; yarn open-mac",
-    "prettify": "exec prettier --write ."
+    "prettify": "exec prettier . --write"
   },
   "author": {
     "name": "Aleksandr Pasharin",

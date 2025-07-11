@@ -1,0 +1,32 @@
+name: tsc, eslint and prettier checks on pull requests to main branch
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  pr-checks:
+    name: pr-checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23.7.0
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Check tsc
+        run: yarn typecheck
+
+      - name: Eslint check
+        run: yarn lint
+
+      - name: Prettier
+        run: yarn prettify
