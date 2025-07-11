@@ -14,9 +14,6 @@ if (electronSquirrelStartup) {
   app.quit();
 }
 
-const x = 5;
-console.log(x);
-
 const createWindow = async (): Promise<void> => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
