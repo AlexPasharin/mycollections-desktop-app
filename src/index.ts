@@ -14,10 +14,16 @@ if (electronSquirrelStartup) {
   app.quit();
 }
 
+let x = 5;
+console.info(x);
+x = "hello";
+console.info(x);
+
 const createWindow = async (): Promise<void> => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    height: 600,width: 800,
+    height: 600,
+    width: 800,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
