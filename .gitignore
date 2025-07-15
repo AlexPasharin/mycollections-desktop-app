@@ -12,3 +12,5 @@ out/
 
 # Generated Prisma Client
 prisma/generated
+
+.vscode
