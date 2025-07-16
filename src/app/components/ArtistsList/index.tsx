@@ -1,6 +1,7 @@
 import { useEffect, useState, type FC } from "react";
 
 import api from "../../../api";
+import type { DBArtist } from "../../../types/artists";
 
 type DisplayArtist = { name: string; id: string };
 
@@ -9,8 +10,7 @@ const ArtistList: FC = () => {
   const [loadingError, setLoadingError] = useState<unknown>(null);
 
   useEffect(() => {
-    api
-      .getArtists()
+    getArtists()
       .then(setArtists)
       .catch((error: unknown) => {
         const errorMessage = error instanceof Error ? error.message : error;
@@ -37,13 +37,33 @@ const ArtistList: FC = () => {
   return (
     <>
       <h2>Artists</h2>
-      <ul>
+      <ol>
         {artists.map(({ id, name }) => (
           <li key={id}>{name}</li>
         ))}
-      </ul>
+      </ol>
     </>
   );
 };
 
 export default ArtistList;
+
+const getArtists = async () => {
+  const artists: { name: string; id: string }[] = [];
+
+  let cursor: DBArtist | null = null;
+
+  do {
+    const result = await api.fetchArtists({ cursor });
+    cursor = result.at(-1) ?? null;
+
+    artists.push(
+      ...result.map(({ artist_id, name }) => ({
+        id: artist_id,
+        name,
+      }))
+    );
+  } while (cursor);
+
+  return artists;
+};

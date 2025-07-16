@@ -1,22 +1,15 @@
 import client from "./client";
 
 import { Prisma } from "../../prisma/generated";
+import type { DBArtist, FetchArtistsParams } from "../types/artists";
 
-type DBArtist = {
-  artist_id: string;
-  sort_key: string;
-  name: string;
-};
+const BATCH_SIZE = 100;
 
-export const getArtists = async () => {
-  const artists: { name: string; id: string }[] = [];
-  const BATCH_SIZE = 100;
-
-  let cursor: DBArtist | undefined;
-
-  do {
-    const queryParts = [
-      Prisma.sql`
+export const fetchArtists = ({
+  cursor,
+}: FetchArtistsParams): Promise<DBArtist[]> => {
+  const queryParts = [
+    Prisma.sql`
         SELECT
           artist_id,
           name,
@@ -24,39 +17,28 @@ export const getArtists = async () => {
         FROM
           artists
       `,
-    ];
+  ];
 
-    if (cursor) {
-      queryParts.push(
-        Prisma.sql`
-          WHERE
-            (LOWER(COALESCE(name_for_sorting, name)), artist_id::text) > (${cursor.sort_key}, ${cursor.artist_id})
-        `,
-      );
-    }
-
+  if (cursor) {
     queryParts.push(
       Prisma.sql`
+          WHERE
+            (LOWER(COALESCE(name_for_sorting, name)), artist_id::text) > (${cursor.sort_key}, ${cursor.artist_id})
+        `
+    );
+  }
+
+  queryParts.push(
+    Prisma.sql`
         ORDER BY
           sort_key,
           artist_id::text
         LIMIT
           ${BATCH_SIZE}
-      `,
-    );
+      `
+  );
 
-    const query = Prisma.sql`${Prisma.join(queryParts, " ")}`;
-    const result = await client.$queryRaw<DBArtist[]>(query);
+  const query = Prisma.sql`${Prisma.join(queryParts, " ")}`;
 
-    cursor = result.at(-1);
-
-    artists.push(
-      ...result.map(({ artist_id, name }) => ({
-        id: artist_id,
-        name,
-      })),
-    );
-  } while (cursor);
-
-  return artists;
+  return client.$queryRaw(query);
 };

@@ -1,9 +1,11 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 import type { API } from "./api";
+import type { FetchArtistsParams } from "./types/artists";
 
 const api: API = {
-  getArtists: () => ipcRenderer.invoke("get-artists"),
+  fetchArtists: ({ cursor }: FetchArtistsParams) =>
+    ipcRenderer.invoke("fetch-artists", { cursor }),
 };
 
 contextBridge.exposeInMainWorld("api", api);
