@@ -1,9 +1,9 @@
 import { useEffect, useState, type FC } from "react";
 
 import api from "../../../api";
-import type { DBArtist } from "../../../types/artists";
+import type { DBArtist, DBArtistCursor } from "../../../types/artists";
 
-type DisplayArtist = { name: string; id: string };
+type DisplayArtist = { name: string; artist_id: string };
 
 const ArtistList: FC = () => {
   const [artists, setArtists] = useState<DisplayArtist[] | null>(null);
@@ -38,8 +38,8 @@ const ArtistList: FC = () => {
     <>
       <h2>Artists</h2>
       <ol>
-        {artists.map(({ id, name }) => (
-          <li key={id}>{name}</li>
+        {artists.map(({ artist_id, name }) => (
+          <li key={artist_id}>{name}</li>
         ))}
       </ol>
     </>
@@ -49,20 +49,16 @@ const ArtistList: FC = () => {
 export default ArtistList;
 
 const getArtists = async () => {
-  const artists: { name: string; id: string }[] = [];
+  const artists: DBArtist[] = [];
 
-  let cursor: DBArtist | null = null;
+  let cursor: DBArtistCursor | null = null;
 
   do {
-    const result = await api.fetchArtists({ cursor });
-    cursor = result.at(-1) ?? null;
+    const { artists: artistsBatch, next } = await api.fetchArtists({ cursor });
 
-    artists.push(
-      ...result.map(({ artist_id, name }) => ({
-        id: artist_id,
-        name,
-      }))
-    );
+    cursor = next;
+
+    artists.push(...artistsBatch);
   } while (cursor);
 
   return artists;

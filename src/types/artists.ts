@@ -4,6 +4,14 @@ export type DBArtist = {
   name: string;
 };
 
+export type DBArtistCursor = Omit<DBArtist, "name">;
+
 export type FetchArtistsParams = {
-  cursor: DBArtist | null;
+  cursor: DBArtistCursor | null;
+  batchSize?: number;
 };
+
+export type FetchArtists = (params: FetchArtistsParams) => Promise<{
+  artists: DBArtist[];
+  next: DBArtistCursor | null;
+}>;
