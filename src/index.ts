@@ -38,7 +38,7 @@ const createWindow = async (): Promise<void> => {
 // Some APIs can only be used after this event occurs.
 await app.whenReady().then(async () => {
   ipcMain.handle("fetch-artists", (_, { cursor }: FetchArtistsParams) =>
-    fetchArtists({ cursor })
+    fetchArtists({ cursor }),
   );
 
   await createWindow();

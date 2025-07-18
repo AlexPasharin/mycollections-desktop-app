@@ -30,7 +30,7 @@ const fetchArtistsBatch = ({
       Prisma.sql`
           WHERE
             (LOWER(COALESCE(name_for_sorting, name)), artist_id::text) >= (${cursor.sort_key}, ${cursor.artist_id})
-        `
+        `,
     );
   }
 
@@ -41,7 +41,7 @@ const fetchArtistsBatch = ({
           artist_id::text
         LIMIT
           ${batchSize}
-      `
+      `,
   );
 
   const query = Prisma.sql`${Prisma.join(queryParts, " ")}`;
@@ -50,7 +50,7 @@ const fetchArtistsBatch = ({
 };
 
 const fetchNextArtist = async (
-  artist?: DBArtist
+  artist?: DBArtist,
 ): Promise<DBArtistCursor | null> => {
   if (!artist) {
     return null;
