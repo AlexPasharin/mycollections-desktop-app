@@ -1,7 +1,7 @@
 import { useEffect, useState, type FC } from "react";
 
-import api from "../../../api";
-import type { DBArtist, DBArtistCursor } from "../../../types/artists";
+import api from "@/api";
+import type { DBArtist, DBArtistCursor } from "@/types/artists";
 
 type DisplayArtist = { name: string; artist_id: string };
 

@@ -21,7 +21,15 @@
     "exactOptionalPropertyTypes": true,
     "noEmit": true,
     "allowJs": false,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/api": ["src/api"],
+      "@/app/*": ["src/app/*"],
+      "@/db/*": ["src/db/*"],
+      "@/prisma/*": ["./prisma/*"],
+      "@/types/*": ["src/types/*"]
+    }
   },
   "exclude": [".webpack/**/*", "prisma/generated/**/*"]
 }
