@@ -1,4 +1,4 @@
-import type { FetchArtists } from "../types/artists";
+import type { FetchArtists } from "@/types/artists";
 
 export type API = {
   fetchArtists: FetchArtists;

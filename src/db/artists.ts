@@ -1,12 +1,12 @@
 import client from "./client";
 
-import { Prisma } from "../../prisma/generated";
+import { Prisma } from "@/prisma/generated";
 import type {
   DBArtist,
   DBArtistCursor,
   FetchArtists,
   FetchArtistsParams,
-} from "../types/artists";
+} from "@/types/artists";
 
 const BATCH_SIZE = 100;
 

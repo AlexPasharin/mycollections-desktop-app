@@ -1,6 +1,6 @@
 import type { FC } from "react";
 
-import ArtistList from "./components/ArtistsList";
+import ArtistList from "@/app/components/ArtistsList";
 
 const App: FC = () => (
   <>
