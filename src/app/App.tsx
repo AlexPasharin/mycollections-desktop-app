@@ -1,17 +1,11 @@
 import type { FC } from "react";
 
-type Props = {
-  artists: { name: string; id: string }[];
-};
+import ArtistList from "./components/ArtistsList";
 
-const App: FC<Props> = ({ artists }) => (
+const App: FC = () => (
   <>
     <h1>My Collections</h1>
-    <ul>
-      {artists.map(({ id, name }) => (
-        <li key={id}>{name}</li>
-      ))}
-    </ul>
+    <ArtistList />
   </>
 );
 

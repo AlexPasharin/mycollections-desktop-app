@@ -1,22 +1,21 @@
 import client from "./client";
 
 import { Prisma } from "../../prisma/generated";
+import type {
+  DBArtist,
+  DBArtistCursor,
+  FetchArtists,
+  FetchArtistsParams,
+} from "../types/artists";
 
-type DBArtist = {
-  artist_id: string;
-  sort_key: string;
-  name: string;
-};
+const BATCH_SIZE = 100;
 
-export const getArtists = async () => {
-  const artists: { name: string; id: string }[] = [];
-  const BATCH_SIZE = 100;
-
-  let cursor: DBArtist | undefined;
-
-  do {
-    const queryParts = [
-      Prisma.sql`
+const fetchArtistsBatch = ({
+  cursor,
+  batchSize = BATCH_SIZE,
+}: FetchArtistsParams): Promise<DBArtist[]> => {
+  const queryParts = [
+    Prisma.sql`
         SELECT
           artist_id,
           name,
@@ -24,39 +23,65 @@ export const getArtists = async () => {
         FROM
           artists
       `,
-    ];
+  ];
 
-    if (cursor) {
-      queryParts.push(
-        Prisma.sql`
-          WHERE
-            (LOWER(COALESCE(name_for_sorting, name)), artist_id::text) > (${cursor.sort_key}, ${cursor.artist_id})
-        `,
-      );
-    }
-
+  if (cursor) {
     queryParts.push(
       Prisma.sql`
+          WHERE
+            (LOWER(COALESCE(name_for_sorting, name)), artist_id::text) >= (${cursor.sort_key}, ${cursor.artist_id})
+        `,
+    );
+  }
+
+  queryParts.push(
+    Prisma.sql`
         ORDER BY
           sort_key,
           artist_id::text
         LIMIT
-          ${BATCH_SIZE}
+          ${batchSize}
       `,
-    );
+  );
 
-    const query = Prisma.sql`${Prisma.join(queryParts, " ")}`;
-    const result = await client.$queryRaw<DBArtist[]>(query);
+  const query = Prisma.sql`${Prisma.join(queryParts, " ")}`;
 
-    cursor = result.at(-1);
+  return client.$queryRaw(query);
+};
 
-    artists.push(
-      ...result.map(({ artist_id, name }) => ({
-        id: artist_id,
-        name,
-      })),
-    );
-  } while (cursor);
+const fetchNextArtist = async (
+  artist?: DBArtist,
+): Promise<DBArtistCursor | null> => {
+  if (!artist) {
+    return null;
+  }
 
-  return artists;
+  const { artist_id, sort_key } = artist;
+
+  return client.$queryRaw<DBArtistCursor[]>`
+    SELECT
+      artist_id,
+      LOWER(COALESCE(name_for_sorting, name)) AS sort_key
+    FROM
+      artists
+    WHERE
+      (LOWER(COALESCE(name_for_sorting, name)), artist_id::text) > (${sort_key}, ${artist_id})
+    ORDER BY
+      sort_key,
+      artist_id::text
+    LIMIT
+      1
+  `.then((result) => result.at(0) ?? null);
+};
+
+export const fetchArtists: FetchArtists = async ({
+  cursor,
+  batchSize = BATCH_SIZE,
+}) => {
+  const artists = await fetchArtistsBatch({ cursor, batchSize });
+
+  const lastArtist = artists.at(-1);
+  const nextArtist = await fetchNextArtist(lastArtist);
+
+  return { artists, next: nextArtist };
 };

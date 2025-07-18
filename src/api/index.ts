@@ -1,5 +1,7 @@
+import type { FetchArtists } from "../types/artists";
+
 export type API = {
-  getArtists: () => Promise<{ name: string; id: string }[]>;
+  fetchArtists: FetchArtists;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
