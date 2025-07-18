@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "module": "commonjs",
+    "target": "esnext",
+    "module": "esnext",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -26,7 +27,7 @@
       "@/api": ["src/api"],
       "@/app/*": ["src/app/*"],
       "@/db/*": ["src/db/*"],
-      "@/prisma/*": ["./prisma/*"],
+      "@/prisma/*": ["prisma/*"],
       "@/types/*": ["src/types/*"]
     }
   },
