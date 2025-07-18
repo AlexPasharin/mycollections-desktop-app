@@ -40,7 +40,7 @@ app
   .whenReady()
   .then(async () => {
     ipcMain.handle("fetch-artists", (_, { cursor }: FetchArtistsParams) =>
-      fetchArtists({ cursor })
+      fetchArtists({ cursor }),
     );
 
     await createWindow();
