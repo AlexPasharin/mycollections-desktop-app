@@ -1,4 +1,3 @@
-// import { TsconfigPathsPlugin } from "tsconfig-paths-webpack-plugin";
 import type { Configuration } from "webpack";
 
 import aliases from "./webpack.aliases";
