@@ -18,8 +18,8 @@ if (electronSquirrelStartup) {
 const createWindow = async (): Promise<void> => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    height: 600,
-    width: 800,
+    height: 1000,
+    width: 1000,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
@@ -37,8 +37,8 @@ const createWindow = async (): Promise<void> => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 await app.whenReady().then(async () => {
-  ipcMain.handle("fetch-artists", (_, { cursor }: FetchArtistsParams) =>
-    fetchArtists({ cursor }),
+  ipcMain.handle("fetch-artists", (_, params: FetchArtistsParams) =>
+    fetchArtists(params),
   );
 
   await createWindow();
