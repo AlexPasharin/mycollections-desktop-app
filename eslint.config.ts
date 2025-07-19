@@ -137,6 +137,8 @@ export default tseslint.config(
       "@stylistic/padding-line-between-statements": [
         "error",
         { blankLine: "always", prev: "*", next: "return" },
+        { blankLine: "always", prev: "*", next: "block-like" },
+        { blankLine: "always", prev: "block-like", next: "*" },
       ],
       "@stylistic/no-mixed-operators": ["error", { allowSamePrecedence: true }],
     },
