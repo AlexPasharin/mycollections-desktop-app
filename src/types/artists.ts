@@ -6,8 +6,6 @@ export type DBArtist = {
 
 export type FetchArtistsParams = {
   artistForCompare: DBArtist | null;
-  previousStartIndex: number | undefined;
-  previousEndIndex: number | undefined;
   batchSize?: number;
   direction: "next" | "prev";
 };

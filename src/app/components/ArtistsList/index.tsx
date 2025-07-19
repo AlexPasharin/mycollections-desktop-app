@@ -19,10 +19,6 @@ const ArtistList: FC = () => {
       .fetchArtists({
         artistForCompare: artistsState?.[direction] ?? null,
         batchSize: 50,
-        previousStartIndex: artistsState?.startIndex,
-        previousEndIndex: artistsState
-          ? artistsState.startIndex + artistsState.artists.length - 1
-          : undefined,
         direction,
       })
       .then((result) =>
