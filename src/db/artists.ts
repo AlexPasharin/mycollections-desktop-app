@@ -1,87 +1,151 @@
 import client from "./client";
 
 import { Prisma } from "@/prisma/generated";
-import type {
-  DBArtist,
-  DBArtistCursor,
-  FetchArtists,
-  FetchArtistsParams,
-} from "@/types/artists";
+import type { DBArtist, FetchArtists } from "@/types/artists";
 
 const BATCH_SIZE = 100;
 
-const fetchArtistsBatch = ({
-  cursor,
+const LARGER_THAN = ">";
+const SMALLER_THAN = "<";
+const LARGER_OR_EQUAL_THAN = ">=";
+const SMALLER_OR_EQUAL_THAN = "<=";
+
+const ALLOWED_COMPARISON_OPERATORS = [
+  LARGER_THAN,
+  SMALLER_THAN,
+  LARGER_OR_EQUAL_THAN,
+  SMALLER_OR_EQUAL_THAN,
+] as const;
+
+export const fetchArtists: FetchArtists = async ({
+  artistForCompare,
   batchSize = BATCH_SIZE,
-}: FetchArtistsParams): Promise<DBArtist[]> => {
+  direction,
+}) => {
+  // fetch next batch in pagination
+  const artists = await fetchArtistsBatch({
+    artistForCompare,
+    batchSize,
+    direction:
+      direction === "next" ? LARGER_OR_EQUAL_THAN : SMALLER_OR_EQUAL_THAN,
+  });
+
+  // fetch "previous" row in db, preceding all elements fetched above. This will be used as a cursor to fetch batch preceding this batch, if requested
+  const prevArtist = await fetchNextOrPrevArtist({
+    type: "prev",
+    artist: artists.at(0),
+  });
+
+  // fetch "next row in db, succeeding all elements fetched above. This will be used as a cursor to fetch batch succeeding this batch, if requested
+  const nextArtist = await fetchNextOrPrevArtist({
+    type: "next",
+    artist: artists.at(-1),
+  });
+
+  return {
+    artists,
+    prev: prevArtist,
+    next: nextArtist,
+  };
+};
+
+type Direction = (typeof ALLOWED_COMPARISON_OPERATORS)[number];
+
+const sortingKey = Prisma.raw("LOWER(COALESCE(name_for_sorting, name))");
+
+const fetchArtistsBatch = ({
+  artistForCompare,
+  direction,
+  batchSize = BATCH_SIZE,
+}: {
+  artistForCompare: DBArtist | null;
+  direction: Direction;
+  batchSize?: number;
+}): Promise<DBArtist[]> => {
+  // we construct final query in parts, because some parts of it are optional (conditional logic)
+  // also, we cannot express query in terms of Prisma client API (for instance because we cannot express LOWER(COALESCE(name_for_sorting, name)) using Prisma API)
+  // that's why we resort to use $queryRaw
+
   const queryParts = [
+    // SELECT and FROM query clauses
+    // we need "sort_key" because it will be used in subsequent queries to fetch the next batch in pagination
     Prisma.sql`
-        SELECT
-          artist_id,
-          name,
-          LOWER(COALESCE(name_for_sorting, name)) AS sort_key
-        FROM
-          artists
-      `,
+      SELECT
+        artist_id,
+        name,
+        ${sortingKey} AS sort_key
+      FROM
+        artists
+    `,
   ];
 
-  if (cursor) {
+  // if artistForCompare is given, we use as "cursor" and fetch db rows relative to this cursor element, with respect to ordering defined by (LOWER(COALESCE(name_for_sorting, name)), artist_id) pair
+  if (artistForCompare) {
+    const { artist_id, sort_key } = artistForCompare;
+
+    if (!ALLOWED_COMPARISON_OPERATORS.includes(direction)) {
+      throw Error(`Operator ${direction} is not allowed in this context!`); // SHOULD NOT HAPPEN and is in fact guaranteed by typescript. If happens though in runtime, skipping this check might lead to SQL injection attacks below, since we use Prisma.raw
+    }
+
+    // note that ::text casting is necessary, because in db artist_id's type is uuid, while artistForCompare.artist_id is a string
     queryParts.push(
       Prisma.sql`
           WHERE
-            (LOWER(COALESCE(name_for_sorting, name)), artist_id::text) >= (${cursor.sort_key}, ${cursor.artist_id})
+            (${sortingKey}, artist_id::text) ${Prisma.raw(direction)} (${sort_key}, ${artist_id})
         `,
     );
   }
 
+  // if we fetch previous rows, we need to reverse sorting order, to get a correct batch of records just preceding given "cursor" element
+  const innerQueryOrderDirection =
+    direction === SMALLER_THAN || direction === SMALLER_OR_EQUAL_THAN
+      ? "DESC"
+      : "ASC";
+
   queryParts.push(
     Prisma.sql`
-        ORDER BY
-          sort_key,
-          artist_id::text
-        LIMIT
-          ${batchSize}
-      `,
+      ${orderByClause(innerQueryOrderDirection)}
+      LIMIT ${batchSize}
+    `,
   );
 
-  const query = Prisma.sql`${Prisma.join(queryParts, " ")}`;
+  let query = Prisma.sql`${Prisma.join(queryParts, " ")}`;
 
-  return client.$queryRaw(query);
-};
-
-const fetchNextArtist = async (
-  artist?: DBArtist,
-): Promise<DBArtistCursor | null> => {
-  if (!artist) {
-    return null;
+  // if we fetched previous results, we need to reverse result again, to get them in correct logical order in the end
+  if (direction === SMALLER_OR_EQUAL_THAN) {
+    query = Prisma.sql`
+    SELECT * FROM
+      (${query})
+    AS page
+    ${orderByClause("ASC")}
+  `;
   }
 
-  const { artist_id, sort_key } = artist;
+  return client.$queryRaw(query);
 
-  return client.$queryRaw<DBArtistCursor[]>`
-    SELECT
-      artist_id,
-      LOWER(COALESCE(name_for_sorting, name)) AS sort_key
-    FROM
-      artists
-    WHERE
-      (LOWER(COALESCE(name_for_sorting, name)), artist_id::text) > (${sort_key}, ${artist_id})
-    ORDER BY
-      sort_key,
-      artist_id::text
-    LIMIT
-      1
-  `.then((result) => result.at(0) ?? null);
+  function orderByClause(orderDirection: "ASC" | "DESC") {
+    return Prisma.raw(`
+      ORDER BY
+        sort_key ${orderDirection},
+        artist_id::text ${orderDirection}
+    `);
+  }
 };
 
-export const fetchArtists: FetchArtists = async ({
-  cursor,
-  batchSize = BATCH_SIZE,
-}) => {
-  const artists = await fetchArtistsBatch({ cursor, batchSize });
+const fetchNextOrPrevArtist = async ({
+  type,
+  artist,
+}: {
+  type: "next" | "prev";
+  artist?: DBArtist | undefined;
+}): Promise<DBArtist | undefined> => {
+  if (!artist) {
+    return undefined;
+  }
 
-  const lastArtist = artists.at(-1);
-  const nextArtist = await fetchNextArtist(lastArtist);
-
-  return { artists, next: nextArtist };
+  return fetchArtistsBatch({
+    artistForCompare: artist,
+    direction: type === "next" ? LARGER_THAN : SMALLER_THAN,
+    batchSize: 1,
+  }).then((result) => result.at(0));
 };

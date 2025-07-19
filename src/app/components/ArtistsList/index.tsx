@@ -1,25 +1,51 @@
 import { useEffect, useState, type FC } from "react";
 
 import api from "@/api";
-import type { DBArtist, DBArtistCursor } from "@/types/artists";
+import type { FetchArtistsResponse } from "@/types/artists";
 
-type DisplayArtist = { name: string; artist_id: string };
+type ArtistsState = FetchArtistsResponse & {
+  startIndex: number;
+};
 
 const ArtistList: FC = () => {
-  const [artists, setArtists] = useState<DisplayArtist[] | null>(null);
+  const [artistsState, setArtistsState] = useState<ArtistsState | null>(null);
+  const [loadingArtists, setLoadingArtists] = useState(true);
   const [loadingError, setLoadingError] = useState<unknown>(null);
 
-  useEffect(() => {
-    getArtists()
-      .then(setArtists)
+  const fetchArtistsBatch = (direction: "next" | "prev") => {
+    setLoadingArtists(true);
+
+    api
+      .fetchArtists({
+        artistForCompare: artistsState?.[direction] ?? null,
+        batchSize: 50,
+        direction,
+      })
+      .then((result) =>
+        setArtistsState((prevArtistsState) => ({
+          ...result,
+
+          startIndex: prevArtistsState
+            ? direction === "next"
+              ? prevArtistsState.startIndex +
+                prevArtistsState.artists.length -
+                1 +
+                1
+              : prevArtistsState.startIndex - result.artists.length
+            : 1,
+        })),
+      )
       .catch((error: unknown) => {
         const errorMessage = error instanceof Error ? error.message : error;
 
         console.error(errorMessage);
 
         setLoadingError(errorMessage);
-      });
-  }, []);
+      })
+      .finally(() => setLoadingArtists(false));
+  };
+
+  useEffect(() => fetchArtistsBatch("next"), []);
 
   if (loadingError) {
     return (
@@ -30,36 +56,30 @@ const ArtistList: FC = () => {
     );
   }
 
-  if (!artists) {
-    return <div> Loading artists... </div>;
-  }
-
   return (
     <>
       <h2>Artists</h2>
-      <ol>
-        {artists.map(({ artist_id, name }) => (
-          <li key={artist_id}>{name}</li>
-        ))}
-      </ol>
+      {artistsState?.prev && (
+        <button onClick={() => fetchArtistsBatch("prev")}>
+          Prev page &lt;-
+        </button>
+      )}
+      {artistsState?.next && (
+        <button onClick={() => fetchArtistsBatch("next")}>
+          Next page -&gt;
+        </button>
+      )}
+      {loadingArtists ? (
+        <div> Loading artists... </div>
+      ) : artistsState ? (
+        <ol start={artistsState.startIndex}>
+          {artistsState.artists.map(({ artist_id, name }) => (
+            <li key={artist_id}>{name}</li>
+          ))}
+        </ol>
+      ) : null}
     </>
   );
 };
 
 export default ArtistList;
-
-const getArtists = async () => {
-  const artists: DBArtist[] = [];
-
-  let cursor: DBArtistCursor | null = null;
-
-  do {
-    const { artists: artistsBatch, next } = await api.fetchArtists({ cursor });
-
-    cursor = next;
-
-    artists.push(...artistsBatch);
-  } while (cursor);
-
-  return artists;
-};

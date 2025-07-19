@@ -4,14 +4,18 @@ export type DBArtist = {
   name: string;
 };
 
-export type DBArtistCursor = Omit<DBArtist, "name">;
-
 export type FetchArtistsParams = {
-  cursor: DBArtistCursor | null;
+  artistForCompare: DBArtist | null;
   batchSize?: number;
+  direction: "next" | "prev";
 };
 
-export type FetchArtists = (params: FetchArtistsParams) => Promise<{
+export type FetchArtistsResponse = {
   artists: DBArtist[];
-  next: DBArtistCursor | null;
-}>;
+  prev: DBArtist | undefined;
+  next: DBArtist | undefined;
+};
+
+export type FetchArtists = (
+  params: FetchArtistsParams,
+) => Promise<FetchArtistsResponse>;
