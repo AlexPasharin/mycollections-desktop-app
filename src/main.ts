@@ -29,18 +29,16 @@ const createMainWindow = () =>
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 await app.whenReady().then(async () => {
-  ipcMain.handle("fetch-artists", (_, params: FetchArtistsParams) =>
-    fetchArtists(params),
-  );
+  ipcMain.on("open-new-artists-window", () => {
+    ipcMain.handle("fetch-artists", (_, params: FetchArtistsParams) =>
+      fetchArtists(params),
+    );
 
-  ipcMain.on(
-    "open-new-artists-window",
-    () =>
-      void createWindow({
-        preload: ARTISTS_WINDOW_PRELOAD_WEBPACK_ENTRY,
-        html: ARTISTS_WINDOW_WEBPACK_ENTRY,
-      }),
-  );
+    void createWindow({
+      preload: ARTISTS_WINDOW_PRELOAD_WEBPACK_ENTRY,
+      html: ARTISTS_WINDOW_WEBPACK_ENTRY,
+    });
+  });
 
   await createMainWindow();
 
