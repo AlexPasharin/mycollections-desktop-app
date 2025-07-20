@@ -5,7 +5,7 @@
   "description": "My Electron application description",
   "main": ".webpack/main",
   "scripts": {
-    "start": "yarn clean; DEV=true electron-forge start",
+    "start": "yarn clean; electron-forge start",
     "package": "electron-forge package",
     "make": "yarn; yarn clean; electron-forge make;rm -rf .webpack",
     "publish": "electron-forge publish",

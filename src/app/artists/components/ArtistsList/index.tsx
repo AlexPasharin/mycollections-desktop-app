@@ -1,6 +1,7 @@
 import { useEffect, useState, type FC } from "react";
 
-import api from "@/api";
+import api from "../../api";
+
 import type { FetchArtistsResponse } from "@/types/artists";
 
 type ArtistsState = FetchArtistsResponse & {

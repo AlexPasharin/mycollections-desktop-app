@@ -24,11 +24,11 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/api": ["src/api"],
       "@/app/*": ["src/app/*"],
       "@/db/*": ["src/db/*"],
       "@/prisma/*": ["prisma/*"],
-      "@/types/*": ["src/types/*"]
+      "@/types/*": ["src/types/*"],
+      "@/utils/*": ["src/utils/*"]
     }
   },
   "exclude": [".webpack/**/*", "prisma/generated/**/*"]
