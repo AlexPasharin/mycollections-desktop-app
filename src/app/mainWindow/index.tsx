@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 
-import App from "@/app/App";
+import MainWindow from "./MainWindowWrapper";
 
 const root = createRoot(document.body);
-root.render(<App />);
+root.render(<MainWindow />);
