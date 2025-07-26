@@ -1,6 +1,6 @@
 import client from "./client";
 
-import { Prisma } from "@/prisma/generated";
+import { Prisma, type Artist } from "@/prisma/generated";
 import type { DBArtist, FetchArtists } from "@/types/artists";
 
 const BATCH_SIZE = 100;
@@ -149,3 +149,48 @@ const fetchNextOrPrevArtist = async ({
     batchSize: 1,
   }).then((result) => result.at(0));
 };
+
+export const queryArtist = async (
+  query: string,
+): Promise<{ exactMatches: Artist[]; substringMatches: Artist[] }> => {
+  const exactMatches = await getArtistsByName(query);
+
+  const substringMatches =
+    query.length > 2
+      ? await getArtistsBySubstringQuery(query, exactMatches)
+      : [];
+
+  return { exactMatches, substringMatches };
+};
+
+const getArtistsByName = async (name: string): Promise<Artist[]> => {
+  const exactMatches = await client.artist.findMany({
+    where: { name },
+  });
+
+  const otherNamesMatches = (
+    await client.alternativeArtistName.findMany({
+      where: { name },
+      include: { artist: true },
+      omit: { name: true, artistId: true, id: true },
+    })
+  ).map(({ artist }) => artist);
+
+  return [...exactMatches, ...otherNamesMatches];
+};
+
+const getArtistsBySubstringQuery = (
+  query: string,
+  exclude: Artist[],
+): Promise<Artist[]> =>
+  client.artist.findMany({
+    where: {
+      name: {
+        contains: query,
+      },
+      id: {
+        notIn: exclude.map(({ id }) => id),
+      },
+    },
+    take: 10,
+  });

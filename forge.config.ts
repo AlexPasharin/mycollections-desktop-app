@@ -34,7 +34,7 @@ const config: ForgeConfig = {
         entryPoints: [
           {
             html: "./src/public/main.html",
-            js: "./src/app/mainWindow/renderer.ts",
+            js: "./src/app/mainWindow/renderer.tsx",
             name: "main_window",
             preload: {
               js: "./src/app/mainWindow/preload.ts",
@@ -42,10 +42,19 @@ const config: ForgeConfig = {
           },
           {
             html: "./src/public/main.html",
-            js: "./src/app/artists/renderer.ts",
-            name: "artists_window",
+            js: "./src/app/artists/list/renderer.tsx",
+            name: "artists_list_window",
             preload: {
-              js: "./src/app/artists/preload.ts",
+              js: "./src/app/artists/list/preload.ts",
+            },
+          },
+
+          {
+            html: "./src/public/main.html",
+            js: "./src/app/artists/query/renderer.tsx",
+            name: "artist_query_window",
+            preload: {
+              js: "./src/app/artists/query/preload.ts",
             },
           },
         ],

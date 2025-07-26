@@ -1,3 +1,5 @@
+import type { Artist } from "@/prisma/generated";
+
 export type DBArtist = {
   artist_id: string;
   sort_key: string;
@@ -19,3 +21,7 @@ export type FetchArtistsResponse = {
 export type FetchArtists = (
   params: FetchArtistsParams,
 ) => Promise<FetchArtistsResponse>;
+
+export type QueryArtist = (
+  query: string,
+) => Promise<{ exactMatches: Artist[]; substringMatches: Artist[] }>;

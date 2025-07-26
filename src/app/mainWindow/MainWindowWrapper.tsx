@@ -5,7 +5,8 @@ import api from "./api";
 const MainWindowWrapper: FC = () => (
   <>
     <h1>My Collections</h1>
-    <button onClick={api.openNewArtistsWindow}>Open Artists Window</button>
+    <button onClick={api.openNewArtistQueryWindow}>Find artist</button>
+    <button onClick={api.openNewArtistsListWindow}>Open Artists Window</button>
   </>
 );
 

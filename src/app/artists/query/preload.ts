@@ -3,10 +3,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { API } from "./api";
 
 const api = {
-  openNewArtistsListWindow: () =>
-    ipcRenderer.send("open-new-artists-list-window"),
-  openNewArtistQueryWindow: () =>
-    ipcRenderer.send("open-new-artist-query-window"),
+  queryArtists: (query: string) => ipcRenderer.invoke("query-artists", query),
 } as const satisfies API;
 
 contextBridge.exposeInMainWorld("api", api);
