@@ -1,17 +1,30 @@
 import { useState, type FC } from "react";
 
-const ArtistQuery: FC = () => {
-  const [artistQuery, setArtistQuery] = useState("");
+import api from "../../api";
+import ArtistsList from "../ArtistsList";
 
-  console.info({ artistQuery });
+import type { Artist } from "@/prisma/generated";
+
+const ArtistQuery: FC = () => {
+  const [artists, setArtists] = useState<Artist[] | null>(null);
+
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    api
+      .queryArtists(value)
+      .then(({ exactMatches, substringMatches }) => {
+        setArtists([...exactMatches, ...substringMatches]);
+      })
+      .catch(console.error);
+  };
 
   return (
     <>
       <h2>Find artist</h2>
-      <input
-        value={artistQuery}
-        onChange={(e) => setArtistQuery(e.target.value)}
-      />
+      <input onChange={onChange} />
+
+      {artists && <ArtistsList artists={artists} />}
     </>
   );
 };
