@@ -187,6 +187,7 @@ const getArtistsBySubstringQuery = (
     where: {
       name: {
         contains: query,
+        mode: "insensitive",
       },
       id: {
         notIn: exclude.map(({ id }) => id),
