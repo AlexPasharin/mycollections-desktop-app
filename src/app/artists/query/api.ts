@@ -1,6 +1,7 @@
+import type { QueryArtist } from "@/types/artists";
+
 export type API = {
-  openNewArtistsListWindow: () => void;
-  openNewArtistQueryWindow: () => void;
+  queryArtists: QueryArtist;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access

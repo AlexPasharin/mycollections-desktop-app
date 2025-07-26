@@ -5,7 +5,7 @@ type CreateWindowParams = {
   html: string;
 };
 
-export const createWindow = async ({
+const createWindow = async ({
   preload,
   html,
 }: CreateWindowParams): Promise<void> => {
@@ -25,3 +25,5 @@ export const createWindow = async ({
     mainWindow.webContents.openDevTools({ mode: "detach" });
   }
 };
+
+export default createWindow;
