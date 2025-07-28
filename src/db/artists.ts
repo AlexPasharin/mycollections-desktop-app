@@ -1,7 +1,12 @@
 import client from "./client";
 
-import { Prisma, type Artist } from "@/prisma/generated";
-import type { DBArtist, FetchArtists } from "@/types/artists";
+import { Prisma } from "@/prisma/generated";
+import type {
+  DBArtist,
+  FetchArtists,
+  QueriedArtist,
+  QueryArtist,
+} from "@/types/artists";
 
 const BATCH_SIZE = 100;
 
@@ -150,48 +155,31 @@ const fetchNextOrPrevArtist = async ({
   }).then((result) => result.at(0));
 };
 
-export const queryArtist = async (
-  query: string,
-): Promise<{ exactMatches: Artist[]; substringMatches: Artist[] }> => {
-  const exactMatches = await getArtistsByName(query);
+export const queryArtist: QueryArtist = async (query) => {
+  if (!query) {
+    return null;
+  }
 
-  const substringMatches =
-    query.length > 2
-      ? await getArtistsBySubstringQuery(query, exactMatches)
-      : [];
+  const substringMatches = await getArtistsBySubstringQuery(query);
 
-  return { exactMatches, substringMatches };
-};
-
-const getArtistsByName = async (name: string): Promise<Artist[]> => {
-  const exactMatches = await client.artist.findMany({
-    where: { name },
-  });
-
-  const otherNamesMatches = (
-    await client.alternativeArtistName.findMany({
-      where: { name },
-      include: { artist: true },
-      omit: { name: true, artistId: true, id: true },
-    })
-  ).map(({ artist }) => artist);
-
-  return [...exactMatches, ...otherNamesMatches];
+  return { substringMatches };
 };
 
 const getArtistsBySubstringQuery = (
   query: string,
-  exclude: Artist[],
-): Promise<Artist[]> =>
-  client.artist.findMany({
-    where: {
-      name: {
-        contains: query,
-        mode: "insensitive",
-      },
-      id: {
-        notIn: exclude.map(({ id }) => id),
-      },
-    },
-    take: 10,
-  });
+): Promise<QueriedArtist[]> => {
+  const searchTerm = `%${query}%`;
+
+  return client.$queryRaw<QueriedArtist[]>(Prisma.sql`
+    SELECT
+      artist_id AS id, name
+    FROM
+      artists
+    WHERE
+      name ILIKE ${searchTerm}
+    ORDER BY
+      similarity(lower(name), ${query}) DESC
+    LIMIT
+      10
+  `);
+};
