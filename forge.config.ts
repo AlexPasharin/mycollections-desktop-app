@@ -9,10 +9,20 @@ import { WebpackPlugin } from "@electron-forge/plugin-webpack";
 import type { ForgeConfig } from "@electron-forge/shared-types";
 import dotenv from "dotenv";
 
+import windows from "./appWindows";
 import { mainConfig } from "./webpack.main.config";
 import { rendererConfig } from "./webpack.renderer.config";
 
 dotenv.config();
+
+const entryPoints = Object.entries(windows).map(([name, { folder }]) => ({
+  name,
+  js: `./src/app/${folder}/renderer.tsx`,
+  preload: {
+    js: `./src/app/${folder}/preload.ts`,
+  },
+  html: "./src/public/main.html",
+}));
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -31,33 +41,7 @@ const config: ForgeConfig = {
       mainConfig,
       renderer: {
         config: rendererConfig,
-        entryPoints: [
-          {
-            html: "./src/public/main.html",
-            js: "./src/app/mainWindow/renderer.tsx",
-            name: "main_window",
-            preload: {
-              js: "./src/app/mainWindow/preload.ts",
-            },
-          },
-          {
-            html: "./src/public/main.html",
-            js: "./src/app/artists/list/renderer.tsx",
-            name: "artists_list_window",
-            preload: {
-              js: "./src/app/artists/list/preload.ts",
-            },
-          },
-
-          {
-            html: "./src/public/main.html",
-            js: "./src/app/artists/query/renderer.tsx",
-            name: "artist_query_window",
-            preload: {
-              js: "./src/app/artists/query/preload.ts",
-            },
-          },
-        ],
+        entryPoints,
       },
     }),
 
