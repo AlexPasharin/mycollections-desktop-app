@@ -1,12 +1,12 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import electronSquirrelStartup from "electron-squirrel-startup";
 
-import { createArtistQueryWindow } from "./utils/windows/artistQueryWindow";
-import { createArtistsListWindow } from "./utils/windows/artistsListWindow";
+import createArtistsListWindow from "./app/artists/list/createWindow";
+import createArtistQueryWindow from "./app/artists/query/createWindow";
+import createMainWindow from "./app/mainWindow/create";
 
 import { fetchArtists, queryArtist } from "@/db/artists";
 import type { FetchArtistsParams } from "@/types/artists";
-import { createMainWindow } from "@/utils/windows";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (electronSquirrelStartup) {
