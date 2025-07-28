@@ -5,6 +5,12 @@ import createArtistsListWindow from "./app/artists/list/createWindow";
 import createArtistQueryWindow from "./app/artists/query/createWindow";
 import createMainWindow from "./app/mainWindow/create";
 
+import {
+  FETCH_ARTISTS,
+  OPEN_ARTIST_QUERY_WINDOW,
+  OPEN_ARTISTS_LIST_WINDOW,
+  QUERY_ARTIST,
+} from "@/constants/ipcEvents";
 import { fetchArtists, queryArtist } from "@/db/artists";
 import type { FetchArtistsParams } from "@/types/artists";
 
@@ -17,17 +23,17 @@ if (electronSquirrelStartup) {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 await app.whenReady().then(async () => {
-  ipcMain.handle("fetch-artists", (_, params: FetchArtistsParams) =>
+  ipcMain.handle(FETCH_ARTISTS, (_, params: FetchArtistsParams) =>
     fetchArtists(params),
   );
 
-  ipcMain.handle("query-artists", (_, query: string) => queryArtist(query));
+  ipcMain.handle(QUERY_ARTIST, (_, query: string) => queryArtist(query));
 
-  ipcMain.on("open-new-artists-list-window", () => {
+  ipcMain.on(OPEN_ARTISTS_LIST_WINDOW, () => {
     void createArtistsListWindow();
   });
 
-  ipcMain.on("open-new-artist-query-window", () => {
+  ipcMain.on(OPEN_ARTIST_QUERY_WINDOW, () => {
     void createArtistQueryWindow();
   });
 
