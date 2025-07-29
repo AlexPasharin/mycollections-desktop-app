@@ -1,9 +1,9 @@
 import type { FC } from "react";
 
-import type { Artist } from "@/prisma/generated";
+import type { QueriedArtist } from "@/types/artists";
 
 type ArtistsByQueryListProps = {
-  artists: Artist[];
+  artists: QueriedArtist[];
 };
 
 const ArtistsList: FC<ArtistsByQueryListProps> = ({ artists }) => {
