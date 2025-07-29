@@ -25,6 +25,9 @@ export type QueriedArtist = {
   name: string;
 };
 
-export type ArtistQueryResult = { substringMatches: QueriedArtist[] } | null;
+export type ArtistQueryResult = {
+  substringMatches: QueriedArtist[];
+  fuzzySearch: QueriedArtist[];
+} | null;
 
 export type QueryArtist = (query: string) => Promise<ArtistQueryResult>;

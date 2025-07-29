@@ -20,6 +20,14 @@ const ArtistQuery: FC = () => {
       <input onChange={onChange} />
 
       {artists && <ArtistsList artists={artists.substringMatches} />}
+      {artists?.fuzzySearch.length && (
+        <div>
+          <div>
+            {artists.substringMatches.length ? "Or did" : "Did"} you mean?
+          </div>
+          <ArtistsList artists={artists.fuzzySearch} />
+        </div>
+      )}
     </>
   );
 };

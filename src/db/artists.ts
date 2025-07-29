@@ -161,16 +161,19 @@ export const queryArtist: QueryArtist = async (query) => {
   }
 
   const substringMatches = await getArtistsBySubstringQuery(query);
+  const fuzzySearch = await getArtistsByFuzzySearch(query, substringMatches);
 
-  return { substringMatches };
+  return { substringMatches, fuzzySearch };
 };
 
-const getArtistsBySubstringQuery = (
+const getArtistsBySubstringQuery = async (
   query: string,
 ): Promise<QueriedArtist[]> => {
   const searchTerm = `%${query}%`;
 
-  return client.$queryRaw<QueriedArtist[]>(Prisma.sql`
+  const artistsDirectlyByName = await client.$queryRaw<
+    QueriedArtist[]
+  >(Prisma.sql`
     SELECT
       artist_id AS id, name
     FROM
@@ -182,4 +185,79 @@ const getArtistsBySubstringQuery = (
     LIMIT
       10
   `);
+
+  // in next query we want to remove artists we already found
+  const artistIdsObtained = artistsDirectlyByName.map(({ id }) => id);
+
+  const additionalWhereClause = artistIdsObtained.length
+    ? Prisma.sql`AND artist_id::text NOT IN (${Prisma.join(artistIdsObtained)})`
+    : Prisma.sql``;
+
+  const artistsByAltName = await client.$queryRaw<QueriedArtist[]>(Prisma.sql`
+    SELECT
+      name_id AS id, name
+    FROM
+      alternative_artist_names
+    WHERE
+      name ILIKE ${searchTerm} ${additionalWhereClause}
+    ORDER BY
+      similarity(lower(name), ${query}) DESC
+    LIMIT
+      10
+  `);
+
+  return [...artistsDirectlyByName, ...artistsByAltName];
+};
+
+const getArtistsByFuzzySearch = async (
+  query: string,
+  exclude: QueriedArtist[],
+): Promise<QueriedArtist[]> => {
+  // in next query we want to remove artists we already found
+  const artistIdsToExclude = exclude.map(({ id }) => id);
+
+  const additionalWhereClause = artistIdsToExclude.length
+    ? Prisma.sql`AND artist_id::text NOT IN (${Prisma.join(artistIdsToExclude)})`
+    : Prisma.sql``;
+
+  const artistsDirectlyByName = await client.$queryRaw<
+    QueriedArtist[]
+  >(Prisma.sql`
+    SELECT
+      artist_id AS id, name
+    FROM
+      artists
+    WHERE
+      similarity(lower(name), ${query}) > 0 ${additionalWhereClause}
+    ORDER BY
+      similarity(lower(name), ${query}) DESC
+    LIMIT
+      5
+  `);
+
+  const artistIdsObtained = artistsDirectlyByName.map(({ id }) => id);
+  const altNameQueryArtistIdsToExclude = [
+    ...artistIdsToExclude,
+    ...artistIdsObtained,
+  ];
+
+  const altNameQueryAdditionalWhereClause =
+    altNameQueryArtistIdsToExclude.length
+      ? Prisma.sql`AND artist_id::text NOT IN (${Prisma.join(altNameQueryArtistIdsToExclude)})`
+      : Prisma.sql``;
+
+  const artistsByAltName = await client.$queryRaw<QueriedArtist[]>(Prisma.sql`
+    SELECT
+      name_id AS id, name
+    FROM
+      alternative_artist_names
+    WHERE
+      similarity(lower(name), ${query}) > 0 ${altNameQueryAdditionalWhereClause}
+    ORDER BY
+      similarity(lower(name), ${query}) DESC
+    LIMIT
+      5
+  `);
+
+  return [...artistsDirectlyByName, ...artistsByAltName];
 };
