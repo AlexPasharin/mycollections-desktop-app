@@ -1,0 +1,75 @@
+model MusicalEntry {
+  id                    String  @id @default(dbgenerated("gen_random_uuid()")) @map("entry_id") @db.Uuid
+  mainName              String  @map("main_name")
+  originalReleaseDate   String? @map("original_release_date")
+  comment               String?
+  discogsUrl            String? @map("discogs_url")
+  partOfQueenCollection Boolean @default(false)
+  relationToQueen       String? @map("relation_to_queen")
+
+  parentEntries ParentMusicalEntry[] @relation("ParentEntry")
+  childEntries  ParentMusicalEntry[] @relation("ChildEntry")
+
+  artists          EntryArtist[]
+  tags             MusicalEntryTag[]
+  types            TypeOfMusicalEntry[]
+  alternativeNames AlternativeMusicalEntryName[]
+
+  @@map("musical_entries")
+}
+
+model MusicalEntryType {
+  id      String  @id @default(dbgenerated("gen_random_uuid()")) @map("entry_type_id") @db.Uuid
+  name    String
+  comment String?
+
+  musicalEntries TypeOfMusicalEntry[]
+
+  @@map("musical_entry_types")
+}
+
+model TypeOfMusicalEntry {
+  entryId String @map("entry_id") @db.Uuid
+  typeId  String @map("type_id") @db.Uuid
+
+  entry MusicalEntry     @relation(fields: [entryId], references: [id])
+  type  MusicalEntryType @relation(fields: [typeId], references: [id])
+
+  @@id([entryId, typeId])
+  @@map("types_of_musical_entries")
+}
+
+model EntryArtist {
+  entryId  String @map("entry_id") @db.Uuid
+  artistId String @map("artist_id") @db.Uuid
+
+  entry  MusicalEntry @relation(fields: [entryId], references: [id])
+  artist Artist       @relation(fields: [artistId], references: [id])
+
+  entryArtistNameId   String?                @map("entry_artist_name") @db.Uuid
+  entryArtistName     AlternativeArtistName? @relation(fields: [entryArtistNameId], references: [id]) // in case entry's artist name is marked as one of artist's alternative names
+  isEntriesMainArtist Boolean?               @default(true) @map("is_entries_main_artist") // indicates if this is entry's "main artist"
+
+  @@id([entryId, artistId])
+  @@map("musical_entries_artists")
+}
+
+model ParentMusicalEntry {
+  parentEntry   MusicalEntry @relation("ParentEntry", fields: [parentEntryId], references: [id])
+  parentEntryId String       @map("parent_artist_id") @db.Uuid
+
+  childEntry   MusicalEntry @relation("ChildEntry", fields: [childEntryId], references: [id])
+  childEntryId String       @map("child_artist_id") @db.Uuid
+
+  @@id([parentEntryId, childEntryId])
+  @@map("parent_musical_entries")
+}
+
+model AlternativeMusicalEntryName {
+  id      String       @id @default(dbgenerated("gen_random_uuid()")) @map("name_id") @db.Uuid
+  name    String
+  entry   MusicalEntry @relation(fields: [entryId], references: [id])
+  entryId String       @map("entry_id") @db.Uuid
+
+  @@map("alternative_musical_entry_names")
+}
