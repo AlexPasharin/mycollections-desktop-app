@@ -58,7 +58,7 @@ export const fetchArtists: FetchArtists = async ({
 type ComparisonOperator =
   (typeof COMPARISON_OPERATORS)[keyof typeof COMPARISON_OPERATORS];
 
-const fetchArtistsBatch = async ({
+const fetchArtistsBatch = ({
   artistForCompare,
   batchSize = BATCH_SIZE,
   comparisonOperator,
@@ -122,14 +122,16 @@ const fetchNextOrPrevArtist = async ({
     return undefined;
   }
 
-  return fetchArtistsBatch({
+  const artistsBatch = await fetchArtistsBatch({
     artistForCompare: artist,
     comparisonOperator:
       type === "next"
         ? COMPARISON_OPERATORS.LARGER_THAN
         : COMPARISON_OPERATORS.SMALLER_THAN,
     batchSize: 1,
-  }).then((result) => result.at(0));
+  });
+
+  return artistsBatch.at(0);
 };
 
 export const queryArtist: QueryArtist = async (query) => {
