@@ -20,7 +20,7 @@ model MusicalEntry {
 
 model MusicalEntryType {
   id      String  @id @default(dbgenerated("gen_random_uuid()")) @map("entry_type_id") @db.Uuid
-  name    String
+  name    String  @unique
   comment String?
 
   musicalEntries TypeOfMusicalEntry[]
