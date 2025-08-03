@@ -22,6 +22,9 @@ jobs:
       - name: Install dependencies
         run: yarn
 
+      - name: Invoke prisma generate
+        run: yarn prisma generate
+
       - name: Check tsc
         run: yarn typecheck
 

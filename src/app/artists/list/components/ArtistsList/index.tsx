@@ -74,8 +74,8 @@ const ArtistList: FC = () => {
         <div> Loading artists... </div>
       ) : artistsState ? (
         <ol start={artistsState.startIndex}>
-          {artistsState.artists.map(({ artist_id, name }) => (
-            <li key={artist_id}>{name}</li>
+          {artistsState.artists.map(({ artistId, name }) => (
+            <li key={artistId}>{name}</li>
           ))}
         </ol>
       ) : null}

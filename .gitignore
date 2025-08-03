@@ -14,3 +14,5 @@ out/
 prisma/generated
 
 .vscode
+
+src/types/db/database.ts

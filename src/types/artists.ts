@@ -1,6 +1,6 @@
 export type DBArtist = {
-  artist_id: string;
-  sort_key: string;
+  artistId: string;
+  sortKey: string;
   name: string;
 };
 

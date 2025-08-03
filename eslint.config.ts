@@ -78,7 +78,7 @@ export default tseslint.config(
       "no-unneeded-ternary": ["error", { defaultAssignment: false }],
       "no-useless-return": "error",
       radix: "error",
-      "require-await": "off", // switched off from eslint because typescript-eslint/recommended-type-checked includes TS version of this rule
+      "require-await": "error",
       "no-throw-literal": "off", // switched off from eslint because typescript-eslint/recommended-type-checked includes TS version of this rule
       "symbol-description": "error",
       yoda: "error",
@@ -119,6 +119,7 @@ export default tseslint.config(
       "@typescript-eslint/prefer-reduce-type-parameter": "error",
       "@typescript-eslint/prefer-string-starts-ends-with": "error",
       "@typescript-eslint/require-array-sort-compare": "error",
+      "@typescript-eslint/require-await": "off", // prefer original eslint version
       "@typescript-eslint/switch-exhaustiveness-check": "error",
       "@typescript-eslint/unified-signatures": "error",
       "@typescript-eslint/use-unknown-in-catch-callback-variable": "error",
