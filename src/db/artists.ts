@@ -1,4 +1,7 @@
-import client from "./client";
+import type { FunctionModule, QueryCreator } from "kysely";
+
+import client from "./client/kysely";
+import prismaClient from "./client/prisma";
 
 import { Prisma } from "@/prisma/generated";
 import type {
@@ -7,20 +10,16 @@ import type {
   QueriedArtist,
   QueryArtist,
 } from "@/types/artists";
+import type { DB } from "@/types/db/database";
 
 const BATCH_SIZE = 100;
 
-const LARGER_THAN = ">";
-const SMALLER_THAN = "<";
-const LARGER_OR_EQUAL_THAN = ">=";
-const SMALLER_OR_EQUAL_THAN = "<=";
-
-const ALLOWED_COMPARISON_OPERATORS = [
-  LARGER_THAN,
-  SMALLER_THAN,
-  LARGER_OR_EQUAL_THAN,
-  SMALLER_OR_EQUAL_THAN,
-] as const;
+const COMPARISON_OPERATORS = {
+  LARGER_THAN: ">",
+  SMALLER_THAN: "<",
+  LARGER_OR_EQUAL_THAN: ">=",
+  SMALLER_OR_EQUAL_THAN: "<=",
+} as const;
 
 export const fetchArtists: FetchArtists = async ({
   artistForCompare,
@@ -31,8 +30,10 @@ export const fetchArtists: FetchArtists = async ({
   const artists = await fetchArtistsBatch({
     artistForCompare,
     batchSize,
-    direction:
-      direction === "next" ? LARGER_OR_EQUAL_THAN : SMALLER_OR_EQUAL_THAN,
+    comparisonOperator:
+      direction === "next"
+        ? COMPARISON_OPERATORS.LARGER_OR_EQUAL_THAN
+        : COMPARISON_OPERATORS.SMALLER_OR_EQUAL_THAN,
   });
 
   // fetch "previous" row in db, preceding all elements fetched above. This will be used as a cursor to fetch batch preceding this batch, if requested
@@ -54,87 +55,60 @@ export const fetchArtists: FetchArtists = async ({
   };
 };
 
-type Direction = (typeof ALLOWED_COMPARISON_OPERATORS)[number];
+type ComparisonOperator =
+  (typeof COMPARISON_OPERATORS)[keyof typeof COMPARISON_OPERATORS];
 
-const sortingKey = Prisma.raw("LOWER(COALESCE(name_for_sorting, name))");
-
-const fetchArtistsBatch = ({
+const fetchArtistsBatch = async ({
   artistForCompare,
-  direction,
   batchSize = BATCH_SIZE,
+  comparisonOperator,
 }: {
   artistForCompare: DBArtist | null;
-  direction: Direction;
+  comparisonOperator: ComparisonOperator;
   batchSize?: number;
 }): Promise<DBArtist[]> => {
-  // we construct final query in parts, because some parts of it are optional (conditional logic)
-  // also, we cannot express query in terms of Prisma client API (for instance because we cannot express LOWER(COALESCE(name_for_sorting, name)) using Prisma API)
-  // that's why we resort to use $queryRaw
+  const sortingKey = (fn: FunctionModule<DB, "artists">) =>
+    fn<string>("lower", [fn.coalesce("nameForSorting", "name")]);
 
-  const queryParts = [
-    // SELECT and FROM query clauses
-    // we need "sort_key" because it will be used in subsequent queries to fetch the next batch in pagination
-    Prisma.sql`
-      SELECT
-        artist_id,
-        name,
-        ${sortingKey} AS sort_key
-      FROM
-        artists
-    `,
-  ];
+  function createInnerQuery(db: QueryCreator<DB>) {
+    let innerQuery = db
+      .selectFrom("artists")
+      .select(({ fn }) => ["artistId", "name", sortingKey(fn).as("sortKey")]);
 
-  // if artistForCompare is given, we use as "cursor" and fetch db rows relative to this cursor element, with respect to ordering defined by (LOWER(COALESCE(name_for_sorting, name)), artist_id) pair
-  if (artistForCompare) {
-    const { artist_id, sort_key } = artistForCompare;
-
-    if (!ALLOWED_COMPARISON_OPERATORS.includes(direction)) {
-      throw Error(`Operator ${direction} is not allowed in this context!`); // SHOULD NOT HAPPEN and is in fact guaranteed by typescript. If happens though in runtime, skipping this check might lead to SQL injection attacks below, since we use Prisma.raw
+    if (artistForCompare) {
+      innerQuery = innerQuery.where(({ eb, fn }) =>
+        eb(
+          eb.refTuple(sortingKey(fn), "artistId"),
+          comparisonOperator,
+          eb.tuple(artistForCompare.sortKey, artistForCompare.artistId),
+        ),
+      );
     }
 
-    // note that ::text casting is necessary, because in db artist_id's type is uuid, while artistForCompare.artist_id is a string
-    queryParts.push(
-      Prisma.sql`
-          WHERE
-            (${sortingKey}, artist_id::text) ${Prisma.raw(direction)} (${sort_key}, ${artist_id})
-        `,
-    );
+    const innerQueryOrderDirection =
+      comparisonOperator === COMPARISON_OPERATORS.SMALLER_THAN ||
+      comparisonOperator === COMPARISON_OPERATORS.SMALLER_OR_EQUAL_THAN
+        ? "desc"
+        : "asc";
+
+    return innerQuery
+      .orderBy("sortKey", innerQueryOrderDirection)
+      .orderBy("artistId", innerQueryOrderDirection)
+      .limit(batchSize);
   }
-
-  // if we fetch previous rows, we need to reverse sorting order, to get a correct batch of records just preceding given "cursor" element
-  const innerQueryOrderDirection =
-    direction === SMALLER_THAN || direction === SMALLER_OR_EQUAL_THAN
-      ? "DESC"
-      : "ASC";
-
-  queryParts.push(
-    Prisma.sql`
-      ${orderByClause(innerQueryOrderDirection)}
-      LIMIT ${batchSize}
-    `,
-  );
-
-  let query = Prisma.sql`${Prisma.join(queryParts, " ")}`;
 
   // if we fetched previous results, we need to reverse result again, to get them in correct logical order in the end
-  if (direction === SMALLER_OR_EQUAL_THAN) {
-    query = Prisma.sql`
-    SELECT * FROM
-      (${query})
-    AS page
-    ${orderByClause("ASC")}
-  `;
+  if (comparisonOperator === COMPARISON_OPERATORS.SMALLER_OR_EQUAL_THAN) {
+    return client
+      .with("artists", createInnerQuery)
+      .selectFrom("artists")
+      .selectAll()
+      .orderBy("sortKey")
+      .orderBy("artistId")
+      .execute();
   }
 
-  return client.$queryRaw(query);
-
-  function orderByClause(orderDirection: "ASC" | "DESC") {
-    return Prisma.raw(`
-      ORDER BY
-        sort_key ${orderDirection},
-        artist_id::text ${orderDirection}
-    `);
-  }
+  return createInnerQuery(client).execute();
 };
 
 const fetchNextOrPrevArtist = async ({
@@ -150,7 +124,10 @@ const fetchNextOrPrevArtist = async ({
 
   return fetchArtistsBatch({
     artistForCompare: artist,
-    direction: type === "next" ? LARGER_THAN : SMALLER_THAN,
+    comparisonOperator:
+      type === "next"
+        ? COMPARISON_OPERATORS.LARGER_THAN
+        : COMPARISON_OPERATORS.SMALLER_THAN,
     batchSize: 1,
   }).then((result) => result.at(0));
 };
@@ -171,7 +148,7 @@ const getArtistsBySubstringQuery = async (
 ): Promise<QueriedArtist[]> => {
   const searchTerm = `%${query}%`;
 
-  const artistsDirectlyByName = await client.$queryRaw<
+  const artistsDirectlyByName = await prismaClient.$queryRaw<
     QueriedArtist[]
   >(Prisma.sql`
     SELECT
@@ -193,7 +170,9 @@ const getArtistsBySubstringQuery = async (
     ? Prisma.sql`AND artist_id::text NOT IN (${Prisma.join(artistIdsObtained)})`
     : Prisma.sql``;
 
-  const artistsByAltName = await client.$queryRaw<QueriedArtist[]>(Prisma.sql`
+  const artistsByAltName = await prismaClient.$queryRaw<
+    QueriedArtist[]
+  >(Prisma.sql`
     SELECT
       name_id AS id, name
     FROM
@@ -220,7 +199,7 @@ const getArtistsByFuzzySearch = async (
     ? Prisma.sql`AND artist_id::text NOT IN (${Prisma.join(artistIdsToExclude)})`
     : Prisma.sql``;
 
-  const artistsDirectlyByName = await client.$queryRaw<
+  const artistsDirectlyByName = await prismaClient.$queryRaw<
     QueriedArtist[]
   >(Prisma.sql`
     SELECT
@@ -246,7 +225,9 @@ const getArtistsByFuzzySearch = async (
       ? Prisma.sql`AND artist_id::text NOT IN (${Prisma.join(altNameQueryArtistIdsToExclude)})`
       : Prisma.sql``;
 
-  const artistsByAltName = await client.$queryRaw<QueriedArtist[]>(Prisma.sql`
+  const artistsByAltName = await prismaClient.$queryRaw<
+    QueriedArtist[]
+  >(Prisma.sql`
     SELECT
       name_id AS id, name
     FROM
