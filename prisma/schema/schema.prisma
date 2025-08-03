@@ -6,6 +6,13 @@ generator client {
   output   = "../generated"
 }
 
+generator kysely {
+    provider = "prisma-kysely"
+    output = "../../src/types/db"
+    fileName = "database.ts"
+    camelCase = true
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
