@@ -4,7 +4,7 @@ model MusicalEntry {
   originalReleaseDate   String? @map("original_release_date")
   comment               String?
   discogsUrl            String? @map("discogs_url")
-  partOfQueenCollection Boolean @default(false)
+  partOfQueenCollection Boolean @default(false) @map("part_of_queen_collection")
   relationToQueen       String? @map("relation_to_queen")
 
   parentEntries ParentMusicalEntry[] @relation("ParentEntry")
