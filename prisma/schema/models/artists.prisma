@@ -1,25 +1,25 @@
 model Artist {
-  id                String                  @id @default(dbgenerated("gen_random_uuid()")) @map("artist_id") @db.Uuid
+  id                String     @id @default(dbgenerated("gen_random_uuid()")) @map("artist_id") @db.Uuid
   name              String
-  nameForSorting    String?                 @map("name_for_sorting")
-  parentArtists     ParentArtist[]          @relation("ParentArtist")
-  childArtists      ParentArtist[]          @relation("ChildArtist")
-  alternativeNames  AlternativeArtistName[]
-  partOfQueenFamily Boolean                 @default(false) @map("part_of_queen_family")
+  nameForSorting    String?    @map("name_for_sorting")
+  partOfQueenFamily Boolean    @default(false) @map("part_of_queen_family")
   type              ArtistType
 
-  @@index([name])
+  parentArtists ParentArtist[] @relation("ParentArtist")
+  childArtists  ParentArtist[] @relation("ChildArtist")
+
+  alternativeNames AlternativeArtistName[]
+  entries          EntryArtist[]
 
   @@map("artists")
 }
 
 model AlternativeArtistName {
-  id       String @id @default(dbgenerated("gen_random_uuid()")) @map("name_id") @db.Uuid
-  name     String
-  artist   Artist @relation(fields: [artistId], references: [id])
-  artistId String @map("artist_id") @db.Uuid
-
-  @@index([name])
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @map("name_id") @db.Uuid
+  name        String
+  artist      Artist        @relation(fields: [artistId], references: [id])
+  artistId    String        @map("artist_id") @db.Uuid
+  EntryArtist EntryArtist[]
 
   @@map("alternative_artist_names")
 }
