@@ -27,7 +27,7 @@ BEGIN
         RAISE NOTICE '%',
 			add_query_id(
 				format(
-					'Automatically trimmed leading/trailing spaces from "name" of artist "%s". Original: "%s", Corrected: "%s"',
+					'Automatically trimmed leading/trailing spaces from "name" of artist "%s". Original: "%s", Corrected: "%s".',
 				 	NEW.artist_id,
 				 	NEW.name,
 				 	name_trimmed
@@ -44,7 +44,7 @@ BEGIN
 			RAISE NOTICE '%',
 				add_query_id(
 					format(
-						'Automatically trimmed leading/trailing spaces from "name for sorting" of artist "%s". Original: "%s", Corrected: "%s"',
+						'Automatically trimmed leading/trailing spaces from "name for sorting" of artist "%s". Original: "%s", Corrected: "%s".',
 					 	NEW.artist_id,
 					 	NEW.name_for_sorting,
 					 	name_for_sorting_trimmed
