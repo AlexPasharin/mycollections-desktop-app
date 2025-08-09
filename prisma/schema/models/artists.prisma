@@ -17,18 +17,22 @@ model Artist {
 model AlternativeArtistName {
   id          String        @id @default(dbgenerated("gen_random_uuid()")) @map("name_id") @db.Uuid
   name        String
-  artist      Artist        @relation(fields: [artistId], references: [id])
   artistId    String        @map("artist_id") @db.Uuid
+
+  artist      Artist        @relation(fields: [artistId], references: [id])
+
   EntryArtist EntryArtist[]
 
   @@map("alternative_artist_names")
+  @@unique([name, artistId])
 }
 
 model ParentArtist {
-  parentArtist   Artist @relation("ParentArtist", fields: [parentArtistId], references: [id])
   parentArtistId String @map("parent_artist_id") @db.Uuid
-  childArtist    Artist @relation("ChildArtist", fields: [childArtistId], references: [id])
   childArtistId  String @map("child_artist_id") @db.Uuid
+
+  parentArtist   Artist @relation("ParentArtist", fields: [parentArtistId], references: [id])
+  childArtist    Artist @relation("ChildArtist", fields: [childArtistId], references: [id])
 
   @@id([parentArtistId, childArtistId])
   @@map("parent_artists")
