@@ -31,16 +31,21 @@ export default client;
 
 const noticeMessageWithQueryIdRegEx = /^id:(?<queryId>[^:]+):(?<notice>.+)$/;
 
+export type QueryBuilder<T> = (kyselyClient: Kysely<DB>) => {
+  execute: () => Promise<T>;
+};
+
 /**
- * Executes query given by queryBuilder function inside a transaction listening to notifications that DB raises with RAISE NOTICE
+ * Executes given queries (or one query) inside a transaction (in order given by array of queries) listening to notifications that DB raises with RAISE NOTICE
+ * Also accepts just one query, which is treated as an array of one value only
  * Assumes notifications we want to catch are constructed using "add_query_id" function defined in the database (see migration "20250806172817_artists_validation_trigger")
  *
- * @param queryBuilder function of kysely client that returns executable kysely query with result of type T
+ * @param queries array of functions, each function takes kysely client and returns executable kysely query with result of type T. Alternatively can be a single function
  * @returns result of query execution and array of caught notifications packed in an object
  */
 export const withDBMessenger = async <T>(
-  queryBuilder: (kyselyClient: Kysely<DB>) => { execute: () => Promise<T> },
-): Promise<{ result: T; notifications: string[] }> => {
+  queries: QueryBuilder<T> | QueryBuilder<T>[],
+): Promise<{ results: T[]; notifications: string[] }> => {
   const queryId = uuidv4();
   const notifications: string[] = [];
 
@@ -56,13 +61,21 @@ export const withDBMessenger = async <T>(
 
   DBMessenger.on(noticeEvent, noticeListener);
 
-  const result = await client.transaction().execute(async (trx) => {
+  if (!Array.isArray(queries)) {
+    queries = [queries];
+  }
+
+  const results: T[] = [];
+
+  await client.transaction().execute(async (trx) => {
     await sql`SET app.query_id = ${sql.raw(`'${queryId}'`)}`.execute(trx);
 
-    return queryBuilder(trx).execute();
+    for (const query of queries) {
+      results.push(await query(trx).execute());
+    }
   });
 
   DBMessenger.off(noticeEvent, noticeListener);
 
-  return { result, notifications };
+  return { results, notifications };
 };
