@@ -33,5 +33,5 @@
       "@/utils/*": ["src/utils/*"]
     }
   },
-  "exclude": [".webpack/**/*", "prisma/generated/**/*"]
+  "exclude": [".webpack/**/*", "prisma/generated/**/*", "scripts/**/*"]
 }
