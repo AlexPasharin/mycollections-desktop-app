@@ -15,6 +15,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE PROCEDURE raise_notice_with_query_id(message_txt TEXT, VARIADIC format_args TEXT[]) AS $$
+DECLARE
+	formatted_message TEXT;
+BEGIN
+	EXECUTE 'SELECT format($1, VARIADIC $2)'
+	INTO formatted_message
+	USING message_txt, format_args;
+
+	RAISE NOTICE '%', add_query_id(formatted_message);
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION validate_artist()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -24,15 +36,12 @@ BEGIN
 	name_trimmed := TRIM(NEW.name);
 
     IF NEW.name IS DISTINCT FROM name_trimmed THEN
-        RAISE NOTICE '%',
-			add_query_id(
-				format(
-					'Automatically trimmed leading/trailing spaces from "name" of artist "%s". Original: "%s", Corrected: "%s".',
-				 	NEW.artist_id,
-				 	NEW.name,
-				 	name_trimmed
-				)
-			);
+		CALL raise_notice_with_query_id(
+			'Automatically trimmed leading/trailing spaces from "name" of artist "%s". Original: "%s", Corrected: "%s".',
+			NEW.artist_id::text,
+			NEW.name,
+			name_trimmed
+		);
 
 		NEW.name := name_trimmed;
     END IF;
@@ -41,15 +50,12 @@ BEGIN
 		name_for_sorting_trimmed := TRIM(NEW.name_for_sorting);
 
 		IF NEW.name_for_sorting IS DISTINCT FROM name_for_sorting_trimmed THEN
-			RAISE NOTICE '%',
-				add_query_id(
-					format(
-						'Automatically trimmed leading/trailing spaces from "name for sorting" of artist "%s". Original: "%s", Corrected: "%s".',
-					 	NEW.artist_id,
-					 	NEW.name_for_sorting,
-					 	name_for_sorting_trimmed
-					)
-				);
+			CALL raise_notice_with_query_id(
+				'Automatically trimmed leading/trailing spaces from "name for sorting" of artist "%s". Original: "%s", Corrected: "%s".',
+				NEW.artist_id::text,
+				NEW.name_for_sorting,
+				name_for_sorting_trimmed
+			);
 
 			NEW.name_for_sorting := name_for_sorting_trimmed;
 		END IF;
