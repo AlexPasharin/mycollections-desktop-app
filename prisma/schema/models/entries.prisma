@@ -46,9 +46,8 @@ model EntryArtist {
   entry  MusicalEntry @relation(fields: [entryId], references: [id])
   artist Artist       @relation(fields: [artistId], references: [id])
 
-  entryArtistNameId   String?                @map("entry_artist_name") @db.Uuid
-  entryArtistName     AlternativeArtistName? @relation(fields: [entryArtistNameId], references: [id]) // in case entry's artist name is marked as one of artist's alternative names
-  isEntriesMainArtist Boolean?               @default(true) @map("is_entries_main_artist") // indicates if this is entry's "main artist"
+  entryArtistName     String?  @map("entry_artist_name") @db.Uuid // in case entry's artist name is marked as one of artist's alternative names
+  isEntriesMainArtist Boolean? @default(true) @map("is_entries_main_artist") // indicates if this is entry's "main artist"
 
   @@id([entryId, artistId])
   @@map("musical_entries_artists")
