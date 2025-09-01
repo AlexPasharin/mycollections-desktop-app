@@ -4,6 +4,9 @@ model Artist {
   nameForSorting    String?    @map("name_for_sorting")
   partOfQueenFamily Boolean    @default(false) @map("part_of_queen_family")
   type              ArtistType
+  // below is the only way that was found working that generates type or otherNames as string[] | null, as it needs to be (prisma does not support optional array fields notation, but does generate nullable field on migration)
+
+  /// @kyselyType(null | string)
   otherNames        String[]   @map("other_names")
 
   parentArtists ParentArtist[] @relation("ParentArtist")

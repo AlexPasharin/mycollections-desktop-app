@@ -4,7 +4,14 @@ import importPlugin from "eslint-plugin-import";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: [".webpack", "out", "prisma/generated"] },
+  {
+    ignores: [
+      ".webpack",
+      "out",
+      "prisma/generated",
+      "src/types/db/database.ts",
+    ],
+  },
   eslint.configs.recommended,
   tseslint.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
