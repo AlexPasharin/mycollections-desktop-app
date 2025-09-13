@@ -4,14 +4,25 @@
 -- otherwise returns null
 CREATE OR REPLACE FUNCTION to_date_if_valid(date_str TEXT, format_str TEXT = 'YYYY-MM-DD')
 RETURNS DATE AS $$
-DECLARE
-  date_to_return DATE;
 BEGIN
-  date_to_return := to_date(date_str, format_str);
-  RETURN date_to_return;
+  RETURN to_date(date_str, format_str);
 EXCEPTION WHEN OTHERS THEN
   RETURN null;
 END;
+$$ LANGUAGE plpgsql;
+
+-- adds formatted message to given list of messages, replacing all line break chars with empty char
+CREATE OR REPLACE FUNCTION add_formatted_message(messages TEXT[], new_message TEXT, VARIADIC format_args TEXT[])
+RETURNS TEXT[] AS $$
+DECLARE
+	formatted_message TEXT;
+BEGIN
+	EXECUTE 'SELECT format($1, VARIADIC $2)'
+	INTO formatted_message
+	USING new_message, format_args;
+
+	RETURN array_append(messages, replace(formatted_message, CHR(10), ' '));
+END
 $$ LANGUAGE plpgsql;
 
 -- validates a string represents a valid date in format 'YYYY-(M?)M-(D?)D', with leading zeroes in month and day permitted to be omitted
@@ -32,20 +43,26 @@ DECLARE
 BEGIN
 	split_text := string_to_array(text, '-');
 
+	IF length(text) = 0 OR array_length(split_text, 1) > 3 THEN
+		errors := add_formatted_message(errors, 'Value "%s" is invalid: needs to be in format YYYY-M(M)-D(D) where M and D parts are optional', text);
+
+		RETURN;
+	END IF;
+
 	year := split_text[1];
 	month := split_text[2];
 	day := split_text[3];
 
 	IF NOT year ~ '^(19|20)\d\d$' THEN
-		errors := array_append(errors, format('Value "%s" for year is not valid, should be a number in range 1900-2099.', year));
+		errors := add_formatted_message(errors, 'Value "%s" for year is not valid, should be a number in range 1900-2099.', year);
 	END IF;
 
 	IF NOT month ~ '^((0?[1-9])|(1[0-2]))$' THEN
-		errors := array_append(errors, format('Value "%s" for month is not valid, should be a number in range 1-12, with leading zero permissible for values 1-9.', month));
+		errors := add_formatted_message(errors, 'Value "%s" for month is not valid, should be a number in range 1-12, with leading zero permissible for values 1-9.', month);
 	END IF;
 
 	IF NOT day ~ '^((0?[1-9])|((1|2)[0-9])|(3[0-1]))$' THEN
-		errors := array_append(errors, format('Value "%s" for day is not valid, should be a number in range 1-31, with leading zero permissible for values 1-9.', day));
+		errors := add_formatted_message(errors, 'Value "%s" for day is not valid, should be a number in range 1-31, with leading zero permissible for values 1-9.', day);
 	END IF;
 
 	IF errors IS NOT NULL THEN
@@ -59,10 +76,12 @@ BEGIN
 	represented_date := to_date_if_valid(validated_date_str);
 
 	IF represented_date IS NULL THEN
-		errors := array_append(errors, format('Value "%s" does not represent a correct date.', validated_date_str));
+		errors := add_formatted_message(errors, 'Value "%s" does not represent a valid existing date.', validated_date_str);
 	ELSIF NOT allow_future_dates AND represented_date > CURRENT_DATE THEN
-		errors := array_append(errors, format('Value "%s" represents a date in the future.', validated_date_str));
+		errors := add_formatted_message(errors, 'Value "%s" represents a date in the future.', validated_date_str);
 	END IF;
+
+	RAISE NOTICE '%', represented_date;
 
 	IF errors IS NOT NULL THEN
 		validated_date_str := NULL;
