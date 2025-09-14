@@ -30,24 +30,26 @@ BEGIN
 			);
 		END IF;
 
-		IF has_key(other_names_json, other_name_trimmed) THEN
-			CALL raise_notice_with_query_id('Duplicate "other_name" "%s" is skipped', other_name_trimmed);
-		ELSE
-			other_names_json := set_jsonb_value(other_names_json, other_name_trimmed, 'true');
-			other_names_trimmed := array_append(other_names_trimmed, other_name_trimmed);
-		END IF;
+    IF has_key(other_names_json, other_name_trimmed) THEN
+      CALL raise_notice_with_query_id('Duplicate "other_name" "%s" is skipped', other_name_trimmed);
+    ELSE
+      other_names_json := set_jsonb_value(other_names_json, other_name_trimmed, 'true');
+      other_names_trimmed := array_append(other_names_trimmed, other_name_trimmed);
+    END IF;
 	END LOOP;
 
-  	IF NEW.name IS DISTINCT FROM name_trimmed THEN
-		CALL raise_notice_with_query_id(
-			'Automatically trimmed leading/trailing spaces from "name" of artist "%s". Original: "%s", Corrected: "%s".',
-			NEW.artist_id::text,
-			NEW.name,
-			name_trimmed
-		);
+  NEW.other_names := other_names_trimmed;
 
-		NEW.name := name_trimmed;
-  	END IF;
+  IF NEW.name IS DISTINCT FROM name_trimmed THEN
+  CALL raise_notice_with_query_id(
+    'Automatically trimmed leading/trailing spaces from "name" of artist "%s". Original: "%s", Corrected: "%s".',
+    NEW.artist_id::text,
+    NEW.name,
+    name_trimmed
+  );
+
+  NEW.name := name_trimmed;
+  END IF;
 
 	IF NEW.name_for_sorting IS NOT NULL THEN
 		name_for_sorting_trimmed := TRIM(NEW.name_for_sorting);
