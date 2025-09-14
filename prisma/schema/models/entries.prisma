@@ -1,19 +1,21 @@
 model MusicalEntry {
-  id                    String  @id @default(dbgenerated("gen_random_uuid()")) @map("entry_id") @db.Uuid
-  mainName              String  @map("main_name")
-  originalReleaseDate   String? @map("original_release_date")
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @map("entry_id") @db.Uuid
+  mainName              String   @map("main_name")
+  originalReleaseDate   String?  @map("original_release_date")
   comment               String?
-  discogsUrl            String? @map("discogs_url")
-  partOfQueenCollection Boolean @default(false) @map("part_of_queen_collection")
-  relationToQueen       String? @map("relation_to_queen")
+  discogsUrl            String?  @map("discogs_url")
+  partOfQueenCollection Boolean  @default(false) @map("part_of_queen_collection")
+  relationToQueen       String?  @map("relation_to_queen")
+  // below is the only way that was found working that generates type or otherNames as string[] | null, as it needs to be (prisma does not support optional array fields notation, but does generate nullable field on migration)
+  /// @kyselyType(null | string)
+  alternativeNames      String[] @map("alternative_names")
 
   parentEntries ParentMusicalEntry[] @relation("ParentEntry")
   childEntries  ParentMusicalEntry[] @relation("ChildEntry")
 
-  artists          EntryArtist[]
-  tags             MusicalEntryTag[]
-  types            TypeOfMusicalEntry[]
-  alternativeNames AlternativeMusicalEntryName[]
+  artists EntryArtist[]
+  tags    MusicalEntryTag[]
+  types   TypeOfMusicalEntry[]
 
   @@map("musical_entries")
 }
@@ -62,13 +64,4 @@ model ParentMusicalEntry {
 
   @@id([parentEntryId, childEntryId])
   @@map("parent_musical_entries")
-}
-
-model AlternativeMusicalEntryName {
-  id      String       @id @default(dbgenerated("gen_random_uuid()")) @map("name_id") @db.Uuid
-  name    String
-  entry   MusicalEntry @relation(fields: [entryId], references: [id])
-  entryId String       @map("entry_id") @db.Uuid
-
-  @@map("alternative_musical_entry_names")
 }
