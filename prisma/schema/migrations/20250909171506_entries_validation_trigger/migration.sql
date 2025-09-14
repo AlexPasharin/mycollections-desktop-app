@@ -27,12 +27,12 @@ $$ LANGUAGE plpgsql;
 
 -- validates a string represents a valid date in format 'YYYY-(M?)M-(D?)D', with leading zeroes in month and day permitted to be omitted
 -- if string represents a valid date, returns same date in a strict format 'YYYY-MM-DD' with month and day left-padded with zero, if necessary
--- if string does not represent a valid date, return an array of validation errors
+-- if string does not represent a valid date, return an array of validation validation_errors
 CREATE OR REPLACE FUNCTION validate_generalised_date(
 	text TEXT,
 	allow_future_dates BOOLEAN = FALSE,
 	OUT validated_date_str TEXT,
-	OUT errors TEXT[]
+	OUT validation_errors TEXT[]
 ) AS $$
 DECLARE
 	split_text TEXT[];
@@ -44,7 +44,7 @@ BEGIN
 	split_text := string_to_array(text, '-');
 
 	IF length(text) = 0 OR array_length(split_text, 1) > 3 THEN
-		errors := add_formatted_message(errors, 'Value "%s" is invalid: needs to be in format YYYY-M(M)-D(D) where M and D parts are optional', text);
+		validation_errors := add_formatted_message(validation_errors, 'Value "%s" is invalid: needs to be in format YYYY-M(M)-D(D) where M and D parts are optional', text);
 
 		RETURN;
 	END IF;
@@ -54,18 +54,18 @@ BEGIN
 	day := split_text[3];
 
 	IF NOT year ~ '^(19|20)\d\d$' THEN
-		errors := add_formatted_message(errors, 'Value "%s" for year is not valid, should be a number in range 1900-2099.', year);
+		validation_errors := add_formatted_message(validation_errors, 'Value "%s" for year is not valid, should be a number in range 1900-2099.', year);
 	END IF;
 
 	IF NOT month ~ '^((0?[1-9])|(1[0-2]))$' THEN
-		errors := add_formatted_message(errors, 'Value "%s" for month is not valid, should be a number in range 1-12, with leading zero permissible for values 1-9.', month);
+		validation_errors := add_formatted_message(validation_errors, 'Value "%s" for month is not valid, should be a number in range 1-12, with leading zero permissible for values 1-9.', month);
 	END IF;
 
 	IF NOT day ~ '^((0?[1-9])|((1|2)[0-9])|(3[0-1]))$' THEN
-		errors := add_formatted_message(errors, 'Value "%s" for day is not valid, should be a number in range 1-31, with leading zero permissible for values 1-9.', day);
+		validation_errors := add_formatted_message(validation_errors, 'Value "%s" for day is not valid, should be a number in range 1-31, with leading zero permissible for values 1-9.', day);
 	END IF;
 
-	IF errors IS NOT NULL THEN
+	IF validation_errors IS NOT NULL THEN
 		RETURN;
 	END IF;
 
@@ -76,15 +76,16 @@ BEGIN
 	represented_date := to_date_if_valid(validated_date_str);
 
 	IF represented_date IS NULL THEN
-		errors := add_formatted_message(errors, 'Value "%s" does not represent a valid existing date.', validated_date_str);
+		validation_errors := add_formatted_message(validation_errors, 'Value "%s" does not represent a valid existing date.', validated_date_str);
 	ELSIF NOT allow_future_dates AND represented_date > CURRENT_DATE THEN
-		errors := add_formatted_message(errors, 'Value "%s" represents a date in the future.', validated_date_str);
+		validation_errors := add_formatted_message(validation_errors, 'Value "%s" represents a date in the future.', validated_date_str);
 	END IF;
 
 	RAISE NOTICE '%', represented_date;
 
-	IF errors IS NOT NULL THEN
+	IF validation_errors IS NOT NULL THEN
 		validated_date_str := NULL;
 	END IF;
 END;
 $$ LANGUAGE plpgsql;
+
