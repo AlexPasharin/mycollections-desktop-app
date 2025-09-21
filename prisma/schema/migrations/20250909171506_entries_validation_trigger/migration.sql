@@ -89,8 +89,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- This migration had to be generated empty with --create-only command and populated manually, because it's content cannot be expressed in Prisma schema
-
 CREATE OR REPLACE FUNCTION validate_musical_entry()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -103,18 +101,20 @@ DECLARE
 	alt_name_trimmed TEXT;
 	alt_names_dict JSONB;
 	alt_names_trimmed TEXT[];
+	comment_trimmed TEXT;
+	discogs_url_trimmed TEXT;
 BEGIN
 	main_name_trimmed := TRIM(NEW.main_name);
 
-	IF NEW.main_name IS DISTINCT FROM TRIM(main_name_trimmed) THEN
+	IF NEW.main_name IS DISTINCT FROM main_name_trimmed THEN
       	CALL raise_notice_with_query_id(
             'Automatically trimmed leading/trailing spaces from "main name" of entry "%s". Original: "%s", Corrected: "%s".',
-            NEW.name_id,
+            NEW.entry_id::TEXT,
             NEW.main_name,
-            TRIM(main_name_trimmed)
+            main_name_trimmed
        	);
 
-		NEW.main_name:=  TRIM(main_name_trimmed);
+		NEW.main_name:= main_name_trimmed;
     END IF;
 
 	FOREACH alt_name IN ARRAY COALESCE(NEW.alternative_names, '{}')
@@ -122,18 +122,13 @@ BEGIN
 		alt_name_trimmed := TRIM(alt_name);
 
 		IF alt_name_trimmed = main_name_trimmed THEN
-			validation_errors := add_formatted_message(validation_errors, '"Alternative name" of entry cannot be same as its main name. Entry "%s" with id "%s", all names are trimmed.', main_name_trimmed, NEW.entry_id::TEXT);
-			EXIT;
-		END IF;
-
-		IF alt_name_trimmed IS DISTINCT FROM alt_name THEN
-			CALL raise_notice_with_query_id(
-				'Automatically trimmed leading/trailing spaces from "alternative_name" of entry "%s", id "%s". Original: "%s", Corrected: "%s".',
+			validation_errors := add_formatted_message(
+				validation_errors,
+				'"Alternative name" of entry cannot be same as its main name. Entry "%s" with id "%s", all names are trimmed.',
 				main_name_trimmed,
-				NEW.entry_id::TEXT,
-				alt_name,
-				alt_name_trimmed
+				NEW.entry_id::TEXT
 			);
+			EXIT;
 		END IF;
 
 		IF has_key(alt_names_dict, alt_name_trimmed) THEN
@@ -141,6 +136,16 @@ BEGIN
 		ELSE
 			alt_names_dict := set_jsonb_value(alt_names_dict, alt_name_trimmed, 'true');
 			alt_names_trimmed := array_append(alt_names_trimmed, alt_name_trimmed);
+
+			IF alt_name_trimmed IS DISTINCT FROM alt_name THEN
+				CALL raise_notice_with_query_id(
+					'Automatically trimmed leading/trailing spaces from "alternative_name" of entry "%s", id "%s". Original: "%s", Corrected: "%s".',
+					main_name_trimmed,
+					NEW.entry_id::TEXT,
+					alt_name,
+					alt_name_trimmed
+				);
+			END IF;
 		END IF;
 	END LOOP;
 
@@ -159,7 +164,7 @@ BEGIN
 			CALL raise_notice_with_query_id(
 				'Automatically formatted "original_release_date" of entry "%s", id "%s" (trimmed and added leading zeroes to month and day, if necessary). Original: "%s", Corrected: "%s".',
 				main_name_trimmed,
-				NEW.entry_id,
+				NEW.entry_id::TEXT,
 				NEW.original_release_date,
 				trimmed_release_date
 	        );
@@ -168,8 +173,43 @@ BEGIN
 		END IF;
 	END IF;
 
-	--commment!
-	--discogs url!
+	comment_trimmed := TRIM(NEW.comment);
+
+	IF NEW.comment IS DISTINCT FROM comment_trimmed THEN
+      	CALL raise_notice_with_query_id(
+            'Automatically trimmed leading/trailing spaces from "comment" of entry "%s", id "%s". Original: "%s", Corrected: "%s".',
+            NEW.main_name,
+			NEW.name_id,
+			NEW.comment,
+            comment_trimmed
+       	);
+
+		NEW.comment := comment_trimmed;
+    END IF;
+
+	discogs_url_trimmed := TRIM(NEW.discogs_url);
+
+	IF NOT discogs_url_trimmed ~ '^https://www.discogs.com/(master|release)/\d+-.' THEN
+		validation_errors := add_formatted_message(
+			validation_errors,
+			'(Trimmed) value "%s" for discogs_url of entry "%s", id "%s" is not valid - must be of form "https://www.discogs.com/(master or release)/(some numbers)-(arbitrary text)"',
+			discogs_url_trimmed
+			NEW.main_name,
+			NEW.entry_id::TEXT,
+
+		);
+	ELSIF discogs_url_trimmed IS DISTINCT FROM NEW.discogs_url THEN
+		CALL raise_notice_with_query_id(
+            'Automatically trimmed leading/trailing spaces from "discogs_url" of entry "%s", id "%s". Original: "%s", Corrected: "%s".',
+            NEW.main_name,
+			NEW.name_id,
+			NEW.discogs_url,
+            discogs_url_trimmed
+       	);
+
+		NEW.comment := comment_trimmed;
+	END IF;
+
 	--relation_to_queen and part of queen_collection!
 
     RETURN NEW;
