@@ -103,6 +103,7 @@ DECLARE
 	alt_names_trimmed TEXT[];
 	comment_trimmed TEXT;
 	discogs_url_trimmed TEXT;
+	relation_to_queen_trimmed TEXT;
 BEGIN
 	main_name_trimmed := TRIM(NEW.main_name);
 
@@ -192,25 +193,45 @@ BEGIN
 	IF NOT discogs_url_trimmed ~ '^https://www.discogs.com/(master|release)/\d+-.' THEN
 		validation_errors := add_formatted_message(
 			validation_errors,
-			'(Trimmed) value "%s" for discogs_url of entry "%s", id "%s" is not valid - must be of form "https://www.discogs.com/(master or release)/(some numbers)-(arbitrary text)"',
-			discogs_url_trimmed
-			NEW.main_name,
-			NEW.entry_id::TEXT,
-
+			'(Trimmed) value "%s" for "discogs_url" of entry "%s", id "%s", is not valid - must be of form "https://www.discogs.com/(master or release)/(some numbers)-(arbitrary text)"',
+			discogs_url_trimmed,
+			main_name_trimmed,
+			NEW.entry_id::TEXT
 		);
 	ELSIF discogs_url_trimmed IS DISTINCT FROM NEW.discogs_url THEN
 		CALL raise_notice_with_query_id(
             'Automatically trimmed leading/trailing spaces from "discogs_url" of entry "%s", id "%s". Original: "%s", Corrected: "%s".',
-            NEW.main_name,
-			NEW.name_id,
+            main_name_trimmed,
+			NEW.entry_id::TEXT,
 			NEW.discogs_url,
             discogs_url_trimmed
        	);
 
-		NEW.comment := comment_trimmed;
+		NEW.discogs_url := discogs_url_trimmed;
 	END IF;
 
-	--relation_to_queen and part of queen_collection!
+	relation_to_queen_trimmed := TRIM(NEW.relation_to_queen);
+
+	IF NOT NEW.part_of_queen_collection AND relation_to_queen_trimmed IS NOT NULL THEN
+		validation_errors := add_formatted_message(
+			validation_errors,
+			'Value for "relation_to_queen" cannot be given if "part_of_queen_collection" is false! Entry "%s" with id "%s"',
+			main_name_trimmed,
+			NEW.entry_id::TEXT
+		);
+	ELSIF relation_to_queen_trimmed IS DISTINCT FROM NEW.relation_to_queen THEN
+		CALL raise_notice_with_query_id(
+            'Automatically trimmed leading/trailing spaces from "relation_to_queen" of entry "%s", id "%s". Original: "%s", Corrected: "%s".',
+            main_name_trimmed,
+			NEW.entry_id::TEXT,
+			NEW.relation_to_queen,
+            relation_to_queen_trimmed
+       	);
+
+		NEW.relation_to_queenl := relation_to_queen_trimmed;
+	END IF;
+
+	--entry_artists!
 
     RETURN NEW;
 END;
@@ -220,3 +241,4 @@ CREATE OR REPLACE TRIGGER validate_musical_entry
 BEFORE INSERT OR UPDATE ON musical_entries
 FOR EACH ROW
 EXECUTE FUNCTION validate_musical_entry();
+
