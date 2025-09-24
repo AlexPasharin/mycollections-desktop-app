@@ -89,6 +89,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION array_of_errors_to_exception(arr TEXT[]) RETURNS VOID AS $$
+BEGIN
+	RAISE EXCEPTION '%', array_to_string(arr, E'\n');
+END
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION validate_musical_entry()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -104,6 +110,7 @@ DECLARE
 	comment_trimmed TEXT;
 	discogs_url_trimmed TEXT;
 	relation_to_queen_trimmed TEXT;
+	artist_relation RECORD;
 BEGIN
 	main_name_trimmed := TRIM(NEW.main_name);
 
@@ -228,10 +235,31 @@ BEGIN
             relation_to_queen_trimmed
        	);
 
-		NEW.relation_to_queenl := relation_to_queen_trimmed;
+		NEW.relation_to_queen := relation_to_queen_trimmed;
 	END IF;
 
-	--entry_artists!
+	FOR artist_relation IN
+		SELECT a.artist_id, a.part_of_queen_family, a.name
+		FROM musical_entries_artists AS m
+		JOIN artists AS a
+		ON m.artist_id = a.artist_id
+		WHERE entry_id = NEW.entry_id
+		LOOP
+			IF artist_relation.part_of_queen_family AND NOT NEW.part_of_queen_collection THEN
+				validation_errors := add_formatted_message(
+					validation_errors,
+					'Artist "%s" (id "%s") of entry "%s" (id "%s") is a part of Queen family, but entry''s value for "part_of_queen_collection" is false',
+					artist_relation.name,
+					artist_relation.artist_id,
+					main_name_trimmed,
+					NEW.entry_id::TEXT
+				);
+			END IF;
+		END LOOP;
+
+	IF cardinality(validation_errors) > 0 THEN
+		CALL array_of_errors_to_exception(validation_errors);
+	END IF;
 
     RETURN NEW;
 END;
@@ -241,4 +269,6 @@ CREATE OR REPLACE TRIGGER validate_musical_entry
 BEFORE INSERT OR UPDATE ON musical_entries
 FOR EACH ROW
 EXECUTE FUNCTION validate_musical_entry();
+
+
 
