@@ -89,7 +89,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION array_of_errors_to_exception(arr TEXT[]) RETURNS VOID AS $$
+CREATE OR REPLACE PROCEDURE array_of_errors_to_exception(arr TEXT[]) AS $$
 BEGIN
 	RAISE EXCEPTION '%', array_to_string(arr, E'\n');
 END
