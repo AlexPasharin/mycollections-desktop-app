@@ -105,7 +105,7 @@ DECLARE
 	main_name_trimmed TEXT;
 	alt_name TEXT;
 	alt_name_trimmed TEXT;
-	alt_names_dict JSONB;
+	alt_names_dict JSONB = '{}';
 	alt_names_trimmed TEXT[];
 	comment_trimmed TEXT;
 	discogs_url_trimmed TEXT;
@@ -115,15 +115,15 @@ BEGIN
 	main_name_trimmed := TRIM(NEW.main_name);
 
 	IF NEW.main_name IS DISTINCT FROM main_name_trimmed THEN
-      	CALL raise_notice_with_query_id(
-            'Automatically trimmed leading/trailing spaces from "main name" of entry "%s". Original: "%s", Corrected: "%s".',
-            NEW.entry_id::TEXT,
-            NEW.main_name,
-            main_name_trimmed
-       	);
+		CALL raise_notice_with_query_id(
+				'Automatically trimmed leading/trailing spaces from "main name" of entry "%s". Original: "%s", Corrected: "%s".',
+				NEW.entry_id::TEXT,
+				NEW.main_name,
+				main_name_trimmed
+		);
 
 		NEW.main_name:= main_name_trimmed;
-    END IF;
+  END IF;
 
 	FOREACH alt_name IN ARRAY COALESCE(NEW.alternative_names, '{}')
 	LOOP
@@ -140,7 +140,7 @@ BEGIN
 		END IF;
 
 		IF has_key(alt_names_dict, alt_name_trimmed) THEN
-			CALL raise_notice_with_query_id('Dublicate "alternative_name" "%s" is skipped', alt_name_trimmed);
+			CALL raise_notice_with_query_id('Duplicate "alternative_name" "%s" is skipped.', alt_name_trimmed);
 		ELSE
 			alt_names_dict := set_jsonb_value(alt_names_dict, alt_name_trimmed, 'true');
 			alt_names_trimmed := array_append(alt_names_trimmed, alt_name_trimmed);
@@ -162,8 +162,8 @@ BEGIN
 	IF NEW.original_release_date IS NOT NULL THEN
 		trimmed_release_date := TRIM(NEW.original_release_date);
 
-		SELECT validated_date_str, validation_errors AS release_date_validation_errors
-		FROM validate_generalised_date(trimmed_release_date)
+		SELECT release_date_validation_results.validated_date_str, release_date_validation_results.validation_errors
+		FROM validate_generalised_date(trimmed_release_date) AS release_date_validation_results
 		INTO validated_release_date, release_date_validation_errors;
 
 		IF cardinality(release_date_validation_errors) > 0 THEN
@@ -174,8 +174,8 @@ BEGIN
 				main_name_trimmed,
 				NEW.entry_id::TEXT,
 				NEW.original_release_date,
-				trimmed_release_date
-	        );
+				validated_release_date
+	  	);
 
 			NEW.original_release_date = validated_release_date;
 		END IF;
@@ -184,16 +184,16 @@ BEGIN
 	comment_trimmed := TRIM(NEW.comment);
 
 	IF NEW.comment IS DISTINCT FROM comment_trimmed THEN
-      	CALL raise_notice_with_query_id(
-            'Automatically trimmed leading/trailing spaces from "comment" of entry "%s", id "%s". Original: "%s", Corrected: "%s".',
-            NEW.main_name,
-			NEW.name_id,
+		CALL raise_notice_with_query_id(
+			'Automatically trimmed leading/trailing spaces from "comment" of entry "%s", id "%s". Original: "%s", Corrected: "%s".',
+			NEW.main_name,
+			NEW.entry_id::TEXT,
 			NEW.comment,
-            comment_trimmed
-       	);
+			comment_trimmed
+		);
 
 		NEW.comment := comment_trimmed;
-    END IF;
+  END IF;
 
 	discogs_url_trimmed := TRIM(NEW.discogs_url);
 
@@ -222,7 +222,7 @@ BEGIN
 	IF NOT NEW.part_of_queen_collection AND relation_to_queen_trimmed IS NOT NULL THEN
 		validation_errors := add_formatted_message(
 			validation_errors,
-			'Value for "relation_to_queen" cannot be given if "part_of_queen_collection" is false! Entry "%s" with id "%s"',
+			'Value for "relation_to_queen" cannot be given if "part_of_queen_collection" is false! Entry "%s" with id "%s".',
 			main_name_trimmed,
 			NEW.entry_id::TEXT
 		);
@@ -261,7 +261,7 @@ BEGIN
 		CALL array_of_errors_to_exception(validation_errors);
 	END IF;
 
-    RETURN NEW;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
