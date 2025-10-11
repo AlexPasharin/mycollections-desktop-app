@@ -270,5 +270,35 @@ BEFORE INSERT OR UPDATE ON musical_entries
 FOR EACH ROW
 EXECUTE FUNCTION validate_musical_entry();
 
+CREATE OR REPLACE FUNCTION validate_musical_entries_artists_record()
+RETURNS TRIGGER AS $$
+DECLARE
+	artist RECORD;
+	entry RECORD;
+BEGIN
+	SELECT * FROM artists as a
+	WHERE a.artist_id = NEW.artist_id
+	INTO artist;
 
+	SELECT * FROM musical_entries as e
+	WHERE e.entry_id = NEW.entry_id
+	INTO entry;
+
+	IF artist.part_of_queen_family AND NOT entry.part_of_queen_collection THEN
+		RAISE EXCEPTION
+			'Artist "%" (id "%") of entry "%" (id "%") is a part of Queen family, but entry''s value for "part_of_queen_collection" is false',
+			artist.name,
+			artist.artist_id,
+			entry.main_name,
+			entry.entry_id;
+	END IF;
+
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER validate_musical_entries_artists
+BEFORE INSERT OR UPDATE ON musical_entries_artists
+FOR EACH ROW
+EXECUTE FUNCTION validate_musical_entries_artists_record();
 

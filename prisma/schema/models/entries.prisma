@@ -57,10 +57,10 @@ model EntryArtist {
 
 model ParentMusicalEntry {
   parentEntry   MusicalEntry @relation("ParentEntry", fields: [parentEntryId], references: [id])
-  parentEntryId String       @map("parent_artist_id") @db.Uuid
+  parentEntryId String       @map("parent_entry_id") @db.Uuid
 
   childEntry   MusicalEntry @relation("ChildEntry", fields: [childEntryId], references: [id])
-  childEntryId String       @map("child_artist_id") @db.Uuid
+  childEntryId String       @map("child_entry_id") @db.Uuid
 
   @@id([parentEntryId, childEntryId])
   @@map("parent_musical_entries")
