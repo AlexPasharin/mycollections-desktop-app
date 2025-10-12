@@ -207,11 +207,11 @@ BEGIN
 		);
 	ELSIF discogs_url_trimmed IS DISTINCT FROM NEW.discogs_url THEN
 		CALL raise_notice_with_query_id(
-            'Automatically trimmed leading/trailing spaces from "discogs_url" of entry "%s", id "%s". Original: "%s", Corrected: "%s".',
-            main_name_trimmed,
-			NEW.entry_id::TEXT,
-			NEW.discogs_url,
-            discogs_url_trimmed
+        	'Automatically trimmed leading/trailing spaces from "discogs_url" of entry "%s", id "%s". Original: "%s", Corrected: "%s".',
+       	 	main_name_trimmed,
+					NEW.entry_id::TEXT,
+					NEW.discogs_url,
+					discogs_url_trimmed
        	);
 
 		NEW.discogs_url := discogs_url_trimmed;
@@ -299,7 +299,7 @@ BEGIN
 			entry.main_name,
 			entry.entry_id::TEXT,
 			artist.name,
-			artist.artist_id
+			artist.artist_id::TEXT
 		);
 	END IF;
 
