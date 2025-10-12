@@ -48,7 +48,7 @@ model EntryArtist {
   entry  MusicalEntry @relation(fields: [entryId], references: [id])
   artist Artist       @relation(fields: [artistId], references: [id])
 
-  entryArtistName     String?  @map("entry_artist_name") @db.Uuid // in case entry's artist name is marked as one of artist's alternative names
+  entryArtistName     String?  @map("entry_artist_name") // in case entry's artist name is marked as one of artist's "other names"
   isEntriesMainArtist Boolean? @default(true) @map("is_entries_main_artist") // indicates if this is entry's "main artist"
 
   @@id([entryId, artistId])
@@ -57,10 +57,10 @@ model EntryArtist {
 
 model ParentMusicalEntry {
   parentEntry   MusicalEntry @relation("ParentEntry", fields: [parentEntryId], references: [id])
-  parentEntryId String       @map("parent_artist_id") @db.Uuid
+  parentEntryId String       @map("parent_entry_id") @db.Uuid
 
   childEntry   MusicalEntry @relation("ChildEntry", fields: [childEntryId], references: [id])
-  childEntryId String       @map("child_artist_id") @db.Uuid
+  childEntryId String       @map("child_entry_id") @db.Uuid
 
   @@id([parentEntryId, childEntryId])
   @@map("parent_musical_entries")
