@@ -265,16 +265,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER validate_musical_entry
-BEFORE INSERT OR UPDATE ON musical_entries
-FOR EACH ROW
-EXECUTE FUNCTION validate_musical_entry();
-
 CREATE OR REPLACE FUNCTION validate_musical_entries_artists_record()
 RETURNS TRIGGER AS $$
 DECLARE
 	artist RECORD;
 	entry RECORD;
+	validation_errors TEXT[];
 BEGIN
 	SELECT * FROM artists as a
 	WHERE a.artist_id = NEW.artist_id
@@ -285,12 +281,30 @@ BEGIN
 	INTO entry;
 
 	IF artist.part_of_queen_family AND NOT entry.part_of_queen_collection THEN
-		RAISE EXCEPTION
-			'Artist "%" (id "%") of entry "%" (id "%") is a part of Queen family, but entry''s value for "part_of_queen_collection" is false',
+		validation_errors := add_formatted_message(
+			validation_errors,
+			'Artist "%s" (id "%s") of entry "%s" (id "%s") is a part of Queen family, but entry''s value for "part_of_queen_collection" is false.',
 			artist.name,
-			artist.artist_id,
+			artist.artist_id::TEXT,
 			entry.main_name,
-			entry.entry_id;
+			entry.entry_id::TEXT
+		);
+	END IF;
+
+	IF NEW.entry_artist_name IS NOT NULL AND artist.other_names IS NOT NULL AND NOT NEW.entry_artist_name = ANY(artist.other_names) THEN
+		validation_errors := add_formatted_message(
+			validation_errors,
+			'Name "%s" given for entry''s entry "%s" (id "%s") artist "%s" (id "%s") is not in the artist''s "other_names" list.',
+			NEW.entry_artist_name,
+			entry.main_name,
+			entry.entry_id::TEXT,
+			artist.name,
+			artist.artist_id
+		);
+	END IF;
+
+	IF cardinality(validation_errors) > 0 THEN
+		CALL array_of_errors_to_exception(validation_errors);
 	END IF;
 
 	RETURN NEW;
