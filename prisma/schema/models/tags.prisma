@@ -2,7 +2,8 @@ model Tag {
   id  String @id @default(dbgenerated("gen_random_uuid()")) @map("tag_id") @db.Uuid
   tag String @unique
 
-  MusicalEntryTag MusicalEntryTag[]
+  MusicalEntryTag   MusicalEntryTag[]
+  MusicalReleaseTag MusicalReleaseTag[]
 
   @@map("tags")
 }
@@ -16,4 +17,15 @@ model MusicalEntryTag {
 
   @@id([entryId, tagId])
   @@map("musical_entries_tags")
+}
+
+model MusicalReleaseTag {
+  releaseId String @map("release_id") @db.Uuid
+  tagId     String @map("tag_id") @db.Uuid
+
+  release MusicalRelease @relation(fields: [releaseId], references: [id])
+  tag     Tag            @relation(fields: [tagId], references: [id])
+
+  @@id([releaseId, tagId])
+  @@map("musical_releases_tags")
 }
