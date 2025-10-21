@@ -5,7 +5,7 @@ RETURNS TRIGGER AS $$
 DECLARE
 	entry RECORD;
 	validation_errors TEXT[];
-	trimmed_release_version TEXT;]
+	trimmed_release_version TEXT;
 	trimmed_release_alternative_name TEXT;
 BEGIN
 	SELECT * FROM musical_entries as e
@@ -15,7 +15,7 @@ BEGIN
 	trimmed_release_version = trim(NEW.release_version);
 	trimmed_release_alternative_name = trim(NEW.release_alternative_name);
 
-	IF trimmed_release_version IS DISTINCT FROM NEW.release_version
+	IF trimmed_release_version IS DISTINCT FROM NEW.release_version THEN
 		CALL raise_notice_with_query_id(
 			'Automatically trimmed leading/trailing spaces from "version" of release "%s" (entry "%s", id "%s"). Original: "%s", Corrected: "%s".',
 			NEW.release_id::TEXT,
@@ -37,7 +37,7 @@ BEGIN
 			entry.main_name,
 			entry.entry_id::TEXT
 		);
-	ELSIF trimmed_release_alternative_name IS NOT NULL AND NOT NEW.release_alternative_name = ANY(entry.alternative_names)
+	ELSIF trimmed_release_alternative_name IS NOT NULL AND NOT NEW.release_alternative_name = ANY(entry.alternative_names) THEN
 		validation_errors := add_formatted_message(
 			validation_errors,
 			'Release''s "%s" (version "%s") of entry "%s" (id "%s") alternative name "%s" is not among entry''s alternative names.',
@@ -53,7 +53,7 @@ BEGIN
 			NEW.release_id::TEXT,
 			NEW.release_version,
 			NEW.release_alternative_name,
-			trimmed_release_alternative_name,
+			trimmed_release_alternative_name
 	  	);
 	END IF;
 
