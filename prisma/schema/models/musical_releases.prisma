@@ -64,7 +64,7 @@ model MusicalReleaseAlternativeArtist {
   artist  Artist         @relation(fields: [artistId], references: [id])
 
   @@id([releaseId, artistId])
-  @@map("musical_release_alternative_artist")
+  @@map("musical_release_alternative_artists")
 }
 
 model ParentMusicalRelease {
