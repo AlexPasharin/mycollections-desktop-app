@@ -7,6 +7,9 @@ DECLARE
 	validation_errors TEXT[];
 	trimmed_release_version TEXT;
 	trimmed_release_alternative_name TEXT;
+	validated_release_date TEXT;
+	release_date_validation_errors TEXT[];
+	trimmed_release_date TEXT;
 BEGIN
 	SELECT * FROM musical_entries as e
 	WHERE e.entry_id = NEW.entry_id
@@ -55,6 +58,43 @@ BEGIN
 			NEW.release_alternative_name,
 			trimmed_release_alternative_name
 	  	);
+
+		NEW.release_alternative_name = trimmed_release_alternative_name;
+	END IF;
+
+	IF NEW.release_date IS NOT NULL THEN
+		trimmed_release_date := TRIM(NEW.release_date);
+
+		SELECT release_date_validation_results.validated_date_str, release_date_validation_results.validation_errors
+		FROM validate_generalised_date(trimmed_release_date) AS release_date_validation_results
+		INTO validated_release_date, release_date_validation_errors;
+
+		IF cardinality(release_date_validation_errors) > 0 THEN
+			validation_errors := validation_errors || release_date_validation_errors;
+		ELSIF entry.original_release_date IS NOT NULL AND validated_release_date < entry.original_release_date THEN
+			validation_errors := add_formatted_message(
+				validation_errors,
+				'Release date ("%s") of release "%s" (version "%s", entry "%s", id "%s") cannot be before it''s entry''s original release date ("%s").',
+				validated_release_date,
+				NEW.release_id::TEXT,
+				NEW.release_version,
+				entry.main_name,
+				entry.entry_id::TEXT,
+				entry.original_release_date
+			);
+		ELSIF validated_release_date IS DISTINCT FROM NEW.release_date THEN
+			CALL raise_notice_with_query_id(
+				'Automatically formatted "release_date" of release "%s" (version "%s", entry "%s", id "%s") (trimmed and added leading zeroes to month and day, if necessary). Original: "%s", Corrected: "%s".',
+				NEW.release_id::TEXT,
+				NEW.release_version,
+				entry.main_name,
+				entry.entry_id::TEXT,
+				NEW.release_date,
+				validated_release_date
+	  		);
+
+			NEW.release_date = validated_release_date;
+		END IF;
 	END IF;
 
 	IF entry.part_of_queen_collection AND NOT NEW.part_of_queen_collection THEN
