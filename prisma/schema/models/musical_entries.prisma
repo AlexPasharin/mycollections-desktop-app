@@ -13,9 +13,10 @@ model MusicalEntry {
   parentEntries ParentMusicalEntry[] @relation("ParentEntry")
   childEntries  ParentMusicalEntry[] @relation("ChildEntry")
 
-  artists EntryArtist[]
-  tags    MusicalEntryTag[]
-  types   TypeOfMusicalEntry[]
+  artists  EntryArtist[]
+  tags     MusicalEntryTag[]
+  types    TypeOfMusicalEntry[]
+  releases MusicalRelease[]
 
   @@map("musical_entries")
 }

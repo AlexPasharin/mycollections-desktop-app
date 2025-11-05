@@ -1,0 +1,86 @@
+model MusicalRelease {
+  id                    String  @id @default(dbgenerated("gen_random_uuid()")) @map("release_id") @db.Uuid
+  alternativeName       String? @map("release_alternative_name")
+  version               String  @map("release_version")
+  releaseDate           String? @map("release_date")
+  discogsUrl            String? @map("discogs_url")
+  countries             Json?
+  catalogueNumbers      Json?   @map("catalogue_numbers")
+  matrixRunout          Json?   @map("matrix_runout")
+  comment               String?
+  conditionProblems     String? @map("condition_problems")
+  partOfQueenCollection Boolean @default(false) @map("part_of_queen_collection")
+  relationToQueen       String? @map("relation_to_queen")
+
+  entryId String @map("entry_id") @db.Uuid
+
+  entry              MusicalEntry                      @relation(fields: [entryId], references: [id])
+  formats            FormatOfMusicalRelease[]
+  alternativeArtists MusicalReleaseAlternativeArtist[]
+  tags               MusicalReleaseTag[]
+  parentReleases     ParentMusicalRelease[]            @relation("ParentRelease")
+  childReleases      ParentMusicalRelease[]            @relation("ChildRelease")
+
+  @@map("musical_releases")
+}
+
+model MusicalReleaseFormat {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @map("format_id") @db.Uuid
+  description String  @unique
+  hasSides    Boolean
+
+  releases FormatOfMusicalRelease[]
+
+  @@map("musical_releases_formats")
+}
+
+model FormatOfMusicalRelease {
+  releaseId     String  @map("release_id") @db.Uuid
+  formatId      String  @map("format_id") @db.Uuid
+  jukeboxHole   Boolean @default(false) @map("jukebox_hole")
+  pictureSleeve Boolean @default(true) @map("picture_sleeve")
+  speed         Json?
+
+  release MusicalRelease       @relation(fields: [releaseId], references: [id])
+  format  MusicalReleaseFormat @relation(fields: [formatId], references: [id])
+
+  @@id([releaseId, formatId])
+  @@map("formats_of_musical_releases")
+}
+
+model Country {
+  codeName String @id @map("code_name")
+  name     String @unique
+
+  @@map("countries")
+}
+
+model MusicalReleaseAlternativeArtist {
+  releaseId             String  @map("release_id") @db.Uuid
+  artistId              String  @map("artist_id") @db.Uuid
+  alternativeArtistName String? @map("alternative_artist_name")
+
+  release MusicalRelease @relation(fields: [releaseId], references: [id])
+  artist  Artist         @relation(fields: [artistId], references: [id])
+
+  @@id([releaseId, artistId])
+  @@map("musical_release_alternative_artists")
+}
+
+model ParentMusicalRelease {
+  parentRelease   MusicalRelease @relation("ParentRelease", fields: [parentReleaseId], references: [id])
+  parentReleaseId String         @map("parent_entry_id") @db.Uuid
+
+  childRelease   MusicalRelease @relation("ChildRelease", fields: [childReleaseId], references: [id])
+  childReleaseId String         @map("child_entry_id") @db.Uuid
+
+  @@id([parentReleaseId, childReleaseId])
+  @@map("parent_musical_releases")
+}
+
+model Label {
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @map("label_id") @db.Uuid
+  name String @unique
+
+  @@map("labels")
+}

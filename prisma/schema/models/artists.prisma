@@ -11,7 +11,8 @@ model Artist {
   parentArtists ParentArtist[] @relation("ParentArtist")
   childArtists  ParentArtist[] @relation("ChildArtist")
 
-  entries EntryArtist[]
+  entries                              EntryArtist[]
+  musicalReleasesWithArtistAsAltArtist MusicalReleaseAlternativeArtist[]
 
   @@map("artists")
 }
