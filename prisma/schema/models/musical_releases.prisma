@@ -53,6 +53,7 @@ model FormatOfRelease {
   release MusicalRelease @relation(fields: [releaseId], references: [id])
   format  ReleaseFormat  @relation(fields: [formatId], references: [id])
 
+  @@unique([releaseId, formatId, jukeboxHole, pictureSleeve, speed])
   @@map("formats_of_releases")
 }
 
