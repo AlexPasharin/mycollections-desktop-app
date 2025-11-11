@@ -1,5 +1,38 @@
 -- This migration had to be generated empty with --create-only command and populated manually, because it's content cannot be expressed in Prisma schema
 
+-- assuming "date" is in form "YYYY(-MM-DD)", returns it in form "YYYY-MM-DD".
+-- in cases date is "incomplete" (i.e. misses DD or even MM parts), last day of month (or year) is returned
+-- NOTE! Behaviour of function is undefined if "date" is not in format "YYYY(-MM-DD)", or does not represent valid date in this format
+CREATE OR REPLACE FUNCTION generalised_date_to_date(date TEXT)
+RETURNS TEXT AS $$
+DECLARE
+	split_date TEXT[];
+	year TEXT;
+	month TEXT;
+	day TEXT;
+BEGIN
+	IF date IS NULL THEN
+		RETURN NULL;
+	END IF;
+
+	split_date := string_to_array(date, '-');
+
+	year := split_date[1];
+	month := coalesce(split_date[2], '12');
+	day := split_date[3];
+
+	IF day IS NULL THEN
+		SELECT EXTRACT(
+		    DAY FROM (
+		        make_date(year::integer, month::integer, 1) + INTERVAL '1 month' - INTERVAL '1 day'
+		    )
+		) INTO day;
+	END IF;
+
+	RETURN array_to_string(ARRAY[year, month, day], '-');
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION validate_musical_releases()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -71,7 +104,7 @@ BEGIN
 
 		IF cardinality(release_date_validation_errors) > 0 THEN
 			validation_errors := validation_errors || release_date_validation_errors;
-		ELSIF entry.original_release_date IS NOT NULL AND validated_release_date < entry.original_release_date THEN
+		ELSIF generalised_date_to_date(validated_release_date) < generalised_date_to_date(entry.original_release_date) THEN
 			validation_errors := add_formatted_message(
 				validation_errors,
 				'Release date ("%s") of release "%s" (version "%s", entry "%s", id "%s") cannot be before it''s entry''s original release date ("%s").',
