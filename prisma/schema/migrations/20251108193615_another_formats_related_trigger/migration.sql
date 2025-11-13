@@ -29,7 +29,7 @@ BEGIN
 	trimmed_speed_str = trim(speed_str);
 
 	IF trimmed_speed_str = ANY(valid_enum_values) THEN
-		IF trimmed_speed_str = format.default_speed THEN
+		IF trimmed_speed_str = format.default_speed::TEXT THEN
 			validation_errors = add_formatted_message(
 				validation_errors,
 				'%sValue "%s" for "speed" can not be same as the default speed of corresponding format. Format: "%s".',
@@ -87,7 +87,7 @@ BEGIN
 					speed_obj_key
 				);
 			ELSE
-				SELECT * FROM validate_speed_as_string(speed_obj_val, format('%sValue of key "%s": ', message_prefix, speed_obj_key), validation_errors)
+				SELECT * FROM validate_speed_as_string(speed_obj_val, format('%sValue of key "%s": ', message_prefix, speed_obj_key), format, validation_errors)
 				INTO validation_errors, validated_speed_str;
 
 				IF validated_speed_str IS NOT NULL THEN
@@ -99,7 +99,7 @@ BEGIN
 		RETURN;
 	END IF;
 
-	SELECT * FROM validate_speed_as_string(speed, message_prefix, validation_errors)
+	SELECT * FROM validate_speed_as_string(speed, message_prefix, format, validation_errors)
 	INTO validation_errors, validated_val;
 END;
 $$ LANGUAGE plpgsql;
@@ -112,9 +112,9 @@ DECLARE
 	message_prefix TEXT;
 	validated_speed_value JSONB;
 BEGIN
-	message_prefix = format('Release/format relation "%s": ', NEW.uuid);
-
 	SELECT * FROM releases_formats WHERE format_id = NEW.format_id INTO format;
+
+	message_prefix = format('Release/format relation "%s" (format "%s", release "%s"): ', NEW.uuid, format.short_name, NEW.release_id);
 
 	IF NEW.jukebox_hole THEN
 		IF format.short_name <> '7''''' THEN
