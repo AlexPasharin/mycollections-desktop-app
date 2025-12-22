@@ -42,7 +42,7 @@ model ReleaseFormat {
 }
 
 model FormatOfRelease {
-  uuid          String  @id @default(dbgenerated("gen_random_uuid()"))
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   releaseId     String  @map("release_id") @db.Uuid
   formatId      String  @map("format_id") @db.Uuid
   jukeboxHole   Boolean @default(false) @map("jukebox_hole")
