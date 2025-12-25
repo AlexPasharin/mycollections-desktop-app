@@ -7,6 +7,7 @@ DECLARE
 	artist RECORD;
 	entry RECORD;
 	validation_errors TEXT[];
+	entry_artist_name_trimmed TEXT;
 BEGIN
 	SELECT * FROM artists as a
 	WHERE a.artist_id = NEW.artist_id
@@ -27,16 +28,30 @@ BEGIN
 		);
 	END IF;
 
-	IF NEW.entry_artist_name IS NOT NULL AND (artist.other_names IS NULL OR NOT NEW.entry_artist_name = ANY(artist.other_names)) THEN
+	entry_artist_name_trimmed := trim(NEW.entry_artist_name);
+
+	IF entry_artist_name_trimmed IS NOT NULL AND (artist.other_names IS NULL OR NOT entry_artist_name_trimmed = ANY(artist.other_names)) THEN
 		validation_errors := add_formatted_message(
 			validation_errors,
-			'Name "%s" given for entry''s entry "%s" (id "%s") artist "%s" (id "%s") is not in the artist''s "other_names" list.',
-			NEW.entry_artist_name,
+			'Name "%s" given (trimmed) for entry''s entry "%s" (id "%s") artist "%s" (id "%s") is not in the artist''s "other_names" list.',
+			entry_artist_name_trimmed,
 			entry.main_name,
 			entry.entry_id::TEXT,
 			artist.name,
 			artist.artist_id::TEXT
 		);
+	ELSIF entry_artist_name_trimmed IS DISTINCT FROM NEW.entry_artist_name THEN
+		CALL raise_notice_with_query_id(
+            'Automatically trimmed leading/trailing spaces from "entry_artist_name" for entry''s entry "%s" (id "%s") artist "%s" (id "%s"). Original: "%s", Corrected: "%s".',
+         	entry.main_name,
+			entry.entry_id::TEXT,
+			artist.name,
+			artist.artist_id::TEXT,
+			NEW.entry_artist_name,
+			entry_artist_name_trimmed
+       	);
+
+		NEW.entry_artist_name := entry_artist_name_trimmed;
 	END IF;
 
 	IF cardinality(validation_errors) > 0 THEN
