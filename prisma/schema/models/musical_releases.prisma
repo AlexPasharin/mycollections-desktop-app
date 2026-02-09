@@ -1,6 +1,6 @@
 model MusicalRelease {
   id                    String  @id @default(dbgenerated("gen_random_uuid()")) @map("release_id") @db.Uuid
-  alternativeName       String? @map("release_alternative_name")
+  alternativeName       String? @map("release_alternative_name") // used when release's name is different from it's entry's main name
   version               String  @map("release_version")
   releaseDate           String? @map("release_date")
   discogsUrl            String? @map("discogs_url")
@@ -42,7 +42,7 @@ model ReleaseFormat {
 }
 
 model FormatOfRelease {
-  uuid          String  @id @default(dbgenerated("gen_random_uuid()"))
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   releaseId     String  @map("release_id") @db.Uuid
   formatId      String  @map("format_id") @db.Uuid
   jukeboxHole   Boolean @default(false) @map("jukebox_hole")
@@ -67,7 +67,7 @@ model Country {
 model MusicalReleaseAlternativeArtist {
   releaseId             String  @map("release_id") @db.Uuid
   artistId              String  @map("artist_id") @db.Uuid
-  alternativeArtistName String? @map("alternative_artist_name")
+  alternativeArtistName String? @map("alternative_artist_name") // used when release's artist use for release one of it's "other names"
 
   release MusicalRelease @relation(fields: [releaseId], references: [id])
   artist  Artist         @relation(fields: [artistId], references: [id])
