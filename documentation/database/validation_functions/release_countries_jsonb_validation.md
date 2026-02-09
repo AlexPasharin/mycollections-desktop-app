@@ -1,0 +1,13 @@
+The file documents the validation logic "validate_release_countries_jsonb" function executes.
+
+Function "validate_release_countries_jsonb" takes a jsonb value "countries" meant for "countries" column in "musical_releases" table and validates it according to the logic and rules described in this file. It also takes a "messages_prefix" (string) and "validation_errors" (array of strings) parameters. Whenever function finds a validation error, it appends it to "validation_errors" array that was passed as a parameter. In the end function returns "validation_errors" array back as well as a "validated_value" which should be used as a final "validated" value for "countries" column.
+
+- If "countries" is NULL it is returned as such.
+- If "countries" is null as jsonb, function returns a standard postgres NULL value. A notice is raised about this.
+- Otherwise "countries" must be a string, a non-empty array of strings or an object, whose shape is described below.
+- If "countries" is a string or array of strings, each string is trimmed and if the trimmed value is different from original value, a notification is raised about it. Duplicate values (in case of an array) are skipped (and notification is generated for every duplicate).
+  Finally each trimmed value must correspond to a row in "countries" table via "code_name" field, case-insensitively. Final value is a list of these "code_names", or one string value, if list would contain only one value. If originally value was an array, but end result contains only one country i.e. is a string, a notification is generated about it.
+- Finally, "countries" can be an object. In this case there are two possibilities. One possibility, which we shall call "standard object shape" is that it contains exactly two keys - "made in" and "printed in". In this case value of any key must be a string or a non-empty array of strings validated exactly as in the previous case.
+- Second possibility is that the "countries" object contains exactly two keys, which are "CD" and "slipcase". In this case value behind key "CD" is validated as a value for "countries" before - it must be a string, an array or an object with "standard object shape" i.e. keys "made in" and "printed in", subject to same validation rules and transformations as above. The value of "slipcase" property, on the other hand is more special - it must be an object with a single key "printed in". The value of this key is validated exactly as the value of "printed in" key in "standard object shape" case.
+
+If in the end "validation_errors" array is non empty, the "validated_value" function also returns is not guaranteed to be actually valid and should not be used.
