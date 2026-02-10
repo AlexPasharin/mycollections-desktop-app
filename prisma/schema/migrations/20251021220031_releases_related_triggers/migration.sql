@@ -3,7 +3,10 @@
 -- assuming "date" is in form "YYYY(-MM-DD)", returns it in form "YYYY-MM-DD".
 -- in cases date is "incomplete" (i.e. misses DD or even MM parts), last day of month (or year) is returned
 -- NOTE! Behaviour of function is undefined if "date" is not in format "YYYY(-MM-DD)", or does not represent valid date in this format
-CREATE OR REPLACE FUNCTION generalised_date_to_date(date TEXT)
+CREATE OR REPLACE FUNCTION generalised_date_to_date(
+	date TEXT,
+	move_forward_if_incomplete BOOLEAN
+)
 RETURNS TEXT AS $$
 DECLARE
 	split_date TEXT[];
@@ -18,15 +21,27 @@ BEGIN
 	split_date := string_to_array(date, '-');
 
 	year := split_date[1];
-	month := coalesce(split_date[2], '12');
+	month := split_date[2];
 	day := split_date[3];
 
+	IF MONTH IS NULL THEN
+		IF move_forward_if_incomplete THEN
+			month = '12';
+		ELSE
+			month = '01';
+		END IF;
+	END IF;
+
 	IF day IS NULL THEN
-		SELECT EXTRACT(
-		    DAY FROM (
-		        make_date(year::integer, month::integer, 1) + INTERVAL '1 month' - INTERVAL '1 day'
-		    )
-		) INTO day;
+		IF move_forward_if_incomplete THEN
+			SELECT EXTRACT(
+					DAY FROM (
+							make_date(year::integer, month::integer, 1) + INTERVAL '1 month' - INTERVAL '1 day'
+					)
+			) INTO day;
+		ELSE
+			day = '01';
+		END IF;
 	END IF;
 
 	RETURN array_to_string(ARRAY[year, month, day], '-');
@@ -43,6 +58,7 @@ DECLARE
 	validated_release_date TEXT;
 	release_date_validation_errors TEXT[];
 	trimmed_release_date TEXT;
+	discogs_url_trimmed TEXT;
 BEGIN
 	SELECT * FROM musical_entries as e
 	WHERE e.entry_id = NEW.entry_id
@@ -59,7 +75,7 @@ BEGIN
 			entry.entry_id::TEXT,
 			NEW.release_version,
 			trimmed_release_version
-	  	);
+	  );
 
 		 NEW.release_version = trimmed_release_version;
 	END IF;
@@ -104,30 +120,60 @@ BEGIN
 
 		IF cardinality(release_date_validation_errors) > 0 THEN
 			validation_errors := validation_errors || release_date_validation_errors;
-		ELSIF generalised_date_to_date(validated_release_date) < generalised_date_to_date(entry.original_release_date) THEN
-			validation_errors := add_formatted_message(
-				validation_errors,
-				'Release date ("%s") of release "%s" (version "%s", entry "%s", id "%s") cannot be before it''s entry''s original release date ("%s").',
-				validated_release_date,
-				NEW.release_id::TEXT,
-				NEW.release_version,
-				entry.main_name,
-				entry.entry_id::TEXT,
-				entry.original_release_date
-			);
-		ELSIF validated_release_date IS DISTINCT FROM NEW.release_date THEN
-			CALL raise_notice_with_query_id(
-				'Automatically formatted "release_date" of release "%s" (version "%s", entry "%s", id "%s") (trimmed and added leading zeroes to month and day, if necessary). Original: "%s", Corrected: "%s".',
-				NEW.release_id::TEXT,
-				NEW.release_version,
-				entry.main_name,
-				entry.entry_id::TEXT,
-				NEW.release_date,
-				validated_release_date
-	  		);
+		END IF;
+
+		IF validated_release_date IS NOT NULL THEN
+			IF generalised_date_to_date(validated_release_date, TRUE) < generalised_date_to_date(entry.original_release_date, FALSE) THEN
+				validation_errors := add_formatted_message(
+					validation_errors,
+					'Release date ("%s") of release "%s" (version "%s", entry "%s", id "%s") cannot be before it''s entry''s original release date ("%s").',
+					validated_release_date,
+					NEW.release_id::TEXT,
+					NEW.release_version,
+					entry.main_name,
+					entry.entry_id::TEXT,
+					entry.original_release_date
+				);
+			ELSIF validated_release_date IS DISTINCT FROM NEW.release_date THEN
+				CALL raise_notice_with_query_id(
+					'Automatically formatted "release_date" of release "%s" (version "%s", entry "%s", id "%s") (trimmed and added leading zeroes to month and day, if necessary). Original: "%s", Corrected: "%s".',
+					NEW.release_id::TEXT,
+					NEW.release_version,
+					entry.main_name,
+					entry.entry_id::TEXT,
+					NEW.release_date,
+					validated_release_date
+				);
+			END IF;
 
 			NEW.release_date = validated_release_date;
 		END IF;
+	END IF;
+
+	discogs_url_trimmed := TRIM(NEW.discogs_url);
+
+	IF NOT discogs_url_trimmed ~ '^https://www.discogs.com/release/\d+-.' THEN
+		validation_errors := add_formatted_message(
+			validation_errors,
+			'(Trimmed) value "%s" for "discogs_url" of release "%s" (version "%s", entry "%s", id "%s") is not valid - must be of form "https://www.discogs.com/release/(some numbers)-(arbitrary text)"',
+			discogs_url_trimmed,
+			NEW.release_id::TEXT,
+			NEW.release_version,
+			entry.main_name,
+			entry.entry_id::TEXT
+		);
+	ELSIF discogs_url_trimmed IS DISTINCT FROM NEW.discogs_url THEN
+		CALL raise_notice_with_query_id(
+      'Automatically trimmed leading/trailing spaces from "discogs_url" of release "%s" (version "%s", entry "%s", id "%s"). Original: "%s", Corrected: "%s".',
+      NEW.release_id::TEXT,
+			NEW.release_version,
+			entry.main_name,
+			entry.entry_id::TEXT,
+			NEW.discogs_url,
+			discogs_url_trimmed
+		);
+
+		NEW.discogs_url := discogs_url_trimmed;
 	END IF;
 
 	IF entry.part_of_queen_collection AND NOT NEW.part_of_queen_collection THEN
@@ -140,6 +186,32 @@ BEGIN
 			NEW.release_version
 		);
 	END IF;
+
+	SELECT * FROM validate_release_countries_jsonb(
+		NEW.countries,
+		format(
+			'Release %s (entry "%s", id "%s"): ',
+			NEW.release_id,
+			entry.main_name,
+			entry.entry_id::TEXT
+		),
+		TRUE,
+		validation_errors
+	)
+	INTO validation_errors, NEW.countries;
+
+		SELECT * FROM validate_release_cat_numbers_jsonb(
+		NEW.catalogue_numbers,
+		format(
+			'Release %s (entry "%s", id "%s"): ',
+			NEW.release_id,
+			entry.main_name,
+			entry.entry_id::TEXT
+		),
+		TRUE,
+		validation_errors
+	)
+	INTO validation_errors, NEW.catalogue_numbers;
 
 	IF cardinality(validation_errors) > 0 THEN
 		CALL array_of_errors_to_exception(validation_errors);
