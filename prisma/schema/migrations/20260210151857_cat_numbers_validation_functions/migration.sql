@@ -141,8 +141,8 @@ BEGIN
 		SELECT r.validation_errors, r.validated_value FROM validate_cat_number_as_string(
 				cat_num_val,
 				messages_prefix,
-				cat_num_dict,
-				validation_errors
+				validation_errors,
+				cat_num_dict
 			) as r INTO validation_errors, text_val;
 
 		validated_value = to_jsonb(text_val);
