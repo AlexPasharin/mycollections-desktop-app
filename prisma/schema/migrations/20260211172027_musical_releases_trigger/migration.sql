@@ -1,7 +1,8 @@
 -- This migration had to be generated empty with --create-only command and populated manually, because it's content cannot be expressed in Prisma schema
 
 -- assuming "date" is in form "YYYY(-MM-DD)", returns it in form "YYYY-MM-DD".
--- in cases date is "incomplete" (i.e. misses DD or even MM parts), last day of month (or year) is returned
+-- in cases date is "incomplete" (i.e. misses DD or even MM parts) additional boolean variable "move_forward_if_incomplete" determines the result
+-- if "move_forward_if_incomplete" is true, last day of month (or year) is returned. Otherwise first dat of month (or year) is returned.
 -- NOTE! Behaviour of function is undefined if "date" is not in format "YYYY(-MM-DD)", or does not represent valid date in this format
 CREATE OR REPLACE FUNCTION generalised_date_to_date(
 	date TEXT,
@@ -59,6 +60,9 @@ DECLARE
 	release_date_validation_errors TEXT[];
 	trimmed_release_date TEXT;
 	discogs_url_trimmed TEXT;
+	comment_trimmed TEXT;
+	condition_problems_trimmed TEXT;
+	relation_to_queen_trimmed TEXT;
 BEGIN
 	SELECT * FROM musical_entries as e
 	WHERE e.entry_id = NEW.entry_id
@@ -176,6 +180,59 @@ BEGIN
 		NEW.discogs_url := discogs_url_trimmed;
 	END IF;
 
+	comment_trimmed := TRIM(NEW.comment);
+
+	IF NEW.comment IS DISTINCT FROM comment_trimmed THEN
+		CALL raise_notice_with_query_id(
+			'Automatically trimmed leading/trailing spaces from "comment" of release "%s" (entry "%s", id "%s"). Original: "%s", Corrected: "%s".',
+			NEW.release_id::TEXT,
+			entry.main_name,
+			entry.entry_id::TEXT,
+			NEW.comment,
+			comment_trimmed
+		);
+
+		NEW.comment := comment_trimmed;
+  END IF;
+
+	condition_problems_trimmed := TRIM(NEW.condition_problems);
+
+	IF NEW.condition_problems IS DISTINCT FROM condition_problems_trimmed THEN
+		CALL raise_notice_with_query_id(
+			'Automatically trimmed leading/trailing spaces from "condition_problems" of release "%s" (entry "%s", id "%s"). Original: "%s", Corrected: "%s".',
+			NEW.release_id::TEXT,
+			entry.main_name,
+			entry.entry_id::TEXT,
+			NEW.condition_problems,
+			condition_problems_trimmed
+		);
+
+		NEW.condition_problems := condition_problems_trimmed;
+  END IF;
+
+	relation_to_queen_trimmed := TRIM(NEW.relation_to_queen);
+
+	IF NOT NEW.part_of_queen_collection AND relation_to_queen_trimmed IS NOT NULL THEN
+		validation_errors := add_formatted_message(
+			validation_errors,
+			'Value for "relation_to_queen" cannot be given if "part_of_queen_collection" is false! Release "%s" (entry "%s", id "%s").',
+			NEW.release_id::TEXT,
+			entry.main_name,
+			entry.entry_id::TEXT
+		);
+	ELSIF NEW.relation_to_queen IS DISTINCT FROM relation_to_queen_trimmed THEN
+		CALL raise_notice_with_query_id(
+			'Automatically trimmed leading/trailing spaces from "relation_to_queen" of release "%s" (entry "%s", id "%s"). Original: "%s", Corrected: "%s".',
+			NEW.release_id::TEXT,
+			entry.main_name,
+			entry.entry_id::TEXT,
+			NEW.relation_to_queen,
+			relation_to_queen_trimmed
+		);
+
+		NEW.relation_to_queen := relation_to_queen_trimmed;
+  END IF;
+
 	IF entry.part_of_queen_collection AND NOT NEW.part_of_queen_collection THEN
 		validation_errors := add_formatted_message(
 			validation_errors,
@@ -190,7 +247,7 @@ BEGIN
 	SELECT * FROM validate_release_countries_jsonb(
 		NEW.countries,
 		format(
-			'Release %s (entry "%s", id "%s"): ',
+			'Release %s (entry "%s", id "%s"), "countries" column: ',
 			NEW.release_id,
 			entry.main_name,
 			entry.entry_id::TEXT
@@ -200,10 +257,10 @@ BEGIN
 	)
 	INTO validation_errors, NEW.countries;
 
-		SELECT * FROM validate_release_cat_numbers_jsonb(
+	SELECT * FROM validate_release_cat_numbers_jsonb(
 		NEW.catalogue_numbers,
 		format(
-			'Release %s (entry "%s", id "%s"): ',
+			'Release %s (entry "%s", id "%s"), "cat_numbers" column: ',
 			NEW.release_id,
 			entry.main_name,
 			entry.entry_id::TEXT
@@ -212,6 +269,18 @@ BEGIN
 		validation_errors
 	)
 	INTO validation_errors, NEW.catalogue_numbers;
+
+	SELECT * FROM validate_release_matrix_runout_jsonb(
+		NEW.matrix_runout,
+		format(
+			'Release %s (entry "%s", id "%s"), "matrix_runout" column: ',
+			NEW.release_id,
+			entry.main_name,
+			entry.entry_id::TEXT
+		),
+		validation_errors
+	)
+	INTO validation_errors, NEW.matrix_runout;
 
 	IF cardinality(validation_errors) > 0 THEN
 		CALL array_of_errors_to_exception(validation_errors);
