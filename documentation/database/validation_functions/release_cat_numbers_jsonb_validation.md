@@ -4,7 +4,9 @@ Function "validate_release_cat_numbers_jsonb" takes a jsonb value "cat_numbers_v
 
 - If "cat_numbers_value" is NULL it is returned as such.
 - If "cat_numbers_value" is null as jsonb, function returns a standard postgres NULL value. A notice is raised about this.
-- Otherwise "cat_numbers_value" must be a jsonb object and it must have only 1 or 2 keys. One of the keys then has to be "label" or "labels" and the other key has to be "cat_number" or "cat_numbers".
+- Otherwise "cat_numbers_value" must be a either a jsonb array or a jsonb object.
+
+- If "cat_numbers_value" is an object it must have only 1 or 2 keys. One of the keys then has to be "label" or "labels" and the other key has to be "cat_number" or "cat_numbers".
 - If "cat_numbers_value" is a jsonb object with key "label", the value of that key must be a string. If it is, it is trimmed. If trimmed value is different from original value, a notification is raised about it. Then function validates if the trimmed value actually corresponds to a value in "labels" table (via "name" field).
 - If "cat_numbers_value" is a jsonb object with key "labels", the value of that key must be a non-empty string array. Every value of that array is validated as in previous case - it is trimmed and its trimmed value must correspond to a value in "labels" table (via "name" field). Duplicate values are skipped (and notification is generated for every duplicate). If the final array of "labels" contains only one element, property "labels" is substituted with property "label" with value being that only element, with notification raised about this.
 - If "cat_numbers_value" is a jsonb object with key "cat_number", the value of that key must be a string. If it is, it is trimmed. If trimmed value is different from original value, a notification is raised about it.
@@ -12,5 +14,7 @@ Function "validate_release_cat_numbers_jsonb" takes a jsonb value "cat_numbers_v
 - If value of "cat_numbers" key is an array of strings, each element of that array is trimmed (with notification raised if trimmed value differs from original). Duplicate values are skipped (and notification is generated about every duplicate). If a final value contains only one element, property "cat_numbers" is substituted with property "cat_number" with value being that only element, with notification raised about this.
 - If value of "cat_numbers" key is an object, it must have exactly 2 keys. These 2 keys are either keys "in Europe" and "in UK", or keys "CD" and "slipcase". In the first case value of each key ("in Europe" and "in UK") must be either string, or a non empty array of strings. All these strings are trimmed (with notification raised if trimmed value differs from original), duplicate values are skipped (and notification is generated about every duplicate). If in the end we have an array with only one element, value of property is reduced to just that value, with notification raised about this.
 - If keys of "cat_numbers" key's value are "CD" and "slipcase", value of both must be a string, a non-empty array of strings, or an object with keys "in Europe" and "in UK", and this value is subjected to exactly same validation as value for "cat_numbers" key above.
+
+- Finally, if "cat_numbers_value" is a jsonb array, each of it's elements must be a jsonb object which is a validated exactly as above.
 
 If in the end "validation_errors" array is non empty, the "validated_value" function also returns is not guaranteed to be actually valid and should not be used.
