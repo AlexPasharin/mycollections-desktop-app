@@ -56,7 +56,7 @@ BEGIN
 	) INTO numbers;
 
 	IF '' = ANY(numbers) THEN
-		RETURN TRUE;
+		RETURN cardinality(keys) = 1;
 	END IF;
 
 	IF '1' != ALL(numbers) THEN
