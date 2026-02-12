@@ -114,7 +114,7 @@ DECLARE
 BEGIN
 	SELECT * FROM releases_formats WHERE format_id = NEW.format_id INTO format;
 
-	message_prefix = format('Release/format relation "%s" (format "%s", release "%s"): ', NEW.uuid, format.short_name, NEW.release_id);
+	message_prefix = format('Release/format relation "%s" (format "%s", release "%s"): ', NEW.id, format.short_name, NEW.release_id);
 
 	IF NEW.jukebox_hole THEN
 		IF format.short_name <> '7''''' THEN
