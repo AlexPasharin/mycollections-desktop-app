@@ -21,6 +21,7 @@ model MusicalRelease {
   parentReleases     ParentMusicalRelease[]            @relation("ParentRelease")
   childReleases      ParentMusicalRelease[]            @relation("ChildRelease")
 
+  @@index([countries], type: Gin)
   @@map("musical_releases")
 }
 
