@@ -8,3 +8,7 @@
 - It is not allowed to update value of "code_name" once record is created - if happens exception is thrown and operation is rolled back
 - Value of "code_name" is trimmed (with notification about it in case this changes value). After trimming "code_name" must match regex ^[A-Z]+ - if does not, exception is thrown and operation is rolled back
 - Value of "name" is trimmed (with notification about it in case this changes value)
+
+# Trigger on delete
+
+- If country is referenced in a "musical_releases" table (in jsonb "country" column, via "code_name" field), an exception is thrown and the whole operation is rolled back. Thus it is not allowed to remove such country from database.
