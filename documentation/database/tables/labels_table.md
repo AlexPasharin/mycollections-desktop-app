@@ -6,3 +6,7 @@
 
 - It is not allowed to update value of "name" once record is created - if happens exception is thrown and operation is rolled back
 - Value of "name" is trimmed (with notification about it in case this changes value)
+
+# Trigger on delete
+
+- If label is referenced in a "musical_releases" table (in jsonb "catalogue_numbers" column, via "name" field), an exception is thrown and the whole operation is rolled back. Thus it is not allowed to remove such label from database.
