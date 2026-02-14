@@ -78,10 +78,10 @@ model MusicalReleaseAlternativeArtist {
 
 model ParentMusicalRelease {
   parentRelease   MusicalRelease @relation("ParentRelease", fields: [parentReleaseId], references: [id])
-  parentReleaseId String         @map("parent_entry_id") @db.Uuid
+  parentReleaseId String         @map("parent_release_id") @db.Uuid
 
   childRelease   MusicalRelease @relation("ChildRelease", fields: [childReleaseId], references: [id])
-  childReleaseId String         @map("child_entry_id") @db.Uuid
+  childReleaseId String         @map("child_release_id") @db.Uuid
 
   @@id([parentReleaseId, childReleaseId])
   @@map("parent_musical_releases")

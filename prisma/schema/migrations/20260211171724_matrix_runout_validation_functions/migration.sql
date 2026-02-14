@@ -179,7 +179,7 @@ BEGIN
 			mirrored_case_keys = mirrored_case_keys || key_val;
 		ELSIF key_val  ~ '^Side [A-Z]$' OR key_val = 'Side AA' OR key_val  ~ '^(Mono|Stereo) side$' OR key_val = 'Both A sides' THEN
 			vinyl_case_keys = vinyl_case_keys || key_val;
-		ELSIF key_val ~ '^(CD|DVD|BD|4HD_BD)[1-9]?\d*$' OR key_val = '3''CD' OR key_val = 'LP' THEN
+		ELSIF key_val ~ '^(CD|DVD|BD|4HD_BD)([1-9]\d*)?$' OR key_val = '3''CD' OR key_val = 'LP' THEN
 			digital_case_keys = digital_case_keys || key_val;
 		ELSE
 		 	is_valid = FALSE;
