@@ -177,7 +177,7 @@ BEGIN
           NEW.main_name,
           NEW.entry_id::TEXT
         );
-      ELSIF release_relation.release_alternative_name IS NOT NULL AND NOT release_relation.release_alternative_name = ANY(NEW.alternative_names) THEN
+      ELSIF release_relation.release_alternative_name IS NOT NULL AND (NEW.alternative_names IS NULL OR release_relation.release_alternative_name <> ALL(NEW.alternative_names)) THEN
         validation_errors := add_formatted_message(
           validation_errors,
           'Release "%s" (version "%s") of entry "%s" (id "%s") - alternative name "%s" is not among entry''s alternative names.',
@@ -211,7 +211,7 @@ BEGIN
           release_relation.release_id::TEXT,
           release_relation.release_version
         );
-      END IF
+      END IF;
     END LOOP;
 
 	IF cardinality(validation_errors) > 0 THEN

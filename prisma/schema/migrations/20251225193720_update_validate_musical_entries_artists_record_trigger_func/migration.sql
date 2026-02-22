@@ -30,7 +30,7 @@ BEGIN
 
 	entry_artist_name_trimmed := trim(NEW.entry_artist_name);
 
-	IF entry_artist_name_trimmed IS NOT NULL AND (artist.other_names IS NULL OR NOT entry_artist_name_trimmed = ANY(artist.other_names)) THEN
+	IF entry_artist_name_trimmed IS NOT NULL AND (artist.other_names IS NULL OR entry_artist_name_trimmed <> ALL(artist.other_names)) THEN
 		validation_errors := add_formatted_message(
 			validation_errors,
 			'Name "%s" given (trimmed) for entry''s entry "%s" (id "%s") artist "%s" (id "%s") is not in the artist''s "other_names" list.',

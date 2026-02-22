@@ -75,7 +75,7 @@ BEGIN
 			);
 		END IF;
 
-		IF entry_relation.entry_artist_name IS NOT NULL AND (NEW.other_names IS NULL OR NOT entry_relation.entry_artist_name = ANY(NEW.other_names)) THEN
+		IF entry_relation.entry_artist_name IS NOT NULL AND (NEW.other_names IS NULL OR entry_relation.entry_artist_name <> ALL(NEW.other_names)) THEN
 			validation_errors := add_formatted_message(
 				validation_errors,
 				'Artist "%s" (id "%s") has entry "%s" (id "%s"), but it''s corresponding "entry_artist_name" is not in the artist''s "other_names" list.',
