@@ -93,7 +93,7 @@ BEGIN
 			entry.main_name,
 			entry.entry_id::TEXT
 		);
-	ELSIF trimmed_release_alternative_name IS NOT NULL AND NOT NEW.release_alternative_name = ANY(entry.alternative_names) THEN
+	ELSIF trimmed_release_alternative_name IS NOT NULL AND (entry.alternative_names IS NULL OR NEW.release_alternative_name <> ALL(entry.alternative_names)) THEN
 		validation_errors := add_formatted_message(
 			validation_errors,
 			'Release''s "%s" (version "%s") of entry "%s" (id "%s") alternative name "%s" is not among entry''s alternative names.',
@@ -110,7 +110,7 @@ BEGIN
 			NEW.release_version,
 			NEW.release_alternative_name,
 			trimmed_release_alternative_name
-	  	);
+	  );
 
 		NEW.release_alternative_name = trimmed_release_alternative_name;
 	END IF;

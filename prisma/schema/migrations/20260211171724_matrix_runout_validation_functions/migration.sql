@@ -483,9 +483,9 @@ BEGIN
 		) INTO validation_errors, validated_value;
 	END IF;
 
-	validated_value = '{}';
-
 	IF vinyl_case_keys IS NOT NULL THEN
+		validated_value = '{}';
+
 		FOREACH key in ARRAY vinyl_case_keys
 		LOOP
 			SELECT * FROM validate_vinyl_key_value(
@@ -501,6 +501,8 @@ BEGIN
 	END IF;
 
 	IF digital_case_keys IS NOT NULL THEN
+		validated_value = '{}';
+
 		FOREACH key in ARRAY digital_case_keys
 		LOOP
 			SELECT * FROM validate_digital_key_value(
