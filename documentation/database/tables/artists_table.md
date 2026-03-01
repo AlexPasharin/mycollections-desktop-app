@@ -3,6 +3,8 @@
 - Fields "name" and "name_for_sorting" are of custom type "non_empty_text", meaning that their values are not allowed to be empty strings after trimming
 - Field "other_names" is optional (this is prisma bug, it always treats fields of array type as mandatory in schema but in fact generates them as optional in database)
 - Field "other_names" is of custom type "non_empty_text_array", meaning that it's value cannot be an empty array and also each value in it must be a non-empty string after trimming
+- There is a custom GIST index on expression "LOWER("name")", with operator class gist_trgm_ops. This is used for faster "similarity" fuzzy case-insensitive search on "name" field.
+- There is a custom index on expression "(LOWER(COALESCE(name_for_sorting, name)), (artist_id::text))" used for pagination ordering.
 
 # Trigger on insert and on update
 
