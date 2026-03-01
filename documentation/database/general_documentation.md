@@ -1,0 +1,1 @@
+- "pg_trgm" extension is enabled, used to speed up substring and fuzzy matching of strings (with aid of gist indices).

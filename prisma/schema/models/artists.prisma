@@ -13,8 +13,20 @@ model Artist {
 
   entries                              EntryArtist[]
   musicalReleasesWithArtistAsAltArtist MusicalReleaseAlternativeArtist[]
+  alternativeArtistNames               AlternativeArtistName[]
 
   @@map("artists")
+}
+
+model AlternativeArtistName {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @map("name_id") @db.Uuid
+  name     String
+  artistId String @map("artist_id") @db.Uuid
+
+  artist Artist @relation(fields: [artistId], references: [id])
+
+  @@unique([name, artistId])
+  @@map("alternative_artist_names")
 }
 
 model ParentArtist {

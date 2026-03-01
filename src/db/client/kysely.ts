@@ -24,7 +24,7 @@ const client = new Kysely<DB>({
   dialect: new PostgresDialect({
     pool,
   }),
-  plugins: [new CamelCasePlugin()],
+  plugins: [new CamelCasePlugin({ maintainNestedObjectKeys: true })],
 });
 
 export default client;
