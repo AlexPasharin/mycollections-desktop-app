@@ -25,8 +25,6 @@ model AlternativeArtistName {
 
   artist Artist @relation(fields: [artistId], references: [id])
 
-  EntryArtist EntryArtist[]
-
   @@unique([name, artistId])
   @@map("alternative_artist_names")
 }
