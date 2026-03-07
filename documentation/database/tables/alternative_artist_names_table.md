@@ -5,5 +5,6 @@
 
 # Trigger on insert and on update
 
+- It is not allowed to update value of "artist_id" once record is created - if happens exception is thrown and operation is rolled back
 - Value of "name" is trimmed (with notification about it in case this changes value)
-- (Trimmed) value of "name" cannot be same as "name" of a corresponding "artist" in "artists" table- if happens exception is thrown and operation is rolled back.
+- (Trimmed) value of "name" cannot be same as "name" of a corresponding "artist" in "artists" table - if happens exception is thrown and operation is rolled back.

@@ -43,16 +43,21 @@ model TypeOfMusicalEntry {
 }
 
 model EntryArtist {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   entryId  String @map("entry_id") @db.Uuid
   artistId String @map("artist_id") @db.Uuid
 
   entry  MusicalEntry @relation(fields: [entryId], references: [id])
   artist Artist       @relation(fields: [artistId], references: [id])
 
-  entryArtistName     String?  @map("entry_artist_name") // in case entry's artist name is marked as one of artist's "other names"
   isEntriesMainArtist Boolean? @default(true) @map("is_entries_main_artist") // indicates if this is entry's "main artist"
 
-  @@id([entryId, artistId])
+  entryArtistNameId  String?                @map("entry_artist_name_id") @db.Uuid
+  entryAltArtistName AlternativeArtistName? @relation(fields: [entryArtistNameId], references: [id]) // in case entry's artist name is marked as one of artist's alternative names
+
+  musicalReleaseAlternativeArtists MusicalReleaseAlternativeArtist[]
+
+  @@unique([entryId, artistId, entryArtistNameId])
   @@map("musical_entries_artists")
 }
 

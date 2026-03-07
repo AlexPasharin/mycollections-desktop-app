@@ -4,7 +4,6 @@
 
 # Trigger on insert and on update
 
-- Triggers only on changes on fields "name", "name_for_sorting" and "other_names"
 - It is not allowed to update value of "code_name" once record is created - if happens exception is thrown and operation is rolled back
 - Value of "code_name" is trimmed (with notification about it in case this changes value). After trimming "code_name" must match regex ^[A-Z]+ - if does not, exception is thrown and operation is rolled back
 - Value of "name" is trimmed (with notification about it in case this changes value)
