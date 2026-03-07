@@ -67,14 +67,14 @@ model Country {
 }
 
 model MusicalReleaseAlternativeArtist {
-  releaseId             String  @map("release_id") @db.Uuid
-  artistId              String  @map("artist_id") @db.Uuid
-  alternativeArtistName String? @map("alternative_artist_name") // used when release's artist use for release one of it's "other names"
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  release MusicalRelease @relation(fields: [releaseId], references: [id])
-  artist  Artist         @relation(fields: [artistId], references: [id])
+  releaseId String          @map("release_id") @db.Uuid
+  release   MusicalRelease? @relation(fields: [releaseId], references: [id])
 
-  @@id([releaseId, artistId])
+  entryArtistId      String      @map("entry_artist_id") @db.Uuid
+  entryAltArtistName EntryArtist @relation(fields: [entryArtistId], references: [id])
+
   @@map("musical_release_alternative_artists")
 }
 

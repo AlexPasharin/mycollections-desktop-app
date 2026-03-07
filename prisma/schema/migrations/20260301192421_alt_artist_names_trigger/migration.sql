@@ -6,6 +6,10 @@ DECLARE
 	artist_main_name TEXT;
 	name_trimmed TEXT;
 BEGIN
+  IF OLD.artist_id <> NEW.artist_id THEN
+		RAISE EXCEPTION 'It is not allowed to update "artist_id" of existing "artist alt names" record "%s".',
+			NEW.id::TEXT;
+	END IF;
 	name_trimmed := TRIM(NEW.name);
 
 	SELECT name INTO artist_main_name FROM artists WHERE artist_id = NEW.artist_id;
