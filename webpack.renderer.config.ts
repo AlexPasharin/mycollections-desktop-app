@@ -1,8 +1,10 @@
+
 import type { Configuration } from "webpack";
 
 import aliases from "./webpack.aliases";
 import { plugins } from "./webpack.plugins";
 import { rules } from "./webpack.rules";
+
 
 export const rendererConfig: Configuration = {
   module: {
@@ -10,7 +12,10 @@ export const rendererConfig: Configuration = {
       ...rules,
       {
         test: /\.css$/,
-        use: [{ loader: "style-loader" }, { loader: "css-loader" }],
+        use: [
+          { loader: "style-loader" },
+          { loader: "css-modules-typescript-loader" },
+          { loader: "css-loader", options: { modules: true } }],
       },
     ],
   },
@@ -19,4 +24,5 @@ export const rendererConfig: Configuration = {
     alias: aliases,
     extensions: [".js", ".ts", ".jsx", ".tsx", ".css"],
   },
+
 };
