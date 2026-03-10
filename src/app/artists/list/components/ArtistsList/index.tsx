@@ -1,5 +1,7 @@
 import { useEffect, useState, type FC } from "react";
 
+import ArtistListElement from "./Artist";
+
 import api from "../../api";
 
 import type { FetchArtistsResponse } from "@/types/artists";
@@ -29,9 +31,9 @@ const ArtistList: FC = () => {
           startIndex: prevArtistsState
             ? direction === "next"
               ? prevArtistsState.startIndex +
-                prevArtistsState.artists.length -
-                1 +
-                1
+              prevArtistsState.artists.length -
+              1 +
+              1
               : prevArtistsState.startIndex - result.artists.length
             : 1,
         })),
@@ -74,9 +76,7 @@ const ArtistList: FC = () => {
         <div> Loading artists... </div>
       ) : artistsState ? (
         <ol start={artistsState.startIndex}>
-          {artistsState.artists.map(({ artistId, name }) => (
-            <li key={artistId}>{name}</li>
-          ))}
+          {artistsState.artists.map(artist => <ArtistListElement key={artist.artistId} artist={artist} />)}
         </ol>
       ) : null}
     </>

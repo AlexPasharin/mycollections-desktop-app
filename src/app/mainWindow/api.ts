@@ -1,6 +1,7 @@
 export type API = {
   openNewArtistsListWindow: () => void;
   openNewArtistQueryWindow: () => void;
+  openNewArtistEntriesListWindow: () => void;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
