@@ -10,6 +10,9 @@ const appWindows = {
   artist_query_window: {
     folder: "artists/query",
   },
+  artist_entries_window: {
+    folder: "artists/entries",
+  },
 } as const satisfies Record<
   AppWindowName,
   {

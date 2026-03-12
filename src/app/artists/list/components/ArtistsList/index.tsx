@@ -1,5 +1,7 @@
 import { useEffect, useState, type FC } from "react";
 
+import ArtistListElement from "./Artist";
+
 import api from "../../api";
 
 import type { FetchArtistsResponse } from "@/types/artists";
@@ -74,8 +76,8 @@ const ArtistList: FC = () => {
         <div> Loading artists... </div>
       ) : artistsState ? (
         <ol start={artistsState.startIndex}>
-          {artistsState.artists.map(({ artistId, name }) => (
-            <li key={artistId}>{name}</li>
+          {artistsState.artists.map((artist) => (
+            <ArtistListElement key={artist.artistId} artist={artist} />
           ))}
         </ol>
       ) : null}
