@@ -1,15 +1,19 @@
 import eslint from "@eslint/js";
 import stylistic from "@stylistic/eslint-plugin";
 import importPlugin from "eslint-plugin-import";
+import reactPlugin from "eslint-plugin-react";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
     ignores: [
-      ".webpack",
-      "out",
-      "prisma/generated",
+      "node_modules/**/*",
+      ".webpack/**",
+      "out/**",
+      "prisma/generated/**",
       "src/types/db/database.ts",
+      "scripts/**",
+      "**/*.css.d.ts",
     ],
   },
   eslint.configs.recommended,
@@ -24,8 +28,15 @@ export default tseslint.config(
     plugins: {
       "@stylistic": stylistic,
       "@import": importPlugin,
+      react: reactPlugin,
+    },
+    settings: {
+      react: {
+        version: "detect", // Automatically picks up your React version
+      },
     },
     rules: {
+      ...reactPlugin.configs.recommended.rules,
       "@import/order": [
         "error",
         {
@@ -149,6 +160,7 @@ export default tseslint.config(
         { blankLine: "always", prev: "block-like", next: "*" },
       ],
       "@stylistic/no-mixed-operators": ["error", { allowSamePrecedence: true }],
+      "react/react-in-jsx-scope": "off",
     },
   },
 );
