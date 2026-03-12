@@ -1,8 +1,6 @@
-import type { FetchArtists } from "@/types/artists";
-
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type API = {
-  fetchArtists: FetchArtists;
-  openNewArtistEntriesListWindow: () => void;
+  // Add IPC-backed API methods here as needed
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access

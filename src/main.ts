@@ -1,12 +1,14 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import electronSquirrelStartup from "electron-squirrel-startup";
 
+import createArtistEntriesWindow from "./app/artists/entries/createWindow";
 import createArtistsListWindow from "./app/artists/list/createWindow";
 import createArtistQueryWindow from "./app/artists/query/createWindow";
 import createMainWindow from "./app/mainWindow/create";
 
 import {
   FETCH_ARTISTS,
+  OPEN_ARTIST_ENTRIES_LIST_WINDOW,
   OPEN_ARTIST_QUERY_WINDOW,
   OPEN_ARTISTS_LIST_WINDOW,
   QUERY_ARTIST,
@@ -35,6 +37,10 @@ await app.whenReady().then(async () => {
 
   ipcMain.on(OPEN_ARTIST_QUERY_WINDOW, () => {
     void createArtistQueryWindow();
+  });
+
+  ipcMain.on(OPEN_ARTIST_ENTRIES_LIST_WINDOW, () => {
+    void createArtistEntriesWindow();
   });
 
   await createMainWindow();
