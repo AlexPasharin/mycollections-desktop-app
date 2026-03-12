@@ -11,7 +11,7 @@ interface ArtistProps {
 
 const openArtistEntriesWindow = (): void => {
   api.openNewArtistEntriesListWindow();
-}
+};
 
 const ArtistListElement: FC<ArtistProps> = ({ artist }) => {
   const { name } = artist;
