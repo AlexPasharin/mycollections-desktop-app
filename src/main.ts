@@ -5,6 +5,7 @@ import createArtistEntriesWindow from "./app/artists/entries/createWindow";
 import createArtistsListWindow from "./app/artists/list/createWindow";
 import createArtistQueryWindow from "./app/artists/query/createWindow";
 import createMainWindow from "./app/mainWindow/create";
+import type { CreateArtistEntriesWindowParams } from "./types/entries";
 
 import {
   FETCH_ARTISTS,
@@ -41,7 +42,7 @@ await app.whenReady().then(async () => {
 
   ipcMain.on(
     OPEN_ARTIST_ENTRIES_LIST_WINDOW,
-    (_event, params?: Record<string, string>) => {
+    (_event, params: CreateArtistEntriesWindowParams) => {
       void createArtistEntriesWindow(params);
     },
   );
