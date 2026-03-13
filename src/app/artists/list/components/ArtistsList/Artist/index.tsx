@@ -9,12 +9,12 @@ interface ArtistProps {
   artist: DBArtist;
 }
 
-const openArtistEntriesWindow = (): void => {
-  api.openNewArtistEntriesListWindow();
-};
-
 const ArtistListElement: FC<ArtistProps> = ({ artist }) => {
-  const { name } = artist;
+  const { name, artistId } = artist;
+
+  const openArtistEntriesWindow = (): void => {
+    api.openNewArtistEntriesListWindow({ artistId });
+  };
 
   return (
     <li

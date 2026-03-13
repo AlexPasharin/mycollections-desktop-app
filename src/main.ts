@@ -39,9 +39,12 @@ await app.whenReady().then(async () => {
     void createArtistQueryWindow();
   });
 
-  ipcMain.on(OPEN_ARTIST_ENTRIES_LIST_WINDOW, () => {
-    void createArtistEntriesWindow();
-  });
+  ipcMain.on(
+    OPEN_ARTIST_ENTRIES_LIST_WINDOW,
+    (_event, params?: Record<string, string>) => {
+      void createArtistEntriesWindow(params);
+    },
+  );
 
   await createMainWindow();
 

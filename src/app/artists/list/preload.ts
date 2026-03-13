@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 
-import type { API } from "./api";
+import type { API, OpenArtistEntriesWindowParams } from "./api";
 
 import {
   FETCH_ARTISTS,
@@ -11,8 +11,8 @@ import type { FetchArtistsParams } from "@/types/artists";
 const api = {
   fetchArtists: (params: FetchArtistsParams) =>
     ipcRenderer.invoke(FETCH_ARTISTS, params),
-  openNewArtistEntriesListWindow: () =>
-    ipcRenderer.send(OPEN_ARTIST_ENTRIES_LIST_WINDOW),
+  openNewArtistEntriesListWindow: (params: OpenArtistEntriesWindowParams) =>
+    ipcRenderer.send(OPEN_ARTIST_ENTRIES_LIST_WINDOW, params),
 } as const satisfies API;
 
 contextBridge.exposeInMainWorld("api", api);
