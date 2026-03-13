@@ -31,3 +31,9 @@ export type ArtistQueryResult = {
 } | null;
 
 export type QueryArtist = (query: string) => Promise<ArtistQueryResult>;
+
+export type ArtistByIdResult = Pick<DBArtist, "artistId" | "name">;
+
+export type GetArtistById = (
+  artistId: string,
+) => Promise<ArtistByIdResult | undefined>;

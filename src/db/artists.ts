@@ -7,6 +7,7 @@ import { Prisma } from "@/prisma/generated";
 import type {
   DBArtist,
   FetchArtists,
+  GetArtistById,
   QueriedArtist,
   QueryArtist,
 } from "@/types/artists";
@@ -144,6 +145,13 @@ export const queryArtist: QueryArtist = async (query) => {
 
   return { substringMatches, fuzzySearch };
 };
+
+export const getArtistById: GetArtistById = (artistId) =>
+  client
+    .selectFrom("artists")
+    .select(["artistId", "name"])
+    .where("artistId", "=", artistId)
+    .executeTakeFirst();
 
 const getArtistsBySubstringQuery = async (
   query: string,

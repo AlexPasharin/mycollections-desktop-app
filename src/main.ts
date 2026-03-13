@@ -9,12 +9,13 @@ import type { CreateArtistEntriesWindowParams } from "./types/entries";
 
 import {
   FETCH_ARTISTS,
+  GET_ARTIST_BY_ID,
   OPEN_ARTIST_ENTRIES_LIST_WINDOW,
   OPEN_ARTIST_QUERY_WINDOW,
   OPEN_ARTISTS_LIST_WINDOW,
   QUERY_ARTIST,
 } from "@/constants/ipcEvents";
-import { fetchArtists, queryArtist } from "@/db/artists";
+import { fetchArtists, getArtistById, queryArtist } from "@/db/artists";
 import type { FetchArtistsParams } from "@/types/artists";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -31,6 +32,9 @@ await app.whenReady().then(async () => {
   );
 
   ipcMain.handle(QUERY_ARTIST, (_, query: string) => queryArtist(query));
+  ipcMain.handle(GET_ARTIST_BY_ID, (_, artistId: string) =>
+    getArtistById(artistId),
+  );
 
   ipcMain.on(OPEN_ARTISTS_LIST_WINDOW, () => {
     void createArtistsListWindow();
