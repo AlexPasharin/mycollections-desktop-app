@@ -16,7 +16,7 @@ const appWindows = {
 } as const satisfies Record<
   AppWindowName,
   {
-    folder: string;
+    folder: `windows/${string}`;
   }
 >;
 
