@@ -2,16 +2,16 @@ import type { AppWindowName } from "constants/appWindows";
 
 const appWindows = {
   main_window: {
-    folder: "mainWindow",
+    folder: "windows/main",
   },
   artists_list_window: {
-    folder: "artists/list",
+    folder: "windows/artists/list",
   },
   artist_query_window: {
-    folder: "artists/query",
+    folder: "windows/artists/query",
   },
   artist_entries_window: {
-    folder: "artists/entries",
+    folder: "windows/artists/entries",
   },
 } as const satisfies Record<
   AppWindowName,

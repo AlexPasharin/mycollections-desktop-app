@@ -2,7 +2,7 @@ import type { FC } from "react";
 
 import styles from "./styles.module.css";
 
-import api from "@/app/artists/list/api";
+import api from "@/app/windows/artists/list/api";
 import type { DBArtist } from "@/types/artists";
 
 interface ArtistProps {
