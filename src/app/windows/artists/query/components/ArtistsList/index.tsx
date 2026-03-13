@@ -1,5 +1,8 @@
 import type { FC } from "react";
 
+import api from "../../api";
+
+import ArtistListElement from "@/app/components/Artist";
 import type { QueriedArtist } from "@/types/artists";
 
 type ArtistsByQueryListProps = {
@@ -14,7 +17,13 @@ const ArtistsList: FC<ArtistsByQueryListProps> = ({ artists }) => {
   return (
     <ol>
       {artists.map(({ id, name }) => (
-        <li key={id}>{name}</li>
+        <ArtistListElement
+          key={id}
+          artist={{ name }}
+          onArtistSelect={() =>
+            api.openNewArtistEntriesListWindow({ artistId: id })
+          }
+        />
       ))}
     </ol>
   );

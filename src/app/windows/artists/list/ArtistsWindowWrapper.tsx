@@ -1,6 +1,6 @@
 import type { FC } from "react";
 
-import ArtistList from "@/app/artists/list/components/ArtistsList";
+import ArtistList from "@/app/windows/artists/list/components/ArtistsList";
 
 const ArtistsWindowWrapper: FC = () => (
   <>

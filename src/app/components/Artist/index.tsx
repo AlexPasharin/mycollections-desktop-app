@@ -2,28 +2,24 @@ import type { FC } from "react";
 
 import styles from "./styles.module.css";
 
-import api from "@/app/artists/list/api";
-import type { DBArtist } from "@/types/artists";
+type Artist = { name: string };
 
-interface ArtistProps {
-  artist: DBArtist;
-}
-
-const openArtistEntriesWindow = (): void => {
-  api.openNewArtistEntriesListWindow();
+type ArtistProps = {
+  artist: Artist;
+  onArtistSelect: () => void;
 };
 
-const ArtistListElement: FC<ArtistProps> = ({ artist }) => {
+const ArtistListElement: FC<ArtistProps> = ({ artist, onArtistSelect }) => {
   const { name } = artist;
 
   return (
     <li
       className={styles.artist}
-      onClick={openArtistEntriesWindow}
+      onClick={onArtistSelect}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          openArtistEntriesWindow();
+          onArtistSelect();
         }
       }}
       role="button"
