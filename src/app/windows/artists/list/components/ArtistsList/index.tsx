@@ -30,9 +30,9 @@ const ArtistList: FC = () => {
           startIndex: prevArtistsState
             ? direction === "next"
               ? prevArtistsState.startIndex +
-              prevArtistsState.artists.length -
-              1 +
-              1
+                prevArtistsState.artists.length -
+                1 +
+                1
               : prevArtistsState.startIndex - result.artists.length
             : 1,
         })),
@@ -76,7 +76,15 @@ const ArtistList: FC = () => {
       ) : artistsState ? (
         <ol start={artistsState.startIndex}>
           {artistsState.artists.map((artist) => (
-            <ArtistListElement key={artist.artistId} artist={artist} onArtistSelect={() => api.openNewArtistEntriesListWindow({ artistId: artist.artistId })} />
+            <ArtistListElement
+              key={artist.artistId}
+              artist={artist}
+              onArtistSelect={() =>
+                api.openNewArtistEntriesListWindow({
+                  artistId: artist.artistId,
+                })
+              }
+            />
           ))}
         </ol>
       ) : null}

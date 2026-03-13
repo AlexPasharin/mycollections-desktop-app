@@ -2,17 +2,15 @@ import type { FC } from "react";
 
 import styles from "./styles.module.css";
 
-
 type Artist = { name: string };
 
 type ArtistProps = {
   artist: Artist;
   onArtistSelect: () => void;
-}
+};
 
 const ArtistListElement: FC<ArtistProps> = ({ artist, onArtistSelect }) => {
-  const { name, } = artist;
-
+  const { name } = artist;
 
   return (
     <li

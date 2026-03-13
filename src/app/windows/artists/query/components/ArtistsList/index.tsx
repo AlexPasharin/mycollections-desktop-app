@@ -17,7 +17,13 @@ const ArtistsList: FC<ArtistsByQueryListProps> = ({ artists }) => {
   return (
     <ol>
       {artists.map(({ id, name }) => (
-        <ArtistListElement key={id} artist={{ name }} onArtistSelect={() => api.openNewArtistEntriesListWindow({ artistId: id })} />
+        <ArtistListElement
+          key={id}
+          artist={{ name }}
+          onArtistSelect={() =>
+            api.openNewArtistEntriesListWindow({ artistId: id })
+          }
+        />
       ))}
     </ol>
   );
