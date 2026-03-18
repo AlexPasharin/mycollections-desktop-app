@@ -21,13 +21,14 @@ export type FetchArtists = (
 ) => Promise<FetchArtistsResponse>;
 
 export type QueriedArtist = {
-  id: string;
+  artistId: string;
   name: string;
+  altNameId?: string;
 };
 
 export type ArtistQueryResult = {
-  substringMatches: QueriedArtist[];
-  fuzzySearch: QueriedArtist[];
+  directMatches: QueriedArtist[];
+  fuzzyMatches: QueriedArtist[];
 } | null;
 
 export type QueryArtist = (query: string) => Promise<ArtistQueryResult>;
