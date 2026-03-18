@@ -5,7 +5,6 @@ import ArtistsList from "../ArtistsList";
 
 import type { ArtistQueryResult } from "@/types/artists";
 
-
 const ArtistQuery: FC = () => {
   const [artists, setArtists] = useState<ArtistQueryResult>(null);
 
@@ -27,7 +26,9 @@ const ArtistQuery: FC = () => {
 
 export default ArtistQuery;
 
-const ArtistQueryResultView: FC<{ queryResults: ArtistQueryResult | null }> = ({ queryResults }) => {
+const ArtistQueryResultView: FC<{ queryResults: ArtistQueryResult | null }> = ({
+  queryResults,
+}) => {
   if (!queryResults) {
     return null;
   }
@@ -39,13 +40,10 @@ const ArtistQueryResultView: FC<{ queryResults: ArtistQueryResult | null }> = ({
       <ArtistsList artists={directMatches} />
       {fuzzyMatches.length > 0 && (
         <div className="mt-4">
-          <div>
-            {directMatches.length ? "Or did" : "Did"} you mean?
-          </div>
+          <div>{directMatches.length ? "Or did" : "Did"} you mean?</div>
           <ArtistsList artists={fuzzyMatches} />
         </div>
       )}
     </>
   );
 };
-
