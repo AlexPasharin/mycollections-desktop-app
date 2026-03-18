@@ -1,7 +1,9 @@
 import type { GetArtistById } from "@/types/artists";
+import type { SearchEntriesByArtist } from "@/types/entries";
 
 export type API = {
   getArtistById: GetArtistById;
+  searchEntriesByArtist: SearchEntriesByArtist;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
