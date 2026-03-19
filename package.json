@@ -10,6 +10,7 @@
     "make": "yarn; yarn clean; electron-forge make;rm -rf .webpack",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
+    "lint:fix": "eslint --ext .ts,.tsx . --fix",
     "typecheck": "tsc",
     "clean": "rm -rf .webpack && rm -rf out",
     "open-mac": "out/mycollections-desktop-app-darwin-x64/mycollections-desktop-app.app/Contents/MacOS/mycollections-desktop-app",
