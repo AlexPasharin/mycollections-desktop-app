@@ -3,6 +3,7 @@
 - Fields "main_name", "original_release_date", "comment", "discogs_url", "relation_to_queen" are of custom type "non_empty_text", meaning that their values are not allowed to be empty strings after trimming
 - Field "alternative_names" is optional (this is prisma bug, it always treats fields of array type as mandatory in schema but in fact generates them as optional in database)
 - Field "alternative_names" is of type "non_empty_text_array", meaning that it's value cannot be an empty array and also each value in it must be a non-empty string after trimming
+- There is a custom GIST index on expression "LOWER("main_name")", with operator class gist_trgm_ops. This is used for faster "similarity" fuzzy case-insensitive search on "main_name" field.
 
 # Trigger on insert and on update
 
