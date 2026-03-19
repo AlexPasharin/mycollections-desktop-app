@@ -1,6 +1,7 @@
 import { type FC } from "react";
 
 import styles from "./ArtistEntriesList.module.css";
+
 import ArtistEntriesListItem from "../ArtistEntriesListItem";
 
 import type { EntrySearchResult } from "@/types/entries";
