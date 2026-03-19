@@ -2,7 +2,7 @@ import { type FunctionModule, type QueryCreator } from "kysely";
 
 import client from "../client/kysely";
 
-import type { DBArtist, FetchArtists } from "@/types/artists";
+import type { ListArtist, FetchArtists } from "@/types/artists";
 import type { DB } from "@/types/db/database";
 
 const BATCH_SIZE = 100;
@@ -53,10 +53,10 @@ const fetchArtistsBatch = ({
   batchSize = BATCH_SIZE,
   comparisonOperator,
 }: {
-  artistForCompare: DBArtist | null;
+  artistForCompare: ListArtist | null;
   comparisonOperator: ComparisonOperator;
   batchSize?: number;
-}): Promise<DBArtist[]> => {
+}): Promise<ListArtist[]> => {
   const sortingKey = (fn: FunctionModule<DB, "artists">) =>
     fn<string>("lower", [fn.coalesce("nameForSorting", "name")]);
 
@@ -105,8 +105,8 @@ const fetchNextOrPrevArtist = async ({
   artist,
 }: {
   type: "next" | "prev";
-  artist?: DBArtist | undefined;
-}): Promise<DBArtist | undefined> => {
+  artist?: ListArtist | undefined;
+}): Promise<ListArtist | undefined> => {
   if (!artist) {
     return undefined;
   }
