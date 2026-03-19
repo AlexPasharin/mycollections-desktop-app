@@ -27,7 +27,8 @@ model AlternativeMusicalEntryName {
   name    String
   entryId String @map("entry_id") @db.Uuid
 
-  entry MusicalEntry @relation(fields: [entryId], references: [id])
+  entry           MusicalEntry     @relation(fields: [entryId], references: [id])
+  musicalReleases MusicalRelease[]
 
   @@unique([name, entryId])
   @@map("alternative_musical_entry_names")

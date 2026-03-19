@@ -12,6 +12,9 @@ model MusicalRelease {
   partOfQueenCollection Boolean @default(false) @map("part_of_queen_collection")
   relationToQueen       String? @map("relation_to_queen")
 
+  alternativeNameId    String?                      @map("release_alternative_name_id") @db.Uuid
+  alternativeEntryName AlternativeMusicalEntryName? @relation(fields: [alternativeNameId], references: [id])
+
   entryId String @map("entry_id") @db.Uuid
 
   entry              MusicalEntry                      @relation(fields: [entryId], references: [id])
