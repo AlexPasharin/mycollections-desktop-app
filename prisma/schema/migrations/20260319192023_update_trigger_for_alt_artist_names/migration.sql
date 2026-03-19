@@ -1,0 +1,41 @@
+-- This migration had to be generated empty with --create-only command and populated manually, because it's content cannot be expressed in Prisma schema
+
+CREATE OR REPLACE FUNCTION validate_alternative_artist_name()
+RETURNS TRIGGER AS $$
+DECLARE
+	artist_main_name TEXT;
+	name_trimmed TEXT;
+BEGIN
+  IF OLD.artist_id <> NEW.artist_id THEN
+		RAISE EXCEPTION 'It is not allowed to update "artist_id" of existing "artist alt names" record "%s".',
+			NEW.name_id::TEXT;
+	END IF;
+	name_trimmed := TRIM(NEW.name);
+
+	SELECT name INTO artist_main_name FROM artists WHERE artist_id = NEW.artist_id;
+
+	IF artist_main_name = name_trimmed THEN
+		RAISE EXCEPTION 'Alternative name of artist cannot be same as the main name of artist. Artist: %, artist name: %.',
+			NEW.artist_id,
+			artist_main_name;
+	END IF;
+
+  IF NEW.name IS DISTINCT FROM name_trimmed THEN
+   CALL raise_notice_with_query_id(
+        'Automatically trimmed leading/trailing spaces from "name" of artist''s alternative name entry "%s". Original: "%s", Corrected: "%s".',
+        NEW.name_id::text,
+        NEW.name,
+        name_trimmed
+    );
+
+    NEW.name := name_trimmed;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER validate_alternative_artist_name
+BEFORE INSERT OR UPDATE ON alternative_artist_names
+FOR EACH ROW
+EXECUTE FUNCTION validate_alternative_artist_name();

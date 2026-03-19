@@ -13,12 +13,24 @@ model MusicalEntry {
   parentEntries ParentMusicalEntry[] @relation("ParentEntry")
   childEntries  ParentMusicalEntry[] @relation("ChildEntry")
 
-  artists  EntryArtist[]
-  tags     MusicalEntryTag[]
-  types    TypeOfMusicalEntry[]
-  releases MusicalRelease[]
+  artists                      EntryArtist[]
+  tags                         MusicalEntryTag[]
+  types                        TypeOfMusicalEntry[]
+  releases                     MusicalRelease[]
+  alternativeMusicalEntryNames AlternativeMusicalEntryName[]
 
   @@map("musical_entries")
+}
+
+model AlternativeMusicalEntryName {
+  id      String @id @default(dbgenerated("gen_random_uuid()")) @map("name_id") @db.Uuid
+  name    String
+  entryId String @map("entry_id") @db.Uuid
+
+  entry MusicalEntry @relation(fields: [entryId], references: [id])
+
+  @@unique([name, entryId])
+  @@map("alternative_musical_entry_names")
 }
 
 model MusicalEntryType {
