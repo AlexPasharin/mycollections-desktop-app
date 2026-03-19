@@ -2,10 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 
 import type { API } from "./api";
 
-import {
-  GET_ARTIST_BY_ID,
-  SEARCH_ARTIST_ENTRIES,
-} from "@/constants/ipcEvents";
+import { GET_ARTIST_BY_ID, SEARCH_ARTIST_ENTRIES } from "@/constants/ipcEvents";
 import type { SearchArtistEntriesParams } from "@/types/entries";
 
 const api = {
