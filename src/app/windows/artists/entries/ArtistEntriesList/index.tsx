@@ -1,5 +1,8 @@
 import { type FC } from "react";
 
+import styles from "./ArtistEntriesList.module.css";
+import ArtistEntriesListItem from "../ArtistEntriesListItem";
+
 import type { EntrySearchResult } from "@/types/entries";
 
 type ArtistEntriesListProps = {
@@ -7,9 +10,9 @@ type ArtistEntriesListProps = {
 };
 
 const ArtistEntriesList: FC<ArtistEntriesListProps> = ({ entries }) => (
-  <ul>
+  <ul className={styles.list}>
     {entries.map((entry) => (
-      <li key={entry.entryId}>{entry.mainName}</li>
+      <ArtistEntriesListItem key={entry.entryId} entry={entry} />
     ))}
   </ul>
 );

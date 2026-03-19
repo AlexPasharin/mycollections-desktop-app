@@ -16,13 +16,15 @@ const ArtistEntriesContent: FC<ArtistEntriesContentProps> = ({ artist }) => {
 
   return (
     <div>
-      <p className={styles.artistName}>{name}</p>
-      <p>
-        {type}
-        {partOfQueenFamily && " · Part of Queen family"}
-      </p>
+      <div className={styles.artistInfoBox}>
+        <p className={styles.artistName}>{name}</p>
+        <p className={styles.artistDetails}>
+          {type}
+          {partOfQueenFamily && " · Part of Queen family"}
+        </p>
+      </div>
       <label>
-        <p>Search for artist entries</p>
+        <p>Search for artist entries:</p>
         <input
           type="text"
           value={query}
