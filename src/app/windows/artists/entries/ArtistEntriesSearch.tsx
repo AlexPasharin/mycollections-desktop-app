@@ -41,9 +41,7 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
     return <p>Searching…</p>;
   }
 
-  return (
-    <ArtistEntriesList entries={entries} />
-  );
+  return <ArtistEntriesList entries={entries} />;
 };
 
 export default ArtistEntriesSearch;
