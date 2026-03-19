@@ -14,12 +14,12 @@ import {
   OPEN_ARTIST_QUERY_WINDOW,
   OPEN_ARTISTS_LIST_WINDOW,
   QUERY_ARTIST,
-  SEARCH_ENTRIES_BY_ARTIST,
+  SEARCH_ARTIST_ENTRIES,
 } from "@/constants/ipcEvents";
 import { fetchArtists, getArtistById, queryArtist } from "@/db/artists";
-import { searchEntriesByArtist } from "@/db/entries";
+import { searchArtistEntries } from "@/db/entries";
 import type { FetchArtistsParams } from "@/types/artists";
-import type { SearchEntriesByArtistParams } from "@/types/entries";
+import type { SearchArtistEntriesParams } from "@/types/entries";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (electronSquirrelStartup) {
@@ -39,8 +39,8 @@ await app.whenReady().then(async () => {
     getArtistById(artistId),
   );
   ipcMain.handle(
-    SEARCH_ENTRIES_BY_ARTIST,
-    (_, params: SearchEntriesByArtistParams) => searchEntriesByArtist(params),
+    SEARCH_ARTIST_ENTRIES,
+    (_, params: SearchArtistEntriesParams) => searchArtistEntries(params),
   );
 
   ipcMain.on(OPEN_ARTISTS_LIST_WINDOW, () => {

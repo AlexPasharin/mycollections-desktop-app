@@ -1,6 +1,5 @@
-import { sql } from "kysely";
-
 import client from "../client/kysely";
+import { similarityToQuery } from "../utils";
 
 import type { QueriedArtist, QueryArtist } from "@/types/artists";
 
@@ -25,10 +24,6 @@ export const queryArtist: QueryArtist = async (query) => {
     ],
   };
 };
-
-/** `fieldRef`: qualified column, e.g. `"artists.name"`. */
-const similarityToQuery = (fieldRef: string, query: string) =>
-  sql<number>`similarity(lower(${sql.ref(fieldRef)}), ${query})`;
 
 const getArtistsByMatchOnMainName = async (
   query: string,

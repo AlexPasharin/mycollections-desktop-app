@@ -5,11 +5,12 @@ export type EntrySearchResult = {
   mainName: string;
 };
 
-export type SearchEntriesByArtistParams = {
+export type SearchArtistEntriesParams = {
   artistId: string;
   query: string;
+  limit?: number;
 };
 
-export type SearchEntriesByArtist = (
-  params: SearchEntriesByArtistParams,
+export type SearchArtistEntries = (
+  params: SearchArtistEntriesParams,
 ) => Promise<EntrySearchResult[]>;

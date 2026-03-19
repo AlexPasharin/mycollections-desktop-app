@@ -43,7 +43,7 @@ const ArtistEntriesWindowWrapper: FC = () => {
 
     setIsSearching(true);
     api
-      .searchEntriesByArtist({ artistId, query: trimmedQuery })
+      .searchArtistEntries({ artistId, query: trimmedQuery })
       .then(setEntries)
       .catch((error: unknown) => {
         console.error("Error searching entries", error);

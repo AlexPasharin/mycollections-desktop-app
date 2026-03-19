@@ -2,17 +2,10 @@ import { type FunctionModule, type QueryCreator } from "kysely";
 
 import client from "../client/kysely";
 
-import type { DBArtist, FetchArtists, GetArtistById } from "@/types/artists";
+import type { DBArtist, FetchArtists } from "@/types/artists";
 import type { DB } from "@/types/db/database";
 
 const BATCH_SIZE = 100;
-
-export const getArtistById: GetArtistById = (artistId) =>
-  client
-    .selectFrom("artists")
-    .select(["artistId", "name"])
-    .where("artistId", "=", artistId)
-    .executeTakeFirst();
 
 export const fetchArtists: FetchArtists = async ({
   artistForCompare,
