@@ -4,15 +4,15 @@ import type { API } from "./api";
 
 import {
   GET_ARTIST_BY_ID,
-  SEARCH_ENTRIES_BY_ARTIST,
+  SEARCH_ARTIST_ENTRIES,
 } from "@/constants/ipcEvents";
-import type { SearchEntriesByArtistParams } from "@/types/entries";
+import type { SearchArtistEntriesParams } from "@/types/entries";
 
 const api = {
   getArtistById: (artistId: string) =>
     ipcRenderer.invoke(GET_ARTIST_BY_ID, artistId),
-  searchEntriesByArtist: (params: SearchEntriesByArtistParams) =>
-    ipcRenderer.invoke(SEARCH_ENTRIES_BY_ARTIST, params),
+  searchArtistEntries: (params: SearchArtistEntriesParams) =>
+    ipcRenderer.invoke(SEARCH_ARTIST_ENTRIES, params),
 } as const satisfies API;
 
 contextBridge.exposeInMainWorld("api", api);

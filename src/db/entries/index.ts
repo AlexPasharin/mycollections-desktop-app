@@ -1,10 +1,11 @@
-import client from "./client/kysely";
+import client from "../client/kysely";
 
-import type { SearchEntriesByArtist } from "@/types/entries";
+import type { SearchArtistEntries } from "@/types/entries";
 
-export const searchEntriesByArtist: SearchEntriesByArtist = ({
+export const searchArtistEntries: SearchArtistEntries = ({
   artistId,
   query,
+  limit = 10,
 }) =>
   client
     .selectFrom("musicalEntries")
@@ -20,5 +21,5 @@ export const searchEntriesByArtist: SearchEntriesByArtist = ({
     .where("musicalEntriesArtists.artistId", "=", artistId)
     .where("musicalEntries.mainName", "ilike", `%${query.trim()}%`)
     .orderBy("musicalEntries.mainName")
-    .limit(10)
+    .limit(limit)
     .execute();
