@@ -8,6 +8,6 @@ export { queryArtist } from "./query";
 export const getArtistById: GetArtistById = (artistId) =>
   client
     .selectFrom("artists")
-    .select(["artistId", "name"])
+    .select(["artistId", "name", "type", "partOfQueenFamily"])
     .where("artistId", "=", artistId)
     .executeTakeFirst();
