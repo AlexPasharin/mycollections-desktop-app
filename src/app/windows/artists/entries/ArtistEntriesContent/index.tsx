@@ -1,6 +1,8 @@
 import { type FC, useState } from "react";
 
-import ArtistEntriesSearch from "./ArtistEntriesSearch";
+import styles from "./ArtistEntriesContent.module.css";
+
+import ArtistEntriesSearch from "../ArtistEntriesSearch";
 
 import type { ArtistByIdResult } from "@/types/artists";
 
@@ -14,13 +16,13 @@ const ArtistEntriesContent: FC<ArtistEntriesContentProps> = ({ artist }) => {
 
   return (
     <div>
-      <p>{name}</p>
+      <p className={styles.artistName}>{name}</p>
       <p>
         {type}
         {partOfQueenFamily && " · Part of Queen family"}
       </p>
       <label>
-        Search entries
+        <p>Search for artist entries</p>
         <input
           type="text"
           value={query}
