@@ -1,6 +1,5 @@
 model MusicalRelease {
   id                    String  @id @default(dbgenerated("gen_random_uuid()")) @map("release_id") @db.Uuid
-  alternativeName       String? @map("release_alternative_name") // used when release's name is different from it's entry's main name
   version               String  @map("release_version")
   releaseDate           String? @map("release_date")
   discogsUrl            String? @map("discogs_url")
@@ -12,6 +11,7 @@ model MusicalRelease {
   partOfQueenCollection Boolean @default(false) @map("part_of_queen_collection")
   relationToQueen       String? @map("relation_to_queen")
 
+  // used when release's name is different from it's entry's main name
   alternativeNameId    String?                      @map("release_alternative_name_id") @db.Uuid
   alternativeEntryName AlternativeMusicalEntryName? @relation(fields: [alternativeNameId], references: [id])
 
