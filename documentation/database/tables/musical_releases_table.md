@@ -1,11 +1,11 @@
 # Fields' additional properties that are not reflected in prisma schema (because it cannot express it)
 
-- Fields "release_alternative_name", "release_date", "release_version", "discogs_url", "comment", "condition_problems" and "relation_to_queen" are of custom type "non_empty_text", meaning that their values are not allowed to be empty strings after trimming
+- Fields "release_date", "release_version", "discogs_url", "comment", "condition_problems" and "relation_to_queen" are of custom type "non_empty_text", meaning that their values are not allowed to be empty strings after trimming
 
 # Trigger on insert and on update
 
 - Value of "release_version" is trimmed (with notification about it in case this changes value)
-- Value of "release_alternative_name" is trimmed (with notification about it in case this changes value). If trimmed value is same as release's entry's "main_name" or is not one of entry's "alternative_names" an exception is thrown and the whole operation is rolled back \*.
+- If value of "release_alternative_name_id" is not null, but references an entry in "alternative_musical_entry_names" table which corresponds to a different entry (not the entry this release belongs to), an exception is thrown and the whole operation is rolled back \*.
 - Value of "release_date" is validated, if given, using "validate_generalised_date" function, with default false value for "allow_feature_dates" parameter (see /documentation/database/validation_functions/generalized_date_field_validation). If validation returns errors they are added to final exception thrown and the whole operation is rolled back \*. If validation succeeds and final validated value is different from the original value a notification about it is generated (for the changes validation does at this case see /documentation/database/validation_functions/generalized_date_field_validation).
 - Value of "release_date" can not indicate time before value of release entry's "original_release_date". If this is violated an exception is thrown and the whole operation is rolled back \*.
 - Value of "comment" is trimmed, if given (with notification about it in case this changes value)
