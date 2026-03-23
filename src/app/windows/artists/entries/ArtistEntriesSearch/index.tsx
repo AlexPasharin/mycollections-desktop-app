@@ -1,13 +1,16 @@
 import { type FC, useEffect, useRef, useState } from "react";
 
 import api from "../api";
-import {
-  ARTIST_ENTRIES_SEARCH_LIMIT,
-  SEARCH_DEBOUNCE_MS,
-} from "../artistEntriesSearchConstants";
 import ArtistEntriesSearchResults from "../ArtistEntriesSearchResults";
+import styles from "../ArtistEntriesSearchResults/ArtistEntriesSearchResults.module.css";
 
 import type { EntrySearchResult } from "@/types/entries";
+
+/** Wait this long after the last keystroke before calling the API. */
+const SEARCH_DEBOUNCE_MS = 400;
+
+/** Max number of search hits returned per request (page size). */
+const ARTIST_ENTRIES_SEARCH_LIMIT = 10;
 
 type ArtistEntriesSearchProps = {
   artistId: string;
@@ -16,7 +19,9 @@ type ArtistEntriesSearchProps = {
 const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({ artistId }) => {
   const [query, setQuery] = useState("");
   const [entries, setEntries] = useState<EntrySearchResult[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const artistEntriesSearchTimeoutRef = useRef<ReturnType<
     typeof setTimeout
@@ -54,6 +59,7 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({ artistId }) => {
     if (!trimmedValue) {
       artistEntriesSearchRequestIdRef.current += 1;
       setEntries([]);
+      setNextCursor(null);
       setIsSearching(false);
 
       return;
@@ -72,7 +78,8 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({ artistId }) => {
         })
         .then((data) => {
           if (dispatchedRequestId === artistEntriesSearchRequestIdRef.current) {
-            setEntries(data);
+            setEntries(data.items);
+            setNextCursor(data.nextCursor);
           }
         })
         .catch((error: unknown) => {
@@ -80,6 +87,7 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({ artistId }) => {
 
           if (dispatchedRequestId === artistEntriesSearchRequestIdRef.current) {
             setEntries([]);
+            setNextCursor(null);
           }
         })
         .finally(() => {
@@ -91,6 +99,33 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({ artistId }) => {
   };
 
   const trimmedQuery = query.trim();
+  const hasMoreToLoad = nextCursor !== null;
+
+  const loadMore = () => {
+    if (!hasMoreToLoad || isLoadingMore) {
+      return;
+    }
+
+    setIsLoadingMore(true);
+
+    api
+      .searchArtistEntries({
+        artistId,
+        query: trimmedQuery,
+        limit: ARTIST_ENTRIES_SEARCH_LIMIT,
+        cursor: nextCursor,
+      })
+      .then((data) => {
+        setEntries((prev) => [...prev, ...data.items]);
+        setNextCursor(data.nextCursor);
+      })
+      .catch((error: unknown) => {
+        console.error("Error loading more search results", error);
+      })
+      .finally(() => {
+        setIsLoadingMore(false);
+      });
+  };
 
   return (
     <>
@@ -103,11 +138,25 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({ artistId }) => {
           placeholder="Filter by name…"
         />
       </label>
+      {trimmedQuery && !isSearching && entries.length > 0 && (
+        <p className={styles.topResultsNote}>
+          {hasMoreToLoad
+            ? `Showing first ${entries.length} results — more available`
+            : "Showing all results"}
+        </p>
+      )}
       {trimmedQuery && (
         <ArtistEntriesSearchResults
           entries={entries}
           isSearching={isSearching}
         />
+      )}
+      {hasMoreToLoad && (
+        <p>
+          <button type="button" disabled={isLoadingMore} onClick={loadMore}>
+            {isLoadingMore ? "Loading…" : "Load more"}
+          </button>
+        </p>
       )}
     </>
   );
