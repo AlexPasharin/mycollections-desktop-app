@@ -4,7 +4,7 @@ import client from "../client/kysely";
 
 import type { SearchArtistEntries } from "@/types/entries";
 
-export const searchArtistEntries: SearchArtistEntries = ({
+export const searchArtistEntries: SearchArtistEntries = async ({
   artistId,
   query,
   limit,
@@ -47,35 +47,33 @@ export const searchArtistEntries: SearchArtistEntries = ({
     .limit(limit + 1);
 
   if (cursorPayload) {
-    // Sort: MAX(similarity) DESC, main_name ASC, entry_id ASC — cursor must resume after that tuple.
+    // Sort: MAX(similarity) DESC, main_name ASC, entry_id ASC. Cursor = first row of next page;
+    // keep rows at that position or later in the list (lower sim, or ties broken with > / >=).
     grouped = grouped.having(
-      sql<boolean>`(MAX(similarity) < ${cursorPayload.s} OR (MAX(similarity) = ${cursorPayload.s} AND main_name > ${cursorPayload.m}) OR (MAX(similarity) = ${cursorPayload.s} AND main_name = ${cursorPayload.m} AND entry_id > ${cursorPayload.i}))`,
+      sql<boolean>`(MAX(similarity) < ${cursorPayload.s} OR (MAX(similarity) = ${cursorPayload.s} AND main_name > ${cursorPayload.m}) OR (MAX(similarity) = ${cursorPayload.s} AND main_name = ${cursorPayload.m} AND entry_id >= ${cursorPayload.i}))`,
     );
   }
 
-  return grouped.execute().then((rows) => {
-    const hasMore = rows.length > limit;
-    const pageRows = hasMore ? rows.slice(0, limit) : rows;
+  const queryResults = await grouped.execute();
 
-    const items = pageRows.map(({ entryId, mainName, types, altNames }) => ({
-      entryId,
-      mainName,
-      types,
-      altNames,
-    }));
+  const pageRows = queryResults.slice(0, limit);
+  const firstOfNextBatch = queryResults[limit];
+  const nextCursor = firstOfNextBatch
+    ? encodeCursor({
+        s: firstOfNextBatch.maxSimilarity,
+        m: firstOfNextBatch.mainName,
+        i: firstOfNextBatch.entryId,
+      })
+    : null;
 
-    const last = pageRows[pageRows.length - 1];
-    const nextCursor =
-      hasMore && last
-        ? encodeCursor({
-            s: last.maxSimilarity,
-            m: last.mainName,
-            i: last.entryId,
-          })
-        : null;
+  const items = pageRows.map(({ entryId, mainName, types, altNames }) => ({
+    entryId,
+    mainName,
+    types,
+    altNames,
+  }));
 
-    return { items, hasMore, nextCursor };
-  });
+  return { items, nextCursor };
 };
 
 // builds (but does not execute) a subquery that returns all "extended entry" records for a given artist and query
@@ -120,40 +118,47 @@ const buildEntriesQueryByArtistIdAndNameSubstringMatch = (
   );
 };
 
+// Cursor JSON uses short keys on purpose: smaller payload after stringify + base64 (IPC / URLs).
+// Meaning of keys: s — MAX(similarity), m — mainName, i — entryId (see grouped query ORDER BY / HAVING).
 type CursorPayload = { s: number; m: string; i: string };
 
-function encodeCursor(p: CursorPayload): string {
-  return Buffer.from(JSON.stringify(p), "utf8").toString("base64url");
-}
+const encodeCursor = (p: CursorPayload): string =>
+  Buffer.from(JSON.stringify(p), "utf8").toString("base64url");
 
-function decodeCursor(cursor?: string | null): CursorPayload | null {
-  if (!cursor) {
+const decodeCursor = (cursor?: string | null): CursorPayload | null => {
+  if (cursor == null) {
     return null;
   }
 
-  try {
-    const parsed = JSON.parse(
-      Buffer.from(cursor, "base64url").toString("utf8"),
-    ) as unknown;
+  const parsed: unknown = JSON.parse(
+    Buffer.from(cursor, "base64url").toString("utf8"),
+  );
 
-    if (typeof parsed !== "object" || parsed === null) {
-      return null;
-    }
-
-    const s = (parsed as { s?: number }).s;
-    const m = (parsed as { m?: unknown }).m;
-    const i = (parsed as { i?: unknown }).i;
-
-    if (
-      typeof s !== "number" ||
-      typeof m !== "string" ||
-      typeof i !== "string"
-    ) {
-      return null;
-    }
-
-    return { s, m, i };
-  } catch {
-    return null;
+  if (typeof parsed !== "object" || parsed === null) {
+    throw new Error("Invalid search cursor: expected a JSON object");
   }
-}
+
+  if (!("s" in parsed && "m" in parsed && "i" in parsed)) {
+    throw new Error(
+      'Invalid search cursor: missing required keys "s", "m", or "i"',
+    );
+  }
+
+  const s = parsed["s"];
+  const m = parsed["m"];
+  const i = parsed["i"];
+
+  if (typeof s !== "number") {
+    throw new Error('Invalid search cursor: "s" must be a number');
+  }
+
+  if (typeof m !== "string") {
+    throw new Error('Invalid search cursor: "m" must be a string');
+  }
+
+  if (typeof i !== "string") {
+    throw new Error('Invalid search cursor: "i" must be a string');
+  }
+
+  return { s, m, i };
+};

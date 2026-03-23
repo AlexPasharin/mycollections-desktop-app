@@ -19,12 +19,9 @@ export type SearchArtistEntriesParams = {
 export type SearchArtistEntriesResult = {
   items: EntrySearchResult[];
 
-  /** True iff at least one more row exists after `items` for the same search. */
-  hasMore: boolean;
-
   /**
-   * Set only when `hasMore` is true: pass to the next request as `cursor`
-   * (same artistId, query, limit).
+   * When non-null, the first row of the next page (opaque). Pass as `cursor` on the next
+   * request (same artistId, query, limit). Null means nothing left to load after `items`.
    */
   nextCursor: string | null;
 };
