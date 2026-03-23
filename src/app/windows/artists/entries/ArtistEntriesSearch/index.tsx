@@ -18,7 +18,9 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({ artistId }) => {
   const [entries, setEntries] = useState<EntrySearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  const artistEntriesSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const artistEntriesSearchTimeoutRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
 
   /**
    * Monotonic id for artist-entry search requests. Incremented when clearing the query,
@@ -102,7 +104,10 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({ artistId }) => {
         />
       </label>
       {trimmedQuery && (
-        <ArtistEntriesSearchResults entries={entries} isSearching={isSearching} />
+        <ArtistEntriesSearchResults
+          entries={entries}
+          isSearching={isSearching}
+        />
       )}
     </>
   );
