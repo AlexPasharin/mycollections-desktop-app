@@ -11,7 +11,7 @@ import type { EntrySearchResult } from "@/types/entries";
 const SEARCH_DEBOUNCE_MS = 400;
 
 /** Max number of search hits returned and shown in the list. */
-const ARTIST_ENTRIES_SEARCH_LIMIT = 22;
+const ARTIST_ENTRIES_SEARCH_LIMIT = 10;
 
 type ArtistEntriesSearchProps = {
   artistId: string;

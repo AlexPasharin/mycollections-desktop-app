@@ -47,8 +47,9 @@ export const searchArtistEntries: SearchArtistEntries = ({
     .limit(limit + 1);
 
   if (cursorPayload) {
+    // Sort: MAX(similarity) DESC, main_name ASC, entry_id ASC — cursor must resume after that tuple.
     grouped = grouped.having(
-      sql<boolean>`(MAX(similarity) < ${cursorPayload.s} OR (MAX(similarity) = ${cursorPayload.s} AND entry_id > ${cursorPayload.i}))`,
+      sql<boolean>`(MAX(similarity) < ${cursorPayload.s} OR (MAX(similarity) = ${cursorPayload.s} AND main_name > ${cursorPayload.m}) OR (MAX(similarity) = ${cursorPayload.s} AND main_name = ${cursorPayload.m} AND entry_id > ${cursorPayload.i}))`,
     );
   }
 
@@ -66,7 +67,11 @@ export const searchArtistEntries: SearchArtistEntries = ({
     const last = pageRows[pageRows.length - 1];
     const nextCursor =
       hasMore && last
-        ? encodeCursor({ s: last.maxSimilarity, i: last.entryId })
+        ? encodeCursor({
+            s: last.maxSimilarity,
+            m: last.mainName,
+            i: last.entryId,
+          })
         : null;
 
     return { items, hasMore, nextCursor };
@@ -115,7 +120,7 @@ const buildEntriesQueryByArtistIdAndNameSubstringMatch = (
   );
 };
 
-type CursorPayload = { s: number; i: string };
+type CursorPayload = { s: number; m: string; i: string };
 
 function encodeCursor(p: CursorPayload): string {
   return Buffer.from(JSON.stringify(p), "utf8").toString("base64url");
@@ -136,13 +141,14 @@ function decodeCursor(cursor?: string | null): CursorPayload | null {
     }
 
     const s = (parsed as { s?: number }).s;
+    const m = (parsed as { m?: unknown }).m;
     const i = (parsed as { i?: unknown }).i;
 
-    if (typeof s !== "number" || typeof i !== "string") {
+    if (typeof s !== "number" || typeof m !== "string" || typeof i !== "string") {
       return null;
     }
 
-    return { s, i };
+    return { s, m, i };
   } catch {
     return null;
   }
