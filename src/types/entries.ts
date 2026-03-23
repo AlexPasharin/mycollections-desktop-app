@@ -4,12 +4,13 @@ export type EntrySearchResult = {
   entryId: string;
   mainName: string;
   types: string[];
+  altNames: string[];
 };
 
 export type SearchArtistEntriesParams = {
   artistId: string;
   query: string;
-  limit?: number;
+  limit: number;
 };
 
 export type SearchArtistEntries = (
