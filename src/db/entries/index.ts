@@ -8,43 +8,69 @@ export const searchArtistEntries: SearchArtistEntries = ({
   artistId,
   query,
   limit,
+  cursor,
 }) => {
   const subquery = buildEntriesQueryByArtistIdAndNameSubstringMatch(
     artistId,
     query,
   );
 
-  return (
-    client
-      .selectFrom(subquery.as("entries"))
-      .select([
-        "entry_id as entryId",
-        "main_name as mainName",
+  const cursorPayload = decodeCursor(cursor);
 
-        // this aggregates possibly different types of entry into a single jsonb array (which will automatically become an array of strings in typescript result)
-        // note that filtering on non null is needed so that we don't get an array with a null value when entry has no types
-        // coalesce is used to return an empty array if entry has no types, otherwise we would get a null value for "types"
-        sql<string[]>`coalesce(
+  let grouped = client
+    .selectFrom(subquery.as("entries"))
+    .select([
+      "entry_id as entryId",
+      "main_name as mainName",
+      sql<number>`MAX(similarity)`.as("maxSimilarity"),
+
+      // this aggregates possibly different types of entry into a single jsonb array (which will automatically become an array of strings in typescript result)
+      // note that filtering on non null is needed so that we don't get an array with a null value when entry has no types
+      // coalesce is used to return an empty array if entry has no types, otherwise we would get a null value for "types"
+      sql<string[]>`coalesce(
           jsonb_agg(DISTINCT ${sql.ref("type")} ORDER BY ${sql.ref("type")})
             FILTER (WHERE ${sql.ref("type")} IS NOT NULL),
           '[]'::jsonb
         )`.as("types"),
 
-        // same for alternative names
-        sql<string[]>`coalesce(
+      // same for alternative names
+      sql<string[]>`coalesce(
           jsonb_agg(DISTINCT ${sql.ref("alt_name")} ORDER BY ${sql.ref("alt_name")})
             FILTER (WHERE ${sql.ref("alt_name")} IS NOT NULL),
           '[]'::jsonb
         )`.as("altNames"),
-      ])
-      .groupBy(["entry_id", "main_name"])
+    ])
+    .groupBy(["entry_id", "main_name"])
+    .orderBy(sql`MAX(similarity)`, "desc")
+    .orderBy("mainName", "asc")
+    .orderBy("entry_id", "asc")
+    .limit(limit + 1);
 
-      // order by discovered best name similarity to query to get the most relevant entries first
-      .orderBy(sql`MAX(similarity)`, "desc")
+  if (cursorPayload) {
+    grouped = grouped.having(
+      sql<boolean>`(MAX(similarity) < ${cursorPayload.s} OR (MAX(similarity) = ${cursorPayload.s} AND entry_id > ${cursorPayload.i}))`,
+    );
+  }
 
-      .limit(limit)
-      .execute()
-  );
+  return grouped.execute().then((rows) => {
+    const hasMore = rows.length > limit;
+    const pageRows = hasMore ? rows.slice(0, limit) : rows;
+
+    const items = pageRows.map(({ entryId, mainName, types, altNames }) => ({
+      entryId,
+      mainName,
+      types,
+      altNames,
+    }));
+
+    const last = pageRows[pageRows.length - 1];
+    const nextCursor =
+      hasMore && last
+        ? encodeCursor({ s: last.maxSimilarity, i: last.entryId })
+        : null;
+
+    return { items, hasMore, nextCursor };
+  });
 };
 
 // builds (but does not execute) a subquery that returns all "extended entry" records for a given artist and query
@@ -74,7 +100,7 @@ const buildEntriesQueryByArtistIdAndNameSubstringMatch = (
         "t.name as type",
 
         // "best" similarity score is returned as one of the fields
-        sql<number>`GREATEST(similarity(lower(e.main_name), '%queen%'), coalesce(similarity(lower(n.name), '%queen%'), 0))`.as(
+        sql<number>`GREATEST(similarity(lower(e.main_name), ${`%${trimmedQuery}%`}), coalesce(similarity(lower(n.name), ${`%${trimmedQuery}%`}), 0))`.as(
           "similarity",
         ),
       ])
@@ -88,3 +114,36 @@ const buildEntriesQueryByArtistIdAndNameSubstringMatch = (
       )
   );
 };
+
+type CursorPayload = { s: number; i: string };
+
+function encodeCursor(p: CursorPayload): string {
+  return Buffer.from(JSON.stringify(p), "utf8").toString("base64url");
+}
+
+function decodeCursor(cursor?: string | null): CursorPayload | null {
+  if (!cursor) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(
+      Buffer.from(cursor, "base64url").toString("utf8"),
+    ) as unknown;
+
+    if (typeof parsed !== "object" || parsed === null) {
+      return null;
+    }
+
+    const s = (parsed as { s?: number }).s;
+    const i = (parsed as { i?: unknown }).i;
+
+    if (typeof s !== "number" || typeof i !== "string") {
+      return null;
+    }
+
+    return { s, i };
+  } catch {
+    return null;
+  }
+}

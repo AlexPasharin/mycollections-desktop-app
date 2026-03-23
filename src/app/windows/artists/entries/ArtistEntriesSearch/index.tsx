@@ -11,7 +11,7 @@ import type { EntrySearchResult } from "@/types/entries";
 const SEARCH_DEBOUNCE_MS = 400;
 
 /** Max number of search hits returned and shown in the list. */
-const ARTIST_ENTRIES_SEARCH_LIMIT = 10;
+const ARTIST_ENTRIES_SEARCH_LIMIT = 22;
 
 type ArtistEntriesSearchProps = {
   artistId: string;
@@ -23,13 +23,18 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
   query,
 }) => {
   const [entries, setEntries] = useState<EntrySearchResult[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   useEffect(() => {
     const trimmedQuery = query.trim();
 
     if (!trimmedQuery) {
       setEntries([]);
+      setHasMore(false);
+      setNextCursor(null);
       setIsSearching(false);
 
       return;
@@ -49,7 +54,9 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
         })
         .then((data) => {
           if (!cancelled) {
-            setEntries(data);
+            setEntries(data.items);
+            setHasMore(data.hasMore);
+            setNextCursor(data.nextCursor);
           }
         })
         .catch((error: unknown) => {
@@ -57,6 +64,8 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
 
           if (!cancelled) {
             setEntries([]);
+            setHasMore(false);
+            setNextCursor(null);
           }
         })
         .finally(() => {
@@ -86,14 +95,47 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
     return <p>No entries corresponding to the search term were found.</p>;
   }
 
+  const loadMore = () => {
+    if (!hasMore || !nextCursor || isLoadingMore) {
+      return;
+    }
+
+    setIsLoadingMore(true);
+    void api
+      .searchArtistEntries({
+        artistId,
+        query: trimmedQuery,
+        limit: ARTIST_ENTRIES_SEARCH_LIMIT,
+        cursor: nextCursor,
+      })
+      .then((data) => {
+        setEntries((prev) => [...prev, ...data.items]);
+        setHasMore(data.hasMore);
+        setNextCursor(data.nextCursor);
+      })
+      .catch((error: unknown) => {
+        console.error("Error loading more search results", error);
+      })
+      .finally(() => {
+        setIsLoadingMore(false);
+      });
+  };
+
   return (
     <>
-      {entries.length === ARTIST_ENTRIES_SEARCH_LIMIT && (
+      {hasMore && entries.length === ARTIST_ENTRIES_SEARCH_LIMIT && (
         <p className={styles.topResultsNote}>
-          Showing {ARTIST_ENTRIES_SEARCH_LIMIT} top results
+          Showing first {ARTIST_ENTRIES_SEARCH_LIMIT} results — more available
         </p>
       )}
       <ArtistEntriesList entries={entries} />
+      {hasMore && (
+        <p>
+          <button type="button" disabled={isLoadingMore} onClick={loadMore}>
+            {isLoadingMore ? "Loading…" : "Load more"}
+          </button>
+        </p>
+      )}
     </>
   );
 };
