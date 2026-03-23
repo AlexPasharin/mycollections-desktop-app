@@ -41,6 +41,8 @@ export const searchArtistEntries: SearchArtistEntries = ({
 
       // order by discovered best name similarity to query to get the most relevant entries first
       .orderBy(sql`MAX(similarity)`, "desc")
+      .orderBy("mainName", "asc")
+      .orderBy("entryId", "asc")
 
       .limit(limit)
       .execute()
