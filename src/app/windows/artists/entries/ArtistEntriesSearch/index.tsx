@@ -1,99 +1,109 @@
-import { type FC, useEffect, useState } from "react";
-
-import styles from "./ArtistEntriesSearch.module.css";
+import { type FC, useEffect, useRef, useState } from "react";
 
 import api from "../api";
-import ArtistEntriesList from "../ArtistEntriesList";
+import {
+  ARTIST_ENTRIES_SEARCH_LIMIT,
+  SEARCH_DEBOUNCE_MS,
+} from "../artistEntriesSearchConstants";
+import ArtistEntriesSearchResults from "../ArtistEntriesSearchResults";
 
 import type { EntrySearchResult } from "@/types/entries";
 
-/** Wait this long after the last keystroke before calling the API. */
-const SEARCH_DEBOUNCE_MS = 400;
-
-/** Max number of search hits returned and shown in the list. */
-const ARTIST_ENTRIES_SEARCH_LIMIT = 10;
-
 type ArtistEntriesSearchProps = {
   artistId: string;
-  query: string;
 };
 
-const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
-  artistId,
-  query,
-}) => {
+const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({ artistId }) => {
+  const [query, setQuery] = useState("");
   const [entries, setEntries] = useState<EntrySearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  useEffect(() => {
-    const trimmedQuery = query.trim();
+  const artistEntriesSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    if (!trimmedQuery) {
+  /**
+   * Monotonic id for artist-entry search requests. Incremented when clearing the query,
+   * dispatching a new search, or unmounting, so responses from older requests are ignored.
+   */
+  const artistEntriesSearchRequestIdRef = useRef(0);
+
+  // Unmount-only cleanup
+  useEffect(() => {
+    return () => {
+      // - Clear any pending debounce timer so it cannot fire after unmount and call setState.
+      if (artistEntriesSearchTimeoutRef.current !== null) {
+        clearTimeout(artistEntriesSearchTimeoutRef.current);
+      }
+
+      // - Bump the request id so in-flight handlers for older searches skip setState.
+      artistEntriesSearchRequestIdRef.current += 1;
+    };
+  }, []);
+
+  const handleQueryChange = (value: string) => {
+    setQuery(value);
+
+    if (artistEntriesSearchTimeoutRef.current) {
+      // cancel any pending debounce timer
+      clearTimeout(artistEntriesSearchTimeoutRef.current);
+    }
+
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue) {
+      artistEntriesSearchRequestIdRef.current += 1;
       setEntries([]);
       setIsSearching(false);
 
       return;
     }
 
-    /** True for the whole debounce window + in-flight request until it settles. */
     setIsSearching(true);
 
-    let cancelled = false;
+    artistEntriesSearchTimeoutRef.current = setTimeout(() => {
+      const dispatchedRequestId = ++artistEntriesSearchRequestIdRef.current;
 
-    const timeoutId = setTimeout(() => {
-      void api
+      api
         .searchArtistEntries({
           artistId,
-          query: trimmedQuery,
+          query: trimmedValue,
           limit: ARTIST_ENTRIES_SEARCH_LIMIT,
         })
         .then((data) => {
-          if (!cancelled) {
+          if (dispatchedRequestId === artistEntriesSearchRequestIdRef.current) {
             setEntries(data);
           }
         })
         .catch((error: unknown) => {
           console.error("Error searching entries", error);
 
-          if (!cancelled) {
+          if (dispatchedRequestId === artistEntriesSearchRequestIdRef.current) {
             setEntries([]);
           }
         })
         .finally(() => {
-          if (!cancelled) {
+          if (dispatchedRequestId === artistEntriesSearchRequestIdRef.current) {
             setIsSearching(false);
           }
         });
     }, SEARCH_DEBOUNCE_MS);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timeoutId);
-    };
-  }, [artistId, query]);
+  };
 
   const trimmedQuery = query.trim();
 
-  if (!trimmedQuery) {
-    return null;
-  }
-
-  if (isSearching) {
-    return <p>Searching…</p>;
-  }
-
-  if (entries.length === 0) {
-    return <p>No entries corresponding to the search term were found.</p>;
-  }
-
   return (
     <>
-      {entries.length === ARTIST_ENTRIES_SEARCH_LIMIT && (
-        <p className={styles.topResultsNote}>
-          Showing {ARTIST_ENTRIES_SEARCH_LIMIT} top results
-        </p>
+      <label>
+        <p>Search for artist entries:</p>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => handleQueryChange(e.target.value)}
+          placeholder="Filter by name…"
+        />
+      </label>
+      {trimmedQuery && (
+        <ArtistEntriesSearchResults entries={entries} isSearching={isSearching} />
       )}
-      <ArtistEntriesList entries={entries} />
     </>
   );
 };
