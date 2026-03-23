@@ -144,7 +144,11 @@ function decodeCursor(cursor?: string | null): CursorPayload | null {
     const m = (parsed as { m?: unknown }).m;
     const i = (parsed as { i?: unknown }).i;
 
-    if (typeof s !== "number" || typeof m !== "string" || typeof i !== "string") {
+    if (
+      typeof s !== "number" ||
+      typeof m !== "string" ||
+      typeof i !== "string"
+    ) {
       return null;
     }
 
