@@ -9,14 +9,21 @@ type ArtistEntriesListItemProps = {
 };
 
 const ArtistEntriesListItem: FC<ArtistEntriesListItemProps> = ({ entry }) => {
-  const { mainName, types } = entry;
-  const hasTypes = types.length > 0;
-  const typesJoined = hasTypes ? types.join(", ") : null;
+  const { mainName, types, altNames } = entry;
+  const typesJoined = types.length > 0 ? types.join(", ") : null;
+  const altNamesJoined = altNames.length > 0 ? altNames.join(", ") : null;
 
   return (
     <li className={styles.item}>
-      <span className={styles.mainName}>{mainName}</span>
-      {typesJoined && <span> ({typesJoined})</span>}
+      <div>
+        <span className={styles.mainName}>{mainName}</span>
+        {typesJoined && <span> ({typesJoined})</span>}
+      </div>
+      {altNamesJoined && (
+        <div className={styles.altNamesSection}>
+          also known as: {altNamesJoined}
+        </div>
+      )}
     </li>
   );
 };

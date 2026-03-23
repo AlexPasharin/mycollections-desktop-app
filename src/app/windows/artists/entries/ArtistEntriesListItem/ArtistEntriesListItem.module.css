@@ -5,3 +5,8 @@
 .mainName {
   font-weight: bold;
 }
+
+.altNamesSection {
+  margin-top: 0.2rem;
+  font-style: italic;
+}

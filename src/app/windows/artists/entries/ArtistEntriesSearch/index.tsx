@@ -1,12 +1,17 @@
 import { type FC, useEffect, useState } from "react";
 
-import api from "./api";
-import ArtistEntriesList from "./ArtistEntriesList";
+import styles from "./ArtistEntriesSearch.module.css";
+
+import api from "../api";
+import ArtistEntriesList from "../ArtistEntriesList";
 
 import type { EntrySearchResult } from "@/types/entries";
 
 /** Wait this long after the last keystroke before calling the API. */
 const SEARCH_DEBOUNCE_MS = 400;
+
+/** Max number of search hits returned and shown in the list. */
+const ARTIST_ENTRIES_SEARCH_LIMIT = 10;
 
 type ArtistEntriesSearchProps = {
   artistId: string;
@@ -37,7 +42,11 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
 
     const timeoutId = setTimeout(() => {
       void api
-        .searchArtistEntries({ artistId, query: trimmedQuery })
+        .searchArtistEntries({
+          artistId,
+          query: trimmedQuery,
+          limit: ARTIST_ENTRIES_SEARCH_LIMIT,
+        })
         .then((data) => {
           if (!cancelled) {
             setEntries(data);
@@ -77,7 +86,16 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
     return <p>No entries corresponding to the search term were found.</p>;
   }
 
-  return <ArtistEntriesList entries={entries} />;
+  return (
+    <>
+      {entries.length === ARTIST_ENTRIES_SEARCH_LIMIT && (
+        <p className={styles.topResultsNote}>
+          Showing {ARTIST_ENTRIES_SEARCH_LIMIT} top results
+        </p>
+      )}
+      <ArtistEntriesList entries={entries} />
+    </>
+  );
 };
 
 export default ArtistEntriesSearch;
