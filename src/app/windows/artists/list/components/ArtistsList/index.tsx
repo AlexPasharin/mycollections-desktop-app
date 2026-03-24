@@ -80,7 +80,7 @@ const ArtistList: FC = () => {
               key={artist.artistId}
               artist={artist}
               onArtistSelect={() =>
-                api.openNewArtistEntriesListWindow({
+                api.openNewArtistWindow({
                   artistId: artist.artistId,
                 })
               }

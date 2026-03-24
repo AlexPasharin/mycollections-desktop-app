@@ -1,8 +1,8 @@
 import { createRoot } from "react-dom/client";
 
-import ArtistEntriesWindowWrapper from "./ArtistEntriesWindowWrapper";
+import ArtistWindowWrapper from "./ArtistWindowWrapper";
 
 import "@/styles/index.css";
 
 const root = createRoot(document.body);
-root.render(<ArtistEntriesWindowWrapper />);
+root.render(<ArtistWindowWrapper />);
