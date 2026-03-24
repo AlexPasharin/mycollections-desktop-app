@@ -12,7 +12,7 @@ export default tseslint.config(
       "out/**",
       "prisma/generated/**",
       "src/types/db/database.ts",
-      "scripts/**",
+      "localScripts/**",
       "**/*.css.d.ts",
     ],
   },
