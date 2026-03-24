@@ -7,6 +7,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -33,5 +34,5 @@
       "@/utils/*": ["src/utils/*"]
     }
   },
-  "exclude": [".webpack/**/*", "prisma/generated/**/*", "scripts/**/*"]
+  "exclude": [".webpack/**/*", "prisma/generated/**/*", "localScripts/**/*"]
 }
