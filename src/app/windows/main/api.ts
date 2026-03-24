@@ -1,7 +1,10 @@
+import type { CreateEntryWindowParams } from "@/types/entries";
+
 export type API = {
   openNewArtistsListWindow: () => void;
   openNewArtistQueryWindow: () => void;
   openNewArtistWindow: () => void;
+  openNewEntryWindow: (params: CreateEntryWindowParams) => void;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access

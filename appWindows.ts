@@ -13,6 +13,9 @@ const appWindows = {
   artist_window: {
     folder: "windows/artists/artist",
   },
+  entry_window: {
+    folder: "windows/entry",
+  },
 } as const satisfies Record<
   AppWindowName,
   {
