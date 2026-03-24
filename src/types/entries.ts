@@ -1,4 +1,4 @@
-export type CreateArtistEntriesWindowParams = { artistId: string };
+export type CreateArtistWindowParams = { artistId: string };
 
 export type EntrySearchResult = {
   entryId: string;

@@ -20,9 +20,7 @@ const ArtistsList: FC<ArtistsByQueryListProps> = ({ artists }) => {
         <ArtistListElement
           key={altNameId ? `${artistId}-${altNameId}` : artistId}
           artist={{ name }}
-          onArtistSelect={() =>
-            api.openNewArtistEntriesListWindow({ artistId })
-          }
+          onArtistSelect={() => api.openNewArtistWindow({ artistId })}
         />
       ))}
     </ol>

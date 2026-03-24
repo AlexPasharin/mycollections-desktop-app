@@ -5,7 +5,7 @@ import ArtistEntriesContent from "./ArtistEntriesContent";
 
 import type { ArtistByIdResult } from "@/types/artists";
 
-const ArtistEntriesWindowWrapper: FC = () => {
+const ArtistWindowWrapper: FC = () => {
   const params = new URLSearchParams(window.location.search);
   const artistId = params.get("artistId");
 
@@ -51,4 +51,4 @@ const ArtistEntriesWindowWrapper: FC = () => {
   );
 };
 
-export default ArtistEntriesWindowWrapper;
+export default ArtistWindowWrapper;
