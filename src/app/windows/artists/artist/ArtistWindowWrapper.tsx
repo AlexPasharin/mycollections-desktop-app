@@ -39,7 +39,7 @@ const ArtistWindowWrapper: FC = () => {
 
   return (
     <div>
-      <h1>Artist entries</h1>
+      <h1>Artist view</h1>
       {isLoading ? (
         <p>Loading...</p>
       ) : artist ? (

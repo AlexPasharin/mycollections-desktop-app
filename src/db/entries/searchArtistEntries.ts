@@ -1,5 +1,7 @@
 import { sql } from "kysely";
 
+import { selectFromExtendedMusicalEntryRows } from "./utils";
+
 import client from "../client/kysely";
 
 import type { SearchArtistEntries } from "@/types/entries";
@@ -10,18 +12,17 @@ export const searchArtistEntries: SearchArtistEntries = async ({
   limit,
   cursor,
 }) => {
-  const subquery = buildEntriesQueryByArtistIdAndNameSubstringMatch(
-    artistId,
-    query,
-  );
+  const subquery = buildEntriesQueryByNameSubstringMatch(query);
 
   const cursorPayload = decodeCursor(cursor);
+  const trimmedQuery = query.trim();
 
   let grouped = client
     .selectFrom(subquery.as("entries"))
+
     .select([
-      "entry_id as entryId",
-      "main_name as mainName",
+      "entryId",
+      "mainName",
       sql<number>`MAX(similarity)`.as("maxSimilarity"),
 
       // this aggregates possibly different types of entry into a single jsonb array (which will automatically become an array of strings in typescript result)
@@ -35,15 +36,26 @@ export const searchArtistEntries: SearchArtistEntries = async ({
 
       // same for alternative names
       sql<string[]>`coalesce(
-          jsonb_agg(DISTINCT ${sql.ref("alt_name")} ORDER BY ${sql.ref("alt_name")})
-            FILTER (WHERE ${sql.ref("alt_name")} IS NOT NULL),
+          jsonb_agg(DISTINCT ${sql.ref("altName")} ORDER BY ${sql.ref("altName")})
+            FILTER (WHERE ${sql.ref("altName")} IS NOT NULL),
           '[]'::jsonb
         )`.as("altNames"),
     ])
-    .groupBy(["entry_id", "main_name"])
+
+    .where("artistId", "=", artistId)
+    .where((eb) =>
+      eb.or([
+        eb("mainName", "ilike", `%${trimmedQuery}%`),
+        eb("altName", "ilike", `%${trimmedQuery}%`),
+      ]),
+    )
+
+    .groupBy(["entryId", "mainName"])
+
     .orderBy(sql`MAX(similarity)`, "desc")
     .orderBy("mainName", "asc")
-    .orderBy("entry_id", "asc")
+    .orderBy("entryId", "asc")
+
     .limit(limit + 1);
 
   if (cursorPayload) {
@@ -80,42 +92,22 @@ export const searchArtistEntries: SearchArtistEntries = async ({
 // every "extended entry" record contains entry_id, main_name, but also possible type and alternative_name (both lifted from other tables)
 // entry must belong to the given artist and must have a name or alternative name that matches the query (in "case-insensitive substring match" sense)
 // "best" similarity score is also returned as one of the fields, to be used for ordering the results by users of this function
-const buildEntriesQueryByArtistIdAndNameSubstringMatch = (
-  artistId: string,
-  query: string,
-) => {
+const buildEntriesQueryByNameSubstringMatch = (query: string) => {
   const trimmedQuery = query.trim();
 
-  return (
-    client
-      .selectFrom("musicalEntries as e")
-      .innerJoin("musicalEntriesArtists as a", "e.entryId", "a.entryId")
-
-      // for musical entry types and alternative names we use left join because we also want to get entries that have no types or alternative names
-      .leftJoin("alternativeMusicalEntryNames as n", "e.entryId", "n.entryId")
-      .leftJoin("typesOfMusicalEntries as et", "e.entryId", "et.entryId")
-      .leftJoin("musicalEntryTypes as t", "et.typeId", "t.entryTypeId")
-
-      .select([
-        "e.entryId as entry_id",
-        "e.mainName as main_name",
-        "n.name as alt_name",
-        "t.name as type",
-
-        // "best" similarity score is returned as one of the fields
-        sql<number>`GREATEST(similarity(lower(e.main_name), ${`%${trimmedQuery}%`}), coalesce(similarity(lower(n.name), ${`%${trimmedQuery}%`}), 0))`.as(
-          "similarity",
-        ),
-      ])
-
-      .where("a.artistId", "=", artistId)
-      .where((eb) =>
-        eb.or([
-          eb("e.mainName", "ilike", `%${trimmedQuery}%`),
-          eb("n.name", "ilike", `%${trimmedQuery}%`),
-        ]),
-      )
-  );
+  return selectFromExtendedMusicalEntryRows()
+    .select([
+      "musicalEntries.entryId as entryId",
+      "musicalEntriesArtists.artistId as artistId",
+      "musicalEntries.mainName as mainName",
+      "alternativeMusicalEntryNames.name as altName",
+      "musicalEntryTypes.name as type",
+    ])
+    .select(
+      sql<number>`GREATEST(similarity(lower(${sql.ref("musicalEntries.mainName")}), ${`%${trimmedQuery}%`}), coalesce(similarity(lower(${sql.ref("alternativeMusicalEntryNames.name")}), ${`%${trimmedQuery}%`}), 0))`.as(
+        "similarity",
+      ),
+    );
 };
 
 // Cursor JSON uses short keys on purpose: smaller payload after stringify + base64 (IPC / URLs).

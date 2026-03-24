@@ -15,6 +15,19 @@ import { rendererConfig } from "./webpack.renderer.config";
 
 dotenv.config();
 
+/** Webpack dev server port for `yarn start`. Override with WEBPACK_DEV_PORT (e.g. in `.env`). */
+function webpackDevPort(): number {
+  const raw = process.env["WEBPACK_DEV_PORT"];
+
+  if (raw === undefined || raw === "") {
+    return 3000;
+  }
+
+  const n = Number.parseInt(raw, 10);
+
+  return Number.isFinite(n) && n > 0 && n <= 65_535 ? n : 3000;
+}
+
 const entryPoints = Object.entries(windows).map(([name, { folder }]) => ({
   name,
   js: `./src/app/${folder}/renderer.tsx`,
@@ -38,6 +51,7 @@ const config: ForgeConfig = {
   plugins: [
     new AutoUnpackNativesPlugin({}),
     new WebpackPlugin({
+      port: webpackDevPort(),
       mainConfig,
       renderer: {
         config: rendererConfig,
