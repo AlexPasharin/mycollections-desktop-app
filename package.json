@@ -11,11 +11,14 @@
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
+    "lint-changed": "node eslint-changed.mjs",
+    "lint-changed-fix": "node eslint-changed.mjs --fix",
     "typecheck": "tsc",
     "clean": "rm -rf .webpack && rm -rf out",
     "open-mac": "out/mycollections-desktop-app-darwin-x64/mycollections-desktop-app.app/Contents/MacOS/mycollections-desktop-app",
     "make-open-mac": "yarn make; yarn open-mac",
     "prettify": "exec prettier . --write",
+    "prettify-changed": "node prettify-changed.mjs",
     "which-db": "bash show-db-url.sh"
   },
   "author": {
