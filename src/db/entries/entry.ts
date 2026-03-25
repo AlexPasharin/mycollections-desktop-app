@@ -2,6 +2,8 @@ import { sql } from "kysely";
 
 import { selectFromExtendedMusicalEntryRows } from "./utils";
 
+import { aggregateDistinctValuesToArray } from "../utils";
+
 import type { EntryArtistInfo, GetEntryById } from "@/types/entries";
 
 export const getEntryById: GetEntryById = (entryId) =>
@@ -32,18 +34,12 @@ export const getEntryById: GetEntryById = (entryId) =>
       )`.as("artists"),
     )
     .select(
-      sql<string[]>`coalesce(
-        jsonb_agg(DISTINCT ${sql.ref("musicalEntryTypes.name")} ORDER BY ${sql.ref("musicalEntryTypes.name")})
-          FILTER (WHERE ${sql.ref("musicalEntryTypes.name")} IS NOT NULL),
-        '[]'::jsonb
-      )`.as("types"),
+      aggregateDistinctValuesToArray("musicalEntryTypes.name").as("types"),
     )
     .select(
-      sql<string[]>`coalesce(
-        jsonb_agg(DISTINCT ${sql.ref("alternativeMusicalEntryNames.name")} ORDER BY ${sql.ref("alternativeMusicalEntryNames.name")})
-          FILTER (WHERE ${sql.ref("alternativeMusicalEntryNames.name")} IS NOT NULL),
-        '[]'::jsonb
-      )`.as("altNames"),
+      aggregateDistinctValuesToArray("alternativeMusicalEntryNames.name").as(
+        "altNames",
+      ),
     )
     .groupBy([
       "musicalEntries.entryId",

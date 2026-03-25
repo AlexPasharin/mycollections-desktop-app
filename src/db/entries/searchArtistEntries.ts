@@ -3,6 +3,7 @@ import { sql } from "kysely";
 import { selectFromExtendedMusicalEntryRows } from "./utils";
 
 import client from "../client/kysely";
+import { aggregateDistinctValuesToArray } from "../utils";
 
 import type { SearchArtistEntries } from "@/types/entries";
 
@@ -25,21 +26,9 @@ export const searchArtistEntries: SearchArtistEntries = async ({
       "mainName",
       sql<number>`MAX(similarity)`.as("maxSimilarity"),
 
-      // this aggregates possibly different types of entry into a single jsonb array (which will automatically become an array of strings in typescript result)
-      // note that filtering on non null is needed so that we don't get an array with a null value when entry has no types
-      // coalesce is used to return an empty array if entry has no types, otherwise we would get a null value for "types"
-      sql<string[]>`coalesce(
-          jsonb_agg(DISTINCT ${sql.ref("type")} ORDER BY ${sql.ref("type")})
-            FILTER (WHERE ${sql.ref("type")} IS NOT NULL),
-          '[]'::jsonb
-        )`.as("types"),
-
-      // same for alternative names
-      sql<string[]>`coalesce(
-          jsonb_agg(DISTINCT ${sql.ref("altName")} ORDER BY ${sql.ref("altName")})
-            FILTER (WHERE ${sql.ref("altName")} IS NOT NULL),
-          '[]'::jsonb
-        )`.as("altNames"),
+      // Aggregates types / alt names into jsonb string arrays; null filter + coalesce avoid `[null]` / SQL null.
+      aggregateDistinctValuesToArray("type").as("types"),
+      aggregateDistinctValuesToArray("altName").as("altNames"),
     ])
 
     .where("artistId", "=", artistId)
