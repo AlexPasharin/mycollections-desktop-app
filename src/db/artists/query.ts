@@ -1,5 +1,8 @@
 import client from "../client/kysely";
-import { similarityToQuery } from "../utils";
+import {
+  orderBySimilarityToTextDesc,
+  similarityToText,
+} from "../utils";
 
 import type { QueriedArtist, QueryArtist } from "@/types/artists";
 
@@ -72,11 +75,14 @@ const getArtistsByMatchOnAltName = async (
 const getArtistsBySubstringMatchOnMainName = (query: string, limit: number) => {
   const searchTerm = `%${query}%`;
 
-  return client
-    .selectFrom("artists")
-    .select(["artistId", "name"])
-    .where("name", "ilike", searchTerm)
-    .orderBy(similarityToQuery("artists.name", query), "desc")
+  return orderBySimilarityToTextDesc(
+    client
+      .selectFrom("artists")
+      .select(["artistId", "name"])
+      .where("name", "ilike", searchTerm),
+    "artists.name",
+    query,
+  )
     .limit(limit)
     .execute();
 };
@@ -84,11 +90,14 @@ const getArtistsBySubstringMatchOnMainName = (query: string, limit: number) => {
 const getArtistsBySubstringMatchOnAltName = (query: string, limit: number) => {
   const searchTerm = `%${query}%`;
 
-  return client
-    .selectFrom("alternativeArtistNames")
-    .select((eb) => ["artistId", "name", eb.ref("nameId").as("altNameId")])
-    .where("name", "ilike", searchTerm)
-    .orderBy(similarityToQuery("alternative_artist_names.name", query), "desc")
+  return orderBySimilarityToTextDesc(
+    client
+      .selectFrom("alternativeArtistNames")
+      .select((eb) => ["artistId", "name", eb.ref("nameId").as("altNameId")])
+      .where("name", "ilike", searchTerm),
+    "alternative_artist_names.name",
+    query,
+  )
     .limit(limit)
     .execute();
 };
@@ -101,7 +110,7 @@ const getArtistsByFuzzyMatchOnMainName = (
   let artistsQuery = client
     .selectFrom("artists")
     .select(["artistId", "name"])
-    .where((eb) => eb(similarityToQuery("artists.name", query), ">", 0));
+    .where((eb) => eb(similarityToText("artists.name", query), ">", 0));
 
   const excludeArtistIds = excludeArtists.map(({ artistId }) => artistId);
 
@@ -109,8 +118,7 @@ const getArtistsByFuzzyMatchOnMainName = (
     artistsQuery = artistsQuery.where("artistId", "not in", excludeArtistIds);
   }
 
-  return artistsQuery
-    .orderBy(similarityToQuery("artists.name", query), "desc")
+  return orderBySimilarityToTextDesc(artistsQuery, "artists.name", query)
     .limit(limit)
     .execute();
 };
@@ -128,7 +136,7 @@ const getArtistsByFuzzyMatchOnAltName = async (
     .selectFrom("alternativeArtistNames")
     .select((eb) => ["artistId", "name", eb.ref("nameId").as("altNameId")])
     .where((eb) =>
-      eb(similarityToQuery("alternative_artist_names.name", query), ">", 0),
+      eb(similarityToText("alternative_artist_names.name", query), ">", 0),
     );
 
   if (altArtistNameIdsToExclude.length > 0) {
@@ -139,8 +147,11 @@ const getArtistsByFuzzyMatchOnAltName = async (
     );
   }
 
-  const artistsByAltName = await altNameQuery
-    .orderBy(similarityToQuery("alternative_artist_names.name", query), "desc")
+  const artistsByAltName = await orderBySimilarityToTextDesc(
+    altNameQuery,
+    "alternative_artist_names.name",
+    query,
+  )
     .limit(limit)
     .execute();
 

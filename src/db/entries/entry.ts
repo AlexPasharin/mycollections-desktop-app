@@ -22,8 +22,7 @@ export const getEntryById: GetEntryById = (entryId) =>
       "musicalEntries.discogsUrl as discogsUrl",
       "musicalEntries.partOfQueenCollection as partOfQueenCollection",
       "musicalEntries.relationToQueen as relationToQueen",
-    ])
-    .select(
+
       sql<EntryArtistInfo[]>`coalesce(
         jsonb_agg(DISTINCT jsonb_build_object(
           'artistId', ${sql.ref("musicalEntriesArtists.artistId")},
@@ -32,15 +31,13 @@ export const getEntryById: GetEntryById = (entryId) =>
         )) FILTER (WHERE ${sql.ref("musicalEntriesArtists.id")} IS NOT NULL),
         '[]'::jsonb
       )`.as("artists"),
-    )
-    .select(
-      aggregateDistinctValuesToArray("musicalEntryTypes.name").as("types"),
-    )
-    .select(
-      aggregateDistinctValuesToArray("alternativeMusicalEntryNames.name").as(
+
+      aggregateDistinctValuesToArray("musicalEntryTypes.name", "types"),
+      aggregateDistinctValuesToArray(
+        "alternativeMusicalEntryNames.name",
         "altNames",
       ),
-    )
+    ])
     .groupBy([
       "musicalEntries.entryId",
       "musicalEntries.mainName",

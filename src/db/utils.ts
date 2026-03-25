@@ -1,19 +1,50 @@
-import { sql, type RawBuilder } from "kysely";
+import {
+  sql,
+  type AliasedRawBuilder,
+  type RawBuilder,
+  type SelectQueryBuilder,
+} from "kysely";
 
-/** `fieldRef`: column name (qualified or not, depending on the query context), e.g. `"artists.name"`. */
-export const similarityToQuery = (fieldRef: string, query: string) =>
-  sql<number>`similarity(lower(${sql.ref(fieldRef)}), ${query})`;
+import type { DB } from "@/types/db/database";
+
+/**
+ * `fieldRef`: column name (qualified or not, depending on the query context), e.g. `"artists.name"`.
+ * `matchText`: substring compared via `similarity()` (not an SQL query string).
+ */
+export const similarityToText = (fieldRef: string, matchText: string) =>
+  sql<number>`similarity(lower(${sql.ref(fieldRef)}), ${matchText})`;
+
+/** Appends an `orderBy` on `similarity(lower(fieldRef), matchText)` descending. */
+export const orderBySimilarityToTextDesc = <TB extends keyof DB, O>(
+  qb: SelectQueryBuilder<DB, TB, O>,
+  fieldRef: string,
+  matchText: string,
+): SelectQueryBuilder<DB, TB, O> =>
+  qb.orderBy(similarityToText(fieldRef, matchText), "desc");
 
 /**
  * Aggregate distinct non-null values into a `jsonb` array, or `[]` when none.
  * Elements are ordered by ascending `fieldRef` (SQL `ORDER BY` on the same column as `DISTINCT`).
  * `fieldRef`: column or alias, e.g. `"musicalEntryTypes.name"` or `"type"`.
+ * `alias`: when set, the expression is returned already aliased for `.select()` (same as trailing `.as(alias)`).
  */
-export const aggregateDistinctValuesToArray = (
+export function aggregateDistinctValuesToArray(
   fieldRef: string,
-): RawBuilder<string[]> =>
-  sql<string[]>`coalesce(
+): RawBuilder<string[]>;
+export function aggregateDistinctValuesToArray<A extends string>(
+  fieldRef: string,
+  alias: A,
+): AliasedRawBuilder<string[], A>;
+
+export function aggregateDistinctValuesToArray(
+  fieldRef: string,
+  alias?: string,
+): RawBuilder<string[]> | AliasedRawBuilder<string[], string> {
+  const expr = sql<string[]>`coalesce(
     jsonb_agg(DISTINCT ${sql.ref(fieldRef)} ORDER BY ${sql.ref(fieldRef)})
       FILTER (WHERE ${sql.ref(fieldRef)} IS NOT NULL),
     '[]'::jsonb
   )`;
+
+  return alias ? expr.as(alias) : expr;
+}

@@ -27,8 +27,8 @@ export const searchArtistEntries: SearchArtistEntries = async ({
       sql<number>`MAX(similarity)`.as("maxSimilarity"),
 
       // Aggregates types / alt names into jsonb string arrays; null filter + coalesce avoid `[null]` / SQL null.
-      aggregateDistinctValuesToArray("type").as("types"),
-      aggregateDistinctValuesToArray("altName").as("altNames"),
+      aggregateDistinctValuesToArray("type", "types"),
+      aggregateDistinctValuesToArray("altName", "altNames"),
     ])
 
     .where("artistId", "=", artistId)
