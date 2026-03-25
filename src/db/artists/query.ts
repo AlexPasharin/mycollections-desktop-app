@@ -1,8 +1,5 @@
 import client from "../client/kysely";
-import {
-  orderBySimilarityToTextDesc,
-  similarityToText,
-} from "../utils";
+import { orderBySimilarityToTextDesc, hasSimilarityToText } from "../utils";
 
 import type { QueriedArtist, QueryArtist } from "@/types/artists";
 
@@ -110,7 +107,7 @@ const getArtistsByFuzzyMatchOnMainName = (
   let artistsQuery = client
     .selectFrom("artists")
     .select(["artistId", "name"])
-    .where((eb) => eb(similarityToText("artists.name", query), ">", 0));
+    .where(hasSimilarityToText("artists.name", query));
 
   const excludeArtistIds = excludeArtists.map(({ artistId }) => artistId);
 
@@ -135,9 +132,7 @@ const getArtistsByFuzzyMatchOnAltName = async (
   let altNameQuery = client
     .selectFrom("alternativeArtistNames")
     .select((eb) => ["artistId", "name", eb.ref("nameId").as("altNameId")])
-    .where((eb) =>
-      eb(similarityToText("alternative_artist_names.name", query), ">", 0),
-    );
+    .where(hasSimilarityToText("alternative_artist_names.name", query));
 
   if (altArtistNameIdsToExclude.length > 0) {
     altNameQuery = altNameQuery.where(

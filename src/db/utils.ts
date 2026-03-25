@@ -1,18 +1,18 @@
 import {
   sql,
   type AliasedRawBuilder,
+  type ExpressionBuilder,
   type RawBuilder,
   type SelectQueryBuilder,
 } from "kysely";
 
 import type { DB } from "@/types/db/database";
 
-/**
- * `fieldRef`: column name (qualified or not, depending on the query context), e.g. `"artists.name"`.
- * `matchText`: substring compared via `similarity()` (not an SQL query string).
- */
-export const similarityToText = (fieldRef: string, matchText: string) =>
-  sql<number>`similarity(lower(${sql.ref(fieldRef)}), ${matchText})`;
+/** For `.where(...)`: `similarity(lower(fieldRef), matchText) > 0`. */
+export const hasSimilarityToText =
+  <TB extends keyof DB>(fieldRef: string, matchText: string) =>
+  (eb: ExpressionBuilder<DB, TB>) =>
+    eb(similarityToText(fieldRef, matchText), ">", 0);
 
 /** Appends an `orderBy` on `similarity(lower(fieldRef), matchText)` descending. */
 export const orderBySimilarityToTextDesc = <TB extends keyof DB, O>(
@@ -48,3 +48,10 @@ export function aggregateDistinctValuesToArray(
 
   return alias ? expr.as(alias) : expr;
 }
+
+/**
+ * `fieldRef`: column name (qualified or not, depending on the query context), e.g. `"artists.name"`.
+ * `matchText`: substring compared via `similarity()` (not an SQL query string).
+ */
+const similarityToText = (fieldRef: string, matchText: string) =>
+  sql<number>`similarity(lower(${sql.ref(fieldRef)}), ${matchText})`;
