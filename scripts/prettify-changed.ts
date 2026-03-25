@@ -12,6 +12,8 @@ const require = createRequire(import.meta.url);
 
 const extRe = /\.(ts|tsx|js|jsx|mjs|cjs|json|css|md|html|yml|yaml|mdx)$/i;
 
+// TEMP: violates @stylistic/lines-around-comment (needs a blank line above). Delete after testing lint --fix.
+
 const namedBasenames = new Set([".prettierrc", ".prettierignore"]);
 
 function pickPrettierFiles(paths: string[]): string[] {
