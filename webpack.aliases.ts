@@ -1,9 +1,9 @@
 import path from "path";
 
-import tsconfig from "./tsconfig.json";
+import tsconfig from "./tsconfig.base.json";
 
 /**
- * Converts tsconfig.json paths to a Webpack-compatible aliases object.
+ * Converts `tsconfig.base.json` paths to a Webpack-compatible aliases object.
  *
  * NOTE: npm package "tsconfig-paths-webpack-plugin" is supposed to do this, but for some reason I could not get it to work with this app setting's
  */
