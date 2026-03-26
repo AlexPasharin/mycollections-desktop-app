@@ -27,6 +27,7 @@
       "@/app/*": ["src/app/*"],
       "@/constants/*": ["constants/*"],
       "@/db/*": ["src/db/*"],
+      "@/hooks/*": ["src/hooks/*"],
       "@/prisma/*": ["prisma/*"],
       "@/styles/*": ["src/styles/*"],
       "@/types/*": ["src/types/*"],
