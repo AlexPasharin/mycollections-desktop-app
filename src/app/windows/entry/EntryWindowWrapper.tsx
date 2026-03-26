@@ -3,6 +3,7 @@ import { type FC, useEffect, useState } from "react";
 import api from "./api";
 import EntryDetails from "./EntryDetails";
 
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import type { EntryByIdResult } from "@/types/entries";
 
 const EntryWindowWrapper: FC = () => {
@@ -11,6 +12,14 @@ const EntryWindowWrapper: FC = () => {
 
   const [entry, setEntry] = useState<EntryByIdResult>();
   const [isLoading, setIsLoading] = useState(true);
+
+  const title = isLoading
+    ? "Entry View - Loading...."
+    : entry
+      ? `Entry View - ${entry.mainName}`
+      : "Entry View";
+
+  useDocumentTitle(title);
 
   useEffect(() => {
     if (!entryId) {
