@@ -15,13 +15,13 @@ export const getEntryById: GetEntryById = (entryId) =>
     )
     .where("musicalEntries.entryId", "=", entryId)
     .select([
-      "musicalEntries.entryId as entryId",
-      "musicalEntries.mainName as mainName",
-      "musicalEntries.originalReleaseDate as originalReleaseDate",
-      "musicalEntries.comment as comment",
-      "musicalEntries.discogsUrl as discogsUrl",
-      "musicalEntries.partOfQueenCollection as partOfQueenCollection",
-      "musicalEntries.relationToQueen as relationToQueen",
+      "musicalEntries.entryId",
+      "musicalEntries.mainName",
+      "musicalEntries.originalReleaseDate",
+      "musicalEntries.comment",
+      "musicalEntries.discogsUrl",
+      "musicalEntries.partOfQueenCollection",
+      "musicalEntries.relationToQueen",
 
       sql<EntryArtistInfo[]>`coalesce(
         jsonb_agg(DISTINCT jsonb_build_object(
