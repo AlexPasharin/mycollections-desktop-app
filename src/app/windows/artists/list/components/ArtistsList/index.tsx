@@ -60,7 +60,6 @@ const ArtistList: FC = () => {
 
   return (
     <>
-      <h2>Artists</h2>
       {artistsState?.prev && (
         <button onClick={() => fetchArtistsBatch("prev")}>
           Prev page &lt;-
