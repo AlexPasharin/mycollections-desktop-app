@@ -1,15 +1,15 @@
 import { type FC } from "react";
 
+import styles from "./Entry.module.css";
 import EntryArtists from "./EntryArtists";
-import styles from "./EntryDetails.module.css";
 
 import type { EntryByIdResult } from "@/types/entries";
 
-type EntryDetailsProps = {
+type EntryProps = {
   entry: EntryByIdResult;
 };
 
-const EntryDetails: FC<EntryDetailsProps> = ({ entry }) => {
+const Entry: FC<EntryProps> = ({ entry }) => {
   return (
     <div>
       <h1>{entry.mainName}</h1>
@@ -74,4 +74,4 @@ const EntryDetails: FC<EntryDetailsProps> = ({ entry }) => {
   );
 };
 
-export default EntryDetails;
+export default Entry;

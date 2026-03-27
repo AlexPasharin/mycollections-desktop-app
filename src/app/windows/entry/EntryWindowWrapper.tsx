@@ -1,7 +1,7 @@
 import { type FC, useEffect, useState } from "react";
 
 import api from "./api";
-import EntryDetails from "./EntryDetails";
+import Entry from "./Entry";
 
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import type { EntryByIdResult } from "@/types/entries";
@@ -51,7 +51,7 @@ const EntryWindowWrapper: FC = () => {
       {isLoading ? (
         <p>Loading entry&apos;s details...</p>
       ) : entry ? (
-        <EntryDetails entry={entry} />
+        <Entry entry={entry} />
       ) : (
         <p>Entry not found.</p>
       )}

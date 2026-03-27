@@ -2,7 +2,7 @@ import { type FC } from "react";
 
 import styles from "./EntryArtists.module.css";
 
-import entryStyles from "../EntryDetails.module.css";
+import entryStyles from "../Entry.module.css";
 
 import type { EntryArtistInfo } from "@/types/entries";
 
