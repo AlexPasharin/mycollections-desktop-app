@@ -3,3 +3,5 @@ export type EntryRelease = {
   version: string;
   formats: string[];
 };
+
+export type GetEntryReleases = (entryId: string) => Promise<EntryRelease[]>;

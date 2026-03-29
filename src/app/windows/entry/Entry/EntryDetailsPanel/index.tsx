@@ -3,12 +3,14 @@ import { type FC } from "react";
 import styles from "./EntryDetailsPanel.module.css";
 
 import type { EntryByIdResult } from "@/types/entries";
+import type { EntryRelease } from "@/types/releases";
 
 type EntryDetailsPanelProps = {
   entry: EntryByIdResult;
+  releases: EntryRelease[];
 };
 
-const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry }) => (
+const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry, releases }) => (
   <div className={styles.entryPanel}>
     <div className={styles.field}>
       {entry.types.length > 0 ? (
@@ -38,6 +40,20 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry }) => (
       <span className={styles.fieldLabel}>Original release date: </span>
       {entry.originalReleaseDate ?? "(Unknown)"}
     </p>
+
+    {releases.length > 0 && (
+      <div className={styles.field}>
+        <span className={styles.fieldLabel}>Releases: </span>
+        <ul className={styles.typesList}>
+          {releases.map((r) => (
+            <li key={r.releaseId} className={styles.typesListItem}>
+              {r.version}
+              {r.formats.length > 0 ? ` (${r.formats.join(", ")})` : ""}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
 
     {entry.discogsUrl && (
       <p className={styles.field}>

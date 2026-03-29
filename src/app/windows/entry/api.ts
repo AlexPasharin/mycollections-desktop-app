@@ -1,7 +1,9 @@
 import type { GetEntryById } from "@/types/entries";
+import type { GetEntryReleases } from "@/types/releases";
 
 export type API = {
   getEntryById: GetEntryById;
+  getEntryReleases: GetEntryReleases;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
