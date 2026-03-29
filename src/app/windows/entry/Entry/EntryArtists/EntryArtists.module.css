@@ -1,0 +1,38 @@
+.field {
+  margin: 0 0 0.5rem;
+  font-size: 0.95em;
+}
+
+.emptyNote {
+  margin: 0;
+  font-style: italic;
+}
+
+.fieldLabel {
+  display: inline-block;
+  margin: 0 0 0.25rem;
+  font-weight: 600;
+}
+
+.mainArtist {
+  margin: 0;
+  padding: 0;
+  font-size: 1.12em;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+}
+
+.mainArtist + .artistsList {
+  margin-top: 0.45rem;
+}
+
+.fieldLabel + .artistsList {
+  margin-top: 0;
+}
+
+.artistsList {
+  margin: 0.25rem 0 0;
+  padding-left: 0;
+  list-style: none;
+}

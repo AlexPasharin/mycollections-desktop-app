@@ -1,0 +1,45 @@
+.entryPanel {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid black;
+  border-radius: 6px;
+  max-width: 42rem;
+}
+
+.field {
+  margin: 0 0 0.5rem;
+  font-size: 0.95em;
+}
+
+.fieldLabel {
+  font-weight: 600;
+}
+
+.fieldLabelItalic {
+  font-weight: 600;
+  font-style: italic;
+}
+
+.typesList {
+  margin: 0.25rem 0 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.typesListItem {
+  margin: 0.25rem 0;
+}
+
+.italicNote {
+  margin: 0;
+  font-style: italic;
+}
+
+.comment {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.65rem;
+  white-space: pre-wrap;
+  background: #f5f5f5;
+  border-radius: 4px;
+  font-size: 0.95em;
+}

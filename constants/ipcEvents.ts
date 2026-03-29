@@ -1,6 +1,7 @@
 export const FETCH_ARTISTS = "fetch-artists";
 export const QUERY_ARTIST = "query-artist";
 export const GET_ARTIST_BY_ID = "get-artist-by-id";
+export const GET_ENTRY_BY_ID = "get-entry-by-id";
 export const SEARCH_ARTIST_ENTRIES = "search-artist-entries";
 
 export const OPEN_ARTISTS_LIST_WINDOW = "open-new-artists-list-window";

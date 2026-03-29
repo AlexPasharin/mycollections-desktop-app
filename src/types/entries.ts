@@ -9,6 +9,31 @@ export type EntrySearchResult = {
   altNames: string[];
 };
 
+export type EntryArtistInfo = {
+  artistId: string;
+  isEntriesMainArtist: boolean | null;
+
+  /** Entry-specific artist's alternative name when set, otherwise the artist's main name. */
+  artistName: string;
+};
+
+export type EntryByIdResult = {
+  entryId: string;
+  mainName: string;
+  originalReleaseDate: string | null;
+  comment: string | null;
+  discogsUrl: string | null;
+  partOfQueenCollection: boolean;
+  relationToQueen: string | null;
+  artists: EntryArtistInfo[];
+  types: string[];
+  altNames: string[];
+};
+
+export type GetEntryById = (
+  entryId: string,
+) => Promise<EntryByIdResult | undefined>;
+
 export type SearchArtistEntriesParams = {
   artistId: string;
   query: string;
