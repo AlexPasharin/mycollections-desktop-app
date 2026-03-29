@@ -3,3 +3,7 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+.artistQuery {
+  margin-top: 1rem;
+}

@@ -13,9 +13,6 @@ declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 declare const ARTISTS_LIST_WINDOW_WEBPACK_ENTRY: string;
 declare const ARTISTS_LIST_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
-declare const ARTIST_QUERY_WINDOW_WEBPACK_ENTRY: string;
-declare const ARTIST_QUERY_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
-
 declare const ARTIST_WINDOW_WEBPACK_ENTRY: string;
 declare const ARTIST_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
@@ -30,10 +27,6 @@ const appWindows = {
   artists_list_window: {
     preload: ARTISTS_LIST_WINDOW_PRELOAD_WEBPACK_ENTRY,
     html: ARTISTS_LIST_WINDOW_WEBPACK_ENTRY,
-  },
-  artist_query_window: {
-    preload: ARTIST_QUERY_WINDOW_PRELOAD_WEBPACK_ENTRY,
-    html: ARTIST_QUERY_WINDOW_WEBPACK_ENTRY,
   },
   artist_window: {
     preload: ARTIST_WINDOW_PRELOAD_WEBPACK_ENTRY,
