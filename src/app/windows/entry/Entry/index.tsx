@@ -2,6 +2,7 @@ import { type FC } from "react";
 
 import EntryArtists from "./EntryArtists";
 import EntryDetailsPanel from "./EntryDetailsPanel";
+import EntryReleases from "./EntryReleases";
 
 import type { EntryByIdResult } from "@/types/entries";
 import type { EntryRelease } from "@/types/releases";
@@ -17,7 +18,9 @@ const Entry: FC<EntryProps> = ({ entry, releases }) => (
 
     <EntryArtists artists={entry.artists} />
 
-    <EntryDetailsPanel entry={entry} releases={releases} />
+    <EntryDetailsPanel entry={entry} />
+
+    <EntryReleases releases={releases} />
   </div>
 );
 
