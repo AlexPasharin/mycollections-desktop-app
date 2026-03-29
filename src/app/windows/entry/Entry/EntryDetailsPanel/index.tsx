@@ -50,7 +50,9 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry }) => (
 
     {entry.partOfQueenCollection && (
       <p className={styles.field}>
-        <span className={styles.fieldLabelItalic}>Part of Queen collection</span>
+        <span className={styles.fieldLabelItalic}>
+          Part of Queen collection
+        </span>
       </p>
     )}
 
