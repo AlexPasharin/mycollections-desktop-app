@@ -2,6 +2,10 @@
 // Please do not change this file!
 interface CssExports {
   'artistsList': string;
+  'emptyNote': string;
+  'field': string;
+  'fieldLabel': string;
+  'mainArtist': string;
 }
 export const cssExports: CssExports;
 export default cssExports;

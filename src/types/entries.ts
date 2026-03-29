@@ -14,7 +14,7 @@ export type EntryArtistInfo = {
   isEntriesMainArtist: boolean | null;
 
   /** Entry-specific artist's alternative name when set, otherwise the artist's main name. */
-  artistName: string | null;
+  artistName: string;
 };
 
 export type EntryByIdResult = {

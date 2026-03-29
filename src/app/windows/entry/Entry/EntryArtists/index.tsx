@@ -2,8 +2,6 @@ import { type FC } from "react";
 
 import styles from "./EntryArtists.module.css";
 
-import entryStyles from "../Entry.module.css";
-
 import type { EntryArtistInfo } from "@/types/entries";
 
 type EntryArtistsProps = {
@@ -11,43 +9,34 @@ type EntryArtistsProps = {
 };
 
 const EntryArtists: FC<EntryArtistsProps> = ({ artists }) => {
-  const mainArtistIndex = artists.findIndex(
-    (a) => a.isEntriesMainArtist === true,
-  );
-  const hasMainArtist = mainArtistIndex >= 0;
-  const mainArtist = hasMainArtist ? artists[mainArtistIndex] : undefined;
-  const otherArtists = hasMainArtist
-    ? artists.filter((_, i) => i !== mainArtistIndex)
+  const mainArtist = artists.find((a) => a.isEntriesMainArtist === true);
+  const otherArtists = mainArtist
+    ? artists.filter((a) => a.artistId !== mainArtist.artistId)
     : artists;
 
   return (
-    <div className={entryStyles.field}>
-      <span className={entryStyles.fieldLabel}>By</span>
-      {artists.length > 0 ? (
-        <ul className={styles.artistsList}>
-          {hasMainArtist && mainArtist ? (
-            <>
-              <li
-                key={`main-${mainArtist.artistId}-${mainArtist.artistName ?? ""}`}
-              >
-                {mainArtist.artistName ?? "(unnamed)"}
-              </li>
+    <div className={styles.field}>
+      {artists.length === 0 ? (
+        <p className={styles.emptyNote}>
+          (Entry has no artists, please update database)
+        </p>
+      ) : (
+        <>
+          <span className={styles.fieldLabel}>By</span>
+          {mainArtist && (
+            <p className={styles.mainArtist}>{mainArtist.artistName}</p>
+          )}
+          {otherArtists.length > 0 && (
+            <ul className={styles.artistsList}>
               {otherArtists.map((a) => (
-                <li key={`${a.artistId}-${a.artistName ?? ""}`}>
-                  also featuring: {a.artistName ?? "(unnamed)"}
+                <li key={`${a.artistId}-${a.artistName}`}>
+                  {!!mainArtist && `also featuring: `}
+                  {a.artistName}
                 </li>
               ))}
-            </>
-          ) : (
-            artists.map((a) => (
-              <li key={`${a.artistId}-${a.artistName ?? ""}`}>
-                {a.artistName ?? "(unnamed)"}
-              </li>
-            ))
+            </ul>
           )}
-        </ul>
-      ) : (
-        " —"
+        </>
       )}
     </div>
   );
