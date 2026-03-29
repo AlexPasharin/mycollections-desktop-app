@@ -1,7 +1,7 @@
 import { useState, type FC } from "react";
 
 import api from "../../api";
-import ArtistsList from "../ArtistsList";
+import ArtistQueryList from "../ArtistQueryList";
 
 import type { ArtistQueryResult } from "@/types/artists";
 
@@ -37,11 +37,11 @@ const ArtistQueryResultView: FC<{ queryResults: ArtistQueryResult | null }> = ({
 
   return (
     <>
-      <ArtistsList artists={directMatches} />
+      <ArtistQueryList artists={directMatches} />
       {fuzzyMatches.length > 0 && (
         <div className="mt-4">
           <div>{directMatches.length ? "Or did" : "Did"} you mean?</div>
-          <ArtistsList artists={fuzzyMatches} />
+          <ArtistQueryList artists={fuzzyMatches} />
         </div>
       )}
     </>

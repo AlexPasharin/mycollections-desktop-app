@@ -1,15 +1,15 @@
 import { useEffect, useState, type FC } from "react";
 
-import ArtistListElement from "../../../../../components/Artist";
 import api from "../../api";
 
+import ArtistListElement from "@/app/components/Artist";
 import type { FetchArtistsResponse } from "@/types/artists";
 
 type ArtistsState = FetchArtistsResponse & {
   startIndex: number;
 };
 
-const ArtistList: FC = () => {
+const AllArtistsList: FC = () => {
   const [artistsState, setArtistsState] = useState<ArtistsState | null>(null);
   const [loadingArtists, setLoadingArtists] = useState(true);
   const [loadingError, setLoadingError] = useState<unknown>(null);
@@ -61,12 +61,12 @@ const ArtistList: FC = () => {
   return (
     <>
       {artistsState?.prev && (
-        <button onClick={() => fetchArtistsBatch("prev")}>
+        <button type="button" onClick={() => fetchArtistsBatch("prev")}>
           Prev page &lt;-
         </button>
       )}
       {artistsState?.next && (
-        <button onClick={() => fetchArtistsBatch("next")}>
+        <button type="button" onClick={() => fetchArtistsBatch("next")}>
           Next page -&gt;
         </button>
       )}
@@ -91,4 +91,4 @@ const ArtistList: FC = () => {
   );
 };
 
-export default ArtistList;
+export default AllArtistsList;

@@ -2,7 +2,6 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import electronSquirrelStartup from "electron-squirrel-startup";
 
 import createArtistWindow from "./app/windows/artists/artist/createWindow";
-import createArtistsListWindow from "./app/windows/artists/list/createWindow";
 import createEntryWindow from "./app/windows/entry/createWindow";
 import createMainWindow from "./app/windows/main/create";
 import type {
@@ -16,7 +15,6 @@ import {
   GET_ENTRY_BY_ID,
   GET_ENTRY_RELEASES,
   OPEN_ARTIST_WINDOW,
-  OPEN_ARTISTS_LIST_WINDOW,
   OPEN_ENTRY_WINDOW,
   QUERY_ARTIST,
   SEARCH_ARTIST_ENTRIES,
@@ -55,10 +53,6 @@ await app.whenReady().then(async () => {
     SEARCH_ARTIST_ENTRIES,
     (_, params: SearchArtistEntriesParams) => searchArtistEntries(params),
   );
-
-  ipcMain.on(OPEN_ARTISTS_LIST_WINDOW, () => {
-    void createArtistsListWindow();
-  });
 
   ipcMain.on(OPEN_ARTIST_WINDOW, (_event, params: CreateArtistWindowParams) => {
     void createArtistWindow(params);

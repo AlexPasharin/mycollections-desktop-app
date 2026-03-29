@@ -4,9 +4,6 @@ const appWindows = {
   main_window: {
     folder: "windows/main",
   },
-  artists_list_window: {
-    folder: "windows/artists/list",
-  },
   artist_window: {
     folder: "windows/artists/artist",
   },

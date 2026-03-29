@@ -5,11 +5,11 @@ import api from "../../api";
 import ArtistListElement from "@/app/components/Artist";
 import type { QueriedArtist } from "@/types/artists";
 
-type ArtistsByQueryListProps = {
+type ArtistQueryListProps = {
   artists: QueriedArtist[];
 };
 
-const ArtistsList: FC<ArtistsByQueryListProps> = ({ artists }) => {
+const ArtistQueryList: FC<ArtistQueryListProps> = ({ artists }) => {
   if (!artists.length) {
     return <div>No artists found</div>;
   }
@@ -27,4 +27,4 @@ const ArtistsList: FC<ArtistsByQueryListProps> = ({ artists }) => {
   );
 };
 
-export default ArtistsList;
+export default ArtistQueryList;

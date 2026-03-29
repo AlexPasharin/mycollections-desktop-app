@@ -4,6 +4,7 @@
   gap: 0.5rem;
 }
 
-.artistQuery {
+.artistQuery,
+.artistsList {
   margin-top: 1rem;
 }

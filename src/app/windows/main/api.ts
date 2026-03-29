@@ -1,11 +1,11 @@
-import type { QueryArtist } from "@/types/artists";
+import type { FetchArtists, QueryArtist } from "@/types/artists";
 import type {
   CreateArtistWindowParams,
   CreateEntryWindowParams,
 } from "@/types/entries";
 
 export type API = {
-  openNewArtistsListWindow: () => void;
+  fetchArtists: FetchArtists;
   queryArtists: QueryArtist;
   openNewArtistWindow: (params: CreateArtistWindowParams) => void;
   openNewEntryWindow: (params: CreateEntryWindowParams) => void;

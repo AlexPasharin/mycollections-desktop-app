@@ -10,9 +10,6 @@ import type { AppWindowName } from "constants/appWindows";
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
-declare const ARTISTS_LIST_WINDOW_WEBPACK_ENTRY: string;
-declare const ARTISTS_LIST_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
-
 declare const ARTIST_WINDOW_WEBPACK_ENTRY: string;
 declare const ARTIST_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
@@ -23,10 +20,6 @@ const appWindows = {
   main_window: {
     preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     html: MAIN_WINDOW_WEBPACK_ENTRY,
-  },
-  artists_list_window: {
-    preload: ARTISTS_LIST_WINDOW_PRELOAD_WEBPACK_ENTRY,
-    html: ARTISTS_LIST_WINDOW_WEBPACK_ENTRY,
   },
   artist_window: {
     preload: ARTIST_WINDOW_PRELOAD_WEBPACK_ENTRY,

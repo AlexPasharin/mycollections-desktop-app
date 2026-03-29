@@ -3,6 +3,7 @@
 interface CssExports {
   'actions': string;
   'artistQuery': string;
+  'artistsList': string;
 }
 export const cssExports: CssExports;
 export default cssExports;
