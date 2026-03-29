@@ -5,6 +5,7 @@ interface CssExports {
   'entryPanel': string;
   'field': string;
   'fieldLabel': string;
+  'fieldLabelItalic': string;
   'italicNote': string;
   'typesList': string;
   'typesListItem': string;

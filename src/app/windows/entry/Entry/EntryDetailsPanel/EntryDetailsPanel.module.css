@@ -15,6 +15,11 @@
   font-weight: 600;
 }
 
+.fieldLabelItalic {
+  font-weight: 600;
+  font-style: italic;
+}
+
 .typesList {
   margin: 0.25rem 0 0;
   padding-left: 0;
