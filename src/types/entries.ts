@@ -28,6 +28,7 @@ export type EntryByIdResult = {
   artists: EntryArtistInfo[];
   types: string[];
   altNames: string[];
+  tags: string[];
 };
 
 export type GetEntryById = (

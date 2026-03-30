@@ -29,6 +29,24 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => (
         </a>
       </p>
     )}
+    {release.tags.length > 0 && (
+      <div className={styles.detailBlock}>
+        <span className={styles.detailLabel}>Tags:</span>
+        <ul
+          style={{
+            margin: "0.25rem 0 0",
+            paddingLeft: 0,
+            listStyle: "none",
+          }}
+        >
+          {release.tags.map((tag) => (
+            <li key={tag} style={{ margin: "0.25rem 0", fontStyle: "italic" }}>
+              {tag}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
     {formatJson(release.countries) && (
       <div className={styles.detailBlock}>
         <span className={styles.detailLabel}>Countries:</span>

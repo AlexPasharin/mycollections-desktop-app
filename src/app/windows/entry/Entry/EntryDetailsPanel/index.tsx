@@ -63,6 +63,19 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry }) => (
       </p>
     )}
 
+    {entry.tags.length > 0 && (
+      <div className={styles.field}>
+        <span className={styles.fieldLabel}>Tags:</span>
+        <ul className={styles.typesList}>
+          {entry.tags.map((tag) => (
+            <li key={tag} className={styles.tagsListItem}>
+              {tag}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
     {entry.comment && (
       <div>
         <p className={styles.comment}>{entry.comment}</p>
