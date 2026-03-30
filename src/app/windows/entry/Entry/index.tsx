@@ -20,7 +20,7 @@ const Entry: FC<EntryProps> = ({ entry, releases }) => (
 
     <EntryDetailsPanel entry={entry} />
 
-    <EntryReleases releases={releases} />
+    <EntryReleases entry={entry} releases={releases} />
   </div>
 );
 

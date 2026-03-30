@@ -4,24 +4,29 @@ import styles from "./EntryRelease.module.css";
 
 import ReleaseDetails from "../ReleaseDetails";
 
+import type { EntryByIdResult } from "@/types/entries";
 import type {
   EntryRelease as EntryReleaseRow,
   ReleaseByIdResult,
 } from "@/types/releases";
 
 type EntryReleaseProps = {
+  entry: EntryByIdResult;
   release: EntryReleaseRow;
   isExpanded: boolean;
   onToggle: () => void;
-  cached: ReleaseByIdResult | false | undefined;
+  releaseDetails: ReleaseByIdResult | undefined;
+  loadFailed: boolean;
   isLoading: boolean;
 };
 
 const EntryRelease: FC<EntryReleaseProps> = ({
+  entry,
   release,
   isExpanded,
   onToggle,
-  cached,
+  releaseDetails,
+  loadFailed,
   isLoading,
 }) => (
   <li className={styles.entryRelease}>
@@ -53,13 +58,13 @@ const EntryRelease: FC<EntryReleaseProps> = ({
             {isLoading && (
               <p className={styles.detailsLoading}>Loading details…</p>
             )}
-            {!isLoading && cached === false && (
+            {!isLoading && loadFailed && (
               <p className={styles.detailsMissing}>
                 Could not load release details.
               </p>
             )}
-            {!isLoading && cached && typeof cached === "object" && (
-              <ReleaseDetails release={cached} />
+            {!isLoading && releaseDetails && (
+              <ReleaseDetails entry={entry} release={releaseDetails} />
             )}
           </div>
         )}

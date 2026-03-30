@@ -3,13 +3,15 @@ import { type FC } from "react";
 import { formatJson } from "./formatJson";
 import styles from "./ReleaseDetails.module.css";
 
+import type { EntryByIdResult } from "@/types/entries";
 import type { ReleaseByIdResult } from "@/types/releases";
 
 type ReleaseDetailsProps = {
+  entry: EntryByIdResult;
   release: ReleaseByIdResult;
 };
 
-const ReleaseDetails: FC<ReleaseDetailsProps> = ({ release }) => (
+const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => (
   <div className={styles.releaseDetails}>
     <p className={styles.detailField}>
       <span className={styles.detailLabel}>Version: </span>
@@ -29,13 +31,13 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({ release }) => (
     )}
     {formatJson(release.countries) && (
       <div className={styles.detailBlock}>
-        <span className={styles.detailLabel}>Countries</span>
+        <span className={styles.detailLabel}>Countries:</span>
         <pre className={styles.jsonPre}>{formatJson(release.countries)}</pre>
       </div>
     )}
     {formatJson(release.catalogueNumbers) && (
       <div className={styles.detailBlock}>
-        <span className={styles.detailLabel}>Catalogue numbers</span>
+        <span className={styles.detailLabel}>Catalogue numbers:</span>
         <pre className={styles.jsonPre}>
           {formatJson(release.catalogueNumbers)}
         </pre>
@@ -43,7 +45,7 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({ release }) => (
     )}
     {formatJson(release.matrixRunout) && (
       <div className={styles.detailBlock}>
-        <span className={styles.detailLabel}>Matrix / runout</span>
+        <span className={styles.detailLabel}>Matrix / runout:</span>
         <pre className={styles.jsonPre}>{formatJson(release.matrixRunout)}</pre>
       </div>
     )}
@@ -52,11 +54,11 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({ release }) => (
     )}
     {release.conditionProblems && (
       <p className={styles.detailField}>
-        <span className={styles.detailLabel}>Condition: </span>
+        <span className={styles.detailLabel}>Condition problems: </span>
         {release.conditionProblems}
       </p>
     )}
-    {release.partOfQueenCollection && (
+    {release.partOfQueenCollection && !entry.partOfQueenCollection && (
       <p className={styles.detailField}>
         <span className={styles.detailLabelItalic}>
           Part of Queen collection

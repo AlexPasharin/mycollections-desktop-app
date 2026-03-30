@@ -3,13 +3,15 @@ import { type FC } from "react";
 import styles from "./EntryReleases.module.css";
 import EntryReleasesList from "./EntryReleasesList";
 
+import type { EntryByIdResult } from "@/types/entries";
 import type { EntryRelease } from "@/types/releases";
 
 type EntryReleasesProps = {
+  entry: EntryByIdResult;
   releases: EntryRelease[];
 };
 
-const EntryReleases: FC<EntryReleasesProps> = ({ releases }) => {
+const EntryReleases: FC<EntryReleasesProps> = ({ entry, releases }) => {
   if (releases.length === 0) {
     return (
       <p className={styles.emptyState}>
@@ -22,7 +24,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({ releases }) => {
     <div className={styles.panel}>
       <h2 className={styles.sectionTitle}>Releases in collection</h2>
       <div className={styles.field}>
-        <EntryReleasesList releases={releases} />
+        <EntryReleasesList entry={entry} releases={releases} />
       </div>
     </div>
   );
