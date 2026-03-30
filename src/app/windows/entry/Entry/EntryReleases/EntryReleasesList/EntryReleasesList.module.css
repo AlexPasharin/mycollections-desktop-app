@@ -1,0 +1,8 @@
+.releasesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0.25rem 0 0;
+  padding-left: 0;
+  list-style: none;
+}

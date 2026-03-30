@@ -1,6 +1,7 @@
 import { type FC } from "react";
 
 import styles from "./EntryReleases.module.css";
+import EntryReleasesList from "./EntryReleasesList";
 
 import type { EntryRelease } from "@/types/releases";
 
@@ -21,14 +22,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({ releases }) => {
     <div className={styles.panel}>
       <h2 className={styles.sectionTitle}>Releases in collection</h2>
       <div className={styles.field}>
-        <ul className={styles.releasesList}>
-          {releases.map((r) => (
-            <li key={r.releaseId} className={styles.releasesListItem}>
-              <span className={styles.releaseVersion}>{r.version}</span>
-              {r.formats.length > 0 && ` (${r.formats.join(", ")})`}
-            </li>
-          ))}
-        </ul>
+        <EntryReleasesList releases={releases} />
       </div>
     </div>
   );
