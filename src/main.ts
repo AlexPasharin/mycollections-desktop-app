@@ -22,7 +22,7 @@ import {
 import { fetchArtists, getArtistById, queryArtist } from "@/db/artists";
 import { getEntryById } from "@/db/entries/entry";
 import { searchArtistEntries } from "@/db/entries/searchArtistEntries";
-import { getEntryReleases } from "@/db/releases/entryReleases";
+import { getEntryReleases } from "@/db/releases";
 import type { FetchArtistsParams } from "@/types/artists";
 import type { SearchArtistEntriesParams } from "@/types/entries";
 
