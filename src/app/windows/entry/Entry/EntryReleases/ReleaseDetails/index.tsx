@@ -2,6 +2,7 @@ import { type FC } from "react";
 
 import { formatJson } from "./formatJson";
 import styles from "./ReleaseDetails.module.css";
+import ReleaseFormatItem from "./ReleaseFormatItem";
 
 import type { EntryByIdResult } from "@/types/entries";
 import type { ReleaseByIdResult } from "@/types/releases";
@@ -21,6 +22,18 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => (
       <span className={styles.detailLabel}>Release date: </span>
       {release.releaseDate ?? "(Unknown)"}
     </p>
+    {release.formats.length > 0 && (
+      <div className={styles.detailBlock}>
+        <span className={styles.detailLabel}>
+          {release.formats.length === 1 ? "Format:" : "Formats:"}
+        </span>
+        <ul className={styles.formatsList}>
+          {release.formats.map((format) => (
+            <ReleaseFormatItem key={format.id} format={format} />
+          ))}
+        </ul>
+      </div>
+    )}
     {release.discogsUrl && (
       <p className={styles.detailField}>
         <span className={styles.detailLabel}>Discogs: </span>
@@ -32,15 +45,9 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => (
     {release.tags.length > 0 && (
       <div className={styles.detailBlock}>
         <span className={styles.detailLabel}>Tags:</span>
-        <ul
-          style={{
-            margin: "0.25rem 0 0",
-            paddingLeft: 0,
-            listStyle: "none",
-          }}
-        >
+        <ul className={styles.tagsList}>
           {release.tags.map((tag) => (
-            <li key={tag} style={{ margin: "0.25rem 0", fontStyle: "italic" }}>
+            <li key={tag} className={styles.tagsListItem}>
               {tag}
             </li>
           ))}

@@ -56,7 +56,7 @@ export const getReleaseById: GetReleaseById = (releaseId) =>
           'pictureSleeve', ${sql.ref("formatsOfReleases.pictureSleeve")},
           'speed', ${sql.ref("formatsOfReleases.speed")},
           'amount', ${sql.ref("formatsOfReleases.amount")},
-          'shortName', ${sql.ref("releasesFormats.shortName")},
+          'shortName', ${sql.ref("releasesFormats.shortName")}
         )) FILTER (WHERE ${sql.ref("formatsOfReleases.id")} IS NOT NULL),
         '[]'::jsonb
       )`.as("formats"),

@@ -6,8 +6,11 @@ interface CssExports {
   'detailField': string;
   'detailLabel': string;
   'detailLabelItalic': string;
+  'formatsList': string;
   'jsonPre': string;
   'releaseDetails': string;
+  'tagsList': string;
+  'tagsListItem': string;
 }
 export const cssExports: CssExports;
 export default cssExports;

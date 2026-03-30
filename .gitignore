@@ -16,7 +16,7 @@ prisma/generated
 .vscode
 
 # Cursor (local agent rules)
-.cursor/rules/
+.cursor
 
 src/types/db/database.ts
 
