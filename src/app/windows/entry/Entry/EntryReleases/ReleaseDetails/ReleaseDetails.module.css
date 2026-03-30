@@ -45,3 +45,20 @@
   border-radius: 4px;
   font-size: 0.95em;
 }
+
+.tagsList {
+  margin: 0.25rem 0 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.tagsListItem {
+  margin: 0.25rem 0;
+  font-style: italic;
+}
+
+.formatsList {
+  margin: 0.25rem 0 0;
+  padding-left: 0;
+  list-style: none;
+}
