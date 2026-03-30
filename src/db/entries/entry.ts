@@ -13,6 +13,12 @@ export const getEntryById: GetEntryById = (entryId) =>
       "musicalEntriesArtists.entryArtistNameId",
       "alternativeArtistNames.nameId",
     )
+    .leftJoin(
+      "musicalEntriesTags",
+      "musicalEntries.entryId",
+      "musicalEntriesTags.entryId",
+    )
+    .leftJoin("tags", "musicalEntriesTags.tagId", "tags.tagId")
     .where("musicalEntries.entryId", "=", entryId)
     .select([
       "musicalEntries.entryId",
@@ -37,6 +43,7 @@ export const getEntryById: GetEntryById = (entryId) =>
         "alternativeMusicalEntryNames.name",
         "altNames",
       ),
+      aggregateDistinctValuesToArray("tags.tag", "tags"),
     ])
     .groupBy([
       "musicalEntries.entryId",

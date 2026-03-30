@@ -7,6 +7,7 @@ interface CssExports {
   'fieldLabel': string;
   'fieldLabelItalic': string;
   'italicNote': string;
+  'tagsListItem': string;
   'typesList': string;
   'typesListItem': string;
 }

@@ -10,7 +10,9 @@ export type EntryRelease = {
 
 export type GetEntryReleases = (entryId: string) => Promise<EntryRelease[]>;
 
-export type ReleaseByIdResult = Selectable<MusicalRelease>;
+export type ReleaseByIdResult = Selectable<MusicalRelease> & {
+  tags: string[];
+};
 
 export type GetReleaseById = (
   releaseId: string,
