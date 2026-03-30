@@ -1,14 +1,17 @@
 import { type FC } from "react";
 
 import styles from "./EntryReleases.module.css";
+import EntryReleasesList from "./EntryReleasesList";
 
+import type { EntryByIdResult } from "@/types/entries";
 import type { EntryRelease } from "@/types/releases";
 
 type EntryReleasesProps = {
+  entry: EntryByIdResult;
   releases: EntryRelease[];
 };
 
-const EntryReleases: FC<EntryReleasesProps> = ({ releases }) => {
+const EntryReleases: FC<EntryReleasesProps> = ({ entry, releases }) => {
   if (releases.length === 0) {
     return (
       <p className={styles.emptyState}>
@@ -21,14 +24,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({ releases }) => {
     <div className={styles.panel}>
       <h2 className={styles.sectionTitle}>Releases in collection</h2>
       <div className={styles.field}>
-        <ul className={styles.releasesList}>
-          {releases.map((r) => (
-            <li key={r.releaseId} className={styles.releasesListItem}>
-              <span className={styles.releaseVersion}>{r.version}</span>
-              {r.formats.length > 0 && ` (${r.formats.join(", ")})`}
-            </li>
-          ))}
-        </ul>
+        <EntryReleasesList entry={entry} releases={releases} />
       </div>
     </div>
   );
