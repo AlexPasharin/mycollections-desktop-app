@@ -1,6 +1,7 @@
 import { type FC } from "react";
 
 import { formatJson } from "./formatJson";
+import ReleaseCountries from "./ReleaseCountries";
 import styles from "./ReleaseDetails.module.css";
 import ReleaseFormatItem from "./ReleaseFormatItem";
 
@@ -54,12 +55,7 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => (
         </ul>
       </div>
     )}
-    {formatJson(release.countries) && (
-      <div className={styles.detailBlock}>
-        <span className={styles.detailLabel}>Countries:</span>
-        <pre className={styles.jsonPre}>{formatJson(release.countries)}</pre>
-      </div>
-    )}
+    <ReleaseCountries countries={release.countries} />
     {formatJson(release.catalogueNumbers) && (
       <div className={styles.detailBlock}>
         <span className={styles.detailLabel}>Catalogue numbers:</span>

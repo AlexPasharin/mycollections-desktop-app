@@ -1,0 +1,36 @@
+.detailField {
+  margin-bottom: 0.5rem;
+}
+
+.detailLabel {
+  font-weight: 600;
+}
+
+.jsonPre {
+  margin-top: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  background: #f5f5f5;
+  border-radius: 4px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.countriesCompound {
+  margin-top: 0.5rem;
+  margin-left: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.nestedCountriesBasic {
+  margin-top: 0.5rem;
+  padding-left: 0.65rem;
+  border-left: 2px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}

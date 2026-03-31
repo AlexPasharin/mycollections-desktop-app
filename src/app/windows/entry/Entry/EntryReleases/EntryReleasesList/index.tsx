@@ -1,4 +1,4 @@
-import { type FC, useState } from "react";
+import { type FC, useRef, useState } from "react";
 
 import styles from "./EntryReleasesList.module.css";
 
@@ -21,9 +21,11 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({ entry, releases }) => {
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(
     () => new Set(),
   );
-  const [detailsCache, setDetailsCache] = useState<
-    Record<string, ReleaseByIdResult>
-  >({});
+  const [releaseDetails, setReleaseDetails] = useState<
+    Map<string, ReleaseByIdResult>
+  >(() => new Map());
+  const expandedIdsRef = useRef(expandedIds);
+  expandedIdsRef.current = expandedIds;
   const [failedIds, setFailedIds] = useState<ReadonlySet<string>>(
     () => new Set(),
   );
@@ -32,38 +34,61 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({ entry, releases }) => {
   );
 
   const toggleRelease = (releaseId: string) => {
+    const dropReleaseDetails = () => {
+      setReleaseDetails((prev) => {
+        const next = new Map(prev);
+        next.delete(releaseId);
+
+        return next;
+      });
+    };
+
     if (expandedIds.has(releaseId)) {
+      dropReleaseDetails();
+
       setExpandedIds(updateImmutableSet(releaseId, "remove"));
+      setFailedIds(updateImmutableSet(releaseId, "remove"));
+      setLoadingIds(updateImmutableSet(releaseId, "remove"));
 
       return;
     }
 
+    dropReleaseDetails();
     setExpandedIds(updateImmutableSet(releaseId, "add"));
-
-    if (releaseId in detailsCache) {
-      return;
-    }
-
     setFailedIds(updateImmutableSet(releaseId, "remove"));
     setLoadingIds(updateImmutableSet(releaseId, "add"));
 
     api
       .getReleaseById(releaseId)
       .then((row) => {
+        if (!expandedIdsRef.current.has(releaseId)) {
+          return;
+        }
+
         if (!row) {
           throw new Error("Release not found");
         }
 
-        setDetailsCache((prev) => ({
-          ...prev,
-          [releaseId]: row,
-        }));
+        setReleaseDetails((prev) => {
+          const next = new Map(prev);
+          next.set(releaseId, row);
+
+          return next;
+        });
       })
       .catch((error: unknown) => {
+        if (!expandedIdsRef.current.has(releaseId)) {
+          return;
+        }
+
         console.error("Error loading release details", error);
         setFailedIds(updateImmutableSet(releaseId, "add"));
       })
       .finally(() => {
+        if (!expandedIdsRef.current.has(releaseId)) {
+          return;
+        }
+
         setLoadingIds(updateImmutableSet(releaseId, "remove"));
       });
   };
@@ -77,7 +102,7 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({ entry, releases }) => {
           release={r}
           isExpanded={expandedIds.has(r.releaseId)}
           onToggle={() => toggleRelease(r.releaseId)}
-          releaseDetails={detailsCache[r.releaseId]}
+          releaseDetails={releaseDetails.get(r.releaseId)}
           loadFailed={failedIds.has(r.releaseId)}
           isLoading={loadingIds.has(r.releaseId)}
         />
