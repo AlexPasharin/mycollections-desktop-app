@@ -17,7 +17,6 @@ type ReleaseCatNumbersProps = {
   catalogueNumbers: ReleaseByIdResult["catalogueNumbers"];
 };
 
-
 const ReleaseCatNumbers: FC<ReleaseCatNumbersProps> = ({
   catalogueNumbers,
 }) => {
@@ -34,7 +33,6 @@ const ReleaseCatNumbers: FC<ReleaseCatNumbersProps> = ({
 };
 
 export default ReleaseCatNumbers;
-
 
 type CatalogueNumbersDisplayed = Exclude<
   ReleaseByIdResult["catalogueNumbers"],
