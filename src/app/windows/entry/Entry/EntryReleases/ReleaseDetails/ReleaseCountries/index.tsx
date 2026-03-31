@@ -44,12 +44,14 @@ const ReleaseCountriesInner: FC<ReleaseCountriesProps> = ({ countries }) => {
 
   if ("rawJson" in countries) {
     const { rawJson, error } = countries;
+    const jsonFormatted =
+      rawJson == null ? String(rawJson) : formatJson(rawJson);
 
     return (
-      <>
-        <pre className={styles.jsonPre}>{formatJson(rawJson)}</pre>
+      <pre className={styles.jsonPre}>
+        {jsonFormatted}
         <p className={styles.detailField}>Error: {error}</p>
-      </>
+      </pre>
     );
   }
 

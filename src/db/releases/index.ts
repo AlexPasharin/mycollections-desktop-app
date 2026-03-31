@@ -89,6 +89,7 @@ const getReleaseCountries = async (countries: unknown) => {
   const countriesValidation = releaseCountriesSchema.safeParse(countries);
 
   if (!countriesValidation.success) {
+    // SHOULD NOT NORMALLY HAPPEN BC OF TRIGGER ON MUSICAL_RELEASES TABLES
     return {
       rawJson: countries,
       error: "Could not be parsed to countries schema",
