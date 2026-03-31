@@ -17,11 +17,6 @@ type ReleaseCatNumbersProps = {
   catalogueNumbers: ReleaseByIdResult["catalogueNumbers"];
 };
 
-/** Non-null catalogue numbers value (still may be validation error shape). */
-type CatalogueNumbersDisplayed = Exclude<
-  ReleaseByIdResult["catalogueNumbers"],
-  null
->;
 
 const ReleaseCatNumbers: FC<ReleaseCatNumbersProps> = ({
   catalogueNumbers,
@@ -39,6 +34,12 @@ const ReleaseCatNumbers: FC<ReleaseCatNumbersProps> = ({
 };
 
 export default ReleaseCatNumbers;
+
+
+type CatalogueNumbersDisplayed = Exclude<
+  ReleaseByIdResult["catalogueNumbers"],
+  null
+>;
 
 const ReleaseCatNumbersInner: FC<{
   catalogueNumbers: CatalogueNumbersDisplayed;
@@ -65,7 +66,7 @@ const ReleaseCatNumbersInner: FC<{
 const CatNumbersSingle: FC<{ value: ReleaseCatNumbersSingle }> = ({
   value,
 }) => (
-  <div>
+  <div className={styles.catNumbersSingle}>
     {"label" in value && <DetailField label="Label">{value.label}</DetailField>}
     {"labels" in value && (
       <DetailField label="Labels">

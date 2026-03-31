@@ -20,6 +20,15 @@
   margin: 0.35rem 0;
 }
 
+.catNumbersSingle {
+  margin-top: 0.35rem;
+  padding-left: 0.65rem;
+  border-left: 2px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
 .catNumbersCompound {
   margin-top: 0.35rem;
   margin-left: 0.65rem;

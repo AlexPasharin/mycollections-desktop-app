@@ -2,6 +2,7 @@
 // Please do not change this file!
 interface CssExports {
   'catNumbersCompound': string;
+  'catNumbersSingle': string;
   'detailBlock': string;
   'detailLabel': string;
   'entriesList': string;
