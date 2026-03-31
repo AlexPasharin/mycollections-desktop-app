@@ -1,9 +1,8 @@
+import { flattenStringOrArray } from "@/utils/common";
 import type {
   CountriesBasic,
   ReleaseCountries,
-} from "src/validation/releases/countries";
-
-import { flattenStringOrArray } from "@/utils/common";
+} from "@/validation/releases/countries";
 
 /** Country codes from validated release `countries` JSON, deduplicated. */
 export const collectReleaseCountryCodes = (

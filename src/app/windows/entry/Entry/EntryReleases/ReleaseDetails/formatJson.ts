@@ -1,9 +1,9 @@
-export const formatJson = (value: unknown): string | null => {
+export const formatJson = (value: unknown): string => {
   switch (typeof value) {
     case "object":
-      return value === null ? null : JSON.stringify(value, null, 2);
+      return JSON.stringify(value, null, 2);
     case "undefined":
-      return null;
+      return "undefined";
     case "string":
     case "number":
     case "boolean":

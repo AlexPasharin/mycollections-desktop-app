@@ -1,5 +1,4 @@
 import { sql } from "kysely";
-import { releaseCountriesSchema } from "src/validation/releases/countries";
 
 import client from "../client/kysely";
 import { aggregateDistinctValuesToArray } from "../utils";
@@ -12,6 +11,7 @@ import {
   collectReleaseCountryCodes,
   countryCodesToNamesInReleaseCountries,
 } from "@/utils/countries";
+import { releaseCountriesSchema } from "@/validation/releases/countries";
 
 export { getEntryReleases } from "./entryReleases";
 
