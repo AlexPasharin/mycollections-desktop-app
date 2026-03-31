@@ -1,0 +1,47 @@
+.detailBlock {
+  margin: 0 0 0.55rem;
+}
+
+.detailBlock .detailLabel {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.detailLabel {
+  font-weight: 600;
+}
+
+.entriesList {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.entryItem {
+  margin: 0.35rem 0;
+}
+
+.catNumbersSingle {
+  margin-top: 0.35rem;
+  padding-left: 0.65rem;
+  border-left: 2px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.catNumbersCompound {
+  margin-top: 0.35rem;
+  margin-left: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.nestedRegions {
+  margin-top: 0.35rem;
+  padding-left: 0.65rem;
+  border-left: 2px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}

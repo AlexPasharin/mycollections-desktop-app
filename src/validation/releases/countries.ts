@@ -16,6 +16,7 @@ const slipcasePropertySchema = z.strictObject({
   "printed in": stringOrNonEmptyArraySchema,
 });
 
+// See documentation/database/validation_functions/release_countries_jsonb_validation.md for documentation on the validation logic
 export const releaseCountriesSchema = z.union([
   z.null(),
   countriesBasicSchema,

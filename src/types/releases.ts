@@ -1,5 +1,6 @@
 import type { Selectable } from "kysely";
 
+import type { ReleaseCatNumbers } from "../validation/releases/cat_numbers";
 import type { ReleaseCountries } from "../validation/releases/countries";
 
 import type { MusicalRelease } from "@/types/db/database";
@@ -21,13 +22,16 @@ export type EntryRelease = {
 
 export type GetEntryReleases = (entryId: string) => Promise<EntryRelease[]>;
 
+export type JsonParsingErrorData = { rawJson: unknown; error: string };
+
 export type ReleaseByIdResult = Omit<
   Selectable<MusicalRelease>,
-  "countries"
+  "countries" | "catalogueNumbers"
 > & {
   tags: string[];
   formats: ReleaseFormatOfReleaseItem[];
-  countries: ReleaseCountries | { rawJson: unknown; error: string };
+  countries: ReleaseCountries | JsonParsingErrorData;
+  catalogueNumbers: ReleaseCatNumbers | JsonParsingErrorData;
 };
 
 export type GetReleaseById = (
