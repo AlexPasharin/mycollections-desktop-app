@@ -1,6 +1,7 @@
 import { type FC } from "react";
 
 import { formatJson } from "./formatJson";
+import ReleaseCatNumbers from "./ReleaseCatNumbers";
 import ReleaseCountries from "./ReleaseCountries";
 import styles from "./ReleaseDetails.module.css";
 import ReleaseFormatItem from "./ReleaseFormatItem";
@@ -56,14 +57,7 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => (
       </div>
     )}
     <ReleaseCountries countries={release.countries} />
-    {formatJson(release.catalogueNumbers) && (
-      <div className={styles.detailBlock}>
-        <span className={styles.detailLabel}>Catalogue numbers:</span>
-        <pre className={styles.jsonPre}>
-          {formatJson(release.catalogueNumbers)}
-        </pre>
-      </div>
-    )}
+    <ReleaseCatNumbers catalogueNumbers={release.catalogueNumbers} />
     {formatJson(release.matrixRunout) && (
       <div className={styles.detailBlock}>
         <span className={styles.detailLabel}>Matrix / runout:</span>

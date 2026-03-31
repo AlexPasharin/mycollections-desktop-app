@@ -22,14 +22,16 @@ export type EntryRelease = {
 
 export type GetEntryReleases = (entryId: string) => Promise<EntryRelease[]>;
 
+export type JsonParsingErrorData = { rawJson: unknown; error: string };
+
 export type ReleaseByIdResult = Omit<
   Selectable<MusicalRelease>,
   "countries" | "catalogueNumbers"
 > & {
   tags: string[];
   formats: ReleaseFormatOfReleaseItem[];
-  countries: ReleaseCountries | { rawJson: unknown; error: string };
-  catalogueNumbers: ReleaseCatNumbers | { rawJson: unknown; error: string };
+  countries: ReleaseCountries | JsonParsingErrorData;
+  catalogueNumbers: ReleaseCatNumbers | JsonParsingErrorData;
 };
 
 export type GetReleaseById = (

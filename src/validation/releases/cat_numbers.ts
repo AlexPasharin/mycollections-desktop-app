@@ -50,3 +50,8 @@ export const releaseCatNumbersSchema = z.union([
 ]);
 
 export type ReleaseCatNumbers = z.infer<typeof releaseCatNumbersSchema>;
+export type CatNumbersNested = z.infer<typeof catNumbersNestedSchema>;
+export type CatNumbersProperty = z.infer<typeof catNumbersPropertySchema>;
+export type ReleaseCatNumbersSingle = z.infer<
+  typeof releaseCatNumbersSingleSchema
+>;

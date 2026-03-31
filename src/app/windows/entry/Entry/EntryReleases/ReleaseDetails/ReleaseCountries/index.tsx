@@ -1,10 +1,12 @@
-import type { FC, PropsWithChildren } from "react";
+import type { FC } from "react";
 
 import styles from "./ReleaseCountries.module.css";
 
-import { formatJson } from "../formatJson";
+import { DetailField } from "../DetailField";
+import JsonFieldErrorDisplay from "../JsonFieldErrorDisplay";
 
 import type { ReleaseByIdResult } from "@/types/releases";
+import { joinStringOrArray } from "@/utils/common";
 import type { CountriesBasic } from "@/validation/releases/countries";
 
 type ReleaseCountriesProps = {
@@ -43,16 +45,7 @@ const ReleaseCountriesInner: FC<ReleaseCountriesProps> = ({ countries }) => {
   }
 
   if ("rawJson" in countries) {
-    const { rawJson, error } = countries;
-    const jsonFormatted =
-      rawJson == null ? String(rawJson) : formatJson(rawJson);
-
-    return (
-      <pre className={styles.jsonPre}>
-        {jsonFormatted}
-        <p className={styles.detailField}>Error: {error}</p>
-      </pre>
-    );
+    return <JsonFieldErrorDisplay {...countries} />;
   }
 
   return <CountriesBasicBlock basic={countries} />;
@@ -88,25 +81,5 @@ const CountriesBasicBlock: FC<CountriesBasicBlockProps> = ({
   );
 };
 
-type DetailFieldProps = PropsWithChildren<{
-  label: string | undefined;
-}>;
-
-const DetailField: FC<DetailFieldProps> = ({ label, children }) => (
-  <div className={styles.detailField}>
-    {label === undefined ? (
-      children
-    ) : (
-      <>
-        <span className={styles.detailLabel}>{label}: </span>
-        {children}
-      </>
-    )}
-  </div>
-);
-
 const calcLabel = (value: unknown) =>
   typeof value === "string" ? "Country" : "Countries";
-
-const joinStringOrArray = (v: string | string[]): string =>
-  Array.isArray(v) ? v.join(", ") : v;
