@@ -7,7 +7,6 @@ interface CssExports {
   'detailLabel': string;
   'detailLabelItalic': string;
   'formatsList': string;
-  'jsonPre': string;
   'releaseDetails': string;
   'tagsList': string;
   'tagsListItem': string;

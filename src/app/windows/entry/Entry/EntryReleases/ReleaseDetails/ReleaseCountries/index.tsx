@@ -19,6 +19,8 @@ const ReleaseCountries: FC<ReleaseCountriesProps> = ({ countries }) => (
   </DetailField>
 );
 
+export default ReleaseCountries;
+
 const ReleaseCountriesInner: FC<ReleaseCountriesProps> = ({ countries }) => {
   if (countries === null) {
     return "(Unknown)";
@@ -50,8 +52,6 @@ const ReleaseCountriesInner: FC<ReleaseCountriesProps> = ({ countries }) => {
 
   return <CountriesBasicBlock basic={countries} />;
 };
-
-export default ReleaseCountries;
 
 type CountriesBasicBlockProps = {
   basic: CountriesBasic;
