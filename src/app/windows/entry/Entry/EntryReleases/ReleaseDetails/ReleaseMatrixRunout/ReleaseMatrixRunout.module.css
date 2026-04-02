@@ -1,0 +1,100 @@
+.detailBlock {
+  margin: 0 0 0.55rem;
+}
+
+.detailBlock .detailLabel {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.detailLabel {
+  font-weight: 600;
+}
+
+/* Validation / DB trigger mismatch */
+.parseErrorShell {
+  margin-top: 0.15rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid #e8c4c4;
+  border-left-width: 4px;
+  border-left-color: #c62828;
+  background: #fff8f8;
+}
+
+/* Nested JsonFieldErrorDisplay pre — avoid double card */
+.parseErrorShell :global(pre) {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+/* Structured object tree */
+.objectPanel {
+  margin-top: 0.15rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid #e8e8e8;
+  background: #f8f9fa;
+}
+
+.objectRoot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.nestedBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+  padding-left: 0.65rem;
+  border-left: 2px solid #d0d7de;
+}
+
+.kvRow {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, max-content) 1fr;
+  gap: 0.5rem 0.75rem;
+  align-items: start;
+}
+
+@media (max-width: 520px) {
+  .kvRow {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+}
+
+.kvKey {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  line-height: 1.35;
+}
+
+.kvValue {
+  min-width: 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.codeString {
+  font-family:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  padding: 0.1rem 0.2rem;
+  border-radius: 3px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  word-break: break-word;
+}
+
+.nullValue {
+  color: #9ca3af;
+  font-style: italic;
+}

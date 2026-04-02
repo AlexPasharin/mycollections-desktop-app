@@ -2,9 +2,8 @@ import { type FC, type ReactElement } from "react";
 
 import styles from "./ReleaseFormatItem.module.css";
 
-import { formatJson } from "../formatJson";
-
 import type { ReleaseFormatOfReleaseItem } from "@/types/releases";
+import { formatJson } from "@/utils/common";
 
 type ReleaseFormatItemProps = {
   format: ReleaseFormatOfReleaseItem;

@@ -1,10 +1,10 @@
 import { type FC } from "react";
 
-import { formatJson } from "./formatJson";
 import ReleaseCatNumbers from "./ReleaseCatNumbers";
 import ReleaseCountries from "./ReleaseCountries";
 import styles from "./ReleaseDetails.module.css";
 import ReleaseFormatItem from "./ReleaseFormatItem";
+import ReleaseMatrixRunout from "./ReleaseMatrixRunout";
 
 import type { EntryByIdResult } from "@/types/entries";
 import type { ReleaseByIdResult } from "@/types/releases";
@@ -58,12 +58,7 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => (
     )}
     <ReleaseCountries countries={release.countries} />
     <ReleaseCatNumbers catalogueNumbers={release.catalogueNumbers} />
-    {formatJson(release.matrixRunout) && (
-      <div className={styles.detailBlock}>
-        <span className={styles.detailLabel}>Matrix / runout:</span>
-        <pre className={styles.jsonPre}>{formatJson(release.matrixRunout)}</pre>
-      </div>
-    )}
+    <ReleaseMatrixRunout matrixRunout={release.matrixRunout} />
     {release.comment && (
       <p className={styles.detailComment}>{release.comment}</p>
     )}

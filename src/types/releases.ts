@@ -1,7 +1,8 @@
 import type { Selectable } from "kysely";
 
-import type { ReleaseCatNumbers } from "../validation/releases/cat_numbers";
+import type { ReleaseCatNumbers } from "../validation/releases/catNumbers";
 import type { ReleaseCountries } from "../validation/releases/countries";
+import type { ReleaseMatrixRunout } from "../validation/releases/matrixRunout";
 
 import type { MusicalRelease } from "@/types/db/database";
 
@@ -26,12 +27,13 @@ export type JsonParsingErrorData = { rawJson: unknown; error: string };
 
 export type ReleaseByIdResult = Omit<
   Selectable<MusicalRelease>,
-  "countries" | "catalogueNumbers"
+  "countries" | "catalogueNumbers" | "matrixRunout"
 > & {
   tags: string[];
   formats: ReleaseFormatOfReleaseItem[];
   countries: ReleaseCountries | JsonParsingErrorData;
   catalogueNumbers: ReleaseCatNumbers | JsonParsingErrorData;
+  matrixRunout: ReleaseMatrixRunout | JsonParsingErrorData;
 };
 
 export type GetReleaseById = (
