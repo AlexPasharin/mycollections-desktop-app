@@ -11,8 +11,9 @@ import {
   collectReleaseCountryCodes,
   countryCodesToNamesInReleaseCountries,
 } from "@/utils/countries";
-import { releaseCatNumbersSchema } from "@/validation/releases/cat_numbers";
+import { releaseCatNumbersSchema } from "@/validation/releases/catNumbers";
 import { releaseCountriesSchema } from "@/validation/releases/countries";
+import { releaseMatrixRunoutSchema } from "@/validation/releases/matrixRunout";
 
 const musicalReleaseColumns = [
   "musicalReleases.releaseId",
@@ -74,8 +75,9 @@ export const getReleaseById: GetReleaseById = async (releaseId) => {
 
   const countries = await getReleaseCountries(release.countries);
   const catalogueNumbers = getReleaseCatNumbers(release.catalogueNumbers);
+  const matrixRunout = getReleaseMatrixRunout(release.matrixRunout);
 
-  return { ...release, countries, catalogueNumbers };
+  return { ...release, countries, catalogueNumbers, matrixRunout };
 };
 
 /** Parses and validates release countries JSON
@@ -136,6 +138,23 @@ const getReleaseCatNumbers = (catalogueNumbers: unknown) => {
     return {
       rawJson: catalogueNumbers,
       error: "Could not be parsed to catalogue numbers schema",
+    };
+  }
+
+  return validation.data;
+};
+
+/** Parses and validates release matrix / runout JSON
+ * On success returns the validated value; on failure returns the raw JSON and an error message.
+ */
+const getReleaseMatrixRunout = (matrixRunout: unknown) => {
+  const validation = releaseMatrixRunoutSchema.safeParse(matrixRunout);
+
+  if (!validation.success) {
+    // SHOULD NOT NORMALLY HAPPEN BC OF TRIGGER ON MUSICAL_RELEASES TABLES
+    return {
+      rawJson: matrixRunout,
+      error: "Could not be parsed to matrix / runout schema",
     };
   }
 

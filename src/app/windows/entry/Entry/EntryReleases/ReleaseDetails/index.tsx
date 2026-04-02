@@ -1,17 +1,56 @@
 import { type FC } from "react";
 
 import { formatJson } from "./formatJson";
+import JsonFieldErrorDisplay from "./JsonFieldErrorDisplay";
 import ReleaseCatNumbers from "./ReleaseCatNumbers";
 import ReleaseCountries from "./ReleaseCountries";
 import styles from "./ReleaseDetails.module.css";
 import ReleaseFormatItem from "./ReleaseFormatItem";
 
 import type { EntryByIdResult } from "@/types/entries";
-import type { ReleaseByIdResult } from "@/types/releases";
+import type { JsonParsingErrorData, ReleaseByIdResult } from "@/types/releases";
 
 type ReleaseDetailsProps = {
   entry: EntryByIdResult;
   release: ReleaseByIdResult;
+};
+
+const isMatrixRunoutParseError = (
+  value: ReleaseByIdResult["matrixRunout"],
+): value is JsonParsingErrorData =>
+  typeof value === "object" &&
+  value !== null &&
+  "rawJson" in value &&
+  "error" in value;
+
+const ReleaseMatrixRunout: FC<{
+  matrixRunout: ReleaseByIdResult["matrixRunout"];
+}> = ({ matrixRunout }) => {
+  if (matrixRunout === null) {
+    return null;
+  }
+
+  if (isMatrixRunoutParseError(matrixRunout)) {
+    return (
+      <div className={styles.detailBlock}>
+        <span className={styles.detailLabel}>Matrix / runout:</span>
+        <JsonFieldErrorDisplay {...matrixRunout} />
+      </div>
+    );
+  }
+
+  const formatted = formatJson(matrixRunout);
+
+  if (!formatted) {
+    return null;
+  }
+
+  return (
+    <div className={styles.detailBlock}>
+      <span className={styles.detailLabel}>Matrix / runout:</span>
+      <pre className={styles.jsonPre}>{formatted}</pre>
+    </div>
+  );
 };
 
 const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => (
@@ -58,12 +97,7 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => (
     )}
     <ReleaseCountries countries={release.countries} />
     <ReleaseCatNumbers catalogueNumbers={release.catalogueNumbers} />
-    {formatJson(release.matrixRunout) && (
-      <div className={styles.detailBlock}>
-        <span className={styles.detailLabel}>Matrix / runout:</span>
-        <pre className={styles.jsonPre}>{formatJson(release.matrixRunout)}</pre>
-      </div>
-    )}
+    <ReleaseMatrixRunout matrixRunout={release.matrixRunout} />
     {release.comment && (
       <p className={styles.detailComment}>{release.comment}</p>
     )}
