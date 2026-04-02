@@ -1,6 +1,5 @@
 import { type FC } from "react";
 
-import { formatJson } from "./formatJson";
 import JsonFieldErrorDisplay from "./JsonFieldErrorDisplay";
 import ReleaseCatNumbers from "./ReleaseCatNumbers";
 import ReleaseCountries from "./ReleaseCountries";
@@ -9,6 +8,7 @@ import ReleaseFormatItem from "./ReleaseFormatItem";
 
 import type { EntryByIdResult } from "@/types/entries";
 import type { JsonParsingErrorData, ReleaseByIdResult } from "@/types/releases";
+import { formatJson } from "@/utils/common";
 
 type ReleaseDetailsProps = {
   entry: EntryByIdResult;

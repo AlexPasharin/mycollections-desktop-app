@@ -2,9 +2,8 @@ import type { FC } from "react";
 
 import styles from "./JsonFieldErrorDisplay.module.css";
 
-import { formatJson } from "../formatJson";
-
 import type { JsonParsingErrorData } from "@/types/releases";
+import { formatJson } from "@/utils/common";
 
 const JsonFieldErrorDisplay: FC<JsonParsingErrorData> = ({
   rawJson,
