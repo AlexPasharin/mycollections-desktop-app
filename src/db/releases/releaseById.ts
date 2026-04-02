@@ -73,11 +73,14 @@ export const getReleaseById: GetReleaseById = async (releaseId) => {
     return release;
   }
 
-  const countries = await getReleaseCountries(release.countries);
-  const catalogueNumbers = getReleaseCatNumbers(release.catalogueNumbers);
-  const matrixRunout = getReleaseMatrixRunout(release.matrixRunout);
+  const { countries, catalogueNumbers, matrixRunout, ...rest } = release;
 
-  return { ...release, countries, catalogueNumbers, matrixRunout };
+  return {
+    ...rest,
+    countries: await getReleaseCountries(countries),
+    catalogueNumbers: getReleaseCatNumbers(catalogueNumbers),
+    matrixRunout: getReleaseMatrixRunout(matrixRunout),
+  };
 };
 
 /** Parses and validates release countries JSON

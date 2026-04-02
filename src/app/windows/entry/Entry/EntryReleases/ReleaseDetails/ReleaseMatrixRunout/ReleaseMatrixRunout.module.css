@@ -31,27 +31,6 @@
   border-radius: 0;
 }
 
-/* Single-line or multi-line etched codes */
-.stringShell {
-  margin-top: 0.15rem;
-  padding: 0.5rem 0.65rem;
-  border-radius: 6px;
-  border: 1px solid #e5e5e5;
-  background: #fafafa;
-}
-
-.codeBlock {
-  display: block;
-  margin: 0;
-  font-family:
-    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: #1a1a1a;
-}
-
 /* Structured object tree */
 .objectPanel {
   margin-top: 0.15rem;
@@ -115,20 +94,7 @@
   word-break: break-word;
 }
 
-.scalar {
-  color: #1f2937;
-}
-
 .nullValue {
   color: #9ca3af;
   font-style: italic;
-}
-
-.list {
-  margin: 0.15rem 0 0;
-  padding-left: 1.1rem;
-}
-
-.list li {
-  margin: 0.2rem 0;
 }

@@ -13,6 +13,13 @@ const appendChildIssues = (
   }
 };
 
+/** String, or arbitrarily nested string-keyed objects whose leaves are all strings. */
+export type StringLeafJson = string | { [key: string]: StringLeafJson };
+
+const stringLeafJsonSchema: z.ZodType<StringLeafJson> = z.lazy(() =>
+  z.union([z.string(), z.record(z.string(), stringLeafJsonSchema)]),
+);
+
 /** Allowed digital-format keys (matches extract_matrix_runout_jsonb_obj_keys). */
 const DIGITAL_KEY_REGEX = /^(?:(?:CD|DVD|BD|4HD_BD)(?:[1-9]\d*)?|LP|3'CD)$/;
 
@@ -184,7 +191,7 @@ const vinylCaseSchema = z
 const digitalNonLpValueSchema = z.union([z.string(), mirroredCaseSchema]);
 
 const digitalCaseSchema = z
-  .record(z.string(), z.unknown())
+  .record(z.string(), stringLeafJsonSchema)
   .superRefine((obj, ctx) => {
     const keys = Object.keys(obj);
 
@@ -211,7 +218,7 @@ const digitalCaseSchema = z
   });
 
 const matrixRunoutObjectSchema = z
-  .record(z.string(), z.unknown())
+  .record(z.string(), stringLeafJsonSchema)
   .superRefine((obj, ctx) => {
     const keys = Object.keys(obj);
 
