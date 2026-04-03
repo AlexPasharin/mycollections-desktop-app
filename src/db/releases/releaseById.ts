@@ -27,13 +27,17 @@ const musicalReleaseColumns = [
   "musicalReleases.conditionProblems",
   "musicalReleases.partOfQueenCollection",
   "musicalReleases.relationToQueen",
-  "musicalReleases.releaseAlternativeNameId",
   "musicalReleases.entryId",
 ] as const;
 
 export const getReleaseById: GetReleaseById = async (releaseId) => {
   const release = await client
     .selectFrom("musicalReleases")
+    .leftJoin(
+      "alternativeMusicalEntryNames",
+      "musicalReleases.releaseAlternativeNameId",
+      "alternativeMusicalEntryNames.nameId",
+    )
     .leftJoin(
       "musicalReleasesTags",
       "musicalReleases.releaseId",
@@ -53,6 +57,7 @@ export const getReleaseById: GetReleaseById = async (releaseId) => {
     .where("musicalReleases.releaseId", "=", releaseId)
     .select([
       ...musicalReleaseColumns,
+      "alternativeMusicalEntryNames.name as alternativeName",
       aggregateDistinctValuesToArray("tags.tag", "tags"),
       sql<ReleaseFormatOfReleaseItem[]>`coalesce(
         jsonb_agg(DISTINCT jsonb_build_object(
@@ -66,7 +71,7 @@ export const getReleaseById: GetReleaseById = async (releaseId) => {
         '[]'::jsonb
       )`.as("formats"),
     ])
-    .groupBy(musicalReleaseColumns)
+    .groupBy([...musicalReleaseColumns, "alternativeMusicalEntryNames.name"])
     .executeTakeFirst();
 
   if (!release) {

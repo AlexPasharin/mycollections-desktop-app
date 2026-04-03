@@ -27,10 +27,11 @@ export type JsonParsingErrorData = { rawJson: unknown; error: string };
 
 export type ReleaseByIdResult = Omit<
   Selectable<MusicalRelease>,
-  "countries" | "catalogueNumbers" | "matrixRunout"
+  "countries" | "catalogueNumbers" | "matrixRunout" | "releaseAlternativeNameId"
 > & {
   tags: string[];
   formats: ReleaseFormatOfReleaseItem[];
+  alternativeName: string | null;
   countries: ReleaseCountries | JsonParsingErrorData;
   catalogueNumbers: ReleaseCatNumbers | JsonParsingErrorData;
   matrixRunout: ReleaseMatrixRunout | JsonParsingErrorData;
