@@ -2,7 +2,6 @@
 // Please do not change this file!
 interface CssExports {
   'detailBlock': string;
-  'detailComment': string;
   'detailField': string;
   'detailLabel': string;
   'detailLabelItalic': string;
