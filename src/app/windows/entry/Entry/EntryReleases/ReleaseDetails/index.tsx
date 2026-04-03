@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { type FC, type PropsWithChildren } from "react";
 
 import ReleaseCatNumbers from "./ReleaseCatNumbers";
 import ReleaseCountries from "./ReleaseCountries";
@@ -14,74 +14,104 @@ type ReleaseDetailsProps = {
   release: ReleaseByIdResult;
 };
 
-const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => (
-  <div className={styles.releaseDetails}>
-    <p className={styles.detailField}>
-      <span className={styles.detailLabel}>Version: </span>
-      {release.releaseVersion}
-    </p>
-    <p className={styles.detailField}>
-      <span className={styles.detailLabel}>Release date: </span>
-      {release.releaseDate ?? "(Unknown)"}
-    </p>
-    {release.formats.length > 0 && (
-      <div className={styles.detailBlock}>
-        <span className={styles.detailLabel}>
-          {release.formats.length === 1 ? "Format:" : "Formats:"}
-        </span>
-        <ul className={styles.formatsList}>
-          {release.formats.map((format) => (
-            <ReleaseFormatItem key={format.id} format={format} />
-          ))}
-        </ul>
-      </div>
-    )}
-    {release.discogsUrl && (
-      <p className={styles.detailField}>
-        <span className={styles.detailLabel}>Discogs: </span>
-        <a href={release.discogsUrl} target="_blank" rel="noreferrer">
-          {release.discogsUrl}
-        </a>
-      </p>
-    )}
-    {release.tags.length > 0 && (
-      <div className={styles.detailBlock}>
-        <span className={styles.detailLabel}>Tags:</span>
-        <ul className={styles.tagsList}>
-          {release.tags.map((tag) => (
-            <li key={tag} className={styles.tagsListItem}>
-              {tag}
-            </li>
-          ))}
-        </ul>
-      </div>
-    )}
-    <ReleaseCountries countries={release.countries} />
-    <ReleaseCatNumbers catalogueNumbers={release.catalogueNumbers} />
-    <ReleaseMatrixRunout matrixRunout={release.matrixRunout} />
-    {release.comment && (
-      <p className={styles.detailComment}>{release.comment}</p>
-    )}
-    {release.conditionProblems && (
-      <p className={styles.detailField}>
-        <span className={styles.detailLabel}>Condition problems: </span>
-        {release.conditionProblems}
-      </p>
-    )}
-    {release.partOfQueenCollection && !entry.partOfQueenCollection && (
-      <p className={styles.detailField}>
-        <span className={styles.detailLabelItalic}>
-          Part of Queen collection
-        </span>
-      </p>
-    )}
-    {release.relationToQueen && (
-      <p className={styles.detailField}>
-        <span className={styles.detailLabel}>Relation to Queen: </span>
-        {release.relationToQueen}
-      </p>
-    )}
-  </div>
-);
+const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => {
+  const {
+    releaseVersion,
+    releaseDate,
+    alternativeName,
+    formats,
+    discogsUrl,
+    tags,
+    countries,
+    catalogueNumbers,
+    matrixRunout,
+    comment,
+    conditionProblems,
+    partOfQueenCollection,
+    relationToQueen,
+  } = release;
+
+  return (
+    <div className={styles.releaseDetails}>
+      <DetailLabeledField label="Version">{releaseVersion}</DetailLabeledField>
+      <DetailLabeledField label="Release date">
+        {releaseDate ?? "(Unknown)"}
+      </DetailLabeledField>
+      {alternativeName && (
+        <DetailLabeledField label="Released as">
+          {alternativeName}
+        </DetailLabeledField>
+      )}
+      {formats.length > 0 && (
+        <div className={styles.detailBlock}>
+          <span className={styles.detailLabel}>
+            {formats.length === 1 ? "Format:" : "Formats:"}
+          </span>
+          <ul className={styles.formatsList}>
+            {formats.map((format) => (
+              <ReleaseFormatItem key={format.id} format={format} />
+            ))}
+          </ul>
+        </div>
+      )}
+      {discogsUrl && (
+        <DetailLabeledField label="Discogs">
+          <a href={discogsUrl} target="_blank" rel="noreferrer">
+            {discogsUrl}
+          </a>
+        </DetailLabeledField>
+      )}
+      {tags.length > 0 && (
+        <div className={styles.detailBlock}>
+          <span className={styles.detailLabel}>Tags:</span>
+          <ul className={styles.tagsList}>
+            {tags.map((tag) => (
+              <li key={tag} className={styles.tagsListItem}>
+                {tag}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <ReleaseCountries countries={countries} />
+      {partOfQueenCollection && !entry.partOfQueenCollection && (
+        <p className={styles.detailField}>
+          <span className={styles.detailLabelItalic}>
+            Part of Queen collection
+          </span>
+        </p>
+      )}
+      {relationToQueen && (
+        <DetailLabeledField label="Relation to Queen">
+          {relationToQueen}
+        </DetailLabeledField>
+      )}
+      {comment && (
+        <DetailLabeledField label="Comment">{comment}</DetailLabeledField>
+      )}
+      {conditionProblems && (
+        <DetailLabeledField label="Condition problems">
+          {conditionProblems}
+        </DetailLabeledField>
+      )}
+      <ReleaseCatNumbers catalogueNumbers={catalogueNumbers} />
+      <ReleaseMatrixRunout matrixRunout={matrixRunout} />
+    </div>
+  );
+};
 
 export default ReleaseDetails;
+
+type DetailLabeledFieldProps = PropsWithChildren<{
+  label: string;
+}>;
+
+const DetailLabeledField: FC<DetailLabeledFieldProps> = ({
+  label,
+  children,
+}) => (
+  <p className={styles.detailField}>
+    <span className={styles.detailLabel}>{label}: </span>
+    {children}
+  </p>
+);
