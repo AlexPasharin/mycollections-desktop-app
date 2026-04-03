@@ -106,7 +106,10 @@ type DetailLabeledFieldProps = PropsWithChildren<{
   label: string;
 }>;
 
-const DetailLabeledField: FC<DetailLabeledFieldProps> = ({ label, children }) => (
+const DetailLabeledField: FC<DetailLabeledFieldProps> = ({
+  label,
+  children,
+}) => (
   <p className={styles.detailField}>
     <span className={styles.detailLabel}>{label}: </span>
     {children}
