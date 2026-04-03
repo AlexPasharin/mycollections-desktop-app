@@ -1,5 +1,6 @@
 import { useState, type FC } from "react";
 
+import AddReleaseForm from "./AddReleaseForm";
 import styles from "./Entry.module.css";
 import EntryArtists from "./EntryArtists";
 import EntryDetailsPanel from "./EntryDetailsPanel";
@@ -13,6 +14,7 @@ type EntryProps = {
 
 const Entry: FC<EntryProps> = ({ entry }) => {
   const [showReleases, setShowReleases] = useState(false);
+  const [addReleaseFormOpen, setAddReleaseFormOpen] = useState(false);
 
   return (
     <div>
@@ -26,8 +28,20 @@ const Entry: FC<EntryProps> = ({ entry }) => {
         <button type="button" onClick={() => setShowReleases(true)}>
           Show releases
         </button>
-        <button type="button">Add new release</button>
+        <button
+          type="button"
+          onClick={() => {
+            setAddReleaseFormOpen(true);
+            setShowReleases(false);
+          }}
+        >
+          Add new release
+        </button>
       </div>
+
+      {addReleaseFormOpen && (
+        <AddReleaseForm onCancel={() => setAddReleaseFormOpen(false)} />
+      )}
 
       {showReleases && (
         <div className={styles.releasesSection}>
