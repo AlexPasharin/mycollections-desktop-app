@@ -22,7 +22,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({ entry, releases }) => {
 
   return (
     <div className={styles.panel}>
-      <h2 className={styles.sectionTitle}>Releases in collection</h2>
+      <h2 className={styles.sectionTitle}>Releases in collection: </h2>
       <div className={styles.field}>
         <EntryReleasesList entry={entry} releases={releases} />
       </div>
