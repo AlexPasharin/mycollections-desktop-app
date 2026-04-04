@@ -1,27 +1,55 @@
-import { type FC } from "react";
+import { useState, type FC } from "react";
 
+import AddReleaseForm from "./AddReleaseForm";
+import styles from "./Entry.module.css";
 import EntryArtists from "./EntryArtists";
 import EntryDetailsPanel from "./EntryDetailsPanel";
 import EntryReleases from "./EntryReleases";
 
 import type { EntryByIdResult } from "@/types/entries";
-import type { EntryRelease } from "@/types/releases";
 
 type EntryProps = {
   entry: EntryByIdResult;
-  releases: EntryRelease[];
 };
 
-const Entry: FC<EntryProps> = ({ entry, releases }) => (
-  <div>
-    <h1>{entry.mainName}</h1>
+const Entry: FC<EntryProps> = ({ entry }) => {
+  const [showReleases, setShowReleases] = useState(false);
+  const [addReleaseFormOpen, setAddReleaseFormOpen] = useState(true);
 
-    <EntryArtists artists={entry.artists} />
+  return (
+    <div>
+      <h1>{entry.mainName}</h1>
 
-    <EntryDetailsPanel entry={entry} />
+      <EntryArtists artists={entry.artists} />
 
-    <EntryReleases entry={entry} releases={releases} />
-  </div>
-);
+      <EntryDetailsPanel entry={entry} />
+
+      <div className={styles.buttons}>
+        <button type="button" onClick={() => setShowReleases(true)}>
+          Show releases
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setAddReleaseFormOpen(true);
+            setShowReleases(false);
+          }}
+        >
+          Add new release
+        </button>
+      </div>
+
+      {addReleaseFormOpen && (
+        <AddReleaseForm onCancel={() => setAddReleaseFormOpen(false)} />
+      )}
+
+      {showReleases && (
+        <div className={styles.releasesSection}>
+          <EntryReleases entry={entry} />
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default Entry;

@@ -1,0 +1,10 @@
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.releasesSection {
+  margin-top: 1rem;
+}

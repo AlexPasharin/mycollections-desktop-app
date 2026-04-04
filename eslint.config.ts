@@ -126,6 +126,7 @@ export default tseslint.config(
         "error",
         {
           argsIgnorePattern: "^_",
+          ignoreRestSiblings: true,
         },
       ],
       "@typescript-eslint/prefer-find": "error",
