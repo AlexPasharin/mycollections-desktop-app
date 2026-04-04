@@ -14,7 +14,7 @@ type EntryProps = {
 
 const Entry: FC<EntryProps> = ({ entry }) => {
   const [showReleases, setShowReleases] = useState(false);
-  const [addReleaseFormOpen, setAddReleaseFormOpen] = useState(false);
+  const [addReleaseFormOpen, setAddReleaseFormOpen] = useState(true);
 
   return (
     <div>

@@ -3,9 +3,11 @@
 interface CssExports {
   'actions': string;
   'field': string;
+  'fieldError': string;
   'form': string;
   'input': string;
   'label': string;
+  'requiredMark': string;
   'section': string;
 }
 export const cssExports: CssExports;
