@@ -38,12 +38,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
     });
   };
 
-  const applyFieldErrorsOnSubmit = (data: AddReleaseFormInput) => {
-    const parsed = addReleaseFormSchema.safeParse(data);
-
-    setFieldErrors(getReleaseFormFieldErrors(parsed.error));
-  };
-
   const handleFieldBlur = <K extends AddReleaseFormFieldKey>(
     key: K,
     value: AddReleaseFormInput[K],
@@ -56,7 +50,14 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    applyFieldErrorsOnSubmit(form);
+    const parsed = addReleaseFormSchema.safeParse(form);
+    setFieldErrors(getReleaseFormFieldErrors(parsed.error));
+
+    if (!parsed.success) {
+      return;
+    }
+
+    console.info("submitting! (not really)");
   };
 
   const releaseVersionError = fieldErrors["releaseVersion"];
