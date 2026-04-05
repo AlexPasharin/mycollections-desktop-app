@@ -1,7 +1,9 @@
-import { useState, type FC, type FormEvent } from "react";
+import { useEffect, useState, type FC, type FormEvent } from "react";
 
 import styles from "./AddReleaseForm.module.css";
 
+import { parseGeneralizedDateString } from "@/utils/date";
+import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
 import {
   getReleaseFormFieldErrors,
   getReleaseFormFieldErrorMessage,
@@ -11,6 +13,10 @@ import {
   type AddReleaseFormInput,
 } from "@/validation/releases/addReleaseForm";
 
+export { createGeneralizedDateSchema };
+
+const releaseDateSchema = createGeneralizedDateSchema();
+
 type AddReleaseFormProps = {
   onCancel: () => void;
 };
@@ -19,9 +25,48 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
   const [form, setForm] = useState<AddReleaseFormInput>(
     addReleaseFormInitialValues,
   );
+  const [releaseDateInput, setReleaseDateInput] = useState("");
+  const [releaseDateError, setReleaseDateError] = useState<
+    string | undefined
+  >();
   const [fieldErrors, setFieldErrors] = useState<
     Record<string, string | undefined>
   >({});
+
+  useEffect(() => {
+    const trimmed = releaseDateInput.trim();
+
+    if (trimmed === "") {
+      setReleaseDateError(undefined);
+
+      return;
+    }
+
+    const generalized = parseGeneralizedDateString(releaseDateInput);
+
+    if (generalized === null) {
+      const message =
+        "Use a hyphen-separated date: YYYY, YYYY-MM, or YYYY-MM-DD.";
+
+      setReleaseDateError(message);
+      console.warn({ kind: "parse", releaseDateInput, message });
+
+      return;
+    }
+
+    const result = releaseDateSchema.safeParse(generalized);
+
+    if (result.success) {
+      setReleaseDateError(undefined);
+      console.info({ data: result.data });
+    } else {
+      const message =
+        result.error.issues[0]?.message ?? "Invalid release date.";
+
+      setReleaseDateError(message);
+      console.warn({ error: result.error });
+    }
+  }, [releaseDateInput]);
 
   const setField = <K extends AddReleaseFormFieldKey>(
     key: K,
@@ -86,10 +131,33 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
               releaseVersionError ? "add-release-version-error" : undefined
             }
             autoComplete="off"
+            required
           />
           {releaseVersionError && (
             <p id="add-release-version-error" className={styles.fieldError}>
               {releaseVersionError}
+            </p>
+          )}
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="add-release-date">
+            Release date
+          </label>
+          <input
+            id="add-release-date"
+            className={styles.input}
+            type="text"
+            value={releaseDateInput}
+            onChange={(e) => setReleaseDateInput(e.target.value)}
+            aria-invalid={Boolean(releaseDateError)}
+            aria-describedby={
+              releaseDateError ? "add-release-date-error" : undefined
+            }
+            autoComplete="off"
+          />
+          {releaseDateError && (
+            <p id="add-release-date-error" className={styles.fieldError}>
+              {releaseDateError}
             </p>
           )}
         </div>
