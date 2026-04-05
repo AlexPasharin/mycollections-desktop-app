@@ -54,7 +54,9 @@ export const createGeneralizedDateSchema = (
       }
     });
 
-const generalizedDateYearSchema = z.int().min(1900);
+const generalizedDateYearSchema = z
+  .int()
+  .min(1900, "Year must be 1900 or later.");
 
 type ParseGeneralizedResult =
   | { success: true; date: Date }

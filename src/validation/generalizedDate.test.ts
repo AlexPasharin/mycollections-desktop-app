@@ -40,7 +40,13 @@ describe("createGeneralizedDateSchema", () => {
   it("rejects years before 1900", () => {
     const schema = createGeneralizedDateSchema();
 
-    expect(() => schema.parse({ year: 1899 })).toThrow();
+    const result = schema.safeParse({ year: 1899 });
+
+    expect(result.success).toBe(false);
+    assert(!result.success);
+    expect(result.error.issues.map((issue) => issue.message)).toEqual([
+      "Year must be 1900 or later.",
+    ]);
   });
 
   it("rejects non-integer year, month, or day", () => {
