@@ -1,7 +1,10 @@
 import { flattenError, z, type ZodError } from "zod";
 
+import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
+
 const schemaObj = {
   releaseVersion: z.string().trim().min(1, "Release version is required"),
+  releaseDate: createGeneralizedDateSchema().optional(),
 };
 
 export const addReleaseFormSchema = z.object(schemaObj);
@@ -15,9 +18,12 @@ export const addReleaseFormInitialValues: AddReleaseFormInput = {
 export type AddReleaseFormFieldKey = keyof AddReleaseFormInput;
 
 // Single-field validation
-export function getReleaseFormFieldErrorMessage<
+export const getReleaseFormFieldErrorMessage = <
   K extends AddReleaseFormFieldKey,
->(key: K, value: AddReleaseFormInput[K]): string | undefined {
+>(
+  key: K,
+  value: AddReleaseFormInput[K],
+): string | undefined => {
   const result = addReleaseFormSchema.shape[key].safeParse(value);
 
   if (result.success) {
@@ -25,12 +31,12 @@ export function getReleaseFormFieldErrorMessage<
   }
 
   return result.error.issues[0]?.message ?? "Invalid input";
-}
+};
 
 // whole form validation
-export function getReleaseFormFieldErrors(
+export const getReleaseFormFieldErrors = (
   error: ZodError | undefined,
-): Record<string, string> {
+): Record<string, string> => {
   if (error === undefined) {
     return {};
   }
@@ -51,4 +57,4 @@ export function getReleaseFormFieldErrors(
   }
 
   return out;
-}
+};
