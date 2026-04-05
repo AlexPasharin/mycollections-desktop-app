@@ -10,20 +10,27 @@ export const startOfToday = (): Date => {
 };
 
 /**
- *  returns given Generalized Date converted to UTC Date at **UTC** calendar midnight,
- *  or null if it does not represent a valid calendar date
+ * Converts a generalized date to a UTC `Date` at **00:00:00.000 UTC** for that calendar day,
+ * or `null` if the combination is invalid (e.g. 2023-02-30).
+ *
+ * When month and/or day are omitted, the missing parts are filled like SQL `generalised_date_to_date`:
+ * - `moveForwardIfIncomplete === false` (default): month → 1, day → 1 (start of year or month).
+ * - `moveForwardIfIncomplete === true`: year-only → Dec 31; year-month only → last day of that month.
  */
-export const toValidCalendarDate = (date: GeneralizedDate): Date | null => {
+export const toValidCalendarDate = (
+  date: GeneralizedDate,
+  moveForwardIfIncomplete = false,
+): Date | null => {
   const { year, month, day } = date;
   const hasMonth = month !== undefined;
   const hasDay = day !== undefined;
 
-  if (hasDay && !hasMonth) {
-    return null;
-  }
-
-  const m = hasMonth ? month : 1;
-  const d = hasDay ? day : 1;
+  const m = hasMonth ? month : moveForwardIfIncomplete ? 12 : 1;
+  const d = hasDay
+    ? day
+    : moveForwardIfIncomplete
+      ? new Date(Date.UTC(year, m, 0)).getUTCDate()
+      : 1;
   const calendarDate = new Date(Date.UTC(year, m - 1, d));
 
   if (

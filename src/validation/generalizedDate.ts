@@ -10,81 +10,119 @@ export type { GeneralizedDate };
 
 /**
  * Zod schema for a generalized date. Numeric ranges are enforced by the object shape; refinements run
- * `validateGeneralizedDate` (calendar rules and no future dates) and, when `startDate` is given and parses
- * successfully, enforce a lower bound (invalid or future `startDate` is ignored).
+ * `validateGeneralizedDateInput` (calendar rules and no future dates). When `startDate` is given and parses
+ * successfully, a separate lower-bound check runs: value as `moveForwardIfIncomplete` true vs start as false
+ * (same idea as SQL `generalised_date_to_date(value, TRUE) < generalised_date_to_date(start, FALSE)`).
  */
 export const createGeneralizedDateSchema = (
   startDate?: GeneralizedDate,
-): z.ZodType<GeneralizedDate> => {
-  let notBefore: Date | undefined;
-
-  if (startDate) {
-    const startParsed = validateGeneralizedDate(startDate);
-
-    if (startParsed.success) {
-      notBefore = startParsed.date;
-    }
-  }
-
-  return z
-    .object({
-      year: z.int().min(1900).max(2099),
-      month: z.int().min(1).max(12).optional(),
-      day: z.int().min(1).max(31).optional(),
-    })
+): z.ZodType<GeneralizedDate> =>
+  z
+    .union([
+      z.strictObject({
+        year: generalizedDateYearSchema,
+        month: z.int().optional(),
+      }),
+      z.strictObject({
+        year: generalizedDateYearSchema,
+        month: z.int(),
+        day: z.int().optional(),
+      }),
+    ])
     .superRefine((obj, ctx) => {
-      const r = validateGeneralizedDateInput(obj, notBefore);
+      const r = validateGeneralizedDateInput(obj);
 
       if (!r.success) {
         ctx.addIssue({
           code: "custom",
           message: r.message,
         });
+
+        return;
+      }
+
+      const startBound = validateGeneralizedDateAgainstStart(obj, startDate);
+
+      if (!startBound.success) {
+        ctx.addIssue({
+          code: "custom",
+          message: startBound.message,
+        });
       }
     });
-};
+
+const generalizedDateYearSchema = z.int().min(1900);
 
 type ParseGeneralizedResult =
-  | { success: true; date: Date; formattedDate: string }
+  | { success: true; date: Date }
   | { success: false; message: string };
 
-/** Calendar validity, day-without-month rule, and no future dates. */
+/**
+ * Calendar validity and no future dates.
+ * `moveForwardIfIncomplete` matches `toValidCalendarDate` / SQL `generalised_date_to_date` (default `false`).
+ */
 const validateGeneralizedDate = (
   date: GeneralizedDate,
+  moveForwardIfIncomplete = false,
 ): ParseGeneralizedResult => {
-  const hasMonth = date.month !== undefined;
-  const hasDay = date.day !== undefined;
-
-  if (hasDay && !hasMonth) {
-    return {
-      success: false,
-      message: "Month is required when day is specified.",
-    };
-  }
-
-  const formattedDate = formatGeneralizedDate(date);
-  const calendarDate = toValidCalendarDate(date);
+  const calendarDate = toValidCalendarDate(date, moveForwardIfIncomplete);
 
   if (calendarDate === null) {
+    const formattedDate = formatGeneralizedDate(date);
+
     return {
       success: false,
       message: `Value "${formattedDate}" does not represent a valid existing date.`,
     };
   }
 
-  if (calendarDate > startOfToday()) {
+  return { success: true, date: calendarDate };
+};
+
+/** Upper bound of `value` (move forward if incomplete) vs lower bound of `startDate` (SQL-style). */
+const validateGeneralizedDateAgainstStart = (
+  value: GeneralizedDate,
+  startDate: GeneralizedDate | undefined,
+) => {
+  if (!startDate) {
+    return { success: true };
+  }
+
+  const startDateValidationResult = validateGeneralizedDate(startDate, false);
+
+  if (!startDateValidationResult.success) {
+    return { success: true };
+  }
+
+  const dateValidationResult = validateGeneralizedDate(value, true);
+
+  if (!dateValidationResult.success) {
+    return { success: true };
+  }
+
+  const valueUpperBoundDate = dateValidationResult.date;
+  const startLowerBoundDate = startDateValidationResult.date;
+
+  if (valueUpperBoundDate.getTime() < startLowerBoundDate.getTime()) {
+    const formattedValue = formatGeneralizedDate(value);
+
+    const formattedStartDate = formatGeneralizedDate({
+      year: startLowerBoundDate.getUTCFullYear(),
+      month: startLowerBoundDate.getUTCMonth() + 1,
+      day: startLowerBoundDate.getUTCDate(),
+    });
+
     return {
       success: false,
-      message: `Value "${formattedDate}" represents a date in the future.`,
+      message: `Value "${formattedValue}" cannot be before "${formattedStartDate}" (given start date).`,
     };
   }
 
-  return { success: true, date: calendarDate, formattedDate };
+  return { success: true };
 };
 
 const validateGeneralizedDateInput = (
   date: GeneralizedDate,
-  notBefore?: Date,
 ): { success: true } | { success: false; message: string } => {
   const dateValidationResult = validateGeneralizedDate(date);
 
@@ -92,18 +130,14 @@ const validateGeneralizedDateInput = (
     return dateValidationResult;
   }
 
-  const { date: calendarDate, formattedDate } = dateValidationResult;
+  const { date: calendarDate } = dateValidationResult;
 
-  if (notBefore && calendarDate.getTime() < notBefore.getTime()) {
+  if (calendarDate > startOfToday()) {
+    const formattedDate = formatGeneralizedDate(date);
+
     return {
       success: false,
-      message: `Value "${formattedDate}" cannot be before ${formatGeneralizedDate(
-        {
-          year: notBefore.getUTCFullYear(),
-          month: notBefore.getUTCMonth() + 1,
-          day: notBefore.getUTCDate(),
-        },
-      )}.`,
+      message: `Value "${formattedDate}" represents a date in the future.`,
     };
   }
 
