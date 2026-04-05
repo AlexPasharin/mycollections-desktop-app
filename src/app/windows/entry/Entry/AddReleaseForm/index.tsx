@@ -2,6 +2,7 @@ import { useEffect, useState, type FC, type FormEvent } from "react";
 
 import styles from "./AddReleaseForm.module.css";
 
+import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
 import { parseGeneralizedDateString } from "@/utils/date";
 import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
 import {
@@ -160,6 +161,30 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
               {releaseDateError}
             </p>
           )}
+        </div>
+        <div className={styles.field}>
+          <GeneralizedDateFormInput
+            year={String(form.releaseDate?.year ?? "")}
+            onYearChange={(yearStr) => {
+              setForm((prev) => {
+                const trimmed = yearStr.trim();
+
+                if (trimmed === "") {
+                  return { ...prev, releaseDate: undefined };
+                }
+
+                const y = Number(trimmed);
+
+                // if (!Number.isInteger(y) || Number.isNaN(y)) {
+                //   return prev;
+                // }
+
+                const current = prev.releaseDate;
+
+                return { ...prev, releaseDate: { ...current, year: y } };
+              });
+            }}
+          />
         </div>
         <div className={styles.actions}>
           <button type="button" onClick={onCancel}>
