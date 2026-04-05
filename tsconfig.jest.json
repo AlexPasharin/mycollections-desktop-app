@@ -1,7 +1,9 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "types": ["jest", "node"]
+    "types": ["jest", "node"],
+    "module": "CommonJS",
+    "verbatimModuleSyntax": false
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "constants/**/*.ts"]
 }
