@@ -1,6 +1,6 @@
-import assert from "node:assert";
-
 import { createGeneralizedDateSchema } from "./generalizedDate";
+
+import { expectZodSingleIssueMessage } from "@/utils/testUtils";
 
 jest.mock("@/utils/date", () => {
   const actual =
@@ -42,11 +42,7 @@ describe("createGeneralizedDateSchema", () => {
 
     const result = schema.safeParse({ year: 1899 });
 
-    expect(result.success).toBe(false);
-    assert(!result.success);
-    expect(result.error.issues.map((issue) => issue.message)).toEqual([
-      "Year must be 1900 or later.",
-    ]);
+    expectZodSingleIssueMessage(result, "Year must be 1900 or later.");
   });
 
   it("rejects non-integer year, month, or day", () => {
@@ -87,11 +83,10 @@ describe("createGeneralizedDateSchema", () => {
 
     const result = schema.safeParse({ year: 2023, month: 2, day: 30 });
 
-    expect(result.success).toBe(false);
-    assert(!result.success);
-    expect(result.error.issues.map((issue) => issue.message)).toEqual([
+    expectZodSingleIssueMessage(
+      result,
       `Value "2023-02-30" does not represent a valid existing date.`,
-    ]);
+    );
   });
 
   it("rejects dates strictly after startOfToday", () => {
@@ -99,11 +94,10 @@ describe("createGeneralizedDateSchema", () => {
 
     const result = schema.safeParse({ year: 2026, month: 4, day: 6 });
 
-    expect(result.success).toBe(false);
-    assert(!result.success);
-    expect(result.error.issues.map((issue) => issue.message)).toEqual([
+    expectZodSingleIssueMessage(
+      result,
       `Value "2026-04-06" represents a date in the future.`,
-    ]);
+    );
   });
 
   it("accepts mocked today's calendar date (UTC) from mocked startOfToday", () => {
@@ -126,11 +120,10 @@ describe("createGeneralizedDateSchema", () => {
 
       const result = schema.safeParse({ year: 2019, month: 12, day: 31 });
 
-      expect(result.success).toBe(false);
-      assert(!result.success);
-      expect(result.error.issues.map((issue) => issue.message)).toEqual([
+      expectZodSingleIssueMessage(
+        result,
         `Value "2019-12-31" cannot be before "2020-01-01" (given start date).`,
-      ]);
+      );
     });
 
     it("accepts values on or after the start date", () => {

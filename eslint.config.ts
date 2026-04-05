@@ -168,5 +168,14 @@ export default tseslint.config(
   {
     files: ["**/*.test.ts", "**/*.test.tsx"],
     ...jestPlugin.configs["flat/recommended"],
+    rules: {
+      ...jestPlugin.configs["flat/recommended"].rules,
+      "jest/expect-expect": [
+        "warn",
+        {
+          assertFunctionNames: ["expect", "expectZodSingleIssueMessage"],
+        },
+      ],
+    },
   },
 );
