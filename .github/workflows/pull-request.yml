@@ -1,4 +1,4 @@
-name: tsc, eslint and prettier checks on pull requests to main branch
+name: tsc, eslint, prettier, and unit tests on pull requests to main branch
 
 on:
   pull_request:
@@ -17,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 23.7.0
+          node-version-file: ".nvmrc"
 
       - name: Install dependencies
         run: yarn
@@ -30,6 +30,9 @@ jobs:
 
       - name: Eslint check
         run: yarn lint
+
+      - name: Unit tests
+        run: yarn test
 
       - name: Prettier
         run: yarn exec prettier -- . -c
