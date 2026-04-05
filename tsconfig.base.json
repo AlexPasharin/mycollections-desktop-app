@@ -23,6 +23,7 @@
     "allowJs": false,
     "jsx": "react-jsx",
     "baseUrl": ".",
+    "typeRoots": ["./node_modules/@types"],
     "paths": {
       "@/app/*": ["src/app/*"],
       "@/constants/*": ["constants/*"],

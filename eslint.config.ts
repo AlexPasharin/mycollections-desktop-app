@@ -1,6 +1,7 @@
 import eslint from "@eslint/js";
 import stylistic from "@stylistic/eslint-plugin";
 import importPlugin from "eslint-plugin-import";
+import jestPlugin from "eslint-plugin-jest";
 import reactPlugin from "eslint-plugin-react";
 import tseslint from "typescript-eslint";
 
@@ -163,5 +164,9 @@ export default tseslint.config(
       "@stylistic/no-mixed-operators": ["error", { allowSamePrecedence: true }],
       "react/react-in-jsx-scope": "off",
     },
+  },
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx"],
+    ...jestPlugin.configs["flat/recommended"],
   },
 );
