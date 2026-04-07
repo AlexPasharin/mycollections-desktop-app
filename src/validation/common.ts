@@ -7,7 +7,7 @@ import { z } from "zod";
 const BASE_TEN_INTEGER_STRING = /^(?:0|[1-9]\d*)$/;
 
 /** validates that given string represents a safe non-negative integer. */
-const strictStringToIntSchema = z
+export const strictStringToIntSchema = z
   .string()
   .regex(BASE_TEN_INTEGER_STRING, {
     message:
@@ -19,9 +19,7 @@ const strictStringToIntSchema = z
   });
 
 // schema that transforms an empty string into undefined.
-export const emptyStringToUndefinedSchema = z
-  .literal("")
-  .transform(() => undefined);
+const emptyStringToUndefinedSchema = z.literal("").transform(() => undefined);
 
 const stringToIntSchema = z
   .string()

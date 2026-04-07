@@ -70,6 +70,13 @@ export const startOfToday = (): Date => {
 };
 
 /**
+ * Calendar length of `month` (**1–12**) for `year`, in UTC (same convention as {@link startOfToday}
+ * and {@link toValidCalendarDate}).
+ */
+export const daysInCalendarMonth = (year: number, month: number): number =>
+  new Date(Date.UTC(year, month, 0)).getUTCDate();
+
+/**
  * Converts a generalized date to a UTC `Date` at **00:00:00.000 UTC** for that calendar day,
  * or `null` if the combination is invalid (e.g. 2023-02-30).
  *
@@ -89,7 +96,7 @@ export const toValidCalendarDate = (
   const d = hasDay
     ? day
     : moveForwardIfIncomplete
-      ? new Date(Date.UTC(year, m, 0)).getUTCDate()
+      ? daysInCalendarMonth(year, m)
       : 1;
   const calendarDate = new Date(Date.UTC(year, m - 1, d));
 

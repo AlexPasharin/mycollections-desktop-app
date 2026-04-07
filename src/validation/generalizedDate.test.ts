@@ -57,6 +57,28 @@ describe("createGeneralizedDateSchema", () => {
     });
   });
 
+  it("rejects month below 1 or above 12", () => {
+    const schema = createGeneralizedDateSchema();
+    const message = "Month must be between 1 and 12.";
+
+    expectZodSingleIssueMessage(
+      schema.safeParse({ year: "2000", month: "0" }),
+      message,
+    );
+    expectZodSingleIssueMessage(
+      schema.safeParse({ year: "2000", month: "13" }),
+      message,
+    );
+    expectZodSingleIssueMessage(
+      schema.safeParse({ year: 2000, month: 0 }),
+      message,
+    );
+    expectZodSingleIssueMessage(
+      schema.safeParse({ year: 2000, month: 13 }),
+      message,
+    );
+  });
+
   it("rejects years before 1900", () => {
     const schema = createGeneralizedDateSchema();
 
@@ -69,9 +91,7 @@ describe("createGeneralizedDateSchema", () => {
     const schema = createGeneralizedDateSchema();
 
     expect(() => schema.parse({ year: "2000.5" })).toThrow();
-    expect(() =>
-      schema.parse({ year: "2000", month: "6.5" }),
-    ).toThrow();
+    expect(() => schema.parse({ year: "2000", month: "6.5" })).toThrow();
     expect(() =>
       schema.parse({ year: "2000", month: "1", day: "15.5" }),
     ).toThrow();
@@ -82,9 +102,7 @@ describe("createGeneralizedDateSchema", () => {
 
     expect(() => schema.parse({ year: -1 })).toThrow();
     expect(() => schema.parse({ year: 2000, month: -1 })).toThrow();
-    expect(() =>
-      schema.parse({ year: 2000, month: 1, day: -1 }),
-    ).toThrow();
+    expect(() => schema.parse({ year: 2000, month: 1, day: -1 })).toThrow();
   });
 
   it("rejects non-integer numeric year, month, or day", () => {
@@ -92,9 +110,7 @@ describe("createGeneralizedDateSchema", () => {
 
     expect(() => schema.parse({ year: 2000.5 })).toThrow();
     expect(() => schema.parse({ year: 2000, month: 6.5 })).toThrow();
-    expect(() =>
-      schema.parse({ year: 2000, month: 1, day: 15.5 }),
-    ).toThrow();
+    expect(() => schema.parse({ year: 2000, month: 1, day: 15.5 })).toThrow();
   });
 
   it("rejects NaN and non-finite numeric year", () => {
@@ -161,9 +177,7 @@ describe("createGeneralizedDateSchema", () => {
     ).toThrow();
 
     expect(() => schema.parse({ year: "123hello" })).toThrow();
-    expect(() =>
-      schema.parse({ year: "2000", month: "6abc" }),
-    ).toThrow();
+    expect(() => schema.parse({ year: "2000", month: "6abc" })).toThrow();
     expect(() =>
       schema.parse({ year: "2000", month: "1", day: "29x" }),
     ).toThrow();

@@ -24,7 +24,7 @@ export const createGeneralizedDateSchema = (
   z
     .strictObject({
       year: generalizedDateYearSchema,
-      month: coercedIntSchema,
+      month: generalizedDateMonthSchema,
       day: coercedIntSchema,
     })
     .superRefine((obj, ctx) => {
@@ -59,8 +59,21 @@ export const createGeneralizedDateSchema = (
       }
     });
 
-const generalizedDateYearSchema = coercedIntSchema.pipe(
-  z.int().min(1900, "Year must be 1900 or later."),
+const YEAR_MIN_MESSAGE = "Year must be 1900 or later.";
+
+export const generalizedDateYearSchema = coercedIntSchema.pipe(
+  z.int().min(1900, { error: YEAR_MIN_MESSAGE, abort: true }),
+);
+
+const MONTH_RANGE_MESSAGE = "Month must be between 1 and 12.";
+
+export const generalizedDateMonthSchema = coercedIntSchema.pipe(
+  z.optional(
+    z
+      .int()
+      .min(1, { error: MONTH_RANGE_MESSAGE, abort: true })
+      .max(12, { error: MONTH_RANGE_MESSAGE, abort: true }),
+  ),
 );
 
 type ParseGeneralizedResult =

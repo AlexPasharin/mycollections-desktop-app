@@ -1,11 +1,10 @@
-import { useEffect, useState, type FC, type FormEvent } from "react";
+import { useState, type FC, type FormEvent } from "react";
 
 import styles from "./AddReleaseForm.module.css";
 
 import GeneralizedDateFormInput, {
   type GeneralizedDateFormInputValue,
 } from "@/app/components/GeneralizedDateFormInput";
-import { parseGeneralizedDateString } from "@/utils/date";
 import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
 import {
   getReleaseFormFieldErrors,
@@ -14,6 +13,8 @@ import {
   type AddReleaseFormFieldKey,
 } from "@/validation/releases/addReleaseForm";
 
+// import { parseGeneralizedDateString } from "@/utils/date";
+
 export { createGeneralizedDateSchema };
 
 type AddReleaseFormDraft = {
@@ -21,7 +22,7 @@ type AddReleaseFormDraft = {
   releaseDate: GeneralizedDateFormInputValue;
 };
 
-const releaseDateSchema = createGeneralizedDateSchema();
+// const releaseDateSchema = createGeneralizedDateSchema();
 
 type AddReleaseFormProps = {
   onCancel: () => void;
@@ -36,59 +37,59 @@ const addReleaseFormInitialValues: AddReleaseFormDraft = {
   },
 };
 
-
 const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
   const [form, setForm] = useState<AddReleaseFormDraft>(
     addReleaseFormInitialValues,
   );
-  const [releaseDateInput, setReleaseDateInput] = useState("");
-  const [releaseDateError, setReleaseDateError] = useState<
-    string | undefined
-  >();
+
+  // const [releaseDateInput, setReleaseDateInput] = useState("");
+  // const [releaseDateError, setReleaseDateError] = useState<
+  //   string | undefined
+  // >();
   const [fieldErrors, setFieldErrors] = useState<
     Record<string, string | undefined>
   >({});
 
-  useEffect(() => {
-    const trimmed = releaseDateInput.trim();
+  // useEffect(() => {
+  //   const trimmed = releaseDateInput.trim();
 
-    if (trimmed === "") {
-      setReleaseDateError(undefined);
+  //   if (trimmed === "") {
+  //     setReleaseDateError(undefined);
 
-      return;
-    }
+  //     return;
+  //   }
 
-    const generalized = parseGeneralizedDateString(releaseDateInput);
+  //   const generalized = parseGeneralizedDateString(releaseDateInput);
 
-    if (generalized === null) {
-      const message =
-        "Use a hyphen-separated date: YYYY, YYYY-MM, or YYYY-MM-DD.";
+  //   if (generalized === null) {
+  //     const message =
+  //       "Use a hyphen-separated date: YYYY, YYYY-MM, or YYYY-MM-DD.";
 
-      setReleaseDateError(message);
-      console.warn({ kind: "parse", releaseDateInput, message });
+  //     setReleaseDateError(message);
+  //     console.warn({ kind: "parse", releaseDateInput, message });
 
-      return;
-    }
+  //     return;
+  //   }
 
-    const generalizedInput = {
-      year: String(generalized.year),
-      month: String(generalized.month ?? ""),
-      day: String(generalized.day ?? ""),
-    }
+  //   const generalizedInput = {
+  //     year: String(generalized.year),
+  //     month: String(generalized.month ?? ""),
+  //     day: String(generalized.day ?? ""),
+  //   }
 
-    const result = releaseDateSchema.safeParse(generalizedInput);
+  //   const result = releaseDateSchema.safeParse(generalizedInput);
 
-    if (result.success) {
-      setReleaseDateError(undefined);
-      console.info({ data: result.data });
-    } else {
-      const message =
-        result.error.issues[0]?.message ?? "Invalid release date.";
+  //   if (result.success) {
+  //     setReleaseDateError(undefined);
+  //     console.info({ data: result.data });
+  //   } else {
+  //     const message =
+  //       result.error.issues[0]?.message ?? "Invalid release date.";
 
-      setReleaseDateError(message);
-      console.warn({ error: result.error, generalizedInput, generalized });
-    }
-  }, [releaseDateInput]);
+  //     setReleaseDateError(message);
+  //     console.warn({ error: result.error, generalizedInput, generalized });
+  //   }
+  // }, [releaseDateInput]);
 
   const setField = <K extends keyof AddReleaseFormDraft>(
     key: K,
@@ -105,9 +106,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
     });
   };
 
-  const validateFormField = <K extends keyof AddReleaseFormDraft>(
-    key: K,
-  ) => {
+  const validateFormField = <K extends keyof AddReleaseFormDraft>(key: K) => {
     setFieldErrors((prev) => ({
       ...prev,
       [key]: getReleaseFormFieldErrorMessage(key, form[key]),
@@ -116,16 +115,14 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    const parsed = addReleaseFormSchema.safeParse(
-      form
-    );
+    const parsed = addReleaseFormSchema.safeParse(form);
     setFieldErrors(getReleaseFormFieldErrors(parsed.error));
 
     if (!parsed.success) {
       return;
     }
 
-    console.info("submitting! (not really)");
+    console.info("submitting! (not really)", parsed.data);
   };
 
   const releaseVersionError = fieldErrors["releaseVersion"];
@@ -164,7 +161,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
             </p>
           )}
         </div>
-        <div className={styles.field}>
+        {/* <div className={styles.field}>
           <label className={styles.label} htmlFor="add-release-date">
             Release date
           </label>
@@ -185,7 +182,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
               {releaseDateError}
             </p>
           )}
-        </div>
+        </div> */}
         <div className={styles.field}>
           <GeneralizedDateFormInput
             date={form.releaseDate}
@@ -193,6 +190,11 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
               setForm((prev) => ({ ...prev, releaseDate }))
             }
           />
+          {fieldErrors["releaseDate"] && (
+            <p id="add-release-date-error" className={styles.fieldError}>
+              {fieldErrors["releaseDate"]}
+            </p>
+          )}
         </div>
         <div className={styles.actions}>
           <button type="button" onClick={onCancel}>
