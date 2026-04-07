@@ -78,16 +78,20 @@ export const daysInCalendarMonth = (year: number, month: number): number =>
 
 /**
  * Converts a generalized date to a UTC `Date` at **00:00:00.000 UTC** for that calendar day,
- * or `null` if the combination is invalid (e.g. 2023-02-30).
+ * or `null` if `date` is undefined or the combination is invalid (e.g. 2023-02-30).
  *
  * When month and/or day are omitted, the missing parts are filled like SQL `generalised_date_to_date`:
  * - `moveForwardIfIncomplete === false` (default): month → 1, day → 1 (start of year or month).
  * - `moveForwardIfIncomplete === true`: year-only → Dec 31; year-month only → last day of that month.
  */
 export const toValidCalendarDate = (
-  date: GeneralizedDate,
+  date: GeneralizedDate | undefined,
   moveForwardIfIncomplete = false,
 ): Date | null => {
+  if (date === undefined) {
+    return null;
+  }
+
   const { year, month, day } = date;
   const hasMonth = month !== undefined;
   const hasDay = day !== undefined;

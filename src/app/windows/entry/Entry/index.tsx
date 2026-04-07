@@ -40,7 +40,10 @@ const Entry: FC<EntryProps> = ({ entry }) => {
       </div>
 
       {addReleaseFormOpen && (
-        <AddReleaseForm onCancel={() => setAddReleaseFormOpen(false)} />
+        <AddReleaseForm
+          entry={entry}
+          onCancel={() => setAddReleaseFormOpen(false)}
+        />
       )}
 
       {showReleases && (

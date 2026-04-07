@@ -1,54 +1,37 @@
-import { flattenError, z, type ZodError } from "zod";
+import { z } from "zod";
 
+import type { GeneralizedDate } from "@/types/date";
+import { parseGeneralizedDateString } from "@/utils/date";
 import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
 
-const schemaObj = {
-  releaseVersion: z.string().trim().min(1, "Release version is required"),
-  releaseDate: createGeneralizedDateSchema().optional(),
-};
+const releaseVersionSchema = z
+  .string()
+  .trim()
+  .min(1, "Release version is required");
 
-export const addReleaseFormSchema = z.object(schemaObj);
+/**
+ * When the entry has a stored original release date string, parse and validate it as a
+ * {@link GeneralizedDate}; if valid, release date validation uses it as `startDate` (see
+ * {@link createGeneralizedDateSchema}).
+ */
+export const getReleaseDateStartFromOriginalReleaseDate = (
+  originalReleaseDate: string | null | undefined,
+): GeneralizedDate | undefined => {
+  const parsed = parseGeneralizedDateString(originalReleaseDate);
 
-export type AddReleaseFormInput = z.infer<typeof addReleaseFormSchema>;
-
-export type AddReleaseFormFieldKey = keyof AddReleaseFormInput;
-
-// Single-field validation
-export const getReleaseFormFieldErrorMessage = (
-  key: AddReleaseFormFieldKey,
-  value: unknown,
-): string | undefined => {
-  const result = addReleaseFormSchema.shape[key].safeParse(value);
-
-  if (result.success) {
+  if (parsed === null) {
     return undefined;
   }
 
-  return result.error.issues[0]?.message ?? "Invalid input";
+  const validated = createGeneralizedDateSchema().safeParse(parsed);
+
+  return validated.success ? validated.data : undefined;
 };
 
-// whole form validation
-export const getReleaseFormFieldErrors = (
-  error: ZodError | undefined,
-): Record<string, string> => {
-  if (error === undefined) {
-    return {};
-  }
-
-  const fieldErrors: Record<string, string[]> = flattenError(error).fieldErrors;
-  const out: Record<string, string> = {};
-
-  for (const key in fieldErrors) {
-    if (!(key in schemaObj)) {
-      continue;
-    }
-
-    const first = fieldErrors[key]?.[0];
-
-    if (first !== undefined) {
-      out[key] = first;
-    }
-  }
-
-  return out;
-};
+export const createAddReleaseFormSchema = (
+  releaseDateStart?: GeneralizedDate,
+) =>
+  z.object({
+    releaseVersion: releaseVersionSchema,
+    releaseDate: createGeneralizedDateSchema(releaseDateStart).optional(),
+  });
