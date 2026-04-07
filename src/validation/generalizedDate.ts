@@ -6,6 +6,7 @@ import {
   startOfToday,
   toValidCalendarDate,
 } from "@/utils/date";
+import { coercedIntSchema } from "@/validation/common";
 
 // Implements same validation logic as described in documentation/database/validation_functions/generalized_date_field_validation.md
 
@@ -21,18 +22,22 @@ export const createGeneralizedDateSchema = (
   startDate?: GeneralizedDate,
 ): z.ZodType<GeneralizedDate> =>
   z
-    .union([
-      z.strictObject({
-        year: generalizedDateYearSchema,
-        month: z.int().optional(),
-      }),
-      z.strictObject({
-        year: generalizedDateYearSchema,
-        month: z.int(),
-        day: z.int().optional(),
-      }),
-    ])
+    .strictObject({
+      year: generalizedDateYearSchema,
+      month: coercedIntSchema,
+      day: coercedIntSchema,
+    })
     .superRefine((obj, ctx) => {
+      if (obj.day !== undefined && obj.month === undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["month"],
+          message: "Month is required when day is provided.",
+        });
+
+        return;
+      }
+
       const r = validateGeneralizedDateInput(obj);
 
       if (!r.success) {
@@ -54,9 +59,9 @@ export const createGeneralizedDateSchema = (
       }
     });
 
-const generalizedDateYearSchema = z
-  .int()
-  .min(1900, "Year must be 1900 or later.");
+const generalizedDateYearSchema = coercedIntSchema.pipe(
+  z.int().min(1900, "Year must be 1900 or later."),
+);
 
 type ParseGeneralizedResult =
   | { success: true; date: Date }

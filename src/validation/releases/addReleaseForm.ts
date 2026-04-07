@@ -11,18 +11,12 @@ export const addReleaseFormSchema = z.object(schemaObj);
 
 export type AddReleaseFormInput = z.infer<typeof addReleaseFormSchema>;
 
-export const addReleaseFormInitialValues: AddReleaseFormInput = {
-  releaseVersion: "",
-};
-
 export type AddReleaseFormFieldKey = keyof AddReleaseFormInput;
 
 // Single-field validation
-export const getReleaseFormFieldErrorMessage = <
-  K extends AddReleaseFormFieldKey,
->(
-  key: K,
-  value: AddReleaseFormInput[K],
+export const getReleaseFormFieldErrorMessage = (
+  key: AddReleaseFormFieldKey,
+  value: unknown,
 ): string | undefined => {
   const result = addReleaseFormSchema.shape[key].safeParse(value);
 

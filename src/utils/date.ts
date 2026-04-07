@@ -54,10 +54,7 @@ export const parseGeneralizedDateString = (
   }
 
   if (day !== undefined) {
-    type GeneralizedDateWithMonth = GeneralizedDate & { month: number };
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- day present ⇒ month set by regex; narrow for second union member
-    (generalizedDate as GeneralizedDateWithMonth).day = day;
+    generalizedDate.day = day;
   }
 
   return generalizedDate;

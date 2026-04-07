@@ -2,19 +2,24 @@ import { useEffect, useState, type FC, type FormEvent } from "react";
 
 import styles from "./AddReleaseForm.module.css";
 
-import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
+import GeneralizedDateFormInput, {
+  type GeneralizedDateFormInputValue,
+} from "@/app/components/GeneralizedDateFormInput";
 import { parseGeneralizedDateString } from "@/utils/date";
 import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
 import {
   getReleaseFormFieldErrors,
   getReleaseFormFieldErrorMessage,
-  addReleaseFormInitialValues,
   addReleaseFormSchema,
   type AddReleaseFormFieldKey,
-  type AddReleaseFormInput,
 } from "@/validation/releases/addReleaseForm";
 
 export { createGeneralizedDateSchema };
+
+type AddReleaseFormDraft = {
+  releaseVersion: string;
+  releaseDate: GeneralizedDateFormInputValue;
+};
 
 const releaseDateSchema = createGeneralizedDateSchema();
 
@@ -22,8 +27,18 @@ type AddReleaseFormProps = {
   onCancel: () => void;
 };
 
+const addReleaseFormInitialValues: AddReleaseFormDraft = {
+  releaseVersion: "",
+  releaseDate: {
+    year: "",
+    month: "",
+    day: "",
+  },
+};
+
+
 const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
-  const [form, setForm] = useState<AddReleaseFormInput>(
+  const [form, setForm] = useState<AddReleaseFormDraft>(
     addReleaseFormInitialValues,
   );
   const [releaseDateInput, setReleaseDateInput] = useState("");
@@ -55,7 +70,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
       return;
     }
 
-    const result = releaseDateSchema.safeParse(generalized);
+    const generalizedInput = {
+      year: String(generalized.year),
+      month: String(generalized.month ?? ""),
+      day: String(generalized.day ?? ""),
+    }
+
+    const result = releaseDateSchema.safeParse(generalizedInput);
 
     if (result.success) {
       setReleaseDateError(undefined);
@@ -65,18 +86,18 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
         result.error.issues[0]?.message ?? "Invalid release date.";
 
       setReleaseDateError(message);
-      console.warn({ error: result.error });
+      console.warn({ error: result.error, generalizedInput, generalized });
     }
   }, [releaseDateInput]);
 
-  const setField = <K extends AddReleaseFormFieldKey>(
+  const setField = <K extends keyof AddReleaseFormDraft>(
     key: K,
-    value: AddReleaseFormInput[K],
+    value: AddReleaseFormDraft[K],
   ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const clearFieldErrorOnFocus = (key: AddReleaseFormFieldKey) => {
+  const clearFieldError = (key: AddReleaseFormFieldKey) => {
     setFieldErrors((prev) => {
       const { [key]: _omit, ...rest } = prev;
 
@@ -84,19 +105,20 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
     });
   };
 
-  const handleFieldBlur = <K extends AddReleaseFormFieldKey>(
+  const validateFormField = <K extends keyof AddReleaseFormDraft>(
     key: K,
-    value: AddReleaseFormInput[K],
   ) => {
     setFieldErrors((prev) => ({
       ...prev,
-      [key]: getReleaseFormFieldErrorMessage(key, value),
+      [key]: getReleaseFormFieldErrorMessage(key, form[key]),
     }));
   };
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    const parsed = addReleaseFormSchema.safeParse(form);
+    const parsed = addReleaseFormSchema.safeParse(
+      form
+    );
     setFieldErrors(getReleaseFormFieldErrors(parsed.error));
 
     if (!parsed.success) {
@@ -107,6 +129,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
   };
 
   const releaseVersionError = fieldErrors["releaseVersion"];
+
+  console.info({ form });
 
   return (
     <div className={styles.section}>
@@ -125,8 +149,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
             aria-required
             value={form.releaseVersion}
             onChange={(e) => setField("releaseVersion", e.target.value)}
-            onFocus={() => clearFieldErrorOnFocus("releaseVersion")}
-            onBlur={(e) => handleFieldBlur("releaseVersion", e.target.value)}
+            onFocus={() => clearFieldError("releaseVersion")}
+            onBlur={() => validateFormField("releaseVersion")}
             aria-invalid={Boolean(releaseVersionError)}
             aria-describedby={
               releaseVersionError ? "add-release-version-error" : undefined
@@ -164,26 +188,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
         </div>
         <div className={styles.field}>
           <GeneralizedDateFormInput
-            year={String(form.releaseDate?.year ?? "")}
-            onYearChange={(yearStr) => {
-              setForm((prev) => {
-                const trimmed = yearStr.trim();
-
-                if (trimmed === "") {
-                  return { ...prev, releaseDate: undefined };
-                }
-
-                const y = Number(trimmed);
-
-                // if (!Number.isInteger(y) || Number.isNaN(y)) {
-                //   return prev;
-                // }
-
-                const current = prev.releaseDate;
-
-                return { ...prev, releaseDate: { ...current, year: y } };
-              });
-            }}
+            date={form.releaseDate}
+            setDate={(releaseDate) =>
+              setForm((prev) => ({ ...prev, releaseDate }))
+            }
           />
         </div>
         <div className={styles.actions}>
