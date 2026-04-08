@@ -13,6 +13,7 @@ type AddReleaseFormFormatBlockProps = {
   releasesFormats: ReleasesFormatListItem[];
   onFormatChange: (formatId: string) => void;
   patchFormat: (patch: Partial<AddReleaseFormFormatInput>) => void;
+  onRemoveFormat?: (() => void) | undefined;
 };
 
 const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
@@ -21,6 +22,7 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
   releasesFormats,
   onFormatChange,
   patchFormat,
+  onRemoveFormat,
 }) => {
   const selectedFormat = releasesFormats.find(
     (f) => f.formatId === row.formatId,
@@ -107,6 +109,20 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
           </div>
         )}
       </div>
+
+      {onRemoveFormat && (
+        <div className={styles.removeRow}>
+          <button
+            type="button"
+            className={styles.removeFormat}
+            id={`add-release-remove-format${suffix}`}
+            aria-label={`Remove format ${rowIndex + 1}`}
+            onClick={onRemoveFormat}
+          >
+            Remove format
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -21,6 +21,7 @@ type AddReleaseFormFormatsSectionProps = {
     patch: Partial<AddReleaseFormFormatInput>,
   ) => void;
   onAddFormat: () => void;
+  onRemoveFormat: (rowIndex: number) => void;
 };
 
 const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
@@ -29,6 +30,7 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
   onFormatChange,
   patchFormat,
   onAddFormat,
+  onRemoveFormat,
 }) => {
   return (
     <div
@@ -56,6 +58,7 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
               releasesFormats={releasesFormats}
               onFormatChange={(formatId) => onFormatChange(rowIndex, formatId)}
               patchFormat={(patch) => patchFormat(rowIndex, patch)}
+              onRemoveFormat={rowIndex > 0 ? () => onRemoveFormat(rowIndex) : undefined}
             />
           </div>
         </div>

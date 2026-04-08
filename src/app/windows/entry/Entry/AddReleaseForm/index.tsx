@@ -31,8 +31,8 @@ type AddReleaseFormDraftKey = keyof AddReleaseFormDraft;
 
 type FieldErrorsDict = {
   [key in keyof AddReleaseFormDraft]?: key extends "releaseDate"
-  ? { message: string; source?: keyof GeneralizedDateFormInputValue }
-  : { message: string; source?: undefined };
+    ? { message: string; source?: keyof GeneralizedDateFormInputValue }
+    : { message: string; source?: undefined };
 };
 
 type FieldValidationKey =
@@ -115,10 +115,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
         formats: prev.formats.map((row, i) =>
           i === rowIndex
             ? {
-              ...current,
-              formatId,
-              jukeboxHole: isSevenInch ? current.jukeboxHole : false,
-            }
+                ...current,
+                formatId,
+                jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+              }
             : row,
         ),
       };
@@ -129,6 +129,17 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
     setForm((prev) => ({
       ...prev,
       formats: [...prev.formats, defaultFormatRow()],
+    }));
+  };
+
+  const removeFormatRow = (rowIndex: number) => {
+    if (rowIndex <= 0) {
+      return;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      formats: prev.formats.filter((_, i) => i !== rowIndex),
     }));
   };
 
@@ -255,6 +266,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
           onFormatChange={onFormatChange}
           patchFormat={patchFormat}
           onAddFormat={addFormatRow}
+          onRemoveFormat={removeFormatRow}
         />
 
         <div className={styles.actions}>

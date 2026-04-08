@@ -7,6 +7,8 @@ interface CssExports {
   'inlineRow': string;
   'input': string;
   'label': string;
+  'removeFormat': string;
+  'removeRow': string;
   'segment': string;
   'segmentAmount': string;
 }
