@@ -1,12 +1,14 @@
-import { useMemo, useState, type FC, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FC, type FormEvent } from "react";
 
 import styles from "./AddReleaseForm.module.css";
 
 import GeneralizedDateFormInput, {
   type GeneralizedDateFormInputValue,
 } from "@/app/components/GeneralizedDateFormInput";
+import api from "@/app/windows/entry/api";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryByIdResult } from "@/types/entries";
+import type { ReleasesFormatListItem } from "@/types/formats";
 import {
   getZodObjectFieldErrorMessage,
   validateAgainstSchema,
@@ -61,52 +63,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
     },
   });
 
-  // const [releaseDateInput, setReleaseDateInput] = useState("");
-  // const [releaseDateError, setReleaseDateError] = useState<
-  //   string | undefined
-  // >();
   const [fieldErrors, setFieldErrors] = useState<FieldErrorsDict>({});
 
-  // useEffect(() => {
-  //   const trimmed = releaseDateInput.trim();
+  const [, setReleasesFormats] = useState<ReleasesFormatListItem[]>([]);
 
-  //   if (trimmed === "") {
-  //     setReleaseDateError(undefined);
-
-  //     return;
-  //   }
-
-  //   const generalized = parseGeneralizedDateString(releaseDateInput);
-
-  //   if (generalized === null) {
-  //     const message =
-  //       "Use a hyphen-separated date: YYYY, YYYY-MM, or YYYY-MM-DD.";
-
-  //     setReleaseDateError(message);
-  //     console.warn({ kind: "parse", releaseDateInput, message });
-
-  //     return;
-  //   }
-
-  //   const generalizedInput = {
-  //     year: String(generalized.year),
-  //     month: String(generalized.month ?? ""),
-  //     day: String(generalized.day ?? ""),
-  //   }
-
-  //   const result = releaseDateSchema.safeParse(generalizedInput);
-
-  //   if (result.success) {
-  //     setReleaseDateError(undefined);
-  //     console.info({ data: result.data });
-  //   } else {
-  //     const message =
-  //       result.error.issues[0]?.message ?? "Invalid release date.";
-
-  //     setReleaseDateError(message);
-  //     console.warn({ error: result.error, generalizedInput, generalized });
-  //   }
-  // }, [releaseDateInput]);
+  useEffect(() => {
+    api.fetchReleasesFormats().then(setReleasesFormats).catch(console.error);
+  }, []);
 
   const setField = <K extends AddReleaseFormDraftKey>(
     key: K,
@@ -208,28 +171,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
             </p>
           )}
         </div>
-        {/* <div className={styles.field}>
-          <label className={styles.label} htmlFor="add-release-date">
-            Release date
-          </label>
-          <input
-            id="add-release-date"
-            className={styles.input}
-            type="text"
-            value={releaseDateInput}
-            onChange={(e) => setReleaseDateInput(e.target.value)}
-            aria-invalid={Boolean(releaseDateError)}
-            aria-describedby={
-              releaseDateError ? "add-release-date-error" : undefined
-            }
-            autoComplete="off"
-          />
-          {releaseDateError && (
-            <p id="add-release-date-error" className={styles.fieldError}>
-              {releaseDateError}
-            </p>
-          )}
-        </div> */}
+
         <div className={styles.field}>
           <GeneralizedDateFormInput
             date={form.releaseDate}
