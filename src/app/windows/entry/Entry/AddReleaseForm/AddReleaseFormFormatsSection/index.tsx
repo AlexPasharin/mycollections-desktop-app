@@ -58,7 +58,9 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
               releasesFormats={releasesFormats}
               onFormatChange={(formatId) => onFormatChange(rowIndex, formatId)}
               patchFormat={(patch) => patchFormat(rowIndex, patch)}
-              onRemoveFormat={rowIndex > 0 ? () => onRemoveFormat(rowIndex) : undefined}
+              onRemoveFormat={
+                rowIndex > 0 ? () => onRemoveFormat(rowIndex) : undefined
+              }
             />
           </div>
         </div>
