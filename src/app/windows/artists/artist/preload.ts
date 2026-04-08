@@ -6,7 +6,7 @@ import {
   GET_ARTIST_BY_ID,
   OPEN_ENTRY_WINDOW,
   SEARCH_ARTIST_ENTRIES,
-} from "@/constants/ipcEvents";
+} from "@/appConstants/ipcEvents";
 import type {
   CreateEntryWindowParams,
   SearchArtistEntriesParams,

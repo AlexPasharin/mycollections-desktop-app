@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { MIN_CALENDAR_YEAR } from "@/constants";
 import type { GeneralizedDate } from "@/types/date";
 import {
   formatGeneralizedDate,
@@ -59,10 +60,10 @@ export const createGeneralizedDateSchema = (
       }
     });
 
-const YEAR_MIN_MESSAGE = "Year must be 1900 or later.";
+const YEAR_MIN_MESSAGE = `Year must be ${MIN_CALENDAR_YEAR} or later.`;
 
 export const generalizedDateYearSchema = coercedIntSchema.pipe(
-  z.int().min(1900, { error: YEAR_MIN_MESSAGE, abort: true }),
+  z.int().min(MIN_CALENDAR_YEAR, { error: YEAR_MIN_MESSAGE, abort: true }),
 );
 
 const MONTH_RANGE_MESSAGE = "Month must be between 1 and 12.";

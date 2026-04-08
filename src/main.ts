@@ -19,7 +19,7 @@ import {
   OPEN_ENTRY_WINDOW,
   QUERY_ARTIST,
   SEARCH_ARTIST_ENTRIES,
-} from "@/constants/ipcEvents";
+} from "@/appConstants/ipcEvents";
 import { fetchArtists, getArtistById, queryArtist } from "@/db/artists";
 import { getEntryById, searchArtistEntries } from "@/db/entries";
 import { getEntryReleases, getReleaseById } from "@/db/releases";

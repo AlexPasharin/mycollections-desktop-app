@@ -1,6 +1,6 @@
 import { app, BrowserWindow } from "electron";
 
-import type { AppWindowName } from "constants/appWindows";
+import type { AppWindowName } from "@/appConstants/appWindows";
 
 import appWindows from "@/app/windows";
 

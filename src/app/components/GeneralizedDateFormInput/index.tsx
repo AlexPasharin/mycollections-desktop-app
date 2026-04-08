@@ -2,6 +2,7 @@ import { type FC } from "react";
 
 import styles from "./GeneralizedDateFormInput.module.css";
 
+import { ENGLISH_MONTH_NAMES, MIN_CALENDAR_YEAR } from "@/constants";
 import type { GeneralizedDate } from "@/types/date";
 import {
   daysInCalendarMonth,
@@ -60,8 +61,8 @@ const GeneralizedDateFormInput: FC<GeneralizedDateFormInputProps> = ({
 
   const monthSelectValue =
     monthParsed !== undefined &&
-      monthParsed >= minMonth &&
-      monthParsed <= maxMonth
+    monthParsed >= minMonth &&
+    monthParsed <= maxMonth
       ? String(monthParsed)
       : "";
 
@@ -132,7 +133,7 @@ const GeneralizedDateFormInput: FC<GeneralizedDateFormInputProps> = ({
             (_, i) => i + minMonth,
           ).map((m) => (
             <option key={m} value={String(m)}>
-              {m}
+              {ENGLISH_MONTH_NAMES[m - 1]}
             </option>
           ))}
         </select>
@@ -160,8 +161,6 @@ const GeneralizedDateFormInput: FC<GeneralizedDateFormInputProps> = ({
     </div>
   );
 };
-
-const MIN_CALENDAR_YEAR = 1900;
 
 const getGeneralizedDateInputMinLimits = (
   year: number | undefined,
