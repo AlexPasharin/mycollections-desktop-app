@@ -11,6 +11,7 @@ import {
   collectReleaseCountryCodes,
   countryCodesToNamesInReleaseCountries,
 } from "@/utils/countries";
+import { parseStringAsGeneralizedDate } from "@/utils/date";
 import { releaseCatNumbersSchema } from "@/validation/releases/catNumbers";
 import { releaseCountriesSchema } from "@/validation/releases/countries";
 import { releaseMatrixRunoutSchema } from "@/validation/releases/matrixRunout";
@@ -78,10 +79,12 @@ export const getReleaseById: GetReleaseById = async (releaseId) => {
     return release;
   }
 
-  const { countries, catalogueNumbers, matrixRunout, ...rest } = release;
+  const { countries, catalogueNumbers, matrixRunout, releaseDate, ...rest } =
+    release;
 
   return {
     ...rest,
+    releaseDate: parseStringAsGeneralizedDate(releaseDate),
     countries: await getReleaseCountries(countries),
     catalogueNumbers: getReleaseCatNumbers(catalogueNumbers),
     matrixRunout: getReleaseMatrixRunout(matrixRunout),

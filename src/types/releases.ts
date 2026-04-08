@@ -4,6 +4,7 @@ import type { ReleaseCatNumbers } from "../validation/releases/catNumbers";
 import type { ReleaseCountries } from "../validation/releases/countries";
 import type { ReleaseMatrixRunout } from "../validation/releases/matrixRunout";
 
+import type { GeneralizedDateFromDb } from "@/types/date";
 import type { MusicalRelease } from "@/types/db/database";
 
 export type ReleaseFormatOfReleaseItem = {
@@ -27,8 +28,13 @@ export type JsonParsingErrorData = { rawJson: unknown; error: string };
 
 export type ReleaseByIdResult = Omit<
   Selectable<MusicalRelease>,
-  "countries" | "catalogueNumbers" | "matrixRunout" | "releaseAlternativeNameId"
+  | "countries"
+  | "catalogueNumbers"
+  | "matrixRunout"
+  | "releaseAlternativeNameId"
+  | "releaseDate"
 > & {
+  releaseDate: GeneralizedDateFromDb;
   tags: string[];
   formats: ReleaseFormatOfReleaseItem[];
   alternativeName: string | null;
