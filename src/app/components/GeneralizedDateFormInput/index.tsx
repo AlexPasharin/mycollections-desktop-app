@@ -1,4 +1,4 @@
-import { useMemo, type FC } from "react";
+import { type FC } from "react";
 
 import styles from "./GeneralizedDateFormInput.module.css";
 
@@ -12,7 +12,6 @@ import {
   generalizedDateMonthSchema,
   generalizedDateYearSchema,
 } from "@/validation/generalizedDate";
-import { getReleaseDateStartFromOriginalReleaseDate } from "@/validation/releases/addReleaseForm";
 
 const YEAR_INPUT_ID = "add-release-date-year";
 const MONTH_INPUT_ID = "add-release-date-month";
@@ -27,40 +26,23 @@ export type GeneralizedDateFormInputValue = {
 type GeneralizedDateFormInputProps = {
   date: GeneralizedDateFormInputValue;
   setDate: (date: GeneralizedDateFormInputValue) => void;
-
-  /** When set (e.g. entry original release), inputs are floored like the lower bound in generalized-date validation. */
-  originalReleaseDate?: string | null;
-
-  /**
-   * Fired when any segment blurs — parent should validate the whole date as one field.
-   */
-  onBlur?: () => void;
-
-  /**
-   * Id of the live error element for this group (`aria-describedby` on each segment when `invalid`).
-   */
+  startDate?: GeneralizedDate | null;
+  onBlur: (key: keyof GeneralizedDateFormInputValue) => void;
+  onFocus: (key: keyof GeneralizedDateFormInputValue) => void;
   groupErrorId?: string;
-
-  /**
-   * Drives `aria-invalid` on each segment when the grouped value failed validation.
-   */
   invalid?: boolean;
 };
 
 const GeneralizedDateFormInput: FC<GeneralizedDateFormInputProps> = ({
   date,
   setDate,
-  originalReleaseDate,
+  startDate,
   onBlur,
+  onFocus,
   groupErrorId,
   invalid = false,
 }) => {
   const { year, month, day } = date;
-
-  const earliestDate = useMemo(
-    () => getReleaseDateStartFromOriginalReleaseDate(originalReleaseDate),
-    [originalReleaseDate],
-  );
 
   const yearParsed = generalizedDateYearSchema.safeParse(year).data;
   const monthParsed = generalizedDateMonthSchema.safeParse(month).data;
@@ -68,7 +50,7 @@ const GeneralizedDateFormInput: FC<GeneralizedDateFormInputProps> = ({
   const { minYear, minMonth, minDay } = getGeneralizedDateInputMinLimits(
     yearParsed,
     monthParsed,
-    earliestDate,
+    startDate,
   );
 
   const { maxYear, maxMonth, maxDay } = getGeneralizedDateInputMaxLimits(
@@ -78,8 +60,8 @@ const GeneralizedDateFormInput: FC<GeneralizedDateFormInputProps> = ({
 
   const monthSelectValue =
     monthParsed !== undefined &&
-    monthParsed >= minMonth &&
-    monthParsed <= maxMonth
+      monthParsed >= minMonth &&
+      monthParsed <= maxMonth
       ? String(monthParsed)
       : "";
 
@@ -113,7 +95,8 @@ const GeneralizedDateFormInput: FC<GeneralizedDateFormInputProps> = ({
 
             setDate(nextDate);
           }}
-          onBlur={onBlur}
+          onBlur={() => onBlur("year")}
+          onFocus={() => onFocus("year")}
           aria-invalid={invalid}
           aria-describedby={describedBy}
           autoComplete="off"
@@ -136,7 +119,8 @@ const GeneralizedDateFormInput: FC<GeneralizedDateFormInputProps> = ({
 
             setDate(nextDate);
           }}
-          onBlur={onBlur}
+          onBlur={() => onBlur("month")}
+          onFocus={() => onFocus("month")}
           aria-invalid={invalid}
           aria-describedby={describedBy}
           disabled={!yearFilled}
@@ -165,7 +149,8 @@ const GeneralizedDateFormInput: FC<GeneralizedDateFormInputProps> = ({
           max={maxDay}
           value={day}
           onChange={(e) => setDate({ ...date, day: e.target.value })}
-          onBlur={onBlur}
+          onBlur={() => onBlur("day")}
+          onFocus={() => onFocus("day")}
           aria-invalid={invalid}
           aria-describedby={describedBy}
           disabled={!monthFilled}
@@ -181,7 +166,7 @@ const MIN_CALENDAR_YEAR = 1900;
 const getGeneralizedDateInputMinLimits = (
   year: number | undefined,
   month: number | undefined,
-  start: GeneralizedDate | undefined,
+  start: GeneralizedDate | null | undefined,
 ) => {
   const startCal = toValidCalendarDate(start, false);
 

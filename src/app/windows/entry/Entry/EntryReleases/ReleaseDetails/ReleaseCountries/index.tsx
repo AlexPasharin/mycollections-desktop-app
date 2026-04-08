@@ -3,8 +3,8 @@ import type { FC } from "react";
 import styles from "./ReleaseCountries.module.css";
 
 import { DetailField } from "../DetailField";
-import JsonFieldErrorDisplay from "../JsonFieldErrorDisplay";
 
+import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
 import type { ReleaseByIdResult } from "@/types/releases";
 import { joinStringOrArray } from "@/utils/common";
 import type { CountriesBasic } from "@/validation/releases/countries";
@@ -47,7 +47,9 @@ const ReleaseCountriesInner: FC<ReleaseCountriesProps> = ({ countries }) => {
   }
 
   if ("rawJson" in countries) {
-    return <JsonFieldErrorDisplay {...countries} />;
+    return (
+      <DataWithErrorDisplay value={countries.rawJson} error={countries.error} />
+    );
   }
 
   return <CountriesBasicBlock basic={countries} />;

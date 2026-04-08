@@ -19,7 +19,7 @@ export type { GeneralizedDate };
  * (same idea as SQL `generalised_date_to_date(value, TRUE) < generalised_date_to_date(start, FALSE)`).
  */
 export const createGeneralizedDateSchema = (
-  startDate?: GeneralizedDate,
+  startDate?: GeneralizedDate | null,
 ): z.ZodType<GeneralizedDate> =>
   z
     .strictObject({
@@ -105,7 +105,7 @@ const validateGeneralizedDate = (
 /** Upper bound of `value` (move forward if incomplete) vs lower bound of `startDate` (SQL-style). */
 const validateGeneralizedDateAgainstStart = (
   value: GeneralizedDate,
-  startDate: GeneralizedDate | undefined,
+  startDate: GeneralizedDate | null | undefined,
 ) => {
   if (!startDate) {
     return { success: true };

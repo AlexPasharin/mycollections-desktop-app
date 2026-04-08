@@ -2,8 +2,7 @@ import type { FC } from "react";
 
 import styles from "./ReleaseMatrixRunout.module.css";
 
-import JsonFieldErrorDisplay from "../JsonFieldErrorDisplay";
-
+import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
 import type { JsonParsingErrorData, ReleaseByIdResult } from "@/types/releases";
 import type { StringLeafJson } from "@/validation/releases/matrixRunout";
 
@@ -34,7 +33,7 @@ const MatrixRunoutValueView: FC<{
   if (isJsonParsingErrorData(value)) {
     return (
       <div className={styles.parseErrorShell}>
-        <JsonFieldErrorDisplay rawJson={value.rawJson} error={value.error} />
+        <DataWithErrorDisplay value={value.rawJson} error={value.error} />
       </div>
     );
   }

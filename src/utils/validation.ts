@@ -17,11 +17,13 @@ export const getZodObjectFieldErrorMessage = <
   return result.error.issues[0]?.message ?? "Invalid input";
 };
 
-export type ValidateAgainstSchemaResult<Schema extends z.ZodObject<z.core.$ZodLooseShape>> =
+type ValidateAgainstSchemaResult<
+  Schema extends z.ZodObject<z.core.$ZodLooseShape>,
+> =
   | { success: true; data: z.output<Schema> }
   | {
       success: false;
-      errorMessages: Partial<Record<keyof Schema["shape"] & string, string>>;
+      errorMessages: Partial<Record<string, { message: string }>>;
     };
 
 /**
@@ -41,14 +43,14 @@ export const validateAgainstSchema = <
   }
 
   const { fieldErrors } = flattenError(parsed.error);
-  const errorMessages: Partial<Record<keyof Schema["shape"] & string, string>> = {};
-  const shapeKeys = Object.keys(schema.shape) as (keyof Schema["shape"] & string)[];
+  const errorMessages: Partial<Record<string, { message: string }>> = {};
+  const shapeKeys = Object.keys(schema.shape);
 
   for (const key of shapeKeys) {
     const first = fieldErrors[key]?.[0];
 
     if (first !== undefined) {
-      errorMessages[key] = first;
+      errorMessages[key] = { message: first };
     }
   }
 

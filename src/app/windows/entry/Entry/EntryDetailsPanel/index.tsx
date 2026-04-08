@@ -2,7 +2,9 @@ import { type FC } from "react";
 
 import styles from "./EntryDetailsPanel.module.css";
 
+import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
 import type { EntryByIdResult } from "@/types/entries";
+import { formatGeneralizedDate } from "@/utils/date";
 
 type EntryDetailsPanelProps = {
   entry: EntryByIdResult;
@@ -34,10 +36,19 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry }) => (
       </p>
     )}
 
-    <p className={styles.field}>
+    <div className={styles.field}>
       <span className={styles.fieldLabel}>Original release date: </span>
-      {entry.originalReleaseDate ?? "(Unknown)"}
-    </p>
+      {entry.originalReleaseDate === null ? (
+        "(Unknown)"
+      ) : "error" in entry.originalReleaseDate ? (
+        <DataWithErrorDisplay
+          value={entry.originalReleaseDate.value}
+          error={entry.originalReleaseDate.error}
+        />
+      ) : (
+        formatGeneralizedDate(entry.originalReleaseDate)
+      )}
+    </div>
 
     {entry.discogsUrl && (
       <p className={styles.field}>

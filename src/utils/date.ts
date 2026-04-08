@@ -85,10 +85,10 @@ export const daysInCalendarMonth = (year: number, month: number): number =>
  * - `moveForwardIfIncomplete === true`: year-only → Dec 31; year-month only → last day of that month.
  */
 export const toValidCalendarDate = (
-  date: GeneralizedDate | undefined,
+  date: GeneralizedDate | null | undefined,
   moveForwardIfIncomplete = false,
 ): Date | null => {
-  if (date === undefined) {
+  if (date == null) {
     return null;
   }
 
