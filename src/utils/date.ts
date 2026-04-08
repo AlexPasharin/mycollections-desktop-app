@@ -1,5 +1,6 @@
 import { ENGLISH_MONTH_NAMES } from "@/constants";
-import type { GeneralizedDate } from "@/types/date";
+import type { GeneralizedDate, GeneralizedDateFromDb } from "@/types/date";
+import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
 
 /**
  * Formats generalized date for display, e.g. `2000`, `2000, January`, or `2000, January 14`.
@@ -40,13 +41,7 @@ export const parseGeneralizedDateString = (
     return null;
   }
 
-  const trimmed = value.trim();
-
-  if (trimmed === "") {
-    return null;
-  }
-
-  const match = /^(\d{4})(?:-(\d{1,2})(?:-(\d{1,2}))?)?$/.exec(trimmed);
+  const match = /^(\d{4})(?:-(\d{1,2})(?:-(\d{1,2}))?)?$/.exec(value.trim());
 
   if (match === null) {
     return null;
@@ -67,6 +62,38 @@ export const parseGeneralizedDateString = (
   }
 
   return generalizedDate;
+};
+
+/**
+ * Parses a DB text generalized date: shape check via {@link parseGeneralizedDateString}, then Zod calendar rules.
+ * Empty or whitespace-only input yields `null`; invalid non-empty shape yields an error object with the raw string.
+ */
+export const parseStringAsGeneralizedDate = (
+  value: string | null,
+): GeneralizedDateFromDb => {
+  if (value === null) {
+    return null;
+  }
+
+  const parsed = parseGeneralizedDateString(value);
+
+  if (parsed === null) {
+    return {
+      value: value,
+      error: "Use a hyphen-separated date: YYYY, YYYY-MM, or YYYY-MM-DD.",
+    };
+  }
+
+  const validated = createGeneralizedDateSchema().safeParse(parsed);
+
+  if (!validated.success) {
+    return {
+      value: value,
+      error: validated.error.issues[0]?.message ?? "Invalid release date.",
+    };
+  }
+
+  return validated.data;
 };
 
 /** Today’s calendar date at **00:00:00.000 UTC**. */

@@ -6,8 +6,10 @@ import styles from "./ReleaseDetails.module.css";
 import ReleaseFormatItem from "./ReleaseFormatItem";
 import ReleaseMatrixRunout from "./ReleaseMatrixRunout";
 
+import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
 import type { EntryByIdResult } from "@/types/entries";
 import type { ReleaseByIdResult } from "@/types/releases";
+import { formatGeneralizedDate } from "@/utils/date";
 
 type ReleaseDetailsProps = {
   entry: EntryByIdResult;
@@ -35,7 +37,16 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => {
     <div className={styles.releaseDetails}>
       <DetailLabeledField label="Version">{releaseVersion}</DetailLabeledField>
       <DetailLabeledField label="Release date">
-        {releaseDate ?? "(Unknown)"}
+        {releaseDate === null ? (
+          "(Unknown)"
+        ) : "error" in releaseDate ? (
+          <DataWithErrorDisplay
+            value={releaseDate.value}
+            error={releaseDate.error}
+          />
+        ) : (
+          formatGeneralizedDate(releaseDate)
+        )}
       </DetailLabeledField>
       {alternativeName && (
         <DetailLabeledField label="Released as">

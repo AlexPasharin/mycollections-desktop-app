@@ -1,17 +1,9 @@
-import type { GeneralizedDate } from "@/types/date";
+import type { GeneralizedDateFromDb } from "@/types/date";
 
 export type CreateArtistWindowParams = { artistId: string };
 
 /** Stored original release date failed parse or calendar validation (see {@link getEntryById}). */
-export type EntryOriginalReleaseDateInvalid = {
-  value: string;
-  error: string;
-};
-
-export type EntryOriginalReleaseDate =
-  | null
-  | GeneralizedDate
-  | EntryOriginalReleaseDateInvalid;
+export type EntryOriginalReleaseDate = GeneralizedDateFromDb;
 
 export type CreateEntryWindowParams = { entryId: string };
 
