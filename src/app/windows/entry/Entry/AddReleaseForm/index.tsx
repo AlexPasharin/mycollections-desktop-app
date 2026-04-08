@@ -1,12 +1,17 @@
-import { useMemo, useState, type FC, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FC, type FormEvent } from "react";
 
 import styles from "./AddReleaseForm.module.css";
+import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
+import type { AddReleaseFormFormatInput } from "./AddReleaseFormFormatsSection/index";
 
 import GeneralizedDateFormInput, {
   type GeneralizedDateFormInputValue,
 } from "@/app/components/GeneralizedDateFormInput";
+import api from "@/app/windows/entry/api";
+import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryByIdResult } from "@/types/entries";
+import type { ReleasesFormatListItem } from "@/types/formats";
 import {
   getZodObjectFieldErrorMessage,
   validateAgainstSchema,
@@ -19,6 +24,7 @@ export { createGeneralizedDateSchema };
 type AddReleaseFormDraft = {
   releaseVersion: string;
   releaseDate: GeneralizedDateFormInputValue;
+  formats: AddReleaseFormFormatInput[];
 };
 
 type AddReleaseFormDraftKey = keyof AddReleaseFormDraft;
@@ -44,6 +50,13 @@ type AddReleaseFormProps = {
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
 
+const defaultFormatRow = (): AddReleaseFormFormatInput => ({
+  formatId: "",
+  amount: "1",
+  pictureSleeve: true,
+  jukeboxHole: false,
+});
+
 const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
   const { originalReleaseDate } = entry;
 
@@ -59,54 +72,18 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
       month: String(originalReleaseDate?.month ?? ""),
       day: String(originalReleaseDate?.day ?? ""),
     },
+    formats: [defaultFormatRow()],
   });
 
-  // const [releaseDateInput, setReleaseDateInput] = useState("");
-  // const [releaseDateError, setReleaseDateError] = useState<
-  //   string | undefined
-  // >();
   const [fieldErrors, setFieldErrors] = useState<FieldErrorsDict>({});
 
-  // useEffect(() => {
-  //   const trimmed = releaseDateInput.trim();
+  const [releasesFormats, setReleasesFormats] = useState<
+    ReleasesFormatListItem[]
+  >([]);
 
-  //   if (trimmed === "") {
-  //     setReleaseDateError(undefined);
-
-  //     return;
-  //   }
-
-  //   const generalized = parseGeneralizedDateString(releaseDateInput);
-
-  //   if (generalized === null) {
-  //     const message =
-  //       "Use a hyphen-separated date: YYYY, YYYY-MM, or YYYY-MM-DD.";
-
-  //     setReleaseDateError(message);
-  //     console.warn({ kind: "parse", releaseDateInput, message });
-
-  //     return;
-  //   }
-
-  //   const generalizedInput = {
-  //     year: String(generalized.year),
-  //     month: String(generalized.month ?? ""),
-  //     day: String(generalized.day ?? ""),
-  //   }
-
-  //   const result = releaseDateSchema.safeParse(generalizedInput);
-
-  //   if (result.success) {
-  //     setReleaseDateError(undefined);
-  //     console.info({ data: result.data });
-  //   } else {
-  //     const message =
-  //       result.error.issues[0]?.message ?? "Invalid release date.";
-
-  //     setReleaseDateError(message);
-  //     console.warn({ error: result.error, generalizedInput, generalized });
-  //   }
-  // }, [releaseDateInput]);
+  useEffect(() => {
+    api.fetchReleasesFormats().then(setReleasesFormats).catch(console.error);
+  }, []);
 
   const setField = <K extends AddReleaseFormDraftKey>(
     key: K,
@@ -115,15 +92,67 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const patchFormat = (
+    rowIndex: number,
+    patch: Partial<AddReleaseFormFormatInput>,
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      formats: prev.formats.map((row, i) =>
+        i === rowIndex ? { ...row, ...patch } : row,
+      ),
+    }));
+  };
+
+  const onFormatChange = (rowIndex: number, formatId: string) => {
+    setForm((prev) => {
+      const current = prev.formats[rowIndex] ?? defaultFormatRow();
+      const fmt = releasesFormats.find((f) => f.formatId === formatId);
+      const isSevenInch = fmt?.shortName === SEVEN_INCH_FORMAT_SHORT_NAME;
+
+      return {
+        ...prev,
+        formats: prev.formats.map((row, i) =>
+          i === rowIndex
+            ? {
+                ...current,
+                formatId,
+                jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+              }
+            : row,
+        ),
+      };
+    });
+  };
+
+  const addFormatRow = () => {
+    setForm((prev) => ({
+      ...prev,
+      formats: [...prev.formats, defaultFormatRow()],
+    }));
+  };
+
+  const removeFormatRow = (rowIndex: number) => {
+    if (rowIndex <= 0) {
+      return;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      formats: prev.formats.filter((_, i) => i !== rowIndex),
+    }));
+  };
+
   const onFocus = (key: FieldValidationKey) => {
     setFieldErrors((prev) => {
       const errorKey =
         key === "year" || key === "month" || key === "day"
           ? "releaseDate"
           : key;
+
       const { [errorKey]: fieldError, ...rest } = prev;
 
-      if (!fieldError || (fieldError.source && fieldError.source !== key)) {
+      if (!fieldError || fieldError.source !== key) {
         return prev;
       }
 
@@ -133,8 +162,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
 
   const onBlur = (key: FieldValidationKey) => {
     setFieldErrors((prev) => {
+      if (key === "formats") {
+        return prev;
+      }
+
       const isReleaseDateField =
         key === "year" || key === "month" || key === "day";
+
       const validationKey = isReleaseDateField ? "releaseDate" : key;
       const errorMessage = getZodObjectFieldErrorMessage(
         addReleaseFormSchema,
@@ -208,28 +242,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
             </p>
           )}
         </div>
-        {/* <div className={styles.field}>
-          <label className={styles.label} htmlFor="add-release-date">
-            Release date
-          </label>
-          <input
-            id="add-release-date"
-            className={styles.input}
-            type="text"
-            value={releaseDateInput}
-            onChange={(e) => setReleaseDateInput(e.target.value)}
-            aria-invalid={Boolean(releaseDateError)}
-            aria-describedby={
-              releaseDateError ? "add-release-date-error" : undefined
-            }
-            autoComplete="off"
-          />
-          {releaseDateError && (
-            <p id="add-release-date-error" className={styles.fieldError}>
-              {releaseDateError}
-            </p>
-          )}
-        </div> */}
+
         <div className={styles.field}>
           <GeneralizedDateFormInput
             date={form.releaseDate}
@@ -246,6 +259,16 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
             </p>
           )}
         </div>
+
+        <AddReleaseFormFormatsSection
+          formats={form.formats}
+          releasesFormats={releasesFormats}
+          onFormatChange={onFormatChange}
+          patchFormat={patchFormat}
+          onAddFormat={addFormatRow}
+          onRemoveFormat={removeFormatRow}
+        />
+
         <div className={styles.actions}>
           <button type="button" onClick={onCancel}>
             Cancel

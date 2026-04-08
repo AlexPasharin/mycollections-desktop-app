@@ -3,12 +3,14 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { API } from "./api";
 
 import {
+  FETCH_RELEASE_FORMATS,
   GET_ENTRY_BY_ID,
   GET_ENTRY_RELEASES,
   GET_RELEASE_BY_ID,
 } from "@/appConstants/ipcEvents";
 
 const api = {
+  fetchReleasesFormats: () => ipcRenderer.invoke(FETCH_RELEASE_FORMATS),
   getEntryById: (entryId: string) =>
     ipcRenderer.invoke(GET_ENTRY_BY_ID, entryId),
   getEntryReleases: (entryId: string) =>

@@ -1,7 +1,9 @@
 import type { GetEntryById } from "@/types/entries";
+import type { ReleasesFormatListItem } from "@/types/formats";
 import type { GetEntryReleases, GetReleaseById } from "@/types/releases";
 
 export type API = {
+  fetchReleasesFormats: () => Promise<ReleasesFormatListItem[]>;
   getEntryById: GetEntryById;
   getEntryReleases: GetEntryReleases;
   getReleaseById: GetReleaseById;

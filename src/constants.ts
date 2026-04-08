@@ -14,3 +14,5 @@ export const ENGLISH_MONTH_NAMES = [
   "November",
   "December",
 ] as const;
+
+export const SEVEN_INCH_FORMAT_SHORT_NAME = "7''";
