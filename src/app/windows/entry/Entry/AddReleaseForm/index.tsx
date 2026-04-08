@@ -31,8 +31,8 @@ type AddReleaseFormDraftKey = keyof AddReleaseFormDraft;
 
 type FieldErrorsDict = {
   [key in keyof AddReleaseFormDraft]?: key extends "releaseDate"
-    ? { message: string; source?: keyof GeneralizedDateFormInputValue }
-    : { message: string; source?: undefined };
+  ? { message: string; source?: keyof GeneralizedDateFormInputValue }
+  : { message: string; source?: undefined };
 };
 
 type FieldValidationKey =
@@ -50,8 +50,9 @@ type AddReleaseFormProps = {
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
 
-const defaultFormatRow = (): AddReleaseFormFormatInput => ({
+const defaultFormatInputRow = (): AddReleaseFormFormatInput => ({
   formatId: "",
+  shortName: "",
   amount: "1",
   pictureSleeve: true,
   jukeboxHole: false,
@@ -72,7 +73,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
       month: String(originalReleaseDate?.month ?? ""),
       day: String(originalReleaseDate?.day ?? ""),
     },
-    formats: [defaultFormatRow()],
+    formats: [defaultFormatInputRow()],
   });
 
   const [fieldErrors, setFieldErrors] = useState<FieldErrorsDict>({});
@@ -106,7 +107,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
 
   const onFormatChange = (rowIndex: number, formatId: string) => {
     setForm((prev) => {
-      const current = prev.formats[rowIndex] ?? defaultFormatRow();
+      const current = prev.formats[rowIndex] ?? defaultFormatInputRow();
       const fmt = releasesFormats.find((f) => f.formatId === formatId);
       const isSevenInch = fmt?.shortName === SEVEN_INCH_FORMAT_SHORT_NAME;
 
@@ -115,10 +116,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
         formats: prev.formats.map((row, i) =>
           i === rowIndex
             ? {
-                ...current,
-                formatId,
-                jukeboxHole: isSevenInch ? current.jukeboxHole : false,
-              }
+              ...current,
+              formatId,
+              jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+            }
             : row,
         ),
       };
@@ -128,7 +129,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
   const addFormatRow = () => {
     setForm((prev) => ({
       ...prev,
-      formats: [...prev.formats, defaultFormatRow()],
+      formats: [...prev.formats, defaultFormatInputRow()],
     }));
   };
 

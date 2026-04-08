@@ -7,6 +7,7 @@ import type { ReleasesFormatListItem } from "@/types/formats";
 
 export type AddReleaseFormFormatInput = {
   formatId: string;
+  shortName: string;
   amount: string;
   pictureSleeve: boolean;
   jukeboxHole: boolean;
