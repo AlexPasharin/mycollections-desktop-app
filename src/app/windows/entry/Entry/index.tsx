@@ -40,7 +40,10 @@ const Entry: FC<EntryProps> = ({ entry }) => {
       </div>
 
       {addReleaseFormOpen && (
-        <AddReleaseForm onCancel={() => setAddReleaseFormOpen(false)} />
+        <AddReleaseForm
+          entry={{ ...entry, ...originalReleaseDateForAddReleaseForm(entry) }}
+          onCancel={() => setAddReleaseFormOpen(false)}
+        />
       )}
 
       {showReleases && (
@@ -53,3 +56,10 @@ const Entry: FC<EntryProps> = ({ entry }) => {
 };
 
 export default Entry;
+
+const originalReleaseDateForAddReleaseForm = (entry: EntryByIdResult) => ({
+  originalReleaseDate:
+    entry.originalReleaseDate !== null && "error" in entry.originalReleaseDate
+      ? null
+      : entry.originalReleaseDate,
+});

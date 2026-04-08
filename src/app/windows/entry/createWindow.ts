@@ -1,4 +1,4 @@
-import { ENTRY_WINDOW } from "@/constants/appWindows";
+import { ENTRY_WINDOW } from "@/appConstants/appWindows";
 import type { CreateEntryWindowParams } from "@/types/entries";
 import createWindow from "@/utils/windows";
 

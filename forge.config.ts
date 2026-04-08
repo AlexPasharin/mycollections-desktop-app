@@ -28,6 +28,22 @@ function webpackDevPort(): number {
   return Number.isFinite(n) && n > 0 && n <= 65_535 ? n : 3000;
 }
 
+/**
+ * Forge web-multi-logger port (webpack build output in the browser). Defaults to 9000.
+ * If `yarn start` fails with EADDRINUSE on 9000, set WEBPACK_LOGGER_PORT to a free port.
+ */
+function webpackLoggerPort(): number {
+  const raw = process.env["WEBPACK_LOGGER_PORT"];
+
+  if (raw === undefined || raw === "") {
+    return 9000;
+  }
+
+  const n = Number.parseInt(raw, 10);
+
+  return Number.isFinite(n) && n > 0 && n <= 65_535 ? n : 9000;
+}
+
 const entryPoints = Object.entries(windows).map(([name, { folder }]) => ({
   name,
   js: `./src/app/${folder}/renderer.tsx`,
@@ -52,6 +68,7 @@ const config: ForgeConfig = {
     new AutoUnpackNativesPlugin({}),
     new WebpackPlugin({
       port: webpackDevPort(),
+      loggerPort: webpackLoggerPort(),
       mainConfig,
       renderer: {
         config: rendererConfig,

@@ -7,7 +7,8 @@ const config: JestConfigWithTsJest = {
   testMatch: ["**/*.test.ts", "**/*.test.tsx"],
   moduleNameMapper: {
     "^@/app/(.*)$": "<rootDir>/src/app/$1",
-    "^@/constants/(.*)$": "<rootDir>/constants/$1",
+    "^@/constants$": "<rootDir>/src/constants.ts",
+    "^@/appConstants/(.*)$": "<rootDir>/appConstants/$1",
     "^@/db/(.*)$": "<rootDir>/src/db/$1",
     "^@/hooks/(.*)$": "<rootDir>/src/hooks/$1",
     "^@/prisma/(.*)$": "<rootDir>/prisma/$1",

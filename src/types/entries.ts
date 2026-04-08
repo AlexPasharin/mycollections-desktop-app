@@ -1,4 +1,17 @@
+import type { GeneralizedDate } from "@/types/date";
+
 export type CreateArtistWindowParams = { artistId: string };
+
+/** Stored original release date failed parse or calendar validation (see {@link getEntryById}). */
+export type EntryOriginalReleaseDateInvalid = {
+  value: string;
+  error: string;
+};
+
+export type EntryOriginalReleaseDate =
+  | null
+  | GeneralizedDate
+  | EntryOriginalReleaseDateInvalid;
 
 export type CreateEntryWindowParams = { entryId: string };
 
@@ -20,7 +33,7 @@ export type EntryArtistInfo = {
 export type EntryByIdResult = {
   entryId: string;
   mainName: string;
-  originalReleaseDate: string | null;
+  originalReleaseDate: EntryOriginalReleaseDate;
   comment: string | null;
   discogsUrl: string | null;
   partOfQueenCollection: boolean;

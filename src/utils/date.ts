@@ -1,23 +1,32 @@
+import { ENGLISH_MONTH_NAMES } from "@/constants";
 import type { GeneralizedDate } from "@/types/date";
 
 /**
- * Formats generalized date as `YYYY`, `YYYY-MM`, or `YYYY-MM-DD`.
+ * Formats generalized date for display, e.g. `2000`, `2000, January`, or `2000, January 14`.
  * It is not assumed that input represents a valid calendar date.
  *
- * Month and day numbers are padded to (at least) 2 digits when present.
+ * When month is present but not in 1–12, falls back to `YYYY-MM` or `YYYY-MM-DD` (padded segments).
  */
 export const formatGeneralizedDate = (date: GeneralizedDate): string => {
-  const dateParts = [String(date.year)];
+  const { year, month, day } = date;
 
-  if (date.month !== undefined) {
-    dateParts.push(String(date.month).padStart(2, "0"));
+  if (month === undefined) {
+    return String(year);
   }
 
-  if (date.day !== undefined) {
-    dateParts.push(String(date.day).padStart(2, "0"));
+  if (month < 1 || month > 12) {
+    const parts = [String(year), String(month).padStart(2, "0")];
+
+    if (day !== undefined) {
+      parts.push(String(day).padStart(2, "0"));
+    }
+
+    return parts.join("-");
   }
 
-  return dateParts.join("-");
+  const monthLabel = ENGLISH_MONTH_NAMES[month - 1];
+
+  return `${year}, ${monthLabel}${day === undefined ? "" : ` ${day}`}`;
 };
 
 /**
@@ -54,10 +63,7 @@ export const parseGeneralizedDateString = (
   }
 
   if (day !== undefined) {
-    type GeneralizedDateWithMonth = GeneralizedDate & { month: number };
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- day present ⇒ month set by regex; narrow for second union member
-    (generalizedDate as GeneralizedDateWithMonth).day = day;
+    generalizedDate.day = day;
   }
 
   return generalizedDate;
@@ -73,17 +79,28 @@ export const startOfToday = (): Date => {
 };
 
 /**
+ * Calendar length of `month` (**1–12**) for `year`, in UTC (same convention as {@link startOfToday}
+ * and {@link toValidCalendarDate}).
+ */
+export const daysInCalendarMonth = (year: number, month: number): number =>
+  new Date(Date.UTC(year, month, 0)).getUTCDate();
+
+/**
  * Converts a generalized date to a UTC `Date` at **00:00:00.000 UTC** for that calendar day,
- * or `null` if the combination is invalid (e.g. 2023-02-30).
+ * or `null` if `date` is undefined or the combination is invalid (e.g. 2023-02-30).
  *
  * When month and/or day are omitted, the missing parts are filled like SQL `generalised_date_to_date`:
  * - `moveForwardIfIncomplete === false` (default): month → 1, day → 1 (start of year or month).
  * - `moveForwardIfIncomplete === true`: year-only → Dec 31; year-month only → last day of that month.
  */
 export const toValidCalendarDate = (
-  date: GeneralizedDate,
+  date: GeneralizedDate | null | undefined,
   moveForwardIfIncomplete = false,
 ): Date | null => {
+  if (date == null) {
+    return null;
+  }
+
   const { year, month, day } = date;
   const hasMonth = month !== undefined;
   const hasDay = day !== undefined;
@@ -92,7 +109,7 @@ export const toValidCalendarDate = (
   const d = hasDay
     ? day
     : moveForwardIfIncomplete
-      ? new Date(Date.UTC(year, m, 0)).getUTCDate()
+      ? daysInCalendarMonth(year, m)
       : 1;
   const calendarDate = new Date(Date.UTC(year, m - 1, d));
 

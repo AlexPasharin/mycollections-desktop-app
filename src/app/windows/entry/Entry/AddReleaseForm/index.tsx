@@ -1,66 +1,180 @@
-import { useState, type FC, type FormEvent } from "react";
+import { useMemo, useState, type FC, type FormEvent } from "react";
 
 import styles from "./AddReleaseForm.module.css";
 
+import GeneralizedDateFormInput, {
+  type GeneralizedDateFormInputValue,
+} from "@/app/components/GeneralizedDateFormInput";
+import type { GeneralizedDate } from "@/types/date";
+import type { EntryByIdResult } from "@/types/entries";
 import {
-  getReleaseFormFieldErrors,
-  getReleaseFormFieldErrorMessage,
-  addReleaseFormInitialValues,
-  addReleaseFormSchema,
-  type AddReleaseFormFieldKey,
-  type AddReleaseFormInput,
-} from "@/validation/releases/addReleaseForm";
+  getZodObjectFieldErrorMessage,
+  validateAgainstSchema,
+} from "@/utils/validation";
+import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
+import { createAddReleaseFormSchema } from "@/validation/releases/addReleaseForm";
+
+export { createGeneralizedDateSchema };
+
+type AddReleaseFormDraft = {
+  releaseVersion: string;
+  releaseDate: GeneralizedDateFormInputValue;
+};
+
+type AddReleaseFormDraftKey = keyof AddReleaseFormDraft;
+
+type FieldErrorsDict = {
+  [key in keyof AddReleaseFormDraft]?: key extends "releaseDate"
+    ? { message: string; source?: keyof GeneralizedDateFormInputValue }
+    : { message: string; source?: undefined };
+};
+
+type FieldValidationKey =
+  | keyof FieldErrorsDict
+  | keyof GeneralizedDateFormInputValue;
+
+type AddReleaseFormEntry = Omit<EntryByIdResult, "originalReleaseDate"> & {
+  originalReleaseDate: GeneralizedDate | null;
+};
 
 type AddReleaseFormProps = {
+  entry: AddReleaseFormEntry;
   onCancel: () => void;
 };
 
-const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
-  const [form, setForm] = useState<AddReleaseFormInput>(
-    addReleaseFormInitialValues,
-  );
-  const [fieldErrors, setFieldErrors] = useState<
-    Record<string, string | undefined>
-  >({});
+const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
 
-  const setField = <K extends AddReleaseFormFieldKey>(
+const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
+  const { originalReleaseDate } = entry;
+
+  const addReleaseFormSchema = useMemo(
+    () => createAddReleaseFormSchema(originalReleaseDate),
+    [originalReleaseDate],
+  );
+
+  const [form, setForm] = useState<AddReleaseFormDraft>({
+    releaseVersion: "",
+    releaseDate: {
+      year: String(originalReleaseDate?.year ?? ""),
+      month: String(originalReleaseDate?.month ?? ""),
+      day: String(originalReleaseDate?.day ?? ""),
+    },
+  });
+
+  // const [releaseDateInput, setReleaseDateInput] = useState("");
+  // const [releaseDateError, setReleaseDateError] = useState<
+  //   string | undefined
+  // >();
+  const [fieldErrors, setFieldErrors] = useState<FieldErrorsDict>({});
+
+  // useEffect(() => {
+  //   const trimmed = releaseDateInput.trim();
+
+  //   if (trimmed === "") {
+  //     setReleaseDateError(undefined);
+
+  //     return;
+  //   }
+
+  //   const generalized = parseGeneralizedDateString(releaseDateInput);
+
+  //   if (generalized === null) {
+  //     const message =
+  //       "Use a hyphen-separated date: YYYY, YYYY-MM, or YYYY-MM-DD.";
+
+  //     setReleaseDateError(message);
+  //     console.warn({ kind: "parse", releaseDateInput, message });
+
+  //     return;
+  //   }
+
+  //   const generalizedInput = {
+  //     year: String(generalized.year),
+  //     month: String(generalized.month ?? ""),
+  //     day: String(generalized.day ?? ""),
+  //   }
+
+  //   const result = releaseDateSchema.safeParse(generalizedInput);
+
+  //   if (result.success) {
+  //     setReleaseDateError(undefined);
+  //     console.info({ data: result.data });
+  //   } else {
+  //     const message =
+  //       result.error.issues[0]?.message ?? "Invalid release date.";
+
+  //     setReleaseDateError(message);
+  //     console.warn({ error: result.error, generalizedInput, generalized });
+  //   }
+  // }, [releaseDateInput]);
+
+  const setField = <K extends AddReleaseFormDraftKey>(
     key: K,
-    value: AddReleaseFormInput[K],
+    value: AddReleaseFormDraft[K],
   ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const clearFieldErrorOnFocus = (key: AddReleaseFormFieldKey) => {
+  const onFocus = (key: FieldValidationKey) => {
     setFieldErrors((prev) => {
-      const { [key]: _omit, ...rest } = prev;
+      const errorKey =
+        key === "year" || key === "month" || key === "day"
+          ? "releaseDate"
+          : key;
+      const { [errorKey]: fieldError, ...rest } = prev;
+
+      if (!fieldError || (fieldError.source && fieldError.source !== key)) {
+        return prev;
+      }
 
       return rest;
     });
   };
 
-  const handleFieldBlur = <K extends AddReleaseFormFieldKey>(
-    key: K,
-    value: AddReleaseFormInput[K],
-  ) => {
-    setFieldErrors((prev) => ({
-      ...prev,
-      [key]: getReleaseFormFieldErrorMessage(key, value),
-    }));
+  const onBlur = (key: FieldValidationKey) => {
+    setFieldErrors((prev) => {
+      const isReleaseDateField =
+        key === "year" || key === "month" || key === "day";
+      const validationKey = isReleaseDateField ? "releaseDate" : key;
+      const errorMessage = getZodObjectFieldErrorMessage(
+        addReleaseFormSchema,
+        validationKey,
+        form[validationKey],
+      );
+
+      if (!errorMessage) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [validationKey]: {
+          message: errorMessage,
+          source: isReleaseDateField ? key : undefined,
+        },
+      };
+    });
   };
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    const parsed = addReleaseFormSchema.safeParse(form);
-    setFieldErrors(getReleaseFormFieldErrors(parsed.error));
+    const result = validateAgainstSchema(addReleaseFormSchema, form);
 
-    if (!parsed.success) {
+    console.info({ form });
+
+    if (!result.success) {
+      console.info({ result });
+      setFieldErrors(result.errorMessages);
+
       return;
     }
 
-    console.info("submitting! (not really)");
+    setFieldErrors({});
+    console.info("submitting! (not really)", result.data);
   };
 
-  const releaseVersionError = fieldErrors["releaseVersion"];
+  const releaseVersionError = fieldErrors["releaseVersion"]?.message;
+  const releaseDateError = fieldErrors["releaseDate"]?.message;
 
   return (
     <div className={styles.section}>
@@ -79,17 +193,56 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ onCancel }) => {
             aria-required
             value={form.releaseVersion}
             onChange={(e) => setField("releaseVersion", e.target.value)}
-            onFocus={() => clearFieldErrorOnFocus("releaseVersion")}
-            onBlur={(e) => handleFieldBlur("releaseVersion", e.target.value)}
+            onFocus={() => onFocus("releaseVersion")}
+            onBlur={() => onBlur("releaseVersion")}
             aria-invalid={Boolean(releaseVersionError)}
             aria-describedby={
               releaseVersionError ? "add-release-version-error" : undefined
             }
             autoComplete="off"
+            required
           />
           {releaseVersionError && (
             <p id="add-release-version-error" className={styles.fieldError}>
               {releaseVersionError}
+            </p>
+          )}
+        </div>
+        {/* <div className={styles.field}>
+          <label className={styles.label} htmlFor="add-release-date">
+            Release date
+          </label>
+          <input
+            id="add-release-date"
+            className={styles.input}
+            type="text"
+            value={releaseDateInput}
+            onChange={(e) => setReleaseDateInput(e.target.value)}
+            aria-invalid={Boolean(releaseDateError)}
+            aria-describedby={
+              releaseDateError ? "add-release-date-error" : undefined
+            }
+            autoComplete="off"
+          />
+          {releaseDateError && (
+            <p id="add-release-date-error" className={styles.fieldError}>
+              {releaseDateError}
+            </p>
+          )}
+        </div> */}
+        <div className={styles.field}>
+          <GeneralizedDateFormInput
+            date={form.releaseDate}
+            startDate={entry.originalReleaseDate}
+            setDate={(releaseDate) => setField("releaseDate", releaseDate)}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            invalid={Boolean(releaseDateError)}
+            groupErrorId={RELEASE_DATE_FIELD_ERROR_ID}
+          />
+          {releaseDateError && (
+            <p id={RELEASE_DATE_FIELD_ERROR_ID} className={styles.fieldError}>
+              {releaseDateError}
             </p>
           )}
         </div>

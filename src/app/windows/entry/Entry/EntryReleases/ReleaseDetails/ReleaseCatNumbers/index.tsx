@@ -3,8 +3,8 @@ import type { FC } from "react";
 import styles from "./ReleaseCatNumbers.module.css";
 
 import { DetailField } from "../DetailField";
-import JsonFieldErrorDisplay from "../JsonFieldErrorDisplay";
 
+import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
 import type { ReleaseByIdResult } from "@/types/releases";
 import { joinStringOrArray } from "@/utils/common";
 import type {
@@ -43,7 +43,12 @@ const ReleaseCatNumbersInner: FC<{
   catalogueNumbers: CatalogueNumbersDisplayed;
 }> = ({ catalogueNumbers }) => {
   if ("rawJson" in catalogueNumbers) {
-    return <JsonFieldErrorDisplay {...catalogueNumbers} />;
+    return (
+      <DataWithErrorDisplay
+        value={catalogueNumbers.rawJson}
+        error={catalogueNumbers.error}
+      />
+    );
   }
 
   if (Array.isArray(catalogueNumbers)) {

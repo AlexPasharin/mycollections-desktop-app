@@ -1,4 +1,4 @@
-import type { AppWindowName } from "constants/appWindows";
+import type { AppWindowName } from "@/appConstants/appWindows";
 
 const appWindows = {
   main_window: {

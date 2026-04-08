@@ -22,7 +22,7 @@
   background: #fff8f8;
 }
 
-/* Nested JsonFieldErrorDisplay pre — avoid double card */
+/* Nested DataWithErrorDisplay pre — avoid double card */
 .parseErrorShell :global(pre) {
   margin: 0;
   padding: 0;

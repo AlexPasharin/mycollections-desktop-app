@@ -6,7 +6,7 @@ import {
   GET_ENTRY_BY_ID,
   GET_ENTRY_RELEASES,
   GET_RELEASE_BY_ID,
-} from "@/constants/ipcEvents";
+} from "@/appConstants/ipcEvents";
 
 const api = {
   getEntryById: (entryId: string) =>

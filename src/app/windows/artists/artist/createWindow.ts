@@ -1,4 +1,4 @@
-import { ARTIST_WINDOW } from "@/constants/appWindows";
+import { ARTIST_WINDOW } from "@/appConstants/appWindows";
 import type { CreateArtistWindowParams } from "@/types/entries";
 import createWindow from "@/utils/windows";
 

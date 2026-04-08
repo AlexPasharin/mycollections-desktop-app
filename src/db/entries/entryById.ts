@@ -4,10 +4,17 @@ import { selectFromExtendedMusicalEntryRows } from "./utils";
 
 import { aggregateDistinctValuesToArray } from "../utils";
 
-import type { EntryArtistInfo, GetEntryById } from "@/types/entries";
+import type {
+  EntryArtistInfo,
+  EntryByIdResult,
+  EntryOriginalReleaseDate,
+  GetEntryById,
+} from "@/types/entries";
+import { parseGeneralizedDateString } from "@/utils/date";
+import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
 
-export const getEntryById: GetEntryById = (entryId) =>
-  selectFromExtendedMusicalEntryRows()
+export const getEntryById: GetEntryById = async (entryId) => {
+  const row = await selectFromExtendedMusicalEntryRows()
     .leftJoin(
       "alternativeArtistNames",
       "musicalEntriesArtists.entryArtistNameId",
@@ -55,3 +62,47 @@ export const getEntryById: GetEntryById = (entryId) =>
       "musicalEntries.relationToQueen",
     ])
     .executeTakeFirst();
+
+  if (row === undefined) {
+    return undefined;
+  }
+
+  const { originalReleaseDate: originalReleaseDateRaw, ...rest } = row;
+
+  return {
+    ...rest,
+    originalReleaseDate: postProcessOriginalReleaseDate(originalReleaseDateRaw),
+  } satisfies EntryByIdResult;
+};
+
+const postProcessOriginalReleaseDate = (
+  raw: string | null,
+): EntryOriginalReleaseDate => {
+  if (raw === null) {
+    return null;
+  }
+
+  if (raw.trim() === "") {
+    return null;
+  }
+
+  const parsed = parseGeneralizedDateString(raw);
+
+  if (parsed === null) {
+    return {
+      value: raw,
+      error: "Use a hyphen-separated date: YYYY, YYYY-MM, or YYYY-MM-DD.",
+    };
+  }
+
+  const validated = createGeneralizedDateSchema().safeParse(parsed);
+
+  if (!validated.success) {
+    return {
+      value: raw,
+      error: validated.error.issues[0]?.message ?? "Invalid release date.",
+    };
+  }
+
+  return validated.data;
+};

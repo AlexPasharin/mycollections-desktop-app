@@ -26,7 +26,8 @@
     "typeRoots": ["./node_modules/@types"],
     "paths": {
       "@/app/*": ["src/app/*"],
-      "@/constants/*": ["constants/*"],
+      "@/appConstants/*": ["appConstants/*"],
+      "@/constants": ["src/constants.ts"],
       "@/db/*": ["src/db/*"],
       "@/hooks/*": ["src/hooks/*"],
       "@/prisma/*": ["prisma/*"],

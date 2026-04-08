@@ -7,7 +7,7 @@ import {
   OPEN_ARTIST_WINDOW,
   OPEN_ENTRY_WINDOW,
   QUERY_ARTIST,
-} from "@/constants/ipcEvents";
+} from "@/appConstants/ipcEvents";
 import type { FetchArtistsParams } from "@/types/artists";
 import type {
   CreateArtistWindowParams,
