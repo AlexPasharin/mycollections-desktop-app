@@ -85,8 +85,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
     api.fetchReleasesFormats().then(setReleasesFormats).catch(console.error);
   }, []);
 
-  const row = form.formats[0] ?? defaultFormatRow();
-
   const setField = <K extends AddReleaseFormDraftKey>(
     key: K,
     value: AddReleaseFormDraft[K],
@@ -94,30 +92,44 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const patchFormat0 = (patch: Partial<AddReleaseFormFormatInput>) => {
+  const patchFormat = (
+    rowIndex: number,
+    patch: Partial<AddReleaseFormFormatInput>,
+  ) => {
     setForm((prev) => ({
       ...prev,
-      formats: [{ ...(prev.formats[0] ?? defaultFormatRow()), ...patch }],
+      formats: prev.formats.map((row, i) =>
+        i === rowIndex ? { ...row, ...patch } : row,
+      ),
     }));
   };
 
-  const onFormatChange = (formatId: string) => {
+  const onFormatChange = (rowIndex: number, formatId: string) => {
     setForm((prev) => {
-      const current = prev.formats[0] ?? defaultFormatRow();
+      const current = prev.formats[rowIndex] ?? defaultFormatRow();
       const fmt = releasesFormats.find((f) => f.formatId === formatId);
       const isSevenInch = fmt?.shortName === SEVEN_INCH_FORMAT_SHORT_NAME;
 
       return {
         ...prev,
-        formats: [
-          {
-            ...current,
-            formatId,
-            jukeboxHole: isSevenInch ? current.jukeboxHole : false,
-          },
-        ],
+        formats: prev.formats.map((row, i) =>
+          i === rowIndex
+            ? {
+              ...current,
+              formatId,
+              jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+            }
+            : row,
+        ),
       };
     });
+  };
+
+  const addFormatRow = () => {
+    setForm((prev) => ({
+      ...prev,
+      formats: [...prev.formats, defaultFormatRow()],
+    }));
   };
 
   const onFocus = (key: FieldValidationKey) => {
@@ -186,7 +198,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
 
   const releaseVersionError = fieldErrors["releaseVersion"]?.message;
   const releaseDateError = fieldErrors["releaseDate"]?.message;
-  const formatSectionDisabled = !row.formatId;
 
   return (
     <div className={styles.section}>
@@ -239,11 +250,11 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
         </div>
 
         <AddReleaseFormFormatsSection
-          row={row}
+          formats={form.formats}
           releasesFormats={releasesFormats}
-          formatSectionDisabled={formatSectionDisabled}
           onFormatChange={onFormatChange}
-          patchFormat={patchFormat0}
+          patchFormat={patchFormat}
+          onAddFormat={addFormatRow}
         />
 
         <div className={styles.actions}>
