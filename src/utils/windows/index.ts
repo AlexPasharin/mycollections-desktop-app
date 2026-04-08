@@ -1,8 +1,7 @@
 import { app, BrowserWindow } from "electron";
 
-import type { AppWindowName } from "@/appConstants/appWindows";
-
 import appWindows from "@/app/windows";
+import type { AppWindowName } from "@/appConstants/appWindows";
 
 const createWindow =
   (appWindowName: AppWindowName) =>

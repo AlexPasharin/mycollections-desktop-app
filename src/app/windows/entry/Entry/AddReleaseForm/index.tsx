@@ -12,9 +12,7 @@ import {
   validateAgainstSchema,
 } from "@/utils/validation";
 import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
-import {
-  createAddReleaseFormSchema,
-} from "@/validation/releases/addReleaseForm";
+import { createAddReleaseFormSchema } from "@/validation/releases/addReleaseForm";
 
 export { createGeneralizedDateSchema };
 
@@ -27,8 +25,8 @@ type AddReleaseFormDraftKey = keyof AddReleaseFormDraft;
 
 type FieldErrorsDict = {
   [key in keyof AddReleaseFormDraft]?: key extends "releaseDate"
-  ? { message: string; source?: keyof GeneralizedDateFormInputValue }
-  : { message: string; source?: undefined };
+    ? { message: string; source?: keyof GeneralizedDateFormInputValue }
+    : { message: string; source?: undefined };
 };
 
 type FieldValidationKey =
@@ -60,7 +58,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
       year: String(originalReleaseDate?.year ?? ""),
       month: String(originalReleaseDate?.month ?? ""),
       day: String(originalReleaseDate?.day ?? ""),
-    }
+    },
   });
 
   // const [releaseDateInput, setReleaseDateInput] = useState("");
@@ -260,4 +258,3 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
 };
 
 export default AddReleaseForm;
-

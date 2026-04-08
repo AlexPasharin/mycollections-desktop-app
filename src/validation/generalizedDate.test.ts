@@ -132,7 +132,7 @@ describe("createGeneralizedDateSchema", () => {
 
     expectZodSingleIssueMessage(
       invalidCalendar,
-      `Value "2023-02-30" does not represent a valid existing date.`,
+      `Value "2023, February 30" does not represent a valid existing date.`,
     );
 
     const future = schema.safeParse({
@@ -143,7 +143,7 @@ describe("createGeneralizedDateSchema", () => {
 
     expectZodSingleIssueMessage(
       future,
-      `Value "2026-04-06" represents a date in the future.`,
+      `Value "2026, April 6" represents a date in the future.`,
     );
   });
 
@@ -260,7 +260,7 @@ describe("createGeneralizedDateSchema", () => {
 
     expectZodSingleIssueMessage(
       result,
-      `Value "2023-02-30" does not represent a valid existing date.`,
+      `Value "2023, February 30" does not represent a valid existing date.`,
     );
   });
 
@@ -275,7 +275,7 @@ describe("createGeneralizedDateSchema", () => {
 
     expectZodSingleIssueMessage(
       result,
-      `Value "2026-04-06" represents a date in the future.`,
+      `Value "2026, April 6" represents a date in the future.`,
     );
   });
 
@@ -305,7 +305,7 @@ describe("createGeneralizedDateSchema", () => {
 
       expectZodSingleIssueMessage(
         result,
-        `Value "2019-12-31" cannot be before "2020-01-01" (given start date).`,
+        `Value "2019, December 31" cannot be before "2020, January 1" (given start date).`,
       );
     });
 
