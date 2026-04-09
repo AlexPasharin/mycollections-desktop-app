@@ -2,9 +2,7 @@ import { useMemo, useState, type FC, type FormEvent } from "react";
 
 import styles from "./AddReleaseForm.module.css";
 import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
-import type { AddReleaseFormFormatRowPatch } from "./AddReleaseFormFormatsSection/index";
 import {
-  defaultFormatInputRow,
   fieldErrorDictKey,
   fieldValidationKeysEqual,
   initialAddReleaseFormDraftValue,
@@ -16,16 +14,13 @@ import {
   type FieldValidationKey,
 } from "./addReleaseFormUtils";
 
-import GeneralizedDateFormInput, {
-} from "@/app/components/GeneralizedDateFormInput";
-import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
+import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import {
   getZodObjectFieldErrorMessage,
   validateAgainstSchema,
 } from "@/utils/validation";
 import { createAddReleaseFormSchema } from "@/validation/releases/addReleaseForm";
-
 
 export type AddReleaseFormProps = {
   entry: AddReleaseFormEntry;
@@ -48,52 +43,22 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     [originalReleaseDate],
   );
 
-  const [form, setForm] = useState<AddReleaseFormDraft>(initialAddReleaseFormDraftValue(originalReleaseDate));
+  const [form, setForm] = useState<AddReleaseFormDraft>(
+    initialAddReleaseFormDraftValue(originalReleaseDate),
+  );
 
   const [fieldErrors, setFieldErrors] = useState<FieldErrorsDict>({});
 
   const setField = <K extends keyof AddReleaseFormDraft>(
     key: K,
-    value: AddReleaseFormDraft[K] | ((prev: AddReleaseFormDraft) => AddReleaseFormDraft[K]),
+    value:
+      | AddReleaseFormDraft[K]
+      | ((prev: AddReleaseFormDraft) => AddReleaseFormDraft[K]),
   ) => {
-    setForm((prev) => ({ ...prev, [key]: typeof value === "function" ? value(prev) : value }));
-  };
-
-  const patchFormat = (rowId: string, patch: AddReleaseFormFormatRowPatch) => {
-    setField("formats", ({ formats }) => formats.map((row) =>
-      row.id === rowId ? { ...row, ...patch } : row,
-    ));
-  };
-
-  const onFormatChange = (rowId: string, formatId: string) => {
-    setField("formats", ({ formats }) => {
-      const current = formats.find((r) => r.id === rowId);
-
-      if (!current) {
-        return formats;
-      }
-
-      const fmt = releasesFormats.find((f) => f.formatId === formatId);
-      const isSevenInch = fmt?.shortName === SEVEN_INCH_FORMAT_SHORT_NAME;
-
-      return formats.map((row) =>
-        row.id === rowId
-          ? {
-            ...current,
-            formatId,
-            jukeboxHole: isSevenInch ? current.jukeboxHole : false,
-          }
-          : row,
-      )
-    });
-  };
-
-  const addFormatRow = () => {
-    setField("formats", ({ formats }) => [...formats, defaultFormatInputRow()]);
-  };
-
-  const removeFormatRow = (rowId: string) => {
-    setField("formats", ({ formats }) => formats.filter((r) => r.id !== rowId));
+    setForm((prev) => ({
+      ...prev,
+      [key]: typeof value === "function" ? value(prev) : value,
+    }));
   };
 
   const onFocus = (key: FieldValidationKey) => {
@@ -216,10 +181,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           formats={form.formats}
           releasesFormats={releasesFormats}
           formatsFieldError={fieldErrors.formats}
-          onFormatChange={onFormatChange}
-          patchFormat={patchFormat}
-          onAddFormat={addFormatRow}
-          onRemoveFormat={removeFormatRow}
+          setFormats={(stateUpdateFn) =>
+            setField("formats", (prev) => stateUpdateFn(prev.formats))
+          }
           onFieldFocus={onFocus}
           onFieldBlur={onBlur}
         />

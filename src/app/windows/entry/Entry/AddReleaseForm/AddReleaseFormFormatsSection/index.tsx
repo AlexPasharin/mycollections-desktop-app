@@ -1,19 +1,25 @@
 import type { FC } from "react";
 
-import AddReleaseFormFormatBlock from "./AddReleaseFormFormatBlock";
+import AddReleaseFormFormatBlock, {
+  type AddReleaseFormFormatRowPatch,
+} from "./AddReleaseFormFormatBlock";
 import styles from "./AddReleaseFormFormatsSection.module.css";
 
-import type {
-  AddReleaseFormFormatInput,
-  FieldErrorsDict,
-  FieldValidationKey,
+import {
+  defaultFormatInputRow,
+  type AddReleaseFormFormatInput,
+  type FieldErrorsDict,
+  type FieldValidationKey,
 } from "../addReleaseFormUtils";
 
+import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
 import type { ReleasesFormatListItem } from "@/types/formats";
 
-export type AddReleaseFormFormatRowPatch = Partial<
-  Omit<AddReleaseFormFormatInput, "id">
->;
+type SetAddReleaseFormFormats = (
+  stateUpdateFn: (
+    prevFormatRows: AddReleaseFormFormatInput[],
+  ) => AddReleaseFormFormatInput[],
+) => void;
 
 const FORMATS_SECTION_ERROR_ID = "add-release-formats-section-error";
 
@@ -21,10 +27,7 @@ type AddReleaseFormFormatsSectionProps = {
   formats: AddReleaseFormFormatInput[];
   releasesFormats: ReleasesFormatListItem[];
   formatsFieldError?: FieldErrorsDict["formats"];
-  onFormatChange: (rowId: string, formatId: string) => void;
-  patchFormat: (rowId: string, patch: AddReleaseFormFormatRowPatch) => void;
-  onAddFormat: () => void;
-  onRemoveFormat: (rowId: string) => void;
+  setFormats: SetAddReleaseFormFormats;
   onFieldFocus: (key: FieldValidationKey) => void;
   onFieldBlur: (key: FieldValidationKey) => void;
 };
@@ -33,17 +36,62 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
   formats,
   releasesFormats,
   formatsFieldError,
-  onFormatChange,
-  patchFormat,
-  onAddFormat,
-  onRemoveFormat,
+  setFormats,
   onFieldFocus,
   onFieldBlur,
 }) => {
+  const patchFormat = (rowId: string, patch: AddReleaseFormFormatRowPatch) => {
+    setFormats((prevFormatRows) =>
+      prevFormatRows.map((formatRow) =>
+        formatRow.id === rowId ? { ...formatRow, ...patch } : formatRow,
+      ),
+    );
+  };
+
+  const onFormatChange = (rowId: string, formatId: string) => {
+    setFormats((prevFormatRows) => {
+      const current = prevFormatRows.find(
+        (formatRow) => formatRow.id === rowId,
+      );
+
+      if (!current) {
+        return prevFormatRows;
+      }
+
+      const fmt = releasesFormats.find((f) => f.formatId === formatId);
+      const isSevenInch = fmt?.shortName === SEVEN_INCH_FORMAT_SHORT_NAME;
+
+      return prevFormatRows.map((formatRow) =>
+        formatRow.id === rowId
+          ? {
+              ...current,
+              formatId,
+              jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+            }
+          : formatRow,
+      );
+    });
+  };
+
+  const addFormatRow = () => {
+    setFormats((prevFormatRows) => [
+      ...prevFormatRows,
+      defaultFormatInputRow(),
+    ]);
+  };
+
+  const removeFormatRow = (rowId: string) => {
+    setFormats((prevFormatRows) =>
+      prevFormatRows.filter((formatRow) => formatRow.id !== rowId),
+    );
+  };
+
   const sectionLevelFormatsErrorMessage =
     formatsFieldError?.message &&
     (!formatsFieldError.source ||
-      !formats.some((r) => r.id === formatsFieldError.source?.rowId))
+      !formats.some(
+        (formatRow) => formatRow.id === formatsFieldError.source?.rowId,
+      ))
       ? formatsFieldError.message
       : undefined;
 
@@ -74,11 +122,11 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
         Formats
       </p>
 
-      {formats.map((row, rowIndex) => {
-        const rowErr = rowFormatsError(row.id);
+      {formats.map((formatRow, rowIndex) => {
+        const rowErr = rowFormatsError(formatRow.id);
 
         return (
-          <div key={row.id}>
+          <div key={formatRow.id}>
             {rowIndex > 0 && <hr className={styles.divider} aria-hidden />}
             <div
               className={
@@ -88,14 +136,16 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
               }
             >
               <AddReleaseFormFormatBlock
-                row={row}
+                row={formatRow}
                 rowIndex={rowIndex}
                 releasesFormats={releasesFormats}
                 {...(rowErr ? { rowFormatError: rowErr } : {})}
-                onFormatChange={(formatId) => onFormatChange(row.id, formatId)}
-                patchFormat={(patch) => patchFormat(row.id, patch)}
+                onFormatChange={(formatId) =>
+                  onFormatChange(formatRow.id, formatId)
+                }
+                patchFormat={(patch) => patchFormat(formatRow.id, patch)}
                 onRemoveFormat={
-                  rowIndex > 0 ? () => onRemoveFormat(row.id) : undefined
+                  rowIndex > 0 ? () => removeFormatRow(formatRow.id) : undefined
                 }
                 onFieldFocus={onFieldFocus}
                 onFieldBlur={onFieldBlur}
@@ -119,7 +169,7 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
         type="button"
         id="add-release-add-another-format"
         className={styles.addAnotherFormat}
-        onClick={onAddFormat}
+        onClick={addFormatRow}
       >
         + Add another format
       </button>

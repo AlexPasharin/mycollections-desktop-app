@@ -8,10 +8,13 @@ import type {
   FormatFieldKind,
   FieldValidationKey,
 } from "../../addReleaseFormUtils";
-import type { AddReleaseFormFormatRowPatch } from "../index";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
 import type { ReleasesFormatListItem } from "@/types/formats";
+
+export type AddReleaseFormFormatRowPatch = Partial<
+  Omit<AddReleaseFormFormatInput, "id">
+>;
 
 type RowFormatError = {
   message: string;
