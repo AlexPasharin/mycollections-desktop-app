@@ -2,10 +2,14 @@ import { useEffect, useMemo, useState, type FC, type FormEvent } from "react";
 
 import styles from "./AddReleaseForm.module.css";
 import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
-import type { AddReleaseFormFormatInput } from "./AddReleaseFormFormatsSection/index";
+import type {
+  AddReleaseFormFormatInput,
+  AddReleaseFormFormatRowPatch,
+} from "./AddReleaseFormFormatsSection/index";
 import {
   defaultFormatInputRow,
   fieldErrorDictKey,
+  fieldValidationKeysEqual,
   isFormatFieldValidationKey,
   isReleaseDateFieldValidationKey,
   type FieldErrorsDict,
@@ -83,28 +87,30 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const patchFormat = (
-    rowIndex: number,
-    patch: Partial<AddReleaseFormFormatInput>,
-  ) => {
+  const patchFormat = (rowId: string, patch: AddReleaseFormFormatRowPatch) => {
     setForm((prev) => ({
       ...prev,
-      formats: prev.formats.map((row, i) =>
-        i === rowIndex ? { ...row, ...patch } : row,
+      formats: prev.formats.map((row) =>
+        row.id === rowId ? { ...row, ...patch } : row,
       ),
     }));
   };
 
-  const onFormatChange = (rowIndex: number, formatId: string) => {
+  const onFormatChange = (rowId: string, formatId: string) => {
     setForm((prev) => {
-      const current = prev.formats[rowIndex] ?? defaultFormatInputRow();
+      const current = prev.formats.find((r) => r.id === rowId);
+
+      if (!current) {
+        return prev;
+      }
+
       const fmt = releasesFormats.find((f) => f.formatId === formatId);
       const isSevenInch = fmt?.shortName === SEVEN_INCH_FORMAT_SHORT_NAME;
 
       return {
         ...prev,
-        formats: prev.formats.map((row, i) =>
-          i === rowIndex
+        formats: prev.formats.map((row) =>
+          row.id === rowId
             ? {
                 ...current,
                 formatId,
@@ -123,14 +129,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
     }));
   };
 
-  const removeFormatRow = (rowIndex: number) => {
-    if (rowIndex <= 0) {
-      return;
-    }
-
+  const removeFormatRow = (rowId: string) => {
     setForm((prev) => ({
       ...prev,
-      formats: prev.formats.filter((_, i) => i !== rowIndex),
+      formats: prev.formats.filter((r) => r.id !== rowId),
     }));
   };
 
@@ -139,7 +141,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
       const errorKey = fieldErrorDictKey(key);
       const { [errorKey]: fieldError, ...rest } = prev;
 
-      if (!fieldError || fieldError.source !== key) {
+      if (!fieldError || !fieldValidationKeysEqual(fieldError.source, key)) {
         return prev;
       }
 
@@ -250,10 +252,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({ entry, onCancel }) => {
         <AddReleaseFormFormatsSection
           formats={form.formats}
           releasesFormats={releasesFormats}
+          formatsFieldError={fieldErrors.formats}
           onFormatChange={onFormatChange}
           patchFormat={patchFormat}
           onAddFormat={addFormatRow}
           onRemoveFormat={removeFormatRow}
+          onFieldFocus={onFocus}
+          onFieldBlur={onBlur}
         />
 
         <div className={styles.actions}>

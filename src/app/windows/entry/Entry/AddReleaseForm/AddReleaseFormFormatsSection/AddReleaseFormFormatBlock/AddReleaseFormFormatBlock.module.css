@@ -77,3 +77,9 @@
 .removeFormat:hover {
   color: #7a0000;
 }
+
+.fieldError {
+  margin: 0.35rem 0 0;
+  font-size: 0.85em;
+  color: #b42318;
+}

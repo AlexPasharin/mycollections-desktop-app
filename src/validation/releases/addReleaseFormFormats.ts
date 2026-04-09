@@ -12,6 +12,7 @@ const addReleaseFormFormatAmountSchema = z
 
 const addReleaseFormFormatInputSchema = z
   .strictObject({
+    id: z.uuid({ error: "Row id must be a valid UUID." }),
     formatId: z.string().trim().min(1, "Format id is required"),
     shortName: z.string().trim().min(1, "Short name is required"),
     amount: addReleaseFormFormatAmountSchema,
@@ -32,29 +33,27 @@ export const addReleaseFormFormatInputArraySchema = z
   .array(addReleaseFormFormatInputSchema)
   .nonempty()
   .superRefine((rows, ctx) => {
-    const seenKeys = new Map<string, number>();
-    let i = 0;
+    const seenKeys = new Map<string, string>();
 
     for (const row of rows) {
       const key = similarFormatsRowKey(row);
 
-      const firstIndex = seenKeys.get(key);
+      const firstId = seenKeys.get(key);
 
-      if (firstIndex !== undefined) {
+      if (firstId !== undefined) {
         ctx.addIssue({
           code: "custom",
-          path: [firstIndex],
-          message: `Format rows ${firstIndex + 1} and ${i + 1} are similar - have same format, picture sleeve and jukebox hole settings. They should be merged or the options should be changed.`,
+          path: [firstId],
+          message: `Format rows with ids "${firstId}" and "${row.id}" are similar — same format, picture sleeve, and jukebox hole settings. Merge amounts or change options.`,
         });
 
         return;
       }
 
-      seenKeys.set(key, i);
-
-      i += 1;
+      seenKeys.set(key, row.id);
     }
-  });
+  })
+  .transform((rows) => rows.map(({ id: _rowId, ...rest }) => rest));
 
 const similarFormatsRowKey = (row: {
   formatId: string;

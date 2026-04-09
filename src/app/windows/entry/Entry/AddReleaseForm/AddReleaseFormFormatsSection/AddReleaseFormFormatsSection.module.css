@@ -39,3 +39,9 @@
 .addAnotherFormat:hover {
   color: #0d3d82;
 }
+
+.fieldError {
+  margin: 0.35rem 0 0;
+  font-size: 0.85em;
+  color: #b42318;
+}
