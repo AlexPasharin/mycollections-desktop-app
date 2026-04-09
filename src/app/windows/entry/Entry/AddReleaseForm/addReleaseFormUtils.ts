@@ -1,6 +1,15 @@
 import { v4 as uuidv4 } from "uuid";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
+import type { GeneralizedDate } from "@/types/date";
+import type { EntryByIdResult } from "@/types/entries";
+
+export type AddReleaseFormEntry = Omit<
+  EntryByIdResult,
+  "originalReleaseDate"
+> & {
+  originalReleaseDate: GeneralizedDate | null;
+};
 
 export type AddReleaseFormFormatInput = {
   id: string;
@@ -103,4 +112,22 @@ export const defaultFormatInputRow = (): AddReleaseFormFormatInput => ({
   amount: "1",
   pictureSleeve: true,
   jukeboxHole: false,
+});
+
+export type AddReleaseFormDraft = {
+  releaseVersion: string;
+  releaseDate: GeneralizedDateFormInputValue;
+  formats: AddReleaseFormFormatInput[];
+};
+
+export const initialAddReleaseFormDraftValue = (
+  originalReleaseDate: GeneralizedDate | null,
+): AddReleaseFormDraft => ({
+  releaseVersion: "",
+  releaseDate: {
+    year: String(originalReleaseDate?.year ?? ""),
+    month: String(originalReleaseDate?.month ?? ""),
+    day: String(originalReleaseDate?.day ?? ""),
+  },
+  formats: [defaultFormatInputRow()],
 });

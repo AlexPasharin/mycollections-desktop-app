@@ -7,19 +7,18 @@ import {
   defaultFormatInputRow,
   fieldErrorDictKey,
   fieldValidationKeysEqual,
+  initialAddReleaseFormDraftValue,
   isFormatFieldValidationKey,
   isReleaseDateFieldValidationKey,
-  type AddReleaseFormFormatInput,
+  type AddReleaseFormDraft,
+  type AddReleaseFormEntry,
   type FieldErrorsDict,
   type FieldValidationKey,
 } from "./addReleaseFormUtils";
 
 import GeneralizedDateFormInput, {
-  type GeneralizedDateFormInputValue,
 } from "@/app/components/GeneralizedDateFormInput";
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
-import type { GeneralizedDate } from "@/types/date";
-import type { EntryByIdResult } from "@/types/entries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import {
   getZodObjectFieldErrorMessage,
@@ -27,18 +26,6 @@ import {
 } from "@/utils/validation";
 import { createAddReleaseFormSchema } from "@/validation/releases/addReleaseForm";
 
-type AddReleaseFormDraft = {
-  releaseVersion: string;
-  releaseDate: GeneralizedDateFormInputValue;
-  formats: AddReleaseFormFormatInput[];
-};
-
-export type AddReleaseFormEntry = Omit<
-  EntryByIdResult,
-  "originalReleaseDate"
-> & {
-  originalReleaseDate: GeneralizedDate | null;
-};
 
 export type AddReleaseFormProps = {
   entry: AddReleaseFormEntry;
@@ -61,72 +48,52 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     [originalReleaseDate],
   );
 
-  const [form, setForm] = useState<AddReleaseFormDraft>({
-    releaseVersion: "",
-    releaseDate: {
-      year: String(originalReleaseDate?.year ?? ""),
-      month: String(originalReleaseDate?.month ?? ""),
-      day: String(originalReleaseDate?.day ?? ""),
-    },
-    formats: [defaultFormatInputRow()],
-  });
+  const [form, setForm] = useState<AddReleaseFormDraft>(initialAddReleaseFormDraftValue(originalReleaseDate));
 
   const [fieldErrors, setFieldErrors] = useState<FieldErrorsDict>({});
 
   const setField = <K extends keyof AddReleaseFormDraft>(
     key: K,
-    value: AddReleaseFormDraft[K],
+    value: AddReleaseFormDraft[K] | ((prev: AddReleaseFormDraft) => AddReleaseFormDraft[K]),
   ) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm((prev) => ({ ...prev, [key]: typeof value === "function" ? value(prev) : value }));
   };
 
   const patchFormat = (rowId: string, patch: AddReleaseFormFormatRowPatch) => {
-    setForm((prev) => ({
-      ...prev,
-      formats: prev.formats.map((row) =>
-        row.id === rowId ? { ...row, ...patch } : row,
-      ),
-    }));
+    setField("formats", ({ formats }) => formats.map((row) =>
+      row.id === rowId ? { ...row, ...patch } : row,
+    ));
   };
 
   const onFormatChange = (rowId: string, formatId: string) => {
-    setForm((prev) => {
-      const current = prev.formats.find((r) => r.id === rowId);
+    setField("formats", ({ formats }) => {
+      const current = formats.find((r) => r.id === rowId);
 
       if (!current) {
-        return prev;
+        return formats;
       }
 
       const fmt = releasesFormats.find((f) => f.formatId === formatId);
       const isSevenInch = fmt?.shortName === SEVEN_INCH_FORMAT_SHORT_NAME;
 
-      return {
-        ...prev,
-        formats: prev.formats.map((row) =>
-          row.id === rowId
-            ? {
-                ...current,
-                formatId,
-                jukeboxHole: isSevenInch ? current.jukeboxHole : false,
-              }
-            : row,
-        ),
-      };
+      return formats.map((row) =>
+        row.id === rowId
+          ? {
+            ...current,
+            formatId,
+            jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+          }
+          : row,
+      )
     });
   };
 
   const addFormatRow = () => {
-    setForm((prev) => ({
-      ...prev,
-      formats: [...prev.formats, defaultFormatInputRow()],
-    }));
+    setField("formats", ({ formats }) => [...formats, defaultFormatInputRow()]);
   };
 
   const removeFormatRow = (rowId: string) => {
-    setForm((prev) => ({
-      ...prev,
-      formats: prev.formats.filter((r) => r.id !== rowId),
-    }));
+    setField("formats", ({ formats }) => formats.filter((r) => r.id !== rowId));
   };
 
   const onFocus = (key: FieldValidationKey) => {

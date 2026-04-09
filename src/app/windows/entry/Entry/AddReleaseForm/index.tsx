@@ -6,10 +6,6 @@ import styles from "./AddReleaseForm.module.css";
 import api from "@/app/windows/entry/api";
 import type { ReleasesFormatListItem } from "@/types/formats";
 
-export { createGeneralizedDateSchema } from "@/validation/generalizedDate";
-
-export type { AddReleaseFormEntry } from "./AddReleaseForm";
-
 type AddReleaseFormWrapperProps = Omit<AddReleaseFormProps, "releasesFormats">;
 
 const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
