@@ -3,14 +3,12 @@ import type { FC } from "react";
 import styles from "./AddReleaseFormFormatBlock.module.css";
 
 import type {
+  AddReleaseFormFormatInput,
   FormatFieldErrorSource,
   FormatFieldKind,
   FieldValidationKey,
 } from "../../addReleaseFormUtils";
-import type {
-  AddReleaseFormFormatInput,
-  AddReleaseFormFormatRowPatch,
-} from "../index";
+import type { AddReleaseFormFormatRowPatch } from "../index";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
 import type { ReleasesFormatListItem } from "@/types/formats";

@@ -1,8 +1,15 @@
 import { v4 as uuidv4 } from "uuid";
 
-import type { AddReleaseFormFormatInput } from "./AddReleaseFormFormatsSection/index";
-
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
+
+export type AddReleaseFormFormatInput = {
+  id: string;
+  formatId: string;
+  shortName: string;
+  amount: string;
+  pictureSleeve: boolean;
+  jukeboxHole: boolean;
+};
 
 export type ReleaseDateFieldErrorSource = keyof GeneralizedDateFormInputValue;
 

@@ -4,6 +4,7 @@ interface CssExports {
   'actions': string;
   'field': string;
   'fieldError': string;
+  'formatsLoadState': string;
   'form': string;
   'input': string;
   'label': string;

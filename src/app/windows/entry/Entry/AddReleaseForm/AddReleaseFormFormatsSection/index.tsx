@@ -4,20 +4,12 @@ import AddReleaseFormFormatBlock from "./AddReleaseFormFormatBlock";
 import styles from "./AddReleaseFormFormatsSection.module.css";
 
 import type {
+  AddReleaseFormFormatInput,
   FieldErrorsDict,
   FieldValidationKey,
 } from "../addReleaseFormUtils";
 
 import type { ReleasesFormatListItem } from "@/types/formats";
-
-export type AddReleaseFormFormatInput = {
-  id: string;
-  formatId: string;
-  shortName: string;
-  amount: string;
-  pictureSleeve: boolean;
-  jukeboxHole: boolean;
-};
 
 export type AddReleaseFormFormatRowPatch = Partial<
   Omit<AddReleaseFormFormatInput, "id">
