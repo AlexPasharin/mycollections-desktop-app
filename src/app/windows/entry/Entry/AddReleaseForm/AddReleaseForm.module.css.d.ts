@@ -3,8 +3,8 @@
 interface CssExports {
   'actions': string;
   'field': string;
-  'formatsLoadState': string;
   'form': string;
+  'formatsLoadState': string;
   'input': string;
   'label': string;
   'requiredMark': string;

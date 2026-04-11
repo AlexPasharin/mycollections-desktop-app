@@ -162,11 +162,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     event.preventDefault();
     const result = validateAgainstSchema(addReleaseFormSchema, form);
 
-    console.info({ form });
+    console.info({ form, result });
 
     if (!result.success) {
-      console.info({ result });
-
       setFieldErrors(getFieldErrorsPatch(result.errorMessages));
 
       return;
