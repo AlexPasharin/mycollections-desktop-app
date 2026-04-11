@@ -21,12 +21,10 @@ type SetAddReleaseFormFormats = (
   ) => AddReleaseFormFormatInput[],
 ) => void;
 
-const FORMATS_SECTION_ERROR_ID = "add-release-formats-section-error";
-
 type AddReleaseFormFormatsSectionProps = {
   formats: AddReleaseFormFormatInput[];
   releasesFormats: ReleasesFormatListItem[];
-  formatsFieldError?: AddReleaseFormFieldErrors["formats"];
+  formatsFieldErrors?: AddReleaseFormFieldErrors["formats"];
   setFormats: SetAddReleaseFormFormats;
   onFieldFocus: (key: AddReleaseFormInputFieldKey) => void;
   onBlur: () => void;
@@ -35,7 +33,7 @@ type AddReleaseFormFormatsSectionProps = {
 const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
   formats,
   releasesFormats,
-  formatsFieldError,
+  formatsFieldErrors,
   setFormats,
   onFieldFocus,
   onBlur,
@@ -64,10 +62,10 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
       return prevFormatRows.map((formatRow) =>
         formatRow.id === rowId
           ? {
-            ...current,
-            formatId,
-            jukeboxHole: isSevenInch ? current.jukeboxHole : false,
-          }
+              ...current,
+              formatId,
+              jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+            }
           : formatRow,
       );
     });
@@ -86,45 +84,11 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
     );
   };
 
-  const sectionLevelFormatsErrorMessage =
-    formatsFieldError?.message &&
-      (!formatsFieldError.source ||
-        !formats.some(
-          (formatRow) => formatRow.id === formatsFieldError.source?.formatRowId,
-        ))
-      ? formatsFieldError.message
-      : undefined;
-
-  const rowFormatsError = (rowId: string) => {
-    if (
-      formatsFieldError?.message &&
-      formatsFieldError.source?.formatRowId === rowId
-    ) {
-      return {
-        message: formatsFieldError.message,
-        field: formatsFieldError.source.field,
-      };
-    }
-
-    return undefined;
-  };
-
   return (
-    <div
-      className={styles.section}
-      role="group"
-      aria-labelledby="add-release-formats-heading"
-      aria-describedby={
-        sectionLevelFormatsErrorMessage ? FORMATS_SECTION_ERROR_ID : undefined
-      }
-    >
-      <p id="add-release-formats-heading" className={styles.heading}>
-        Formats
-      </p>
+    <div className={styles.section}>
+      <p className={styles.heading}>Formats</p>
 
       {formats.map((formatRow, rowIndex) => {
-        const rowErr = rowFormatsError(formatRow.id);
-
         return (
           <div key={formatRow.id}>
             {rowIndex > 0 && <hr className={styles.divider} aria-hidden />}
@@ -139,7 +103,7 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
                 row={formatRow}
                 rowIndex={rowIndex}
                 releasesFormats={releasesFormats}
-                {...(rowErr ? { rowFormatError: rowErr } : {})}
+                errors={formatsFieldErrors?.[formatRow.id]}
                 onFormatChange={(formatId) =>
                   onFormatChange(formatRow.id, formatId)
                 }
@@ -154,16 +118,6 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
           </div>
         );
       })}
-
-      {sectionLevelFormatsErrorMessage && (
-        <p
-          id={FORMATS_SECTION_ERROR_ID}
-          className={styles.fieldError}
-          role="alert"
-        >
-          {sectionLevelFormatsErrorMessage}
-        </p>
-      )}
 
       <button
         type="button"

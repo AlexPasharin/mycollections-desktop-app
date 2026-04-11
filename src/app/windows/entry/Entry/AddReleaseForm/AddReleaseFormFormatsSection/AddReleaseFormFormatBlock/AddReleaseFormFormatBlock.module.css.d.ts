@@ -4,7 +4,6 @@ interface CssExports {
   'checkboxLabel': string;
   'checkboxRow': string;
   'checkboxesRow': string;
-  'fieldError': string;
   'inlineRow': string;
   'input': string;
   'label': string;

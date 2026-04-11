@@ -8,11 +8,11 @@ const AMOUNT_MIN_MESSAGE = "Amount must be at least 1.";
 /** Integer ≥ 1, either as `z.int()` or as a string that parses to a base-10 integer. */
 const addReleaseFormFormatAmountSchema = z
   .union([z.int(), z.string().trim().pipe(strictStringToIntSchema)])
-  .pipe(z.int().min(1, { error: AMOUNT_MIN_MESSAGE, abort: true }));
+  .pipe(z.int().min(1, { error: AMOUNT_MIN_MESSAGE }));
 
 const addReleaseFormFormatInputSchema = z
   .strictObject({
-    id: z.uuid({ error: "Row id must be a valid UUID." }),
+    id: z.string().trim().min(1, "Id is required"),
     formatId: z.string().trim().min(1, "Format id is required"),
     shortName: z.string().trim().min(1, "Short name is required"),
     amount: addReleaseFormFormatAmountSchema,

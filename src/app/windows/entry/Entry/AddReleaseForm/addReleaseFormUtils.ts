@@ -25,7 +25,7 @@ export type FormatField = "format" | "amount" | "pictureSleeve" | "jukeboxHole";
 
 type ReleaseDateFieldErrorSource = keyof GeneralizedDateFormInputValue;
 
-type AddReleaseFormFieldError = {
+export type AddReleaseFormFieldError = {
   message: string;
   sources?: PropertyKey[] | undefined;
 };
@@ -41,9 +41,8 @@ export type AddReleaseFormInputFieldKey =
   | ReleaseDateFieldErrorSource
   | { formatRowId: string; field: FormatField };
 
-export const isReleaseDateInputFieldKey = (
-  key: AddReleaseFormInputFieldKey,
-) => key === "year" || key === "month" || key === "day";
+export const isReleaseDateInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
+  key === "year" || key === "month" || key === "day";
 
 export const isFormatInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
   typeof key === "object";

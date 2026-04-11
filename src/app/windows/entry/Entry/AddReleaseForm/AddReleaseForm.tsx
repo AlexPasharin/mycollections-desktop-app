@@ -49,8 +49,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     initialAddReleaseFormDraftValue(originalReleaseDate),
   );
 
-  const [fieldErrors, setFieldErrors] =
-    useState<AddReleaseFormFieldErrors>({});
+  const [fieldErrors, setFieldErrors] = useState<AddReleaseFormFieldErrors>({});
 
   const setField = <K extends keyof AddReleaseFormDraft>(
     key: K,
@@ -64,24 +63,38 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     }));
   };
 
-  const getFieldErrorsPatch = (errorMessages?: ValidationResultErrorMessages) => {
+  const getFieldErrorsPatch = (
+    errorMessages?: ValidationResultErrorMessages,
+  ) => {
     const fieldErrorsPatch: AddReleaseFormFieldErrors = {};
 
     if (!errorMessages) {
       return {};
     }
 
-    const releaseDateErrorMessages = errorMessages.filter(({ path }) => path[0] === "releaseDate");
-    const formatsErrorMessages = errorMessages.filter(({ path }) => path[0] === "formats");
-    const releaseVersionErrorMessages = errorMessages.filter(({ path }) => path[0] === "releaseVersion");
+    const releaseDateErrorMessages = errorMessages.filter(
+      ({ path }) => path[0] === "releaseDate",
+    );
+    const formatsErrorMessages = errorMessages.filter(
+      ({ path }) => path[0] === "formats",
+    );
+    const releaseVersionErrorMessages = errorMessages.filter(
+      ({ path }) => path[0] === "releaseVersion",
+    );
 
-
-    fieldErrorsPatch.releaseDate = getReleaseDateFormFieldErrors(releaseDateErrorMessages);
-    fieldErrorsPatch.formats = getFormatsFormFieldErrors(formatsErrorMessages, form.formats);
-    fieldErrorsPatch.releaseVersion = releaseVersionErrorMessages.map(({ message }) => ({ message }))
+    fieldErrorsPatch.releaseDate = getReleaseDateFormFieldErrors(
+      releaseDateErrorMessages,
+    );
+    fieldErrorsPatch.formats = getFormatsFormFieldErrors(
+      formatsErrorMessages,
+      form.formats,
+    );
+    fieldErrorsPatch.releaseVersion = releaseVersionErrorMessages.map(
+      ({ message }) => ({ message }),
+    );
 
     return fieldErrorsPatch;
-  }
+  };
 
   const onFocus = (key: AddReleaseFormInputFieldKey) => {
     setFieldErrors((prev) => {
@@ -93,32 +106,42 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           return prev;
         }
 
-        const newFormatErrors = formats[formatRowId]?.filter(error => !error.sources?.includes(field));
+        const newFormatErrors = formats[formatRowId]?.filter(
+          (error) => !error.sources?.includes(field),
+        );
 
         return {
           ...prev,
           formats: {
             ...formats,
-            [formatRowId]: newFormatErrors && newFormatErrors.length > 0 ? newFormatErrors : undefined,
+            [formatRowId]:
+              newFormatErrors && newFormatErrors.length > 0
+                ? newFormatErrors
+                : undefined,
           },
         };
       }
 
       if (isReleaseDateInputFieldKey(key)) {
-        const releaseDateErrors = prev.releaseDate?.filter(error => !error.sources?.includes(key));
+        const releaseDateErrors = prev.releaseDate?.filter(
+          (error) => !error.sources?.includes(key),
+        );
 
         return {
           ...prev,
-          releaseDate: releaseDateErrors && releaseDateErrors.length > 0 ? releaseDateErrors : undefined,
+          releaseDate:
+            releaseDateErrors && releaseDateErrors.length > 0
+              ? releaseDateErrors
+              : undefined,
         };
       }
 
       return {
         ...prev,
         [key]: undefined,
-      }
-    })
-  }
+      };
+    });
+  };
 
   const onBlur = (key: keyof AddReleaseFormDraft) => {
     setFieldErrors((prev) => {
@@ -127,7 +150,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         key,
         form[key],
       );
-
 
       return {
         ...prev,
@@ -212,7 +234,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         <AddReleaseFormFormatsSection
           formats={form.formats}
           releasesFormats={releasesFormats}
-          formatsFieldError={fieldErrors.formats}
+          formatsFieldErrors={fieldErrors.formats}
           setFormats={(stateUpdateFn) =>
             setField("formats", (prev) => stateUpdateFn(prev.formats))
           }

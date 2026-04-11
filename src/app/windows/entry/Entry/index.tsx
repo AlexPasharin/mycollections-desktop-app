@@ -42,7 +42,10 @@ const Entry: FC<EntryProps> = ({ entry }) => {
 
       {addReleaseFormOpen && (
         <AddReleaseForm
-          entry={{ ...entry, originalReleaseDate: sanitizeReleaseDate(entry.originalReleaseDate) }}
+          entry={{
+            ...entry,
+            originalReleaseDate: sanitizeReleaseDate(entry.originalReleaseDate),
+          }}
           onCancel={() => setAddReleaseFormOpen(false)}
         />
       )}
@@ -57,5 +60,3 @@ const Entry: FC<EntryProps> = ({ entry }) => {
 };
 
 export default Entry;
-
-

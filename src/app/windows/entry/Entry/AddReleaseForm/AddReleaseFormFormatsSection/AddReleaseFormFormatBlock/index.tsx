@@ -4,11 +4,12 @@ import styles from "./AddReleaseFormFormatBlock.module.css";
 
 import type {
   AddReleaseFormFormatInput,
-  FormatFieldErrorSource,
   FormatField,
   AddReleaseFormInputFieldKey,
+  AddReleaseFormFieldError,
 } from "../../addReleaseFormUtils";
 
+import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
 import type { ReleasesFormatListItem } from "@/types/formats";
 
@@ -16,16 +17,11 @@ export type AddReleaseFormFormatRowPatch = Partial<
   Omit<AddReleaseFormFormatInput, "id">
 >;
 
-type RowFormatError = {
-  message: string;
-  field: FormatField;
-};
-
 type AddReleaseFormFormatBlockProps = {
   row: AddReleaseFormFormatInput;
   rowIndex: number;
   releasesFormats: ReleasesFormatListItem[];
-  rowFormatError?: RowFormatError;
+  errors?: AddReleaseFormFieldError[] | undefined;
   onFormatChange: (formatId: string) => void;
   patchFormat: (patch: AddReleaseFormFormatRowPatch) => void;
   onRemoveFormat?: (() => void) | undefined;
@@ -33,16 +29,16 @@ type AddReleaseFormFormatBlockProps = {
   onBlur: () => void;
 };
 
-const formatFieldSource = (
-  rowId: string,
-  field: FormatField,
-): FormatFieldErrorSource => ({ formatRowId: rowId, field });
+const formatFieldSource = (rowId: string, field: FormatField) => ({
+  formatRowId: rowId,
+  field,
+});
 
 const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
   row,
   rowIndex,
   releasesFormats,
-  rowFormatError,
+  errors,
   onFormatChange,
   patchFormat,
   onRemoveFormat,
@@ -50,7 +46,6 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
   onBlur,
 }) => {
   const rowErrorElementId = `add-release-formats-row-error-${row.id}`;
-  const invalidField = rowFormatError?.field;
 
   const selectedFormat = releasesFormats.find(
     (f) => f.formatId === row.formatId,
@@ -59,6 +54,9 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
     selectedFormat?.shortName === SEVEN_INCH_FORMAT_SHORT_NAME;
   const formatSectionDisabled = !row.formatId;
   const suffix = `-${row.id}`;
+
+  const fieldInvalid = (field: FormatField) =>
+    errors?.some((e) => e.sources?.includes(field)) ?? false;
 
   return (
     <div role="group" aria-label={`Format ${rowIndex + 1}`}>
@@ -74,9 +72,9 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
             id={`add-release-format${suffix}`}
             className={styles.input}
             value={row.formatId}
-            aria-invalid={invalidField === "format"}
+            aria-invalid={fieldInvalid("format")}
             aria-describedby={
-              invalidField === "format" ? rowErrorElementId : undefined
+              fieldInvalid("format") ? rowErrorElementId : undefined
             }
             onChange={(e) => onFormatChange(e.target.value)}
             onFocus={() => onFieldFocus(formatFieldSource(row.id, "format"))}
@@ -105,9 +103,9 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
             step={1}
             value={row.amount}
             disabled={formatSectionDisabled}
-            aria-invalid={invalidField === "amount"}
+            aria-invalid={fieldInvalid("amount")}
             aria-describedby={
-              invalidField === "amount" ? rowErrorElementId : undefined
+              fieldInvalid("amount") ? rowErrorElementId : undefined
             }
             onChange={(e) => patchFormat({ amount: e.target.value })}
             onFocus={() => onFieldFocus(formatFieldSource(row.id, "amount"))}
@@ -123,9 +121,9 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
             type="checkbox"
             checked={row.pictureSleeve}
             disabled={formatSectionDisabled}
-            aria-invalid={invalidField === "pictureSleeve"}
+            aria-invalid={fieldInvalid("pictureSleeve")}
             aria-describedby={
-              invalidField === "pictureSleeve" ? rowErrorElementId : undefined
+              fieldInvalid("pictureSleeve") ? rowErrorElementId : undefined
             }
             onChange={(e) => patchFormat({ pictureSleeve: e.target.checked })}
             onFocus={() =>
@@ -146,9 +144,9 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
               id={`add-release-jukebox-hole${suffix}`}
               type="checkbox"
               checked={row.jukeboxHole}
-              aria-invalid={invalidField === "jukeboxHole"}
+              aria-invalid={fieldInvalid("jukeboxHole")}
               aria-describedby={
-                invalidField === "jukeboxHole" ? rowErrorElementId : undefined
+                fieldInvalid("jukeboxHole") ? rowErrorElementId : undefined
               }
               onChange={(e) => patchFormat({ jukeboxHole: e.target.checked })}
               onFocus={() =>
@@ -166,11 +164,7 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
         )}
       </div>
 
-      {rowFormatError && (
-        <p id={rowErrorElementId} className={styles.fieldError} role="alert">
-          {rowFormatError.message}
-        </p>
-      )}
+      <FormFieldErrorMessages id={rowErrorElementId} messages={errors ?? []} />
 
       {onRemoveFormat && (
         <div className={styles.removeRow}>
