@@ -72,12 +72,12 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
             id={`add-release-format${suffix}`}
             className={styles.input}
             value={row.formatId}
-            aria-invalid={fieldInvalid("format")}
+            aria-invalid={fieldInvalid("formatId")}
             aria-describedby={
-              fieldInvalid("format") ? rowErrorElementId : undefined
+              fieldInvalid("formatId") ? rowErrorElementId : undefined
             }
             onChange={(e) => onFormatChange(e.target.value)}
-            onFocus={() => onFieldFocus(formatFieldSource(row.id, "format"))}
+            onFocus={() => onFieldFocus(formatFieldSource(row.id, "formatId"))}
             onBlur={onBlur}
           >
             <option value="" />

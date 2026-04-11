@@ -13,24 +13,26 @@ const addReleaseFormFormatAmountSchema = z
 const addReleaseFormFormatInputSchema = z
   .strictObject({
     id: z.string().trim().min(1, "Id is required"),
-    formatId: z.string().trim().min(1, "Format id is required"),
-    shortName: z.string().trim().min(1, "Short name is required"),
+    formatId: z.string().trim().min(1, "Format is required"),
+    shortName: z.string().trim(),
     amount: addReleaseFormFormatAmountSchema,
     pictureSleeve: z.boolean(),
     jukeboxHole: z.boolean(),
   })
   .superRefine((val, ctx) => {
     if (val.jukeboxHole && val.shortName !== SEVEN_INCH_FORMAT_SHORT_NAME) {
+      const message = `Short name must be "${SEVEN_INCH_FORMAT_SHORT_NAME}" when jukebox hole is true.`;
+
       ctx.addIssue({
         code: "custom",
         path: ["jukeboxHole"],
-        message: `Short name must be "${SEVEN_INCH_FORMAT_SHORT_NAME}" when jukebox hole is true.`,
+        message,
       });
 
       ctx.addIssue({
         code: "custom",
         path: ["shortName"],
-        message: `Short name must be "${SEVEN_INCH_FORMAT_SHORT_NAME}" when jukebox hole is true.`,
+        message,
       });
     }
   });
@@ -39,23 +41,16 @@ export const addReleaseFormFormatInputArraySchema = z
   .array(addReleaseFormFormatInputSchema)
   .nonempty()
   .superRefine((filterRows, ctx) => {
-    const seenKeys = new Map<string, number>();
-
+    const seenKeys = new Set<string>();
     let index = 0;
 
     for (const row of filterRows) {
       const key = similarFormatsRowKey(row);
 
-      const seenIndex = seenKeys.get(key);
+      if (seenKeys.has(key)) {
+        const message =
+          "This format row is similar to a previously added one — same format, picture sleeve, and jukebox hole settings. Merge amounts or change options.";
 
-      if (seenIndex !== undefined) {
-        const message = `Format rows "${seenIndex}" and "${index}" are similar — same format, picture sleeve, and jukebox hole settings. Merge amounts or change options.`;
-
-        ctx.addIssue({
-          code: "custom",
-          path: [seenIndex],
-          message,
-        });
         ctx.addIssue({
           code: "custom",
           path: [index],
@@ -65,7 +60,7 @@ export const addReleaseFormFormatInputArraySchema = z
         return;
       }
 
-      seenKeys.set(key, index);
+      seenKeys.add(key);
       index += 1;
     }
   });

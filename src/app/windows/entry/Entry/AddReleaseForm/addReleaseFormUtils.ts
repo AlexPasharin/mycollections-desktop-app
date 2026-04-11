@@ -21,7 +21,11 @@ export type AddReleaseFormFormatInput = {
   jukeboxHole: boolean;
 };
 
-export type FormatField = "format" | "amount" | "pictureSleeve" | "jukeboxHole";
+export type FormatField =
+  | "formatId"
+  | "amount"
+  | "pictureSleeve"
+  | "jukeboxHole";
 
 type ReleaseDateFieldErrorSource = keyof GeneralizedDateFormInputValue;
 

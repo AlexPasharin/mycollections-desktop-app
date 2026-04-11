@@ -107,7 +107,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         }
 
         const newFormatErrors = formats[formatRowId]?.filter(
-          (error) => !error.sources?.includes(field),
+          (error) => error.sources && !error.sources.includes(field),
         );
 
         return {
@@ -122,23 +122,15 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         };
       }
 
-      if (isReleaseDateInputFieldKey(key)) {
-        const releaseDateErrors = prev.releaseDate?.filter(
-          (error) => !error.sources?.includes(key),
-        );
+      const errorKey = isReleaseDateInputFieldKey(key) ? "releaseDate" : key;
 
-        return {
-          ...prev,
-          releaseDate:
-            releaseDateErrors && releaseDateErrors.length > 0
-              ? releaseDateErrors
-              : undefined,
-        };
-      }
+      const errors = prev[errorKey]?.filter(
+        (error) => error.sources && !error.sources.includes(key),
+      );
 
       return {
         ...prev,
-        [key]: undefined,
+        [errorKey]: errors && errors.length > 0 ? errors : undefined,
       };
     });
   };
@@ -171,7 +163,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     }
 
     setFieldErrors({});
-    console.info("submitting! (not really)", result.data);
+    alert(`submitting! (not really) ${JSON.stringify(result.data)}`);
   };
 
   const releaseVersionErrors = fieldErrors.releaseVersion ?? [];

@@ -57,15 +57,19 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
       }
 
       const fmt = releasesFormats.find((f) => f.formatId === formatId);
-      const isSevenInch = fmt?.shortName === SEVEN_INCH_FORMAT_SHORT_NAME;
+
+      const shortName = fmt?.shortName ?? "";
+
+      const isSevenInch = shortName === SEVEN_INCH_FORMAT_SHORT_NAME;
 
       return prevFormatRows.map((formatRow) =>
         formatRow.id === rowId
           ? {
-              ...current,
-              formatId,
-              jukeboxHole: isSevenInch ? current.jukeboxHole : false,
-            }
+            ...current,
+            formatId,
+            shortName,
+            jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+          }
           : formatRow,
       );
     });
