@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryByIdResult } from "@/types/entries";
+import type { ValidationResultErrorMessages } from "@/utils/validation";
 
 export type AddReleaseFormEntry = Omit<
   EntryByIdResult,
@@ -20,90 +21,32 @@ export type AddReleaseFormFormatInput = {
   jukeboxHole: boolean;
 };
 
-export type ReleaseDateFieldErrorSource = keyof GeneralizedDateFormInputValue;
+export type FormatField = "format" | "amount" | "pictureSleeve" | "jukeboxHole";
 
-export const FORMAT_FIELD_KINDS = [
-  "format",
-  "amount",
-  "pictureSleeve",
-  "jukeboxHole",
-] as const;
+type ReleaseDateFieldErrorSource = keyof GeneralizedDateFormInputValue;
 
-export type FormatFieldKind = (typeof FORMAT_FIELD_KINDS)[number];
-
-export type FormatFieldErrorSource = {
-  rowId: string;
-  field: FormatFieldKind;
-};
-
-export type DraftFieldError<Source = undefined> = {
+type AddReleaseFormFieldError = {
   message: string;
-  source?: Source;
+  sources?: PropertyKey[] | undefined;
 };
 
-export type FieldErrorsDict = {
-  releaseVersion?: DraftFieldError;
-  releaseDate?: DraftFieldError<ReleaseDateFieldErrorSource>;
-  formats?: DraftFieldError<FormatFieldErrorSource>;
+export type AddReleaseFormFieldErrors = {
+  releaseVersion?: AddReleaseFormFieldError[] | undefined;
+  releaseDate?: AddReleaseFormFieldError[] | undefined;
+  formats?: Record<string, AddReleaseFormFieldError[] | undefined>;
 };
 
-export type FieldValidationKey =
-  | keyof FieldErrorsDict
+export type AddReleaseFormInputFieldKey =
+  | "releaseVersion"
   | ReleaseDateFieldErrorSource
-  | FormatFieldErrorSource;
+  | { formatRowId: string; field: FormatField };
 
-const isFormatFieldKind = (value: string): value is FormatFieldKind =>
-  (FORMAT_FIELD_KINDS as readonly string[]).includes(value);
+export const isReleaseDateInputFieldKey = (
+  key: AddReleaseFormInputFieldKey,
+) => key === "year" || key === "month" || key === "day";
 
-export const isReleaseDateFieldValidationKey = (
-  key: FieldValidationKey,
-): key is ReleaseDateFieldErrorSource =>
-  key === "year" || key === "month" || key === "day";
-
-export const isFormatFieldValidationKey = (
-  key: FieldValidationKey,
-): key is FormatFieldErrorSource =>
-  typeof key === "object" &&
-  !Array.isArray(key) &&
-  "rowId" in key &&
-  "field" in key &&
-  typeof key.rowId === "string" &&
-  typeof key.field === "string" &&
-  isFormatFieldKind(key.field);
-
-export const fieldValidationKeysEqual = (
-  a: FieldValidationKey | undefined,
-  b: FieldValidationKey,
-): boolean => {
-  if (a === undefined) {
-    return false;
-  }
-
-  if (a === b) {
-    return true;
-  }
-
-  return (
-    isFormatFieldValidationKey(a) &&
-    isFormatFieldValidationKey(b) &&
-    a.rowId === b.rowId &&
-    a.field === b.field
-  );
-};
-
-export const fieldErrorDictKey = (
-  key: FieldValidationKey,
-): keyof FieldErrorsDict => {
-  if (isReleaseDateFieldValidationKey(key)) {
-    return "releaseDate";
-  }
-
-  if (isFormatFieldValidationKey(key)) {
-    return "formats";
-  }
-
-  return key;
-};
+export const isFormatInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
+  typeof key === "object";
 
 export const defaultFormatInputRow = (): AddReleaseFormFormatInput => ({
   id: uuidv4(),
@@ -131,3 +74,72 @@ export const initialAddReleaseFormDraftValue = (
   },
   formats: [defaultFormatInputRow()],
 });
+
+export const getReleaseDateFormFieldErrors = (
+  errorMessages: ValidationResultErrorMessages,
+) => {
+  const errorMessagesMap: Record<string, PropertyKey[]> = {};
+
+  for (const { message, path } of errorMessages) {
+    const mapEntry = errorMessagesMap[message] ?? [];
+    const source = path[1];
+
+    if (source) {
+      mapEntry.push(source);
+    }
+
+    errorMessagesMap[message] = mapEntry;
+  }
+
+  return Object.entries(errorMessagesMap).map(([message, sources]) => ({
+    message,
+    sources: sources.length > 0 ? sources : undefined,
+  }));
+};
+
+export const getFormatsFormFieldErrors = (
+  errorMessages: ValidationResultErrorMessages,
+  currentFormatInputValues: AddReleaseFormFormatInput[],
+) => {
+  const errorMessagesMap: Record<string, Record<string, PropertyKey[]>> = {};
+
+  for (const { message, path } of errorMessages) {
+    const rowIndex = path[1];
+    const source = path[2];
+
+    const filterRowById =
+      typeof rowIndex === "number"
+        ? currentFormatInputValues[rowIndex]
+        : undefined;
+
+    if (!filterRowById) {
+      continue;
+    }
+
+    const mapEntry = errorMessagesMap[filterRowById.id] ?? {};
+    const messageEntry = mapEntry[message] ?? [];
+
+    if (source) {
+      messageEntry.push(source);
+    }
+
+    mapEntry[message] = messageEntry;
+    errorMessagesMap[filterRowById.id] = mapEntry;
+  }
+
+  const formatsErrorMessages: Exclude<
+    AddReleaseFormFieldErrors["formats"],
+    undefined
+  > = {};
+
+  for (const [rowId, messages] of Object.entries(errorMessagesMap)) {
+    formatsErrorMessages[rowId] = Object.entries(messages).map(
+      ([message, sources]) => ({
+        message,
+        sources: sources.length > 0 ? sources : undefined,
+      }),
+    );
+  }
+
+  return formatsErrorMessages;
+};

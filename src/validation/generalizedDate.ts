@@ -28,34 +28,45 @@ export const createGeneralizedDateSchema = (
       month: generalizedDateMonthSchema,
       day: coercedIntSchema,
     })
-    .superRefine((obj, ctx) => {
-      if (obj.day !== undefined && obj.month === undefined) {
+    .superRefine((date, ctx) => {
+      if (date.day !== undefined && date.month === undefined) {
+        const message = "Month is required when day is provided.";
+
         ctx.addIssue({
           code: "custom",
           path: ["month"],
-          message: "Month is required when day is provided.",
+          message,
+        });
+        ctx.addIssue({
+          code: "custom",
+          path: ["day"],
+          message,
         });
 
         return;
       }
 
-      const r = validateGeneralizedDateInput(obj);
+      const generalizedDateValidationResult =
+        validateGeneralizedDateInput(date);
 
-      if (!r.success) {
+      if (!generalizedDateValidationResult.success) {
         ctx.addIssue({
           code: "custom",
-          message: r.message,
+          message: generalizedDateValidationResult.message,
         });
 
         return;
       }
 
-      const startBound = validateGeneralizedDateAgainstStart(obj, startDate);
+      const startBoundValidationResult = validateGeneralizedDateAgainstStart(
+        date,
+        startDate,
+      );
 
-      if (!startBound.success) {
+      if (!startBoundValidationResult.success) {
         ctx.addIssue({
           code: "custom",
-          message: startBound.message,
+          message: startBoundValidationResult.message,
         });
       }
     });
@@ -63,7 +74,7 @@ export const createGeneralizedDateSchema = (
 const YEAR_MIN_MESSAGE = `Year must be ${MIN_CALENDAR_YEAR} or later.`;
 
 export const generalizedDateYearSchema = coercedIntSchema.pipe(
-  z.int().min(MIN_CALENDAR_YEAR, { error: YEAR_MIN_MESSAGE, abort: true }),
+  z.int().min(MIN_CALENDAR_YEAR, { error: YEAR_MIN_MESSAGE }),
 );
 
 const MONTH_RANGE_MESSAGE = "Month must be between 1 and 12.";
@@ -72,8 +83,8 @@ export const generalizedDateMonthSchema = coercedIntSchema.pipe(
   z.optional(
     z
       .int()
-      .min(1, { error: MONTH_RANGE_MESSAGE, abort: true })
-      .max(12, { error: MONTH_RANGE_MESSAGE, abort: true }),
+      .min(1, { error: MONTH_RANGE_MESSAGE })
+      .max(12, { error: MONTH_RANGE_MESSAGE }),
   ),
 );
 

@@ -3,22 +3,24 @@ import { useMemo, useState, type FC, type FormEvent } from "react";
 import styles from "./AddReleaseForm.module.css";
 import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
 import {
-  fieldErrorDictKey,
-  fieldValidationKeysEqual,
+  getFormatsFormFieldErrors,
+  getReleaseDateFormFieldErrors,
   initialAddReleaseFormDraftValue,
-  isFormatFieldValidationKey,
-  isReleaseDateFieldValidationKey,
+  isFormatInputFieldKey,
+  isReleaseDateInputFieldKey,
   type AddReleaseFormDraft,
   type AddReleaseFormEntry,
-  type FieldErrorsDict,
-  type FieldValidationKey,
+  type AddReleaseFormFieldErrors,
+  type AddReleaseFormInputFieldKey,
 } from "./addReleaseFormUtils";
 
+import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import {
-  getZodObjectFieldErrorMessage,
+  getFieldValidationErrorMessages,
   validateAgainstSchema,
+  type ValidationResultErrorMessages,
 } from "@/utils/validation";
 import { createAddReleaseFormSchema } from "@/validation/releases/addReleaseForm";
 
@@ -47,7 +49,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     initialAddReleaseFormDraftValue(originalReleaseDate),
   );
 
-  const [fieldErrors, setFieldErrors] = useState<FieldErrorsDict>({});
+  const [fieldErrors, setFieldErrors] =
+    useState<AddReleaseFormFieldErrors>({});
 
   const setField = <K extends keyof AddReleaseFormDraft>(
     key: K,
@@ -61,45 +64,74 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     }));
   };
 
-  const onFocus = (key: FieldValidationKey) => {
-    setFieldErrors((prev) => {
-      const errorKey = fieldErrorDictKey(key);
-      const { [errorKey]: fieldError, ...rest } = prev;
+  const getFieldErrorsPatch = (errorMessages?: ValidationResultErrorMessages) => {
+    const fieldErrorsPatch: AddReleaseFormFieldErrors = {};
 
-      if (!fieldError || !fieldValidationKeysEqual(fieldError.source, key)) {
-        return prev;
+    if (!errorMessages) {
+      return {};
+    }
+
+    const releaseDateErrorMessages = errorMessages.filter(({ path }) => path[0] === "releaseDate");
+    const formatsErrorMessages = errorMessages.filter(({ path }) => path[0] === "formats");
+    const releaseVersionErrorMessages = errorMessages.filter(({ path }) => path[0] === "releaseVersion");
+
+
+    fieldErrorsPatch.releaseDate = getReleaseDateFormFieldErrors(releaseDateErrorMessages);
+    fieldErrorsPatch.formats = getFormatsFormFieldErrors(formatsErrorMessages, form.formats);
+    fieldErrorsPatch.releaseVersion = releaseVersionErrorMessages.map(({ message }) => ({ message }))
+
+    return fieldErrorsPatch;
+  }
+
+  const onFocus = (key: AddReleaseFormInputFieldKey) => {
+    setFieldErrors((prev) => {
+      if (isFormatInputFieldKey(key)) {
+        const { formatRowId, field } = key;
+        const { formats } = prev;
+
+        if (!formats) {
+          return prev;
+        }
+
+        const newFormatErrors = formats[formatRowId]?.filter(error => !error.sources?.includes(field));
+
+        return {
+          ...prev,
+          formats: {
+            ...formats,
+            [formatRowId]: newFormatErrors && newFormatErrors.length > 0 ? newFormatErrors : undefined,
+          },
+        };
       }
 
-      return rest;
-    });
-  };
+      if (isReleaseDateInputFieldKey(key)) {
+        const releaseDateErrors = prev.releaseDate?.filter(error => !error.sources?.includes(key));
 
-  const onBlur = (key: FieldValidationKey) => {
-    setFieldErrors((prev) => {
-      if (key === "formats") {
-        return prev;
-      }
-
-      const isReleaseDateField = isReleaseDateFieldValidationKey(key);
-      const isFormatField = isFormatFieldValidationKey(key);
-
-      const validationKey = fieldErrorDictKey(key);
-      const errorMessage = getZodObjectFieldErrorMessage(
-        addReleaseFormSchema,
-        validationKey,
-        form[validationKey],
-      );
-
-      if (!errorMessage) {
-        return prev;
+        return {
+          ...prev,
+          releaseDate: releaseDateErrors && releaseDateErrors.length > 0 ? releaseDateErrors : undefined,
+        };
       }
 
       return {
         ...prev,
-        [validationKey]: {
-          message: errorMessage,
-          source: isReleaseDateField || isFormatField ? key : undefined,
-        },
+        [key]: undefined,
+      }
+    })
+  }
+
+  const onBlur = (key: keyof AddReleaseFormDraft) => {
+    setFieldErrors((prev) => {
+      const errorMessages = getFieldValidationErrorMessages(
+        addReleaseFormSchema,
+        key,
+        form[key],
+      );
+
+
+      return {
+        ...prev,
+        ...getFieldErrorsPatch(errorMessages),
       };
     });
   };
@@ -112,7 +144,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     if (!result.success) {
       console.info({ result });
-      setFieldErrors(result.errorMessages);
+
+      setFieldErrors(getFieldErrorsPatch(result.errorMessages));
 
       return;
     }
@@ -121,8 +154,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     console.info("submitting! (not really)", result.data);
   };
 
-  const releaseVersionError = fieldErrors["releaseVersion"]?.message;
-  const releaseDateError = fieldErrors["releaseDate"]?.message;
+  const releaseVersionErrors = fieldErrors.releaseVersion ?? [];
+  const releaseDateErrors = fieldErrors.releaseDate ?? [];
+  const hasReleaseVersionErrors = releaseVersionErrors.length > 0;
+  const hasReleaseDateErrors = releaseDateErrors.length > 0;
 
   return (
     <div className={styles.section}>
@@ -143,21 +178,19 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             onChange={(e) => setField("releaseVersion", e.target.value)}
             onFocus={() => onFocus("releaseVersion")}
             onBlur={() => onBlur("releaseVersion")}
-            aria-invalid={Boolean(releaseVersionError)}
+            aria-invalid={hasReleaseVersionErrors}
             aria-describedby={
-              releaseVersionError ? RELEASE_VERSION_FIELD_ERROR_ID : undefined
+              hasReleaseVersionErrors
+                ? RELEASE_VERSION_FIELD_ERROR_ID
+                : undefined
             }
             autoComplete="off"
             required
           />
-          {releaseVersionError && (
-            <p
-              id={RELEASE_VERSION_FIELD_ERROR_ID}
-              className={styles.fieldError}
-            >
-              {releaseVersionError}
-            </p>
-          )}
+          <FormFieldErrorMessages
+            id={RELEASE_VERSION_FIELD_ERROR_ID}
+            messages={releaseVersionErrors}
+          />
         </div>
 
         <div className={styles.field}>
@@ -166,15 +199,14 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             startDate={entry.originalReleaseDate}
             setDate={(releaseDate) => setField("releaseDate", releaseDate)}
             onFocus={onFocus}
-            onBlur={onBlur}
-            invalid={Boolean(releaseDateError)}
+            onBlur={() => onBlur("releaseDate")}
+            invalid={hasReleaseDateErrors}
             groupErrorId={RELEASE_DATE_FIELD_ERROR_ID}
           />
-          {releaseDateError && (
-            <p id={RELEASE_DATE_FIELD_ERROR_ID} className={styles.fieldError}>
-              {releaseDateError}
-            </p>
-          )}
+          <FormFieldErrorMessages
+            id={RELEASE_DATE_FIELD_ERROR_ID}
+            messages={releaseDateErrors}
+          />
         </div>
 
         <AddReleaseFormFormatsSection
@@ -185,7 +217,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             setField("formats", (prev) => stateUpdateFn(prev.formats))
           }
           onFieldFocus={onFocus}
-          onFieldBlur={onBlur}
+          onBlur={() => onBlur("formats")}
         />
 
         <div className={styles.actions}>

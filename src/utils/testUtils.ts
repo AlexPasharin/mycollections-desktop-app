@@ -1,25 +1,16 @@
 import { expect } from "@jest/globals";
 
-/** Asserts parse failed with exactly one issue and that message. */
-export function expectZodSingleIssueMessage<T>(
-  parsingResult: ZodSafeParseResultLike<T>,
+/** Asserts parse failed and `error.issues` includes an issue with this message. */
+export const expectZodIssuesIncludeMessage = (
+  parsingResult: ZodSafeParseResultLike,
   expectedMessage: string,
-): void {
-  expect(parsingResult.success).toBe(false);
-  expect(zodSafeParseIssueMessages(parsingResult)).toEqual([expectedMessage]);
-}
+) => {
+  expect(zodSafeParseIssueMessages(parsingResult)).toContain(expectedMessage);
+};
 
-type ZodSafeParseResultLike<T> =
-  | { success: true; data: T }
-  | {
-      success: false;
-      error: { issues: ReadonlyArray<{ readonly message: string }> };
-    };
+type ZodSafeParseResultLike = {
+  error?: { issues: ReadonlyArray<{ readonly message: string }> };
+};
 
-function zodSafeParseIssueMessages<T>(
-  parsingResult: ZodSafeParseResultLike<T>,
-): string[] {
-  return parsingResult.success
-    ? []
-    : parsingResult.error.issues.map((issue) => issue.message);
-}
+const zodSafeParseIssueMessages = (parsingResult: ZodSafeParseResultLike) =>
+  parsingResult.error?.issues.map((issue) => issue.message) ?? [];

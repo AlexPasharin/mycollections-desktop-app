@@ -5,8 +5,8 @@ import styles from "./AddReleaseFormFormatBlock.module.css";
 import type {
   AddReleaseFormFormatInput,
   FormatFieldErrorSource,
-  FormatFieldKind,
-  FieldValidationKey,
+  FormatField,
+  AddReleaseFormInputFieldKey,
 } from "../../addReleaseFormUtils";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
@@ -18,7 +18,7 @@ export type AddReleaseFormFormatRowPatch = Partial<
 
 type RowFormatError = {
   message: string;
-  field: FormatFieldKind;
+  field: FormatField;
 };
 
 type AddReleaseFormFormatBlockProps = {
@@ -29,14 +29,14 @@ type AddReleaseFormFormatBlockProps = {
   onFormatChange: (formatId: string) => void;
   patchFormat: (patch: AddReleaseFormFormatRowPatch) => void;
   onRemoveFormat?: (() => void) | undefined;
-  onFieldFocus: (key: FieldValidationKey) => void;
-  onFieldBlur: (key: FieldValidationKey) => void;
+  onFieldFocus: (key: AddReleaseFormInputFieldKey) => void;
+  onBlur: () => void;
 };
 
 const formatFieldSource = (
   rowId: string,
-  field: FormatFieldKind,
-): FormatFieldErrorSource => ({ rowId, field });
+  field: FormatField,
+): FormatFieldErrorSource => ({ formatRowId: rowId, field });
 
 const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
   row,
@@ -47,7 +47,7 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
   patchFormat,
   onRemoveFormat,
   onFieldFocus,
-  onFieldBlur,
+  onBlur,
 }) => {
   const rowErrorElementId = `add-release-formats-row-error-${row.id}`;
   const invalidField = rowFormatError?.field;
@@ -80,7 +80,7 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
             }
             onChange={(e) => onFormatChange(e.target.value)}
             onFocus={() => onFieldFocus(formatFieldSource(row.id, "format"))}
-            onBlur={() => onFieldBlur(formatFieldSource(row.id, "format"))}
+            onBlur={onBlur}
           >
             <option value="" />
             {releasesFormats.map((f) => (
@@ -111,7 +111,7 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
             }
             onChange={(e) => patchFormat({ amount: e.target.value })}
             onFocus={() => onFieldFocus(formatFieldSource(row.id, "amount"))}
-            onBlur={() => onFieldBlur(formatFieldSource(row.id, "amount"))}
+            onBlur={onBlur}
           />
         </div>
       </div>
@@ -131,9 +131,7 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
             onFocus={() =>
               onFieldFocus(formatFieldSource(row.id, "pictureSleeve"))
             }
-            onBlur={() =>
-              onFieldBlur(formatFieldSource(row.id, "pictureSleeve"))
-            }
+            onBlur={onBlur}
           />
           <label
             className={styles.checkboxLabel}
@@ -156,9 +154,7 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
               onFocus={() =>
                 onFieldFocus(formatFieldSource(row.id, "jukeboxHole"))
               }
-              onBlur={() =>
-                onFieldBlur(formatFieldSource(row.id, "jukeboxHole"))
-              }
+              onBlur={onBlur}
             />
             <label
               className={styles.checkboxLabel}

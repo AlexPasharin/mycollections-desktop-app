@@ -26,34 +26,49 @@ const addReleaseFormFormatInputSchema = z
         path: ["jukeboxHole"],
         message: `Short name must be "${SEVEN_INCH_FORMAT_SHORT_NAME}" when jukebox hole is true.`,
       });
+
+      ctx.addIssue({
+        code: "custom",
+        path: ["shortName"],
+        message: `Short name must be "${SEVEN_INCH_FORMAT_SHORT_NAME}" when jukebox hole is true.`,
+      });
     }
   });
 
 export const addReleaseFormFormatInputArraySchema = z
   .array(addReleaseFormFormatInputSchema)
   .nonempty()
-  .superRefine((rows, ctx) => {
-    const seenKeys = new Map<string, string>();
+  .superRefine((filterRows, ctx) => {
+    const seenKeys = new Map<string, number>();
 
-    for (const row of rows) {
+    let index = 0;
+
+    for (const row of filterRows) {
       const key = similarFormatsRowKey(row);
 
-      const firstId = seenKeys.get(key);
+      const seenIndex = seenKeys.get(key);
 
-      if (firstId !== undefined) {
+      if (seenIndex !== undefined) {
+        const message = `Format rows "${seenIndex}" and "${index}" are similar — same format, picture sleeve, and jukebox hole settings. Merge amounts or change options.`;
+
         ctx.addIssue({
           code: "custom",
-          path: [firstId],
-          message: `Format rows with ids "${firstId}" and "${row.id}" are similar — same format, picture sleeve, and jukebox hole settings. Merge amounts or change options.`,
+          path: [seenIndex],
+          message,
+        });
+        ctx.addIssue({
+          code: "custom",
+          path: [index],
+          message,
         });
 
         return;
       }
 
-      seenKeys.set(key, row.id);
+      seenKeys.set(key, index);
+      index += 1;
     }
-  })
-  .transform((rows) => rows.map(({ id: _rowId, ...rest }) => rest));
+  });
 
 const similarFormatsRowKey = (row: {
   formatId: string;

@@ -31,12 +31,6 @@
   font-size: 1em;
 }
 
-.fieldError {
-  margin: 0;
-  font-size: 0.85em;
-  color: #b42318;
-}
-
 .actions {
   display: flex;
   flex-wrap: wrap;

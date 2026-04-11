@@ -1,20 +1,24 @@
-import { flattenError, z } from "zod";
+import { z } from "zod";
 
-export const getZodObjectFieldErrorMessage = <
+export type ValidationResultErrorMessages = {
+  message: string;
+  path: PropertyKey[];
+}[];
+
+export const getFieldValidationErrorMessages = <
   Shape extends z.core.$ZodLooseShape,
 >(
   schema: z.ZodObject<Shape>,
   key: keyof Shape & string,
   value: unknown,
-): string | null => {
+): ValidationResultErrorMessages | undefined => {
   const fieldSchema = schema.shape[key] as z.ZodType;
   const result = fieldSchema.safeParse(value);
 
-  if (result.success) {
-    return null;
-  }
-
-  return result.error.issues[0]?.message ?? "Invalid input";
+  return result.error?.issues.map(({ message, path }) => ({
+    message,
+    path: [key, ...path],
+  }));
 };
 
 type ValidateAgainstSchemaResult<
@@ -23,13 +27,9 @@ type ValidateAgainstSchemaResult<
   | { success: true; data: z.output<Schema> }
   | {
       success: false;
-      errorMessages: Partial<Record<string, { message: string }>>;
+      errorMessages: ValidationResultErrorMessages;
     };
 
-/**
- * Like {@link z.ZodObject.safeParse}, but on failure returns a map of first messages per **top-level** shape key
- * (via {@link flattenError} `fieldErrors`). Nested paths only appear when Zod groups them under that key.
- */
 export const validateAgainstSchema = <
   Schema extends z.ZodObject<z.core.$ZodLooseShape>,
 >(
@@ -42,17 +42,11 @@ export const validateAgainstSchema = <
     return { success: true, data: parsed.data };
   }
 
-  const { fieldErrors } = flattenError(parsed.error);
-  const errorMessages: Partial<Record<string, { message: string }>> = {};
-  const shapeKeys = Object.keys(schema.shape);
-
-  for (const key of shapeKeys) {
-    const first = fieldErrors[key]?.[0];
-
-    if (first !== undefined) {
-      errorMessages[key] = { message: first };
-    }
-  }
-
-  return { success: false, errorMessages };
+  return {
+    success: false,
+    errorMessages: parsed.error.issues.map(({ message, path }) => ({
+      message,
+      path,
+    })),
+  };
 };

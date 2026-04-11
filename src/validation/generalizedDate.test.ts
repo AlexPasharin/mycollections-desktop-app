@@ -1,6 +1,6 @@
 import { createGeneralizedDateSchema } from "./generalizedDate";
 
-import { expectZodSingleIssueMessage } from "@/utils/testUtils";
+import { expectZodIssuesIncludeMessage } from "@/utils/testUtils";
 
 jest.mock("@/utils/date", () => {
   const actual =
@@ -61,19 +61,19 @@ describe("createGeneralizedDateSchema", () => {
     const schema = createGeneralizedDateSchema();
     const message = "Month must be between 1 and 12.";
 
-    expectZodSingleIssueMessage(
+    expectZodIssuesIncludeMessage(
       schema.safeParse({ year: "2000", month: "0" }),
       message,
     );
-    expectZodSingleIssueMessage(
+    expectZodIssuesIncludeMessage(
       schema.safeParse({ year: "2000", month: "13" }),
       message,
     );
-    expectZodSingleIssueMessage(
+    expectZodIssuesIncludeMessage(
       schema.safeParse({ year: 2000, month: 0 }),
       message,
     );
-    expectZodSingleIssueMessage(
+    expectZodIssuesIncludeMessage(
       schema.safeParse({ year: 2000, month: 13 }),
       message,
     );
@@ -84,7 +84,7 @@ describe("createGeneralizedDateSchema", () => {
 
     const result = schema.safeParse({ year: "1899" });
 
-    expectZodSingleIssueMessage(result, "Year must be 1900 or later.");
+    expectZodIssuesIncludeMessage(result, "Year must be 1900 or later.");
   });
 
   it("rejects non-integer year, month, or day", () => {
@@ -130,7 +130,7 @@ describe("createGeneralizedDateSchema", () => {
       day: 30,
     });
 
-    expectZodSingleIssueMessage(
+    expectZodIssuesIncludeMessage(
       invalidCalendar,
       `Value "2023, February 30" does not represent a valid existing date.`,
     );
@@ -141,7 +141,7 @@ describe("createGeneralizedDateSchema", () => {
       day: 6,
     });
 
-    expectZodSingleIssueMessage(
+    expectZodIssuesIncludeMessage(
       future,
       `Value "2026, April 6" represents a date in the future.`,
     );
@@ -152,7 +152,7 @@ describe("createGeneralizedDateSchema", () => {
 
     const result = schema.safeParse({ year: 1899 });
 
-    expectZodSingleIssueMessage(result, "Year must be 1900 or later.");
+    expectZodIssuesIncludeMessage(result, "Year must be 1900 or later.");
   });
 
   it("rejects year, month, or day values that are not parsable as numbers", () => {
@@ -215,10 +215,18 @@ describe("createGeneralizedDateSchema", () => {
       day: "1",
     });
 
-    expectZodSingleIssueMessage(
-      result,
-      "Month is required when day is provided.",
-    );
+    expect(result.success).toBe(false);
+
+    expect(result.error?.issues).toEqual([
+      expect.objectContaining({
+        message: "Month is required when day is provided.",
+        path: ["month"],
+      }),
+      expect.objectContaining({
+        message: "Month is required when day is provided.",
+        path: ["day"],
+      }),
+    ]);
   });
 
   it("rejects strictObject shapes with unknown keys", () => {
@@ -243,10 +251,22 @@ describe("createGeneralizedDateSchema", () => {
 
     const result = schema.safeParse({ year: "2000", day: "15" });
 
-    expectZodSingleIssueMessage(
-      result,
-      "Month is required when day is provided.",
-    );
+    expect(result.success).toBe(false);
+
+    if (result.success) {
+      throw new Error("expected parse failure");
+    }
+
+    expect(result.error.issues).toEqual([
+      expect.objectContaining({
+        message: "Month is required when day is provided.",
+        path: ["month"],
+      }),
+      expect.objectContaining({
+        message: "Month is required when day is provided.",
+        path: ["day"],
+      }),
+    ]);
   });
 
   it("rejects invalid calendar dates", () => {
@@ -258,7 +278,7 @@ describe("createGeneralizedDateSchema", () => {
       day: "30",
     });
 
-    expectZodSingleIssueMessage(
+    expectZodIssuesIncludeMessage(
       result,
       `Value "2023, February 30" does not represent a valid existing date.`,
     );
@@ -273,7 +293,7 @@ describe("createGeneralizedDateSchema", () => {
       day: "6",
     });
 
-    expectZodSingleIssueMessage(
+    expectZodIssuesIncludeMessage(
       result,
       `Value "2026, April 6" represents a date in the future.`,
     );
@@ -303,7 +323,7 @@ describe("createGeneralizedDateSchema", () => {
         day: "31",
       });
 
-      expectZodSingleIssueMessage(
+      expectZodIssuesIncludeMessage(
         result,
         `Value "2019, December 31" cannot be before "2020, January 1" (given start date).`,
       );

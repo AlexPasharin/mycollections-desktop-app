@@ -8,8 +8,8 @@ import styles from "./AddReleaseFormFormatsSection.module.css";
 import {
   defaultFormatInputRow,
   type AddReleaseFormFormatInput,
-  type FieldErrorsDict,
-  type FieldValidationKey,
+  type AddReleaseFormFieldErrors,
+  type AddReleaseFormInputFieldKey,
 } from "../addReleaseFormUtils";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
@@ -26,10 +26,10 @@ const FORMATS_SECTION_ERROR_ID = "add-release-formats-section-error";
 type AddReleaseFormFormatsSectionProps = {
   formats: AddReleaseFormFormatInput[];
   releasesFormats: ReleasesFormatListItem[];
-  formatsFieldError?: FieldErrorsDict["formats"];
+  formatsFieldError?: AddReleaseFormFieldErrors["formats"];
   setFormats: SetAddReleaseFormFormats;
-  onFieldFocus: (key: FieldValidationKey) => void;
-  onFieldBlur: (key: FieldValidationKey) => void;
+  onFieldFocus: (key: AddReleaseFormInputFieldKey) => void;
+  onBlur: () => void;
 };
 
 const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
@@ -38,7 +38,7 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
   formatsFieldError,
   setFormats,
   onFieldFocus,
-  onFieldBlur,
+  onBlur,
 }) => {
   const patchFormat = (rowId: string, patch: AddReleaseFormFormatRowPatch) => {
     setFormats((prevFormatRows) =>
@@ -64,10 +64,10 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
       return prevFormatRows.map((formatRow) =>
         formatRow.id === rowId
           ? {
-              ...current,
-              formatId,
-              jukeboxHole: isSevenInch ? current.jukeboxHole : false,
-            }
+            ...current,
+            formatId,
+            jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+          }
           : formatRow,
       );
     });
@@ -88,17 +88,17 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
 
   const sectionLevelFormatsErrorMessage =
     formatsFieldError?.message &&
-    (!formatsFieldError.source ||
-      !formats.some(
-        (formatRow) => formatRow.id === formatsFieldError.source?.rowId,
-      ))
+      (!formatsFieldError.source ||
+        !formats.some(
+          (formatRow) => formatRow.id === formatsFieldError.source?.formatRowId,
+        ))
       ? formatsFieldError.message
       : undefined;
 
   const rowFormatsError = (rowId: string) => {
     if (
       formatsFieldError?.message &&
-      formatsFieldError.source?.rowId === rowId
+      formatsFieldError.source?.formatRowId === rowId
     ) {
       return {
         message: formatsFieldError.message,
@@ -148,7 +148,7 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
                   rowIndex > 0 ? () => removeFormatRow(formatRow.id) : undefined
                 }
                 onFieldFocus={onFieldFocus}
-                onFieldBlur={onFieldBlur}
+                onBlur={onBlur}
               />
             </div>
           </div>
