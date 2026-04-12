@@ -163,7 +163,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     setFieldErrors((prev) => {
       const { formats } = prev;
 
-      if (!formats || !Object.prototype.hasOwnProperty.call(formats, rowId)) {
+      if (!formats) {
         return prev;
       }
 
