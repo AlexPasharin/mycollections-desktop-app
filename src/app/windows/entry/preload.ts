@@ -3,6 +3,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { API } from "./api";
 
 import {
+  FETCH_LABELS,
   FETCH_RELEASE_FORMATS,
   GET_ENTRY_BY_ID,
   GET_ENTRY_RELEASES,
@@ -10,6 +11,7 @@ import {
 } from "@/appConstants/ipcEvents";
 
 const api = {
+  fetchLabels: () => ipcRenderer.invoke(FETCH_LABELS),
   fetchReleasesFormats: () => ipcRenderer.invoke(FETCH_RELEASE_FORMATS),
   getEntryById: (entryId: string) =>
     ipcRenderer.invoke(GET_ENTRY_BY_ID, entryId),
