@@ -156,10 +156,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const removeFormatRow = (rowId: string) => {
-    setField("formats", (prev) =>
-      prev.formats.filter((formatRow) => formatRow.id !== rowId),
-    );
-
     setFieldErrors((prev) => {
       const { formats } = prev;
 
@@ -174,6 +170,11 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         formats: Object.keys(rest).length > 0 ? rest : undefined,
       };
     });
+
+    setField("formats", (prev) =>
+      prev.formats.filter((formatRow) => formatRow.id !== rowId),
+    );
+
   };
 
   const handleSubmit = (event: FormEvent) => {
