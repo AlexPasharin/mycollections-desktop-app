@@ -206,7 +206,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     <div className={styles.section}>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="add-release-version">
+          <label className={styles.heading} htmlFor="add-release-version">
             Release version
             <sup className={styles.requiredMark} aria-hidden="true">
               *
@@ -237,6 +237,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         </div>
 
         <div className={styles.field}>
+          <p className={styles.heading}>Release date</p>
           <GeneralizedDateFormInput
             date={form.releaseDate}
             startDate={entry.originalReleaseDate}

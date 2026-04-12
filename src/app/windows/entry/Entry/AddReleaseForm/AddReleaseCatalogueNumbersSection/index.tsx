@@ -165,9 +165,7 @@ const AddReleaseCatalogueNumbersSection: FC<
             onSetCatalogueNumber={(inputValueId, value) =>
               setCatalogueNumber(row.id, inputValueId, value)
             }
-            onRemoveRow={
-              rowIndex > 0 ? () => removeCatNumbersRow(row.id) : undefined
-            }
+            onRemoveRow={() => removeCatNumbersRow(row.id)}
           />
         </div>
       ))}

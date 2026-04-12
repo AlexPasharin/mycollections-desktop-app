@@ -17,7 +17,7 @@ export type AddReleaseCatalogueNumbersRowProps = {
   onAddNewCatalogueNumberInput: () => void;
   onRemoveCatalogueNumberInput: (inputValueId: string) => void;
   onSetCatalogueNumber: (inputValueId: string, value: string) => void;
-  onRemoveRow?: (() => void) | undefined;
+  onRemoveRow: () => void;
 };
 
 const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
@@ -160,18 +160,16 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
           </div>
         </div>
 
-        {onRemoveRow && (
-          <div className={styles.removeRow}>
-            <button
-              type="button"
-              className={styles.removeRowButton}
-              aria-label={`Remove catalogue numbers row ${rowIndex + 1}`}
-              onClick={onRemoveRow}
-            >
-              Remove catalogue row
-            </button>
-          </div>
-        )}
+        <div className={styles.removeRow}>
+          <button
+            type="button"
+            className={styles.removeRowButton}
+            aria-label={`Remove catalogue numbers row ${rowIndex + 1}`}
+            onClick={onRemoveRow}
+          >
+            Remove catalogue row
+          </button>
+        </div>
       </div>
     </>
   );
