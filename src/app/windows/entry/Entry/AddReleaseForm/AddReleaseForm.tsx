@@ -1,5 +1,6 @@
 import { useMemo, useState, type FC, type FormEvent } from "react";
 
+import AddReleaseCatalogueNumbersSection from "./AddReleaseCatalogueNumbersSection";
 import styles from "./AddReleaseForm.module.css";
 import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
 import {
@@ -40,6 +41,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   entry,
   onCancel,
   releasesFormats,
+  labels,
 }) => {
   const { originalReleaseDate } = entry;
 
@@ -261,6 +263,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           onFieldFocus={onFocus}
           onBlur={() => onBlur("formats")}
         />
+
+        <AddReleaseCatalogueNumbersSection labels={labels} />
 
         <div className={styles.actions}>
           <button type="button" onClick={onCancel}>
