@@ -1,5 +1,27 @@
 import { z } from "zod";
 
+import { duplicateIndicesByKey } from "@/utils/common";
+import { addCustomValidationIssues } from "@/utils/validation";
+
+/**
+ * `z.array(itemSchema)` where duplicate values at `fieldKey` are invalid
+ * (same index rule as {@link duplicateIndicesByKey}); issues at `[index, fieldKey]`.
+ */
+export const uniquePropertyArraySchema = <TItem extends z.ZodType>(
+  itemSchema: TItem,
+  fieldKey: keyof z.infer<TItem> & PropertyKey,
+  validationErrorMessage: string,
+): z.ZodArray<TItem> =>
+  z.array(itemSchema).superRefine((arr, ctx) => {
+    const paths = duplicateIndicesByKey(arr, fieldKey).map(
+      (i) => [i, fieldKey] as PropertyKey[],
+    );
+
+    if (paths.length > 0) {
+      addCustomValidationIssues(ctx, validationErrorMessage, ...paths);
+    }
+  });
+
 /**
  * Regex for a base-10 non-negative integer without useless leading zeros (single `0` allowed). No sign prefix.
  * Rejects scientific notation, decimals, `0x` hex, `Infinity`, etc.
