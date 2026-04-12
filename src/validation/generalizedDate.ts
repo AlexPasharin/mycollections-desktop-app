@@ -7,6 +7,7 @@ import {
   startOfToday,
   toValidCalendarDate,
 } from "@/utils/date";
+import { addCustomValidationIssues } from "@/utils/validation";
 import { coercedIntSchema } from "@/validation/common";
 
 // Implements same validation logic as described in documentation/database/validation_functions/generalized_date_field_validation.md
@@ -28,42 +29,38 @@ export const createGeneralizedDateSchema = (
       month: generalizedDateMonthSchema,
       day: coercedIntSchema,
     })
-    .superRefine((obj, ctx) => {
-      if (obj.day !== undefined && obj.month === undefined) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["month"],
-          message: "Month is required when day is provided.",
-        });
+    .superRefine((date, ctx) => {
+      if (date.day !== undefined && date.month === undefined) {
+        const message = "Month is required when day is provided.";
+
+        addCustomValidationIssues(ctx, message, ["month"], ["day"]);
 
         return;
       }
 
-      const r = validateGeneralizedDateInput(obj);
+      const generalizedDateValidationResult =
+        validateGeneralizedDateInput(date);
 
-      if (!r.success) {
-        ctx.addIssue({
-          code: "custom",
-          message: r.message,
-        });
+      if (!generalizedDateValidationResult.success) {
+        addCustomValidationIssues(ctx, generalizedDateValidationResult.message);
 
         return;
       }
 
-      const startBound = validateGeneralizedDateAgainstStart(obj, startDate);
+      const startBoundValidationResult = validateGeneralizedDateAgainstStart(
+        date,
+        startDate,
+      );
 
-      if (!startBound.success) {
-        ctx.addIssue({
-          code: "custom",
-          message: startBound.message,
-        });
+      if (!startBoundValidationResult.success) {
+        addCustomValidationIssues(ctx, startBoundValidationResult.message);
       }
     });
 
 const YEAR_MIN_MESSAGE = `Year must be ${MIN_CALENDAR_YEAR} or later.`;
 
 export const generalizedDateYearSchema = coercedIntSchema.pipe(
-  z.int().min(MIN_CALENDAR_YEAR, { error: YEAR_MIN_MESSAGE, abort: true }),
+  z.int().min(MIN_CALENDAR_YEAR, { error: YEAR_MIN_MESSAGE }),
 );
 
 const MONTH_RANGE_MESSAGE = "Month must be between 1 and 12.";
@@ -72,8 +69,8 @@ export const generalizedDateMonthSchema = coercedIntSchema.pipe(
   z.optional(
     z
       .int()
-      .min(1, { error: MONTH_RANGE_MESSAGE, abort: true })
-      .max(12, { error: MONTH_RANGE_MESSAGE, abort: true }),
+      .min(1, { error: MONTH_RANGE_MESSAGE })
+      .max(12, { error: MONTH_RANGE_MESSAGE }),
   ),
 );
 
@@ -107,7 +104,7 @@ const validateGeneralizedDate = (
 const validateGeneralizedDateAgainstStart = (
   value: GeneralizedDate,
   startDate: GeneralizedDate | null | undefined,
-) => {
+): { success: true } | { success: false; message: string } => {
   if (!startDate) {
     return { success: true };
   }

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { addReleaseFormFormatInputArraySchema } from "./addReleaseFormFormats";
+
 import type { GeneralizedDate } from "@/types/date";
 import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
 
@@ -14,4 +16,5 @@ export const createAddReleaseFormSchema = (
   z.object({
     releaseVersion: releaseVersionSchema,
     releaseDate: createGeneralizedDateSchema(releaseDateStart).optional(),
+    formats: addReleaseFormFormatInputArraySchema,
   });

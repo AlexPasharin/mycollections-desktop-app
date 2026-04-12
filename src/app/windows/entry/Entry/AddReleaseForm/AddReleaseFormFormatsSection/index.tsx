@@ -1,49 +1,99 @@
 import type { FC } from "react";
 
-import AddReleaseFormFormatBlock from "./AddReleaseFormFormatBlock";
+import AddReleaseFormFormatBlock, {
+  type AddReleaseFormFormatRowPatch,
+} from "./AddReleaseFormFormatBlock";
 import styles from "./AddReleaseFormFormatsSection.module.css";
 
+import type {
+  AddReleaseFormFormatInput,
+  AddReleaseFormFieldErrors,
+  AddReleaseFormInputFieldKey,
+} from "../addReleaseFormUtils";
+
+import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
 import type { ReleasesFormatListItem } from "@/types/formats";
 
-export type AddReleaseFormFormatInput = {
-  formatId: string;
-  amount: string;
-  pictureSleeve: boolean;
-  jukeboxHole: boolean;
-};
+type SetAddReleaseFormFormats = (
+  stateUpdateFn: (
+    prevFormatRows: AddReleaseFormFormatInput[],
+  ) => AddReleaseFormFormatInput[],
+) => void;
 
 type AddReleaseFormFormatsSectionProps = {
   formats: AddReleaseFormFormatInput[];
   releasesFormats: ReleasesFormatListItem[];
-  onFormatChange: (rowIndex: number, formatId: string) => void;
-  patchFormat: (
-    rowIndex: number,
-    patch: Partial<AddReleaseFormFormatInput>,
-  ) => void;
-  onAddFormat: () => void;
-  onRemoveFormat: (rowIndex: number) => void;
+  errors?: AddReleaseFormFieldErrors["formats"];
+  setFormats: SetAddReleaseFormFormats;
+  addFormatRow: () => void;
+  removeFormatRow: (rowId: string) => void;
+  onFieldFocus: (key: AddReleaseFormInputFieldKey) => void;
+  onBlur: () => void;
 };
 
 const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
   formats,
   releasesFormats,
-  onFormatChange,
-  patchFormat,
-  onAddFormat,
-  onRemoveFormat,
+  errors,
+  setFormats,
+  addFormatRow,
+  removeFormatRow,
+  onFieldFocus,
+  onBlur,
 }) => {
-  return (
-    <div
-      className={styles.section}
-      role="group"
-      aria-labelledby="add-release-formats-heading"
-    >
-      <p id="add-release-formats-heading" className={styles.heading}>
-        Formats
-      </p>
+  const patchFormat = (rowId: string, patch: AddReleaseFormFormatRowPatch) => {
+    setFormats((prevFormatRows) =>
+      prevFormatRows.map((formatRow) =>
+        formatRow.id === rowId ? { ...formatRow, ...patch } : formatRow,
+      ),
+    );
+  };
 
-      {formats.map((row, rowIndex) => (
-        <div key={rowIndex}>
+  const onFormatChange = (rowId: string, formatId: string) => {
+    setFormats((prevFormatRows) => {
+      const current = prevFormatRows.find(
+        (formatRow) => formatRow.id === rowId,
+      );
+
+      if (!current) {
+        return prevFormatRows;
+      }
+
+      const fmt = releasesFormats.find((f) => f.formatId === formatId);
+
+      const shortName = fmt?.shortName ?? "";
+
+      const isSevenInch = shortName === SEVEN_INCH_FORMAT_SHORT_NAME;
+
+      return prevFormatRows.map((formatRow) =>
+        formatRow.id === rowId
+          ? {
+              ...current,
+              formatId,
+              shortName,
+              jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+            }
+          : formatRow,
+      );
+    });
+  };
+
+  const hasErrors =
+    errors !== undefined &&
+    Object.values(errors).some(
+      (rowErrors) => rowErrors && rowErrors.length > 0,
+    );
+
+  const hasEmptyFormatId = formats.some((row) => row.formatId === "");
+
+  const showAddNewFormatRowButton = !hasErrors && !hasEmptyFormatId;
+
+  return (
+    <div className={styles.section}>
+      <p className={styles.heading}>Formats</p>
+
+      {formats.map((formatRow, rowIndex) => (
+        <div key={formatRow.id}>
           {rowIndex > 0 && <hr className={styles.divider} aria-hidden />}
           <div
             className={
@@ -53,27 +103,34 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
             }
           >
             <AddReleaseFormFormatBlock
-              row={row}
+              row={formatRow}
               rowIndex={rowIndex}
               releasesFormats={releasesFormats}
-              onFormatChange={(formatId) => onFormatChange(rowIndex, formatId)}
-              patchFormat={(patch) => patchFormat(rowIndex, patch)}
-              onRemoveFormat={
-                rowIndex > 0 ? () => onRemoveFormat(rowIndex) : undefined
+              formatRowErrors={errors?.[formatRow.id]}
+              onFormatChange={(formatId) =>
+                onFormatChange(formatRow.id, formatId)
               }
+              patchFormat={(patch) => patchFormat(formatRow.id, patch)}
+              onRemoveFormat={
+                rowIndex > 0 ? () => removeFormatRow(formatRow.id) : undefined
+              }
+              onFieldFocus={onFieldFocus}
+              onBlur={onBlur}
             />
           </div>
         </div>
       ))}
 
-      <button
-        type="button"
-        id="add-release-add-another-format"
-        className={styles.addAnotherFormat}
-        onClick={onAddFormat}
-      >
-        + Add another format
-      </button>
+      {showAddNewFormatRowButton && (
+        <button
+          type="button"
+          id="add-release-add-another-format"
+          className={styles.addAnotherFormat}
+          onClick={addFormatRow}
+        >
+          + Add another format
+        </button>
+      )}
     </div>
   );
 };

@@ -173,7 +173,7 @@ export default tseslint.config(
       "jest/expect-expect": [
         "warn",
         {
-          assertFunctionNames: ["expect", "expectZodSingleIssueMessage"],
+          assertFunctionNames: ["expect", "expectZodIssuesIncludeMessage"],
         },
       ],
     },

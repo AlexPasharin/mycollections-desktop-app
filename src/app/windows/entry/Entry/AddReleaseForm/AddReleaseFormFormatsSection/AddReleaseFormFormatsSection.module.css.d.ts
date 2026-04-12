@@ -3,6 +3,7 @@
 interface CssExports {
   'addAnotherFormat': string;
   'divider': string;
+  'fieldError': string;
   'formatBlock': string;
   'formatBlockFirst': string;
   'heading': string;

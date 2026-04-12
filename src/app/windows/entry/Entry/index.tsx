@@ -7,6 +7,7 @@ import EntryDetailsPanel from "./EntryDetailsPanel";
 import EntryReleases from "./EntryReleases";
 
 import type { EntryByIdResult } from "@/types/entries";
+import { sanitizeReleaseDate } from "@/utils/date";
 
 type EntryProps = {
   entry: EntryByIdResult;
@@ -41,7 +42,10 @@ const Entry: FC<EntryProps> = ({ entry }) => {
 
       {addReleaseFormOpen && (
         <AddReleaseForm
-          entry={{ ...entry, ...originalReleaseDateForAddReleaseForm(entry) }}
+          entry={{
+            ...entry,
+            originalReleaseDate: sanitizeReleaseDate(entry.originalReleaseDate),
+          }}
           onCancel={() => setAddReleaseFormOpen(false)}
         />
       )}
@@ -56,10 +60,3 @@ const Entry: FC<EntryProps> = ({ entry }) => {
 };
 
 export default Entry;
-
-const originalReleaseDateForAddReleaseForm = (entry: EntryByIdResult) => ({
-  originalReleaseDate:
-    entry.originalReleaseDate !== null && "error" in entry.originalReleaseDate
-      ? null
-      : entry.originalReleaseDate,
-});

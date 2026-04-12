@@ -31,14 +31,14 @@
   font-size: 1em;
 }
 
-.fieldError {
-  margin: 0;
-  font-size: 0.85em;
-  color: #b42318;
-}
-
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.formatsLoadState {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
 }

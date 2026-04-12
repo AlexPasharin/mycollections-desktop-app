@@ -2,9 +2,6 @@ import type { GeneralizedDateFromDb } from "@/types/date";
 
 export type CreateArtistWindowParams = { artistId: string };
 
-/** Stored original release date failed parse or calendar validation (see {@link getEntryById}). */
-export type EntryOriginalReleaseDate = GeneralizedDateFromDb;
-
 export type CreateEntryWindowParams = { entryId: string };
 
 export type EntrySearchResult = {
@@ -25,7 +22,7 @@ export type EntryArtistInfo = {
 export type EntryByIdResult = {
   entryId: string;
   mainName: string;
-  originalReleaseDate: EntryOriginalReleaseDate;
+  originalReleaseDate: GeneralizedDateFromDb;
   comment: string | null;
   discogsUrl: string | null;
   partOfQueenCollection: boolean;

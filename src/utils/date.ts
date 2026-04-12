@@ -79,7 +79,7 @@ export const parseStringAsGeneralizedDate = (
 
   if (parsed === null) {
     return {
-      value: value,
+      value,
       error: "Use a hyphen-separated date: YYYY, YYYY-MM, or YYYY-MM-DD.",
     };
   }
@@ -88,7 +88,7 @@ export const parseStringAsGeneralizedDate = (
 
   if (!validated.success) {
     return {
-      value: value,
+      value,
       error: validated.error.issues[0]?.message ?? "Invalid release date.",
     };
   }
@@ -150,3 +150,7 @@ export const toValidCalendarDate = (
 
   return calendarDate;
 };
+
+export const sanitizeReleaseDate = (
+  date: GeneralizedDateFromDb,
+): GeneralizedDate | null => (date !== null && "error" in date ? null : date);
