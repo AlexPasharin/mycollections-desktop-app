@@ -2,8 +2,6 @@ import { v4 as uuidv4 } from "uuid";
 
 export type LabelSlotState = {
   id: string;
-
-  /** Selected label name; empty string when nothing is chosen. */
   name: string;
 };
 

@@ -1,4 +1,4 @@
-import { useState, type FC } from "react";
+import type { FC } from "react";
 
 import AddReleaseCatalogueNumbersRow from "./AddReleaseCatalogueNumbersRow";
 import styles from "./AddReleaseCatalogueNumbersSection.module.css";
@@ -11,29 +11,31 @@ import {
 
 import type { LabelListItem } from "@/types/labels";
 
+export type SetAddReleaseCatalogueNumbers = (
+  update: (prev: CatalogueNumberRowState[]) => CatalogueNumberRowState[],
+) => void;
+
 export type AddReleaseCatalogueNumbersSectionProps = {
   labels: LabelListItem[];
+  catalogueNumbers: CatalogueNumberRowState[];
+  setCatalogueNumbers: SetAddReleaseCatalogueNumbers;
 };
 
 const AddReleaseCatalogueNumbersSection: FC<
   AddReleaseCatalogueNumbersSectionProps
-> = ({ labels }) => {
-  const [rows, setRows] = useState<CatalogueNumberRowState[]>([
-    defaultCatalogueNumberRow(),
-  ]);
-
+> = ({ labels, catalogueNumbers, setCatalogueNumbers }) => {
   const addRow = () => {
-    setRows((prev) => [...prev, defaultCatalogueNumberRow()]);
+    setCatalogueNumbers((prev) => [...prev, defaultCatalogueNumberRow()]);
   };
 
   const removeRow = (rowId: string) => {
-    setRows((prev) =>
+    setCatalogueNumbers((prev) =>
       prev.length <= 1 ? prev : prev.filter((row) => row.id !== rowId),
     );
   };
 
   const addLabelSlot = (rowId: string) => {
-    setRows((prev) =>
+    setCatalogueNumbers((prev) =>
       prev.map((row) =>
         row.id === rowId
           ? { ...row, labelSlots: [...row.labelSlots, emptyLabelSlot()] }
@@ -43,26 +45,30 @@ const AddReleaseCatalogueNumbersSection: FC<
   };
 
   const removeLabelSlot = (rowId: string, slotId: string) => {
-    setRows((prev) =>
+    setCatalogueNumbers((prev) =>
       prev.map((row) => {
         if (row.id !== rowId) {
           return row;
         }
 
-        if (row.labelSlots[0]?.id === slotId) {
+        const nextLabelSlots = row.labelSlots.filter(
+          (slot) => slot.id !== slotId,
+        );
+
+        if (nextLabelSlots.length + row.catalogueNumberSlots.length < 1) {
           return row;
         }
 
         return {
           ...row,
-          labelSlots: row.labelSlots.filter((slot) => slot.id !== slotId),
+          labelSlots: nextLabelSlots,
         };
       }),
     );
   };
 
   const setLabelSlotName = (rowId: string, slotId: string, name: string) => {
-    setRows((prev) =>
+    setCatalogueNumbers((prev) =>
       prev.map((row) =>
         row.id === rowId
           ? {
@@ -77,7 +83,7 @@ const AddReleaseCatalogueNumbersSection: FC<
   };
 
   const addCatalogueNumberSlot = (rowId: string) => {
-    setRows((prev) =>
+    setCatalogueNumbers((prev) =>
       prev.map((row) =>
         row.id === rowId
           ? {
@@ -93,21 +99,23 @@ const AddReleaseCatalogueNumbersSection: FC<
   };
 
   const removeCatalogueNumberSlot = (rowId: string, slotId: string) => {
-    setRows((prev) =>
+    setCatalogueNumbers((prev) =>
       prev.map((row) => {
         if (row.id !== rowId) {
           return row;
         }
 
-        if (row.catalogueNumberSlots[0]?.id === slotId) {
+        const nextCatalogueNumberSlots = row.catalogueNumberSlots.filter(
+          (slot) => slot.id !== slotId,
+        );
+
+        if (row.labelSlots.length + nextCatalogueNumberSlots.length < 1) {
           return row;
         }
 
         return {
           ...row,
-          catalogueNumberSlots: row.catalogueNumberSlots.filter(
-            (slot) => slot.id !== slotId,
-          ),
+          catalogueNumberSlots: nextCatalogueNumberSlots,
         };
       }),
     );
@@ -118,7 +126,7 @@ const AddReleaseCatalogueNumbersSection: FC<
     slotId: string,
     value: string,
   ) => {
-    setRows((prev) =>
+    setCatalogueNumbers((prev) =>
       prev.map((row) =>
         row.id === rowId
           ? {
@@ -136,7 +144,7 @@ const AddReleaseCatalogueNumbersSection: FC<
     <div className={styles.section}>
       <p className={styles.heading}>Catalogue numbers</p>
 
-      {rows.map((row, rowIndex) => (
+      {catalogueNumbers.map((row, rowIndex) => (
         <div key={row.id}>
           <AddReleaseCatalogueNumbersRow
             row={row}

@@ -38,6 +38,10 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
       ? `${styles.rowBlock} ${styles.rowBlockFirst}`
       : styles.rowBlock;
 
+  const totalFieldCount =
+    row.labelSlots.length + row.catalogueNumberSlots.length;
+  const canRemoveAnyInput = totalFieldCount > 1;
+
   return (
     <>
       {showDivider && <hr className={styles.divider} aria-hidden />}
@@ -45,7 +49,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
         <div role="group" aria-label={`Catalogue numbers ${rowIndex + 1}`}>
           <div className={styles.rowColumns}>
             <div className={styles.column}>
-              {row.labelSlots.map((slot, slotIndex) => (
+              {row.labelSlots.map((slot) => (
                 <div key={slot.id} className={styles.slotBlock}>
                   <div className={styles.segment}>
                     <label
@@ -72,9 +76,9 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                       </select>
                       <div
                         className={styles.removeCrossSlot}
-                        aria-hidden={slotIndex === 0 ? true : undefined}
+                        aria-hidden={canRemoveAnyInput ? undefined : true}
                       >
-                        {slotIndex > 0 ? (
+                        {canRemoveAnyInput ? (
                           <button
                             type="button"
                             className={styles.removeCross}
@@ -102,7 +106,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
             </div>
 
             <div className={styles.column}>
-              {row.catalogueNumberSlots.map((slot, slotIndex) => (
+              {row.catalogueNumberSlots.map((slot) => (
                 <div key={slot.id} className={styles.slotBlock}>
                   <div className={styles.segment}>
                     <label
@@ -124,9 +128,9 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                       />
                       <div
                         className={styles.removeCrossSlot}
-                        aria-hidden={slotIndex === 0 ? true : undefined}
+                        aria-hidden={canRemoveAnyInput ? undefined : true}
                       >
-                        {slotIndex > 0 ? (
+                        {canRemoveAnyInput ? (
                           <button
                             type="button"
                             className={styles.removeCross}

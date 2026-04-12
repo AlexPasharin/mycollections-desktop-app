@@ -1,5 +1,10 @@
 import { v4 as uuidv4 } from "uuid";
 
+import {
+  defaultCatalogueNumberRow,
+  type CatalogueNumberRowState,
+} from "./AddReleaseCatalogueNumbersSection/catalogueNumbersRowState";
+
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryByIdResult } from "@/types/entries";
@@ -64,6 +69,7 @@ export type AddReleaseFormDraft = {
   releaseVersion: string;
   releaseDate: GeneralizedDateFormInputValue;
   formats: AddReleaseFormFormatInput[];
+  catalogueNumbers: CatalogueNumberRowState[];
 };
 
 export const initialAddReleaseFormDraftValue = (
@@ -76,6 +82,7 @@ export const initialAddReleaseFormDraftValue = (
     day: String(originalReleaseDate?.day ?? ""),
   },
   formats: [defaultFormatInputRow()],
+  catalogueNumbers: [defaultCatalogueNumberRow()],
 });
 
 export const getReleaseDateFormFieldErrors = (

@@ -264,7 +264,15 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           onBlur={() => onBlur("formats")}
         />
 
-        <AddReleaseCatalogueNumbersSection labels={labels} />
+        <AddReleaseCatalogueNumbersSection
+          labels={labels}
+          catalogueNumbers={form.catalogueNumbers}
+          setCatalogueNumbers={(update) =>
+            setField("catalogueNumbers", (prev) =>
+              update(prev.catalogueNumbers),
+            )
+          }
+        />
 
         <div className={styles.actions}>
           <button type="button" onClick={onCancel}>
