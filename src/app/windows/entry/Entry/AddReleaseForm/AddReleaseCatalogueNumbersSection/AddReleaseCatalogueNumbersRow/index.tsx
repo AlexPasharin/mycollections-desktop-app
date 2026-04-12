@@ -11,12 +11,12 @@ export type AddReleaseCatalogueNumbersRowProps = {
   rowIndex: number;
   showDivider: boolean;
   labels: LabelListItem[];
-  onAddLabelInputValue: () => void;
-  onRemoveLabelInputValue: (inputValueId: string) => void;
-  onSetLabelInputValueName: (inputValueId: string, name: string) => void;
-  onAddCatalogueNumberInputValue: () => void;
-  onRemoveCatalogueNumberInputValue: (inputValueId: string) => void;
-  onSetCatalogueNumberInputValue: (inputValueId: string, value: string) => void;
+  onAddNewLabelInput: () => void;
+  onRemoveLabelInput: (inputValueId: string) => void;
+  onSetLabelName: (inputValueId: string, name: string) => void;
+  onAddNewCatalogueNumberInput: () => void;
+  onRemoveCatalogueNumberInput: (inputValueId: string) => void;
+  onSetCatalogueNumber: (inputValueId: string, value: string) => void;
   onRemoveRow?: (() => void) | undefined;
 };
 
@@ -25,12 +25,12 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
   rowIndex,
   showDivider,
   labels,
-  onAddLabelInputValue,
-  onRemoveLabelInputValue,
-  onSetLabelInputValueName,
-  onAddCatalogueNumberInputValue,
-  onRemoveCatalogueNumberInputValue,
-  onSetCatalogueNumberInputValue,
+  onAddNewLabelInput,
+  onRemoveLabelInput,
+  onSetLabelName,
+  onAddNewCatalogueNumberInput,
+  onRemoveCatalogueNumberInput,
+  onSetCatalogueNumber,
   onRemoveRow,
 }) => {
   const rowBlockClassName =
@@ -38,9 +38,8 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
       ? `${styles.rowBlock} ${styles.rowBlockFirst}`
       : styles.rowBlock;
 
-  const totalFieldCount =
-    row.labelInputValues.length + row.catalogueNumberInputValues.length;
-  const canRemoveAnyInput = totalFieldCount > 1;
+  const canRemoveAnyInput =
+    row.labelInputValues.length + row.catalogueNumberInputValues.length > 1;
 
   return (
     <>
@@ -64,10 +63,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                         className={styles.input}
                         value={inputValue.name}
                         onChange={(e) =>
-                          onSetLabelInputValueName(
-                            inputValue.id,
-                            e.target.value,
-                          )
+                          onSetLabelName(inputValue.id, e.target.value)
                         }
                       >
                         <option value="" />
@@ -87,9 +83,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                             className={styles.removeCross}
                             aria-label="Remove label"
                             title="Remove label"
-                            onClick={() =>
-                              onRemoveLabelInputValue(inputValue.id)
-                            }
+                            onClick={() => onRemoveLabelInput(inputValue.id)}
                           >
                             <span aria-hidden="true">❌</span>
                           </button>
@@ -103,7 +97,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                 <button
                   type="button"
                   className={styles.addAnotherInputValue}
-                  onClick={onAddLabelInputValue}
+                  onClick={onAddNewLabelInput}
                 >
                   + Add another label
                 </button>
@@ -127,10 +121,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                         type="text"
                         value={inputValue.value}
                         onChange={(e) =>
-                          onSetCatalogueNumberInputValue(
-                            inputValue.id,
-                            e.target.value,
-                          )
+                          onSetCatalogueNumber(inputValue.id, e.target.value)
                         }
                         autoComplete="off"
                       />
@@ -145,7 +136,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                             aria-label="Remove catalogue number"
                             title="Remove catalogue number"
                             onClick={() =>
-                              onRemoveCatalogueNumberInputValue(inputValue.id)
+                              onRemoveCatalogueNumberInput(inputValue.id)
                             }
                           >
                             <span aria-hidden="true">❌</span>
@@ -160,7 +151,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                 <button
                   type="button"
                   className={styles.addAnotherInputValue}
-                  onClick={onAddCatalogueNumberInputValue}
+                  onClick={onAddNewCatalogueNumberInput}
                 >
                   + Add another catalogue number
                 </button>
