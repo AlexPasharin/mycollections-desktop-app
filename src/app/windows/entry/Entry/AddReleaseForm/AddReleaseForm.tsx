@@ -174,7 +174,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     setField("formats", (prev) =>
       prev.formats.filter((formatRow) => formatRow.id !== rowId),
     );
-
   };
 
   const handleSubmit = (event: FormEvent) => {

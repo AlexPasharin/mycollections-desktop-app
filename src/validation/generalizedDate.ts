@@ -42,10 +42,7 @@ export const createGeneralizedDateSchema = (
         validateGeneralizedDateInput(date);
 
       if (!generalizedDateValidationResult.success) {
-        addCustomValidationIssues(
-          ctx,
-          generalizedDateValidationResult.message,
-        );
+        addCustomValidationIssues(ctx, generalizedDateValidationResult.message);
 
         return;
       }
