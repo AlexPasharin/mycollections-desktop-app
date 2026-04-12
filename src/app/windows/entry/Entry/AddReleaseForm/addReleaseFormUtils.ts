@@ -37,7 +37,7 @@ export type AddReleaseFormFieldError = {
 export type AddReleaseFormFieldErrors = {
   releaseVersion?: AddReleaseFormFieldError[] | undefined;
   releaseDate?: AddReleaseFormFieldError[] | undefined;
-  formats?: Record<string, AddReleaseFormFieldError[] | undefined>;
+  formats?: Record<string, AddReleaseFormFieldError[] | undefined> | undefined;
 };
 
 export type AddReleaseFormInputFieldKey =

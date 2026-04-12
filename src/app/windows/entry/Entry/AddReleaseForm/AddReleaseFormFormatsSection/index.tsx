@@ -5,11 +5,10 @@ import AddReleaseFormFormatBlock, {
 } from "./AddReleaseFormFormatBlock";
 import styles from "./AddReleaseFormFormatsSection.module.css";
 
-import {
-  defaultFormatInputRow,
-  type AddReleaseFormFormatInput,
-  type AddReleaseFormFieldErrors,
-  type AddReleaseFormInputFieldKey,
+import type {
+  AddReleaseFormFormatInput,
+  AddReleaseFormFieldErrors,
+  AddReleaseFormInputFieldKey,
 } from "../addReleaseFormUtils";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
@@ -26,6 +25,8 @@ type AddReleaseFormFormatsSectionProps = {
   releasesFormats: ReleasesFormatListItem[];
   errors?: AddReleaseFormFieldErrors["formats"];
   setFormats: SetAddReleaseFormFormats;
+  addFormatRow: () => void;
+  removeFormatRow: (rowId: string) => void;
   onFieldFocus: (key: AddReleaseFormInputFieldKey) => void;
   onBlur: () => void;
 };
@@ -35,6 +36,8 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
   releasesFormats,
   errors,
   setFormats,
+  addFormatRow,
+  removeFormatRow,
   onFieldFocus,
   onBlur,
 }) => {
@@ -65,27 +68,14 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
       return prevFormatRows.map((formatRow) =>
         formatRow.id === rowId
           ? {
-            ...current,
-            formatId,
-            shortName,
-            jukeboxHole: isSevenInch ? current.jukeboxHole : false,
-          }
+              ...current,
+              formatId,
+              shortName,
+              jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+            }
           : formatRow,
       );
     });
-  };
-
-  const addFormatRow = () => {
-    setFormats((prevFormatRows) => [
-      ...prevFormatRows,
-      defaultFormatInputRow(),
-    ]);
-  };
-
-  const removeFormatRow = (rowId: string) => {
-    setFormats((prevFormatRows) =>
-      prevFormatRows.filter((formatRow) => formatRow.id !== rowId),
-    );
   };
 
   const hasErrors =

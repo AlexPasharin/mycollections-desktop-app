@@ -3,6 +3,7 @@ import { useMemo, useState, type FC, type FormEvent } from "react";
 import styles from "./AddReleaseForm.module.css";
 import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
 import {
+  defaultFormatInputRow,
   getFormatsFormFieldErrors,
   getReleaseDateFormFieldErrors,
   initialAddReleaseFormDraftValue,
@@ -150,6 +151,31 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     });
   };
 
+  const addFormatRow = () => {
+    setField("formats", (prev) => [...prev.formats, defaultFormatInputRow()]);
+  };
+
+  const removeFormatRow = (rowId: string) => {
+    setField("formats", (prev) =>
+      prev.formats.filter((formatRow) => formatRow.id !== rowId),
+    );
+
+    setFieldErrors((prev) => {
+      const { formats } = prev;
+
+      if (!formats || !Object.prototype.hasOwnProperty.call(formats, rowId)) {
+        return prev;
+      }
+
+      const { [rowId]: _removed, ...rest } = formats;
+
+      return {
+        ...prev,
+        formats: Object.keys(rest).length > 0 ? rest : undefined,
+      };
+    });
+  };
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     const result = validateAgainstSchema(addReleaseFormSchema, form);
@@ -228,6 +254,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           setFormats={(stateUpdateFn) =>
             setField("formats", (prev) => stateUpdateFn(prev.formats))
           }
+          addFormatRow={addFormatRow}
+          removeFormatRow={removeFormatRow}
           onFieldFocus={onFocus}
           onBlur={() => onBlur("formats")}
         />
