@@ -1,5 +1,6 @@
 import { useMemo, useState, type FC, type FormEvent } from "react";
 
+import AddReleaseCatalogueNumbersSection from "./AddReleaseCatalogueNumbersSection";
 import styles from "./AddReleaseForm.module.css";
 import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
 import {
@@ -18,6 +19,7 @@ import {
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
 import type { ReleasesFormatListItem } from "@/types/formats";
+import type { LabelListItem } from "@/types/labels";
 import {
   getFieldValidationErrorMessages,
   validateAgainstSchema,
@@ -29,6 +31,7 @@ export type AddReleaseFormProps = {
   entry: AddReleaseFormEntry;
   onCancel: () => void;
   releasesFormats: ReleasesFormatListItem[];
+  labels: LabelListItem[];
 };
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
@@ -38,6 +41,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   entry,
   onCancel,
   releasesFormats,
+  labels,
 }) => {
   const { originalReleaseDate } = entry;
 
@@ -156,6 +160,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const removeFormatRow = (rowId: string) => {
+    // if we remove format row, we should also remove errors associated with it
     setFieldErrors((prev) => {
       const { formats } = prev;
 
@@ -258,6 +263,16 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           removeFormatRow={removeFormatRow}
           onFieldFocus={onFocus}
           onBlur={() => onBlur("formats")}
+        />
+
+        <AddReleaseCatalogueNumbersSection
+          labels={labels}
+          catalogueNumbers={form.catalogueNumbers}
+          setCatalogueNumbers={(update) =>
+            setField("catalogueNumbers", (prev) =>
+              update(prev.catalogueNumbers),
+            )
+          }
         />
 
         <div className={styles.actions}>

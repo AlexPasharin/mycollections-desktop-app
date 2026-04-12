@@ -1,9 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
+import type { z } from "zod";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryByIdResult } from "@/types/entries";
 import type { ValidationResultErrorMessages } from "@/utils/validation";
+import { catalogueNumberRowSchema } from "@/validation/releases/addReleaseForm";
 
 export type AddReleaseFormEntry = Omit<
   EntryByIdResult,
@@ -60,10 +62,29 @@ export const defaultFormatInputRow = (): AddReleaseFormFormatInput => ({
   jukeboxHole: false,
 });
 
+export type CatalogueNumberRowState = z.infer<typeof catalogueNumberRowSchema>;
+
+export const emptyLabelInputValue = () => ({
+  id: uuidv4(),
+  name: "",
+});
+
+export const emptyCatalogueNumberInputValue = () => ({
+  id: uuidv4(),
+  value: "",
+});
+
+export const defaultCatalogueNumberRow = (): CatalogueNumberRowState => ({
+  id: uuidv4(),
+  labelInputValues: [emptyLabelInputValue()],
+  catalogueNumberInputValues: [emptyCatalogueNumberInputValue()],
+});
+
 export type AddReleaseFormDraft = {
   releaseVersion: string;
   releaseDate: GeneralizedDateFormInputValue;
   formats: AddReleaseFormFormatInput[];
+  catalogueNumbers: CatalogueNumberRowState[];
 };
 
 export const initialAddReleaseFormDraftValue = (
@@ -76,6 +97,7 @@ export const initialAddReleaseFormDraftValue = (
     day: String(originalReleaseDate?.day ?? ""),
   },
   formats: [defaultFormatInputRow()],
+  catalogueNumbers: [defaultCatalogueNumberRow()],
 });
 
 export const getReleaseDateFormFieldErrors = (

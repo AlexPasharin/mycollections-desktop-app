@@ -1,0 +1,26 @@
+.section {
+  margin-top: 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.heading {
+  font-weight: 600;
+  font-size: 0.92em;
+  margin: 0 0 0.75rem;
+}
+
+.addAnotherRow {
+  margin-top: 0.75rem;
+  padding: 0.25rem 0;
+  font-size: 0.92em;
+  text-align: left;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: #1a5fb4;
+  text-decoration: underline;
+}
+
+.addAnotherRow:hover {
+  color: #0d3d82;
+}
