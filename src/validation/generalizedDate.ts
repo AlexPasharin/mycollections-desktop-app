@@ -7,6 +7,7 @@ import {
   startOfToday,
   toValidCalendarDate,
 } from "@/utils/date";
+import { addCustomValidationIssues } from "@/utils/validation";
 import { coercedIntSchema } from "@/validation/common";
 
 // Implements same validation logic as described in documentation/database/validation_functions/generalized_date_field_validation.md
@@ -32,16 +33,7 @@ export const createGeneralizedDateSchema = (
       if (date.day !== undefined && date.month === undefined) {
         const message = "Month is required when day is provided.";
 
-        ctx.addIssue({
-          code: "custom",
-          path: ["month"],
-          message,
-        });
-        ctx.addIssue({
-          code: "custom",
-          path: ["day"],
-          message,
-        });
+        addCustomValidationIssues(ctx, message, ["month"], ["day"]);
 
         return;
       }
@@ -50,10 +42,10 @@ export const createGeneralizedDateSchema = (
         validateGeneralizedDateInput(date);
 
       if (!generalizedDateValidationResult.success) {
-        ctx.addIssue({
-          code: "custom",
-          message: generalizedDateValidationResult.message,
-        });
+        addCustomValidationIssues(
+          ctx,
+          generalizedDateValidationResult.message,
+        );
 
         return;
       }
@@ -64,10 +56,7 @@ export const createGeneralizedDateSchema = (
       );
 
       if (!startBoundValidationResult.success) {
-        ctx.addIssue({
-          code: "custom",
-          message: startBoundValidationResult.message,
-        });
+        addCustomValidationIssues(ctx, startBoundValidationResult.message);
       }
     });
 
@@ -118,7 +107,7 @@ const validateGeneralizedDate = (
 const validateGeneralizedDateAgainstStart = (
   value: GeneralizedDate,
   startDate: GeneralizedDate | null | undefined,
-) => {
+): { success: true } | { success: false; message: string } => {
   if (!startDate) {
     return { success: true };
   }

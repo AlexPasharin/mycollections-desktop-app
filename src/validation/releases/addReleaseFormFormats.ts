@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
+import { addCustomValidationIssues } from "@/utils/validation";
 import { strictStringToIntSchema } from "@/validation/common";
 
 const AMOUNT_MIN_MESSAGE = "Amount must be at least 1.";
@@ -13,7 +14,10 @@ const addReleaseFormFormatAmountSchema = z
 const addReleaseFormFormatInputSchema = z
   .strictObject({
     id: z.string().trim().min(1, "Id is required"),
-    formatId: z.string().trim().min(1, "Format is required"),
+    formatId: z
+      .string()
+      .trim()
+      .min(1, { message: "Format is required", abort: true }),
     shortName: z.string().trim(),
     amount: addReleaseFormFormatAmountSchema,
     pictureSleeve: z.boolean(),
@@ -23,17 +27,7 @@ const addReleaseFormFormatInputSchema = z
     if (val.jukeboxHole && val.shortName !== SEVEN_INCH_FORMAT_SHORT_NAME) {
       const message = `Short name must be "${SEVEN_INCH_FORMAT_SHORT_NAME}" when jukebox hole is true.`;
 
-      ctx.addIssue({
-        code: "custom",
-        path: ["jukeboxHole"],
-        message,
-      });
-
-      ctx.addIssue({
-        code: "custom",
-        path: ["shortName"],
-        message,
-      });
+      addCustomValidationIssues(ctx, message, ["jukeboxHole"], ["shortName"]);
     }
   });
 
@@ -45,41 +39,24 @@ export const addReleaseFormFormatInputArraySchema = z
     let index = 0;
 
     for (const row of filterRows) {
-      const key = similarFormatsRowKey(row);
+      const { formatId, pictureSleeve, jukeboxHole } = row;
+      const key = JSON.stringify({ formatId, pictureSleeve, jukeboxHole });
 
       if (seenKeys.has(key)) {
         const message =
           "This format row is similar to a previously added one — same format, picture sleeve, and jukebox hole settings. Merge amounts or change options.";
 
-        ctx.addIssue({
-          code: "custom",
-          path: [index],
+        addCustomValidationIssues(
+          ctx,
           message,
-        });
-
-        return;
+          [index, "formatId"],
+          [index, "pictureSleeve"],
+          [index, "jukeboxHole"],
+        );
+      } else {
+        seenKeys.add(key);
       }
 
-      seenKeys.add(key);
       index += 1;
     }
   });
-
-const similarFormatsRowKey = (row: {
-  formatId: string;
-  pictureSleeve: boolean;
-  jukeboxHole: boolean;
-}) =>
-  JSON.stringify({
-    formatId: row.formatId,
-    pictureSleeve: row.pictureSleeve,
-    jukeboxHole: row.jukeboxHole,
-  });
-
-// export type AddReleaseFormFormatInputValidated = z.infer<
-//   typeof addReleaseFormFormatInputSchema
-// >;
-
-// export type AddReleaseFormFormatInputArrayValidated = z.infer<
-//   typeof addReleaseFormFormatInputArraySchema
-// >;

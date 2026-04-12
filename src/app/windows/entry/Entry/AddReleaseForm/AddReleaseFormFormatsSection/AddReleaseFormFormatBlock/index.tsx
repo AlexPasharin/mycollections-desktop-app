@@ -14,14 +14,14 @@ import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
 import type { ReleasesFormatListItem } from "@/types/formats";
 
 export type AddReleaseFormFormatRowPatch = Partial<
-  Omit<AddReleaseFormFormatInput, "id">
+  Omit<AddReleaseFormFormatInput, "id" | "shortName" | "formatId">
 >;
 
 type AddReleaseFormFormatBlockProps = {
   row: AddReleaseFormFormatInput;
   rowIndex: number;
   releasesFormats: ReleasesFormatListItem[];
-  errors?: AddReleaseFormFieldError[] | undefined;
+  formatRowErrors?: AddReleaseFormFieldError[] | undefined;
   onFormatChange: (formatId: string) => void;
   patchFormat: (patch: AddReleaseFormFormatRowPatch) => void;
   onRemoveFormat?: (() => void) | undefined;
@@ -38,7 +38,7 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
   row,
   rowIndex,
   releasesFormats,
-  errors,
+  formatRowErrors,
   onFormatChange,
   patchFormat,
   onRemoveFormat,
@@ -56,7 +56,7 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
   const suffix = `-${row.id}`;
 
   const fieldInvalid = (field: FormatField) =>
-    errors?.some((e) => e.sources?.includes(field)) ?? false;
+    formatRowErrors?.some((e) => e.sources?.includes(field)) ?? false;
 
   return (
     <div role="group" aria-label={`Format ${rowIndex + 1}`}>
@@ -164,7 +164,12 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
         )}
       </div>
 
-      <FormFieldErrorMessages id={rowErrorElementId} messages={errors ?? []} />
+      {formatRowErrors && (
+        <FormFieldErrorMessages
+          id={rowErrorElementId}
+          messages={formatRowErrors}
+        />
+      )}
 
       {onRemoveFormat && (
         <div className={styles.removeRow}>

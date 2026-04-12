@@ -24,7 +24,7 @@ type SetAddReleaseFormFormats = (
 type AddReleaseFormFormatsSectionProps = {
   formats: AddReleaseFormFormatInput[];
   releasesFormats: ReleasesFormatListItem[];
-  formatsFieldErrors?: AddReleaseFormFieldErrors["formats"];
+  errors?: AddReleaseFormFieldErrors["formats"];
   setFormats: SetAddReleaseFormFormats;
   onFieldFocus: (key: AddReleaseFormInputFieldKey) => void;
   onBlur: () => void;
@@ -33,11 +33,17 @@ type AddReleaseFormFormatsSectionProps = {
 const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
   formats,
   releasesFormats,
-  formatsFieldErrors,
+  errors,
   setFormats,
   onFieldFocus,
   onBlur,
 }) => {
+  const hasErrors =
+    errors !== undefined &&
+    Object.values(errors).some(
+      (rowErrors) => rowErrors && rowErrors.length > 0,
+    );
+
   const patchFormat = (rowId: string, patch: AddReleaseFormFormatRowPatch) => {
     setFormats((prevFormatRows) =>
       prevFormatRows.map((formatRow) =>
@@ -65,17 +71,21 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
       return prevFormatRows.map((formatRow) =>
         formatRow.id === rowId
           ? {
-            ...current,
-            formatId,
-            shortName,
-            jukeboxHole: isSevenInch ? current.jukeboxHole : false,
-          }
+              ...current,
+              formatId,
+              shortName,
+              jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+            }
           : formatRow,
       );
     });
   };
 
   const addFormatRow = () => {
+    if (hasErrors) {
+      return;
+    }
+
     setFormats((prevFormatRows) => [
       ...prevFormatRows,
       defaultFormatInputRow(),
@@ -92,45 +102,45 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
     <div className={styles.section}>
       <p className={styles.heading}>Formats</p>
 
-      {formats.map((formatRow, rowIndex) => {
-        return (
-          <div key={formatRow.id}>
-            {rowIndex > 0 && <hr className={styles.divider} aria-hidden />}
-            <div
-              className={
-                rowIndex === 0
-                  ? `${styles.formatBlock} ${styles.formatBlockFirst}`
-                  : styles.formatBlock
+      {formats.map((formatRow, rowIndex) => (
+        <div key={formatRow.id}>
+          {rowIndex > 0 && <hr className={styles.divider} aria-hidden />}
+          <div
+            className={
+              rowIndex === 0
+                ? `${styles.formatBlock} ${styles.formatBlockFirst}`
+                : styles.formatBlock
+            }
+          >
+            <AddReleaseFormFormatBlock
+              row={formatRow}
+              rowIndex={rowIndex}
+              releasesFormats={releasesFormats}
+              formatRowErrors={errors?.[formatRow.id]}
+              onFormatChange={(formatId) =>
+                onFormatChange(formatRow.id, formatId)
               }
-            >
-              <AddReleaseFormFormatBlock
-                row={formatRow}
-                rowIndex={rowIndex}
-                releasesFormats={releasesFormats}
-                errors={formatsFieldErrors?.[formatRow.id]}
-                onFormatChange={(formatId) =>
-                  onFormatChange(formatRow.id, formatId)
-                }
-                patchFormat={(patch) => patchFormat(formatRow.id, patch)}
-                onRemoveFormat={
-                  rowIndex > 0 ? () => removeFormatRow(formatRow.id) : undefined
-                }
-                onFieldFocus={onFieldFocus}
-                onBlur={onBlur}
-              />
-            </div>
+              patchFormat={(patch) => patchFormat(formatRow.id, patch)}
+              onRemoveFormat={
+                rowIndex > 0 ? () => removeFormatRow(formatRow.id) : undefined
+              }
+              onFieldFocus={onFieldFocus}
+              onBlur={onBlur}
+            />
           </div>
-        );
-      })}
+        </div>
+      ))}
 
-      <button
-        type="button"
-        id="add-release-add-another-format"
-        className={styles.addAnotherFormat}
-        onClick={addFormatRow}
-      >
-        + Add another format
-      </button>
+      {!hasErrors && (
+        <button
+          type="button"
+          id="add-release-add-another-format"
+          className={styles.addAnotherFormat}
+          onClick={addFormatRow}
+        >
+          + Add another format
+        </button>
+      )}
     </div>
   );
 };

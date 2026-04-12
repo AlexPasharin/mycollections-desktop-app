@@ -224,7 +224,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         <AddReleaseFormFormatsSection
           formats={form.formats}
           releasesFormats={releasesFormats}
-          formatsFieldErrors={fieldErrors.formats}
+          errors={fieldErrors.formats}
           setFormats={(stateUpdateFn) =>
             setField("formats", (prev) => stateUpdateFn(prev.formats))
           }
