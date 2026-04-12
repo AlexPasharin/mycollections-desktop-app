@@ -160,6 +160,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const removeFormatRow = (rowId: string) => {
+    // if we remove format row, we should also remove errors associated with it
     setFieldErrors((prev) => {
       const { formats } = prev;
 

@@ -2,7 +2,7 @@ import type { FC } from "react";
 
 import styles from "./AddReleaseCatalogueNumbersRow.module.css";
 
-import type { CatalogueNumberRowState } from "../catalogueNumbersRowState";
+import type { CatalogueNumberRowState } from "../../addReleaseFormUtils";
 
 import type { LabelListItem } from "@/types/labels";
 
@@ -11,12 +11,12 @@ export type AddReleaseCatalogueNumbersRowProps = {
   rowIndex: number;
   showDivider: boolean;
   labels: LabelListItem[];
-  onAddLabelSlot: () => void;
-  onRemoveLabelSlot: (slotId: string) => void;
-  onSetLabelSlotName: (slotId: string, name: string) => void;
-  onAddCatalogueNumberSlot: () => void;
-  onRemoveCatalogueNumberSlot: (slotId: string) => void;
-  onSetCatalogueNumberSlotValue: (slotId: string, value: string) => void;
+  onAddLabelInputValue: () => void;
+  onRemoveLabelInputValue: (inputValueId: string) => void;
+  onSetLabelInputValueName: (inputValueId: string, name: string) => void;
+  onAddCatalogueNumberInputValue: () => void;
+  onRemoveCatalogueNumberInputValue: (inputValueId: string) => void;
+  onSetCatalogueNumberInputValue: (inputValueId: string, value: string) => void;
   onRemoveRow?: (() => void) | undefined;
 };
 
@@ -25,12 +25,12 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
   rowIndex,
   showDivider,
   labels,
-  onAddLabelSlot,
-  onRemoveLabelSlot,
-  onSetLabelSlotName,
-  onAddCatalogueNumberSlot,
-  onRemoveCatalogueNumberSlot,
-  onSetCatalogueNumberSlotValue,
+  onAddLabelInputValue,
+  onRemoveLabelInputValue,
+  onSetLabelInputValueName,
+  onAddCatalogueNumberInputValue,
+  onRemoveCatalogueNumberInputValue,
+  onSetCatalogueNumberInputValue,
   onRemoveRow,
 }) => {
   const rowBlockClassName =
@@ -39,7 +39,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
       : styles.rowBlock;
 
   const totalFieldCount =
-    row.labelSlots.length + row.catalogueNumberSlots.length;
+    row.labelInputValues.length + row.catalogueNumberInputValues.length;
   const canRemoveAnyInput = totalFieldCount > 1;
 
   return (
@@ -49,22 +49,25 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
         <div role="group" aria-label={`Catalogue numbers ${rowIndex + 1}`}>
           <div className={styles.rowColumns}>
             <div className={styles.column}>
-              {row.labelSlots.map((slot) => (
-                <div key={slot.id} className={styles.slotBlock}>
+              {row.labelInputValues.map((inputValue) => (
+                <div key={inputValue.id} className={styles.inputValueBlock}>
                   <div className={styles.segment}>
                     <label
                       className={styles.label}
-                      htmlFor={`add-release-cat-label-${row.id}-${slot.id}`}
+                      htmlFor={`add-release-cat-label-${row.id}-${inputValue.id}`}
                     >
                       Label
                     </label>
                     <div className={styles.controlWithRemove}>
                       <select
-                        id={`add-release-cat-label-${row.id}-${slot.id}`}
+                        id={`add-release-cat-label-${row.id}-${inputValue.id}`}
                         className={styles.input}
-                        value={slot.name}
+                        value={inputValue.name}
                         onChange={(e) =>
-                          onSetLabelSlotName(slot.id, e.target.value)
+                          onSetLabelInputValueName(
+                            inputValue.id,
+                            e.target.value,
+                          )
                         }
                       >
                         <option value="" />
@@ -75,7 +78,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                         ))}
                       </select>
                       <div
-                        className={styles.removeCrossSlot}
+                        className={styles.removeCrossInputValue}
                         aria-hidden={canRemoveAnyInput ? undefined : true}
                       >
                         {canRemoveAnyInput ? (
@@ -84,7 +87,9 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                             className={styles.removeCross}
                             aria-label="Remove label"
                             title="Remove label"
-                            onClick={() => onRemoveLabelSlot(slot.id)}
+                            onClick={() =>
+                              onRemoveLabelInputValue(inputValue.id)
+                            }
                           >
                             <span aria-hidden="true">❌</span>
                           </button>
@@ -97,8 +102,8 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
               <div className={styles.rowActions}>
                 <button
                   type="button"
-                  className={styles.addAnotherSlot}
-                  onClick={onAddLabelSlot}
+                  className={styles.addAnotherInputValue}
+                  onClick={onAddLabelInputValue}
                 >
                   + Add another label
                 </button>
@@ -106,28 +111,31 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
             </div>
 
             <div className={styles.column}>
-              {row.catalogueNumberSlots.map((slot) => (
-                <div key={slot.id} className={styles.slotBlock}>
+              {row.catalogueNumberInputValues.map((inputValue) => (
+                <div key={inputValue.id} className={styles.inputValueBlock}>
                   <div className={styles.segment}>
                     <label
                       className={styles.label}
-                      htmlFor={`add-release-cat-number-${row.id}-${slot.id}`}
+                      htmlFor={`add-release-cat-number-${row.id}-${inputValue.id}`}
                     >
                       Catalogue number
                     </label>
                     <div className={styles.controlWithRemove}>
                       <input
-                        id={`add-release-cat-number-${row.id}-${slot.id}`}
+                        id={`add-release-cat-number-${row.id}-${inputValue.id}`}
                         className={styles.input}
                         type="text"
-                        value={slot.value}
+                        value={inputValue.value}
                         onChange={(e) =>
-                          onSetCatalogueNumberSlotValue(slot.id, e.target.value)
+                          onSetCatalogueNumberInputValue(
+                            inputValue.id,
+                            e.target.value,
+                          )
                         }
                         autoComplete="off"
                       />
                       <div
-                        className={styles.removeCrossSlot}
+                        className={styles.removeCrossInputValue}
                         aria-hidden={canRemoveAnyInput ? undefined : true}
                       >
                         {canRemoveAnyInput ? (
@@ -136,7 +144,9 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                             className={styles.removeCross}
                             aria-label="Remove catalogue number"
                             title="Remove catalogue number"
-                            onClick={() => onRemoveCatalogueNumberSlot(slot.id)}
+                            onClick={() =>
+                              onRemoveCatalogueNumberInputValue(inputValue.id)
+                            }
                           >
                             <span aria-hidden="true">❌</span>
                           </button>
@@ -149,8 +159,8 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
               <div className={styles.rowActions}>
                 <button
                   type="button"
-                  className={styles.addAnotherSlot}
-                  onClick={onAddCatalogueNumberSlot}
+                  className={styles.addAnotherInputValue}
+                  onClick={onAddCatalogueNumberInputValue}
                 >
                   + Add another catalogue number
                 </button>

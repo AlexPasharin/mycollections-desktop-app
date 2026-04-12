@@ -2,12 +2,13 @@ import type { FC } from "react";
 
 import AddReleaseCatalogueNumbersRow from "./AddReleaseCatalogueNumbersRow";
 import styles from "./AddReleaseCatalogueNumbersSection.module.css";
+
 import {
   defaultCatalogueNumberRow,
-  emptyCatalogueNumberSlot,
-  emptyLabelSlot,
+  emptyCatalogueNumberInputValue,
+  emptyLabelInputValue,
   type CatalogueNumberRowState,
-} from "./catalogueNumbersRowState";
+} from "../addReleaseFormUtils";
 
 import type { LabelListItem } from "@/types/labels";
 
@@ -29,112 +30,135 @@ const AddReleaseCatalogueNumbersSection: FC<
   };
 
   const removeRow = (rowId: string) => {
-    setCatalogueNumbers((prev) =>
-      prev.length <= 1 ? prev : prev.filter((row) => row.id !== rowId),
-    );
+    setCatalogueNumbers((prev) => prev.filter((row) => row.id !== rowId));
   };
 
-  const addLabelSlot = (rowId: string) => {
+  const addLabelInputValue = (rowId: string) => {
     setCatalogueNumbers((prev) =>
       prev.map((row) =>
         row.id === rowId
-          ? { ...row, labelSlots: [...row.labelSlots, emptyLabelSlot()] }
+          ? {
+            ...row,
+            labelInputValues: [
+              ...row.labelInputValues,
+              emptyLabelInputValue(),
+            ],
+          }
           : row,
       ),
     );
   };
 
-  const removeLabelSlot = (rowId: string, slotId: string) => {
+  const removeLabelInputValue = (rowId: string, inputValueId: string) => {
     setCatalogueNumbers((prev) =>
       prev.map((row) => {
         if (row.id !== rowId) {
           return row;
         }
 
-        const nextLabelSlots = row.labelSlots.filter(
-          (slot) => slot.id !== slotId,
+        const nextLabelInputValues = row.labelInputValues.filter(
+          (inputValue) => inputValue.id !== inputValueId,
         );
 
-        if (nextLabelSlots.length + row.catalogueNumberSlots.length < 1) {
+        if (
+          nextLabelInputValues.length + row.catalogueNumberInputValues.length <
+          1
+        ) {
           return row;
         }
 
         return {
           ...row,
-          labelSlots: nextLabelSlots,
+          labelInputValues: nextLabelInputValues,
         };
       }),
     );
   };
 
-  const setLabelSlotName = (rowId: string, slotId: string, name: string) => {
-    setCatalogueNumbers((prev) =>
-      prev.map((row) =>
-        row.id === rowId
-          ? {
-              ...row,
-              labelSlots: row.labelSlots.map((slot) =>
-                slot.id === slotId ? { ...slot, name } : slot,
-              ),
-            }
-          : row,
-      ),
-    );
-  };
-
-  const addCatalogueNumberSlot = (rowId: string) => {
-    setCatalogueNumbers((prev) =>
-      prev.map((row) =>
-        row.id === rowId
-          ? {
-              ...row,
-              catalogueNumberSlots: [
-                ...row.catalogueNumberSlots,
-                emptyCatalogueNumberSlot(),
-              ],
-            }
-          : row,
-      ),
-    );
-  };
-
-  const removeCatalogueNumberSlot = (rowId: string, slotId: string) => {
-    setCatalogueNumbers((prev) =>
-      prev.map((row) => {
-        if (row.id !== rowId) {
-          return row;
-        }
-
-        const nextCatalogueNumberSlots = row.catalogueNumberSlots.filter(
-          (slot) => slot.id !== slotId,
-        );
-
-        if (row.labelSlots.length + nextCatalogueNumberSlots.length < 1) {
-          return row;
-        }
-
-        return {
-          ...row,
-          catalogueNumberSlots: nextCatalogueNumberSlots,
-        };
-      }),
-    );
-  };
-
-  const setCatalogueNumberSlotValue = (
+  const setLabelInputValueName = (
     rowId: string,
-    slotId: string,
+    inputValueId: string,
+    name: string,
+  ) => {
+    setCatalogueNumbers((prev) =>
+      prev.map((row) =>
+        row.id === rowId
+          ? {
+            ...row,
+            labelInputValues: row.labelInputValues.map((inputValue) =>
+              inputValue.id === inputValueId
+                ? { ...inputValue, name }
+                : inputValue,
+            ),
+          }
+          : row,
+      ),
+    );
+  };
+
+  const addCatalogueNumberInputValue = (rowId: string) => {
+    setCatalogueNumbers((prev) =>
+      prev.map((row) =>
+        row.id === rowId
+          ? {
+            ...row,
+            catalogueNumberInputValues: [
+              ...row.catalogueNumberInputValues,
+              emptyCatalogueNumberInputValue(),
+            ],
+          }
+          : row,
+      ),
+    );
+  };
+
+  const removeCatalogueNumberInputValue = (
+    rowId: string,
+    inputValueId: string,
+  ) => {
+    setCatalogueNumbers((prev) =>
+      prev.map((row) => {
+        if (row.id !== rowId) {
+          return row;
+        }
+
+        const nextCatalogueNumberInputValues =
+          row.catalogueNumberInputValues.filter(
+            (inputValue) => inputValue.id !== inputValueId,
+          );
+
+        if (
+          row.labelInputValues.length + nextCatalogueNumberInputValues.length <
+          1
+        ) {
+          return row;
+        }
+
+        return {
+          ...row,
+          catalogueNumberInputValues: nextCatalogueNumberInputValues,
+        };
+      }),
+    );
+  };
+
+  const setCatalogueNumberInputValue = (
+    rowId: string,
+    inputValueId: string,
     value: string,
   ) => {
     setCatalogueNumbers((prev) =>
       prev.map((row) =>
         row.id === rowId
           ? {
-              ...row,
-              catalogueNumberSlots: row.catalogueNumberSlots.map((slot) =>
-                slot.id === slotId ? { ...slot, value } : slot,
-              ),
-            }
+            ...row,
+            catalogueNumberInputValues: row.catalogueNumberInputValues.map(
+              (inputValue) =>
+                inputValue.id === inputValueId
+                  ? { ...inputValue, value }
+                  : inputValue,
+            ),
+          }
           : row,
       ),
     );
@@ -151,17 +175,21 @@ const AddReleaseCatalogueNumbersSection: FC<
             rowIndex={rowIndex}
             showDivider={rowIndex > 0}
             labels={labels}
-            onAddLabelSlot={() => addLabelSlot(row.id)}
-            onRemoveLabelSlot={(slotId) => removeLabelSlot(row.id, slotId)}
-            onSetLabelSlotName={(slotId, name) =>
-              setLabelSlotName(row.id, slotId, name)
+            onAddLabelInputValue={() => addLabelInputValue(row.id)}
+            onRemoveLabelInputValue={(inputValueId) =>
+              removeLabelInputValue(row.id, inputValueId)
             }
-            onAddCatalogueNumberSlot={() => addCatalogueNumberSlot(row.id)}
-            onRemoveCatalogueNumberSlot={(slotId) =>
-              removeCatalogueNumberSlot(row.id, slotId)
+            onSetLabelInputValueName={(inputValueId, name) =>
+              setLabelInputValueName(row.id, inputValueId, name)
             }
-            onSetCatalogueNumberSlotValue={(slotId, value) =>
-              setCatalogueNumberSlotValue(row.id, slotId, value)
+            onAddCatalogueNumberInputValue={() =>
+              addCatalogueNumberInputValue(row.id)
+            }
+            onRemoveCatalogueNumberInputValue={(inputValueId) =>
+              removeCatalogueNumberInputValue(row.id, inputValueId)
+            }
+            onSetCatalogueNumberInputValue={(inputValueId, value) =>
+              setCatalogueNumberInputValue(row.id, inputValueId, value)
             }
             onRemoveRow={rowIndex > 0 ? () => removeRow(row.id) : undefined}
           />
