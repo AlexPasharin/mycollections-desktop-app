@@ -38,12 +38,6 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
   onFieldFocus,
   onBlur,
 }) => {
-  const hasErrors =
-    errors !== undefined &&
-    Object.values(errors).some(
-      (rowErrors) => rowErrors && rowErrors.length > 0,
-    );
-
   const patchFormat = (rowId: string, patch: AddReleaseFormFormatRowPatch) => {
     setFormats((prevFormatRows) =>
       prevFormatRows.map((formatRow) =>
@@ -71,21 +65,17 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
       return prevFormatRows.map((formatRow) =>
         formatRow.id === rowId
           ? {
-              ...current,
-              formatId,
-              shortName,
-              jukeboxHole: isSevenInch ? current.jukeboxHole : false,
-            }
+            ...current,
+            formatId,
+            shortName,
+            jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+          }
           : formatRow,
       );
     });
   };
 
   const addFormatRow = () => {
-    if (hasErrors) {
-      return;
-    }
-
     setFormats((prevFormatRows) => [
       ...prevFormatRows,
       defaultFormatInputRow(),
@@ -97,6 +87,16 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
       prevFormatRows.filter((formatRow) => formatRow.id !== rowId),
     );
   };
+
+  const hasErrors =
+    errors !== undefined &&
+    Object.values(errors).some(
+      (rowErrors) => rowErrors && rowErrors.length > 0,
+    );
+
+  const hasEmptyFormatId = formats.some((row) => row.formatId === "");
+
+  const showAddNewFormatRowButton = !hasErrors && !hasEmptyFormatId;
 
   return (
     <div className={styles.section}>
@@ -131,7 +131,7 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
         </div>
       ))}
 
-      {!hasErrors && (
+      {showAddNewFormatRowButton && (
         <button
           type="button"
           id="add-release-add-another-format"
