@@ -16,6 +16,7 @@ import {
   GET_ENTRY_RELEASES,
   GET_RELEASE_BY_ID,
   FETCH_RELEASE_FORMATS,
+  FETCH_LABELS,
   OPEN_ARTIST_WINDOW,
   OPEN_ENTRY_WINDOW,
   QUERY_ARTIST,
@@ -24,6 +25,7 @@ import {
 import { fetchArtists, getArtistById, queryArtist } from "@/db/artists";
 import { getEntryById, searchArtistEntries } from "@/db/entries";
 import { fetchReleasesFormats } from "@/db/formats";
+import { fetchLabels } from "@/db/labels";
 import { getEntryReleases, getReleaseById } from "@/db/releases";
 import type { FetchArtistsParams } from "@/types/artists";
 import type { SearchArtistEntriesParams } from "@/types/entries";
@@ -55,6 +57,7 @@ await app.whenReady().then(async () => {
     getReleaseById(releaseId),
   );
   ipcMain.handle(FETCH_RELEASE_FORMATS, () => fetchReleasesFormats());
+  ipcMain.handle(FETCH_LABELS, () => fetchLabels());
   ipcMain.handle(
     SEARCH_ARTIST_ENTRIES,
     (_, params: SearchArtistEntriesParams) => searchArtistEntries(params),
