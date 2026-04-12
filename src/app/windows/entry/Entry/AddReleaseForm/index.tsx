@@ -38,9 +38,7 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
   if (loading) {
     return (
       <div className={styles.section}>
-        <p className={styles.formatsLoadState}>
-          Loading&hellip;
-        </p>
+        <p className={styles.formatsLoadState}>Loading&hellip;</p>
       </div>
     );
   }

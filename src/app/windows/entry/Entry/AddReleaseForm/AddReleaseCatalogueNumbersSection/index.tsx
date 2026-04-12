@@ -38,12 +38,12 @@ const AddReleaseCatalogueNumbersSection: FC<
       prev.map((row) =>
         row.id === rowId
           ? {
-            ...row,
-            labelInputValues: [
-              ...row.labelInputValues,
-              emptyLabelInputValue(),
-            ],
-          }
+              ...row,
+              labelInputValues: [
+                ...row.labelInputValues,
+                emptyLabelInputValue(),
+              ],
+            }
           : row,
       ),
     );
@@ -71,13 +71,13 @@ const AddReleaseCatalogueNumbersSection: FC<
       prev.map((row) =>
         row.id === rowId
           ? {
-            ...row,
-            labelInputValues: row.labelInputValues.map((inputValue) =>
-              inputValue.id === inputValueId
-                ? { ...inputValue, name }
-                : inputValue,
-            ),
-          }
+              ...row,
+              labelInputValues: row.labelInputValues.map((inputValue) =>
+                inputValue.id === inputValueId
+                  ? { ...inputValue, name }
+                  : inputValue,
+              ),
+            }
           : row,
       ),
     );
@@ -88,12 +88,12 @@ const AddReleaseCatalogueNumbersSection: FC<
       prev.map((row) =>
         row.id === rowId
           ? {
-            ...row,
-            catalogueNumberInputValues: [
-              ...row.catalogueNumberInputValues,
-              emptyCatalogueNumberInputValue(),
-            ],
-          }
+              ...row,
+              catalogueNumberInputValues: [
+                ...row.catalogueNumberInputValues,
+                emptyCatalogueNumberInputValue(),
+              ],
+            }
           : row,
       ),
     );
@@ -125,14 +125,14 @@ const AddReleaseCatalogueNumbersSection: FC<
       prev.map((row) =>
         row.id === rowId
           ? {
-            ...row,
-            catalogueNumberInputValues: row.catalogueNumberInputValues.map(
-              (inputValue) =>
-                inputValue.id === inputValueId
-                  ? { ...inputValue, value }
-                  : inputValue,
-            ),
-          }
+              ...row,
+              catalogueNumberInputValues: row.catalogueNumberInputValues.map(
+                (inputValue) =>
+                  inputValue.id === inputValueId
+                    ? { ...inputValue, value }
+                    : inputValue,
+              ),
+            }
           : row,
       ),
     );
