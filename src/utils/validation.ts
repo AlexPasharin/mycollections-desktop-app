@@ -29,15 +29,15 @@ export const getFieldValidationErrorMessages = <
   Shape extends z.core.$ZodLooseShape,
 >(
   schema: z.ZodObject<Shape>,
-  key: keyof Shape & string,
   value: unknown,
+  key?: keyof Shape & string,
 ): ValidationResultErrorMessages | undefined => {
-  const fieldSchema = schema.shape[key] as z.ZodType;
+  const fieldSchema = key ? (schema.shape[key] as z.ZodType) : schema;
   const result = fieldSchema.safeParse(value);
 
   return result.error?.issues.map(({ message, path }) => ({
     message,
-    path: [key, ...path],
+    path: key ? [key, ...path] : path,
   }));
 };
 

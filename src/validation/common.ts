@@ -9,12 +9,13 @@ import { addCustomValidationIssues } from "@/utils/validation";
  */
 export const uniquePropertyArraySchema = <TItem extends z.ZodType>(
   itemSchema: TItem,
-  fieldKey: keyof z.infer<TItem> & PropertyKey,
   validationErrorMessage: string,
+  ignoreValues: unknown[] = [],
+  fieldKey?: keyof z.infer<TItem> & PropertyKey,
 ): z.ZodArray<TItem> =>
   z.array(itemSchema).superRefine((arr, ctx) => {
-    const paths = duplicateIndicesByKey(arr, fieldKey).map(
-      (i) => [i, fieldKey] as PropertyKey[],
+    const paths = duplicateIndicesByKey(arr, ignoreValues, fieldKey).map((i) =>
+      fieldKey ? [i, fieldKey] : [i],
     );
 
     if (paths.length > 0) {

@@ -4,9 +4,9 @@ import AddReleaseCatalogueNumbersRow from "./AddReleaseCatalogueNumbersRow";
 import styles from "./AddReleaseCatalogueNumbersSection.module.css";
 
 import {
-  defaultCatalogueNumberRow,
   emptyCatalogueNumberInputValue,
   emptyLabelInputValue,
+  type AddReleaseFormFieldErrors,
   type CatalogueNumberRowState,
 } from "../addReleaseFormUtils";
 
@@ -20,19 +20,21 @@ export type AddReleaseCatalogueNumbersSectionProps = {
   labels: LabelListItem[];
   catalogueNumbers: CatalogueNumberRowState[];
   setCatalogueNumbers: SetAddReleaseCatalogueNumbers;
+  errors?: AddReleaseFormFieldErrors["catalogueNumbers"];
+  addCatalogueNumbersRow: () => void;
+  removeCatalogueNumbersRow: (rowId: string) => void;
 };
 
 const AddReleaseCatalogueNumbersSection: FC<
   AddReleaseCatalogueNumbersSectionProps
-> = ({ labels, catalogueNumbers, setCatalogueNumbers }) => {
-  const addCatNumbersRow = () => {
-    setCatalogueNumbers((prev) => [...prev, defaultCatalogueNumberRow()]);
-  };
-
-  const removeCatNumbersRow = (rowId: string) => {
-    setCatalogueNumbers((prev) => prev.filter((row) => row.id !== rowId));
-  };
-
+> = ({
+  labels,
+  catalogueNumbers,
+  setCatalogueNumbers,
+  errors,
+  addCatalogueNumbersRow,
+  removeCatalogueNumbersRow,
+}) => {
   const addNewLabelInput = (rowId: string) => {
     setCatalogueNumbers((prev) =>
       prev.map((row) =>
@@ -149,6 +151,7 @@ const AddReleaseCatalogueNumbersSection: FC<
             rowIndex={rowIndex}
             showDivider={rowIndex > 0}
             labels={labels}
+            rowErrors={errors?.[row.id]}
             onAddNewLabelInput={() => addNewLabelInput(row.id)}
             onSetLabelName={(inputValueId, name) =>
               setLabelName(row.id, inputValueId, name)
@@ -165,7 +168,7 @@ const AddReleaseCatalogueNumbersSection: FC<
             onSetCatalogueNumber={(inputValueId, value) =>
               setCatalogueNumber(row.id, inputValueId, value)
             }
-            onRemoveRow={() => removeCatNumbersRow(row.id)}
+            onRemoveRow={() => removeCatalogueNumbersRow(row.id)}
           />
         </div>
       ))}
@@ -173,7 +176,7 @@ const AddReleaseCatalogueNumbersSection: FC<
       <button
         type="button"
         className={styles.addAnotherRow}
-        onClick={addCatNumbersRow}
+        onClick={addCatalogueNumbersRow}
       >
         + Add another catalogue row
       </button>

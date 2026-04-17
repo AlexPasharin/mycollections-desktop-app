@@ -2,8 +2,12 @@ import type { FC } from "react";
 
 import styles from "./AddReleaseCatalogueNumbersRow.module.css";
 
-import type { CatalogueNumberRowState } from "../../addReleaseFormUtils";
+import type {
+  AddReleaseFormCatalogueNumberRowErrors,
+  CatalogueNumberRowState,
+} from "../../addReleaseFormUtils";
 
+import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import type { LabelListItem } from "@/types/labels";
 
 export type AddReleaseCatalogueNumbersRowProps = {
@@ -11,6 +15,7 @@ export type AddReleaseCatalogueNumbersRowProps = {
   rowIndex: number;
   showDivider: boolean;
   labels: LabelListItem[];
+  rowErrors?: AddReleaseFormCatalogueNumberRowErrors | undefined;
   onAddNewLabelInput: () => void;
   onRemoveLabelInput: (inputValueId: string) => void;
   onSetLabelName: (inputValueId: string, name: string) => void;
@@ -25,6 +30,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
   rowIndex,
   showDivider,
   labels,
+  rowErrors,
   onAddNewLabelInput,
   onRemoveLabelInput,
   onSetLabelName,
@@ -41,58 +47,88 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
   const canRemoveAnyInput =
     row.labelInputValues.length + row.catalogueNumberInputValues.length > 1;
 
+  const rowCommonErrorId = `add-release-cat-row-error-${row.id}`;
+  const rowCommonMessages = errorSetToMessages(rowErrors?.rowErrorMessages);
+
   return (
     <>
       {showDivider && <hr className={styles.divider} aria-hidden />}
       <div className={rowBlockClassName}>
-        <div role="group" aria-label={`Catalogue numbers ${rowIndex + 1}`}>
+        <div
+          role="group"
+          aria-label={`Catalogue numbers ${rowIndex + 1}`}
+          aria-describedby={
+            rowCommonMessages?.length ? rowCommonErrorId : undefined
+          }
+        >
           <div className={styles.rowColumns}>
             <div className={styles.column}>
-              {row.labelInputValues.map((inputValue) => (
-                <div key={inputValue.id} className={styles.inputValueBlock}>
-                  <div className={styles.segment}>
-                    <label
-                      className={styles.label}
-                      htmlFor={`add-release-cat-label-${row.id}-${inputValue.id}`}
-                    >
-                      Label
-                    </label>
-                    <div className={styles.controlWithRemove}>
-                      <select
-                        id={`add-release-cat-label-${row.id}-${inputValue.id}`}
-                        className={styles.input}
-                        value={inputValue.name}
-                        onChange={(e) =>
-                          onSetLabelName(inputValue.id, e.target.value)
-                        }
+              {row.labelInputValues.map((inputValue) => {
+                const labelErrorMessages = errorSetToMessages(
+                  rowErrors?.labelInputErrorMessages?.[inputValue.id],
+                );
+                const labelErrorId = `add-release-cat-label-error-${row.id}-${inputValue.id}`;
+                const hasLabelErrors =
+                  labelErrorMessages != null && labelErrorMessages.length > 0;
+
+                return (
+                  <div key={inputValue.id} className={styles.inputValueBlock}>
+                    <div className={styles.segment}>
+                      <label
+                        className={styles.label}
+                        htmlFor={`add-release-cat-label-${row.id}-${inputValue.id}`}
                       >
-                        <option value="" />
-                        {labels.map((label) => (
-                          <option key={label.labelId} value={label.name}>
-                            {label.name}
-                          </option>
-                        ))}
-                      </select>
-                      <div
-                        className={styles.removeCrossInputValue}
-                        aria-hidden={canRemoveAnyInput ? undefined : true}
-                      >
-                        {canRemoveAnyInput ? (
-                          <button
-                            type="button"
-                            className={styles.removeCross}
-                            aria-label="Remove label"
-                            title="Remove label"
-                            onClick={() => onRemoveLabelInput(inputValue.id)}
-                          >
-                            <span aria-hidden="true">❌</span>
-                          </button>
-                        ) : null}
+                        Label
+                      </label>
+                      <div className={styles.controlWithRemove}>
+                        <select
+                          id={`add-release-cat-label-${row.id}-${inputValue.id}`}
+                          className={styles.input}
+                          value={inputValue.name}
+                          aria-invalid={hasLabelErrors}
+                          aria-describedby={
+                            hasLabelErrors ? labelErrorId : undefined
+                          }
+                          onChange={(e) =>
+                            onSetLabelName(inputValue.id, e.target.value)
+                          }
+                        >
+                          <option value="" />
+                          {labels.map((label) => (
+                            <option key={label.labelId} value={label.name}>
+                              {label.name}
+                            </option>
+                          ))}
+                        </select>
+                        <div
+                          className={styles.removeCrossInputValue}
+                          aria-hidden={canRemoveAnyInput ? undefined : true}
+                        >
+                          {canRemoveAnyInput && (
+                            <button
+                              type="button"
+                              className={styles.removeCross}
+                              aria-label="Remove label"
+                              title="Remove label"
+                              onClick={() => onRemoveLabelInput(inputValue.id)}
+                            >
+                              <span aria-hidden="true">❌</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
+                      {hasLabelErrors && (
+                        <div className={styles.fieldErrorSlot}>
+                          <FormFieldErrorMessages
+                            id={labelErrorId}
+                            messages={labelErrorMessages}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <div className={styles.rowActions}>
                 <button
                   type="button"
@@ -105,48 +141,70 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
             </div>
 
             <div className={styles.column}>
-              {row.catalogueNumberInputValues.map((inputValue) => (
-                <div key={inputValue.id} className={styles.inputValueBlock}>
-                  <div className={styles.segment}>
-                    <label
-                      className={styles.label}
-                      htmlFor={`add-release-cat-number-${row.id}-${inputValue.id}`}
-                    >
-                      Catalogue number
-                    </label>
-                    <div className={styles.controlWithRemove}>
-                      <input
-                        id={`add-release-cat-number-${row.id}-${inputValue.id}`}
-                        className={styles.input}
-                        type="text"
-                        value={inputValue.value}
-                        onChange={(e) =>
-                          onSetCatalogueNumber(inputValue.id, e.target.value)
-                        }
-                        autoComplete="off"
-                      />
-                      <div
-                        className={styles.removeCrossInputValue}
-                        aria-hidden={canRemoveAnyInput ? undefined : true}
+              {row.catalogueNumberInputValues.map((inputValue) => {
+                const catNumberErrorMessages = errorSetToMessages(
+                  rowErrors?.catNumberInputErrorMessages?.[inputValue.id],
+                );
+                const catNumberErrorId = `add-release-cat-number-error-${row.id}-${inputValue.id}`;
+                const hasCatNumberErrors =
+                  catNumberErrorMessages != null &&
+                  catNumberErrorMessages.length > 0;
+
+                return (
+                  <div key={inputValue.id} className={styles.inputValueBlock}>
+                    <div className={styles.segment}>
+                      <label
+                        className={styles.label}
+                        htmlFor={`add-release-cat-number-${row.id}-${inputValue.id}`}
                       >
-                        {canRemoveAnyInput ? (
-                          <button
-                            type="button"
-                            className={styles.removeCross}
-                            aria-label="Remove catalogue number"
-                            title="Remove catalogue number"
-                            onClick={() =>
-                              onRemoveCatalogueNumberInput(inputValue.id)
-                            }
-                          >
-                            <span aria-hidden="true">❌</span>
-                          </button>
-                        ) : null}
+                        Catalogue number
+                      </label>
+                      <div className={styles.controlWithRemove}>
+                        <input
+                          id={`add-release-cat-number-${row.id}-${inputValue.id}`}
+                          className={styles.input}
+                          type="text"
+                          value={inputValue.value}
+                          aria-invalid={hasCatNumberErrors}
+                          aria-describedby={
+                            hasCatNumberErrors ? catNumberErrorId : undefined
+                          }
+                          onChange={(e) =>
+                            onSetCatalogueNumber(inputValue.id, e.target.value)
+                          }
+                          autoComplete="off"
+                        />
+                        <div
+                          className={styles.removeCrossInputValue}
+                          aria-hidden={canRemoveAnyInput ? undefined : true}
+                        >
+                          {canRemoveAnyInput && (
+                            <button
+                              type="button"
+                              className={styles.removeCross}
+                              aria-label="Remove catalogue number"
+                              title="Remove catalogue number"
+                              onClick={() =>
+                                onRemoveCatalogueNumberInput(inputValue.id)
+                              }
+                            >
+                              <span aria-hidden="true">❌</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
+                      {hasCatNumberErrors && (
+                        <div className={styles.fieldErrorSlot}>
+                          <FormFieldErrorMessages
+                            id={catNumberErrorId}
+                            messages={catNumberErrorMessages}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <div className={styles.rowActions}>
                 <button
                   type="button"
@@ -158,6 +216,15 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
               </div>
             </div>
           </div>
+
+          {rowCommonMessages && rowCommonMessages.length > 0 && (
+            <div className={styles.rowErrorSlot}>
+              <FormFieldErrorMessages
+                id={rowCommonErrorId}
+                messages={rowCommonMessages}
+              />
+            </div>
+          )}
         </div>
 
         <div className={styles.removeRow}>
@@ -176,3 +243,8 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
 };
 
 export default AddReleaseCatalogueNumbersRow;
+
+const errorSetToMessages = (
+  set?: Set<string>,
+): { message: string }[] | null =>
+  set && set.size > 0 ? Array.from(set, (message) => ({ message })) : null;

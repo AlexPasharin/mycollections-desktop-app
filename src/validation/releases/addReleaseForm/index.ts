@@ -20,5 +20,5 @@ export const createAddReleaseFormSchema = (
     releaseVersion: releaseVersionSchema,
     releaseDate: createGeneralizedDateSchema(releaseDateStart).optional(),
     formats: addReleaseFormFormatInputArraySchema,
-    catalogueNumbers: z.array(catalogueNumberRowSchema),
+    catalogueNumbers: z.array(catalogueNumberRowSchema).optional(),
   });

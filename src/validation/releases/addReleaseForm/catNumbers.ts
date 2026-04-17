@@ -2,29 +2,22 @@ import { z } from "zod";
 
 import { uniquePropertyArraySchema } from "@/validation/common";
 
-const catalogueNumberLabelInputValueSchema = z.object({
-  id: z.string().trim().min(1, "Id is required"),
-  name: z.string().trim().min(1, "Name is required"),
-});
+export const labelInputValuesSchema = uniquePropertyArraySchema(
+  z.string().trim().min(1, "Label is required"),
+  "Label names must be unique",
+  [""],
+);
 
-const catalogueNumberInputValueSchema = z.object({
-  id: z.string().trim().min(1, "Id is required"),
-  value: z.string().trim().min(1, "Value for catalogue number is required"),
-});
+export const catalogueNumberInputValuesSchema = uniquePropertyArraySchema(
+  z.string().trim().min(1, "Value for catalogue number is required"),
+  "Catalogue number values must be unique",
+  [""],
+);
 
 export const catalogueNumberRowSchema = z
   .object({
-    id: z.string().trim().min(1, "Id is required"),
-    labelInputValues: uniquePropertyArraySchema(
-      catalogueNumberLabelInputValueSchema,
-      "name",
-      "Label names must be unique within this row",
-    ),
-    catalogueNumberInputValues: uniquePropertyArraySchema(
-      catalogueNumberInputValueSchema,
-      "value",
-      "Catalogue number values must be unique within this row",
-    ),
+    labelInputValues: labelInputValuesSchema,
+    catalogueNumberInputValues: catalogueNumberInputValuesSchema,
   })
   .refine(
     (row) =>

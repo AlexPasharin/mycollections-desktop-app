@@ -3,15 +3,20 @@
  */
 export const duplicateIndicesByKey = <T, K extends keyof T>(
   items: readonly T[],
-  key: K,
+  ignoreValues: unknown[] = [],
+  key?: K,
 ): number[] => {
-  const seen = new Set<T[K]>();
+  const seen = new Set();
   const indicesOfDuplicates: number[] = [];
 
   let index = 0;
 
   for (const item of items) {
-    const value = item[key];
+    const value = key ? item[key] : item;
+
+    if (ignoreValues.includes(value)) {
+      continue;
+    }
 
     if (seen.has(value)) {
       indicesOfDuplicates.push(index);
