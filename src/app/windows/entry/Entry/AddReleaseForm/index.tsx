@@ -6,10 +6,11 @@ import styles from "./AddReleaseForm.module.css";
 import api from "@/app/windows/entry/api";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
+import type { TagListItem } from "@/types/tags";
 
 type AddReleaseFormWrapperProps = Omit<
   AddReleaseFormProps,
-  "releasesFormats" | "labels"
+  "releasesFormats" | "labels" | "tags"
 >;
 
 const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
@@ -17,17 +18,23 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
     ReleasesFormatListItem[]
   >([]);
   const [labels, setLabels] = useState<LabelListItem[]>([]);
+  const [tags, setTags] = useState<TagListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [dataLoadingFailed, setDataLoadingFailed] = useState(false);
 
   useEffect(() => {
-    Promise.all([api.fetchReleasesFormats(), api.fetchLabels()])
-      .then(([formatsData, labelsData]) => {
+    Promise.all([
+      api.fetchReleasesFormats(),
+      api.fetchLabels(),
+      api.fetchTags(),
+    ])
+      .then(([formatsData, labelsData, tagsData]) => {
         setReleasesFormats(formatsData);
         setLabels(labelsData);
+        setTags(tagsData);
       })
       .catch((error: unknown) => {
-        console.error("Error fetching release formats or labels", error);
+        console.error("Error fetching release formats, labels, or tags", error);
         setDataLoadingFailed(true);
       })
       .finally(() => {
@@ -58,6 +65,7 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
       {...props}
       releasesFormats={releasesFormats}
       labels={labels}
+      tags={tags}
     />
   );
 };

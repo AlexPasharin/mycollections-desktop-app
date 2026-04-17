@@ -5,6 +5,7 @@ import type { API } from "./api";
 import {
   FETCH_LABELS,
   FETCH_RELEASE_FORMATS,
+  FETCH_TAGS,
   GET_ENTRY_BY_ID,
   GET_ENTRY_RELEASES,
   GET_RELEASE_BY_ID,
@@ -13,6 +14,7 @@ import {
 const api = {
   fetchLabels: () => ipcRenderer.invoke(FETCH_LABELS),
   fetchReleasesFormats: () => ipcRenderer.invoke(FETCH_RELEASE_FORMATS),
+  fetchTags: () => ipcRenderer.invoke(FETCH_TAGS),
   getEntryById: (entryId: string) =>
     ipcRenderer.invoke(GET_ENTRY_BY_ID, entryId),
   getEntryReleases: (entryId: string) =>
