@@ -4,9 +4,12 @@ import AddReleaseCatalogueNumbersRow from "./AddReleaseCatalogueNumbersRow";
 import styles from "./AddReleaseCatalogueNumbersSection.module.css";
 
 import {
-  defaultCatalogueNumberRow,
   emptyCatalogueNumberInputValue,
   emptyLabelInputValue,
+  type AddReleaseFormCatalogueNumberRowErrors,
+  type AddReleaseFormCatalogueNumbersInputFieldKey,
+  type AddReleaseFormFieldErrors,
+  type CatalogueNumbersInputField,
   type CatalogueNumberRowState,
 } from "../addReleaseFormUtils";
 
@@ -20,18 +23,31 @@ export type AddReleaseCatalogueNumbersSectionProps = {
   labels: LabelListItem[];
   catalogueNumbers: CatalogueNumberRowState[];
   setCatalogueNumbers: SetAddReleaseCatalogueNumbers;
+  errors?: AddReleaseFormFieldErrors["catalogueNumbers"];
+  addCatalogueNumbersRow: () => void;
+  removeCatalogueNumbersRow: (rowId: string) => void;
+  onFieldFocus: (key: AddReleaseFormCatalogueNumbersInputFieldKey) => void;
+  onBlurRowColumn: (
+    rowId: string,
+    fieldType: CatalogueNumbersInputField,
+  ) => void;
 };
 
 const AddReleaseCatalogueNumbersSection: FC<
   AddReleaseCatalogueNumbersSectionProps
-> = ({ labels, catalogueNumbers, setCatalogueNumbers }) => {
-  const addCatNumbersRow = () => {
-    setCatalogueNumbers((prev) => [...prev, defaultCatalogueNumberRow()]);
-  };
-
-  const removeCatNumbersRow = (rowId: string) => {
-    setCatalogueNumbers((prev) => prev.filter((row) => row.id !== rowId));
-  };
+> = ({
+  labels,
+  catalogueNumbers,
+  setCatalogueNumbers,
+  errors,
+  addCatalogueNumbersRow,
+  removeCatalogueNumbersRow,
+  onFieldFocus,
+  onBlurRowColumn,
+}) => {
+  const catNumberSectionValuesAreInvalid =
+    !catalogueNumberRowsAreFullyFilled(catalogueNumbers) ||
+    catalogueNumbersSectionHasAnyErrors(errors);
 
   const addNewLabelInput = (rowId: string) => {
     setCatalogueNumbers((prev) =>
@@ -149,6 +165,8 @@ const AddReleaseCatalogueNumbersSection: FC<
             rowIndex={rowIndex}
             showDivider={rowIndex > 0}
             labels={labels}
+            catNumberSectionValuesAreInvalid={catNumberSectionValuesAreInvalid}
+            rowErrors={errors?.[row.id]}
             onAddNewLabelInput={() => addNewLabelInput(row.id)}
             onSetLabelName={(inputValueId, name) =>
               setLabelName(row.id, inputValueId, name)
@@ -165,22 +183,74 @@ const AddReleaseCatalogueNumbersSection: FC<
             onSetCatalogueNumber={(inputValueId, value) =>
               setCatalogueNumber(row.id, inputValueId, value)
             }
-            onRemoveRow={
-              rowIndex > 0 ? () => removeCatNumbersRow(row.id) : undefined
-            }
+            onRemoveRow={() => removeCatalogueNumbersRow(row.id)}
+            onFieldFocus={onFieldFocus}
+            onBlurRowColumn={(fieldType) => onBlurRowColumn(row.id, fieldType)}
           />
         </div>
       ))}
 
-      <button
-        type="button"
-        className={styles.addAnotherRow}
-        onClick={addCatNumbersRow}
-      >
-        + Add another catalogue row
-      </button>
+      {!catNumberSectionValuesAreInvalid && (
+        <button
+          type="button"
+          className={styles.addAnotherRow}
+          onClick={addCatalogueNumbersRow}
+        >
+          + Add another catalogue row
+        </button>
+      )}
     </div>
   );
 };
 
 export default AddReleaseCatalogueNumbersSection;
+
+const catalogueNumberRowErrorsHasMessages = (
+  rowErrors: AddReleaseFormCatalogueNumberRowErrors | undefined,
+): boolean => {
+  if (!rowErrors) {
+    return false;
+  }
+
+  if ((rowErrors.rowErrorMessages?.size ?? 0) > 0) {
+    return true;
+  }
+
+  for (const messageSet of Object.values(
+    rowErrors.labelInputErrorMessages ?? {},
+  )) {
+    if (messageSet.size > 0) {
+      return true;
+    }
+  }
+
+  for (const messageSet of Object.values(
+    rowErrors.catNumberInputErrorMessages ?? {},
+  )) {
+    if (messageSet.size > 0) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const catalogueNumberRowsAreFullyFilled = (
+  rows: CatalogueNumberRowState[],
+): boolean =>
+  rows.every(
+    (row) =>
+      row.labelInputValues.every((label) => label.name.trim().length > 0) &&
+      row.catalogueNumberInputValues.every(
+        (cat) => cat.value.trim().length > 0,
+      ),
+  );
+
+const catalogueNumbersSectionHasAnyErrors = (
+  catalogueNumbersErrors:
+    | AddReleaseFormFieldErrors["catalogueNumbers"]
+    | undefined,
+): boolean =>
+  Object.values(catalogueNumbersErrors ?? {}).some((rowErrors) =>
+    catalogueNumberRowErrorsHasMessages(rowErrors),
+  );

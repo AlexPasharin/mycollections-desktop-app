@@ -5,8 +5,8 @@ interface CssExports {
   'field': string;
   'form': string;
   'formatsLoadState': string;
+  'heading': string;
   'input': string;
-  'label': string;
   'requiredMark': string;
   'section': string;
 }

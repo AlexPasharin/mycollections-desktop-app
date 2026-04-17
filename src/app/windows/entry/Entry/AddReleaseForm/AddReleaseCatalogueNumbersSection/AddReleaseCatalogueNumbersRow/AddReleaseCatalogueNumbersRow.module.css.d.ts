@@ -5,6 +5,7 @@ interface CssExports {
   'column': string;
   'controlWithRemove': string;
   'divider': string;
+  'fieldErrorSlot': string;
   'input': string;
   'inputValueBlock': string;
   'label': string;
@@ -16,6 +17,7 @@ interface CssExports {
   'rowBlock': string;
   'rowBlockFirst': string;
   'rowColumns': string;
+  'rowErrorSlot': string;
   'segment': string;
 }
 export const cssExports: CssExports;
