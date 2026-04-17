@@ -34,10 +34,7 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
         setTags(tagsData);
       })
       .catch((error: unknown) => {
-        console.error(
-          "Error fetching release formats, labels, or tags",
-          error,
-        );
+        console.error("Error fetching release formats, labels, or tags", error);
         setDataLoadingFailed(true);
       })
       .finally(() => {

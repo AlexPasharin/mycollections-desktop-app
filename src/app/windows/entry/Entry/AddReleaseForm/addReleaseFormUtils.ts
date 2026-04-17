@@ -139,6 +139,7 @@ export type AddReleaseFormDraft = {
   releaseDate: GeneralizedDateFormInputValue;
   formats: AddReleaseFormFormatInput[];
   catalogueNumbers: CatalogueNumberRowState[];
+  selectedTags: Record<string, string>;
 };
 
 export const initialAddReleaseFormDraftValue = (
@@ -152,6 +153,7 @@ export const initialAddReleaseFormDraftValue = (
   },
   formats: [defaultFormatInputRow()],
   catalogueNumbers: [defaultCatalogueNumberRow()],
+  selectedTags: {},
 });
 
 export const getReleaseDateFormFieldErrors = (

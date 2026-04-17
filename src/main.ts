@@ -27,8 +27,8 @@ import { fetchArtists, getArtistById, queryArtist } from "@/db/artists";
 import { getEntryById, searchArtistEntries } from "@/db/entries";
 import { fetchReleasesFormats } from "@/db/formats";
 import { fetchLabels } from "@/db/labels";
-import { fetchTags } from "@/db/tags";
 import { getEntryReleases, getReleaseById } from "@/db/releases";
+import { fetchTags } from "@/db/tags";
 import type { FetchArtistsParams } from "@/types/artists";
 import type { SearchArtistEntriesParams } from "@/types/entries";
 

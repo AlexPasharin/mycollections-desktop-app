@@ -20,6 +20,7 @@ import {
   type AddReleaseFormInputFieldKey,
   type UpdateCatNumberFieldErrorsArgs,
 } from "./addReleaseFormUtils";
+import AddReleaseTagsSection from "./AddReleaseTagsSection";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
@@ -49,7 +50,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   onCancel,
   releasesFormats,
   labels,
-  tags: _tags,
+  tags,
 }) => {
   const { originalReleaseDate } = entry;
 
@@ -287,6 +288,21 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     ]);
   };
 
+  const addSelectedTag = (tagId: string, tag: string) => {
+    setField("selectedTags", (prev) => ({
+      ...prev.selectedTags,
+      [tagId]: tag,
+    }));
+  };
+
+  const removeSelectedTag = (tagId: string) => {
+    setField("selectedTags", (prev) => {
+      const { [tagId]: _removed, ...rest } = prev.selectedTags;
+
+      return rest;
+    });
+  };
+
   const removeCatalogueNumbersRow = (rowId: string) => {
     setFieldErrors((prev) => {
       const { catalogueNumbers } = prev;
@@ -311,9 +327,19 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
 
+    const {
+      releaseVersion,
+      releaseDate,
+      formats,
+      catalogueNumbers,
+      selectedTags,
+    } = form;
+
     const dataToValidate = {
-      ...form,
-      catalogueNumbers: form.catalogueNumbers.map((row) => ({
+      releaseVersion,
+      releaseDate,
+      formats,
+      catalogueNumbers: catalogueNumbers.map((row) => ({
         labelInputValues: row.labelInputValues.map((label) => label.name),
         catalogueNumberInputValues: row.catalogueNumberInputValues.map(
           (catNumber) => catNumber.value,
@@ -323,7 +349,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     const result = validateAgainstSchema(addReleaseFormSchema, dataToValidate);
 
-    console.info({ form, result });
+    console.info({ form, result, selectedTags: Object.entries(selectedTags) });
 
     if (!result.success) {
       setFieldErrors(getFieldErrorsPatch(result.errorMessages));
@@ -332,7 +358,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     }
 
     setFieldErrors({});
-    alert(`submitting! (not really) ${JSON.stringify(result.data)}`);
   };
 
   const releaseVersionErrors = fieldErrors.releaseVersion ?? [];
@@ -402,6 +427,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           removeFormatRow={removeFormatRow}
           onFieldFocus={onFocus}
           onBlur={() => onBlur("formats")}
+        />
+
+        <AddReleaseTagsSection
+          tags={tags}
+          selectedTags={form.selectedTags}
+          onAddTag={addSelectedTag}
+          onRemoveTag={removeSelectedTag}
         />
 
         <AddReleaseCatalogueNumbersSection
