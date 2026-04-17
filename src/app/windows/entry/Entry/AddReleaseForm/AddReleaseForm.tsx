@@ -12,6 +12,7 @@ import {
   getFormatsFormFieldErrors,
   getReleaseDateFormFieldErrors,
   initialAddReleaseFormDraftValue,
+  isCatalogueNumbersInputFieldKey,
   isFormatInputFieldKey,
   isReleaseDateInputFieldKey,
   type AddReleaseFormDraft,
@@ -145,6 +146,71 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         };
       }
 
+      if (isCatalogueNumbersInputFieldKey(key)) {
+        const { catNumberRowId, field, inputValueId } = key;
+        const { catalogueNumbers } = prev;
+
+        if (!catalogueNumbers) {
+          return prev;
+        }
+
+        const rowErrors = catalogueNumbers[catNumberRowId];
+
+        if (!rowErrors) {
+          return prev;
+        }
+
+        const nextRowErrors: typeof rowErrors = { ...rowErrors };
+
+        if (field === "label") {
+          const labelInputErrorMessages = nextRowErrors.labelInputErrorMessages;
+
+          if (labelInputErrorMessages) {
+            const { [inputValueId]: _removed, ...restLabelErrors } =
+              labelInputErrorMessages;
+
+            nextRowErrors.labelInputErrorMessages =
+              Object.keys(restLabelErrors).length > 0
+                ? restLabelErrors
+                : undefined;
+          }
+        } else {
+          const catNumberInputErrorMessages =
+            nextRowErrors.catNumberInputErrorMessages;
+
+          if (catNumberInputErrorMessages) {
+            const { [inputValueId]: _removed, ...restCatNumberErrors } =
+              catNumberInputErrorMessages;
+
+            nextRowErrors.catNumberInputErrorMessages =
+              Object.keys(restCatNumberErrors).length > 0
+                ? restCatNumberErrors
+                : undefined;
+          }
+        }
+
+        const rowStillHasErrors =
+          Object.keys(nextRowErrors.labelInputErrorMessages ?? {}).length > 0 ||
+          Object.keys(nextRowErrors.catNumberInputErrorMessages ?? {}).length >
+            0 ||
+          (nextRowErrors.rowErrorMessages?.size ?? 0) > 0;
+
+        const { [catNumberRowId]: _removedRow, ...otherRows } =
+          catalogueNumbers;
+
+        const nextCatalogueNumbers = rowStillHasErrors
+          ? { ...otherRows, [catNumberRowId]: nextRowErrors }
+          : otherRows;
+
+        return {
+          ...prev,
+          catalogueNumbers:
+            Object.keys(nextCatalogueNumbers).length > 0
+              ? nextCatalogueNumbers
+              : undefined,
+        };
+      }
+
       const errorKey = isReleaseDateInputFieldKey(key) ? "releaseDate" : key;
 
       const errors = prev[errorKey]?.filter(
@@ -235,8 +301,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
       return {
         ...prev,
-        catalogueNumbers:
-          Object.keys(rest).length > 0 ? rest : undefined,
+        catalogueNumbers: Object.keys(rest).length > 0 ? rest : undefined,
       };
     });
 
@@ -352,6 +417,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           errors={fieldErrors.catalogueNumbers}
           addCatalogueNumbersRow={addCatalogueNumbersRow}
           removeCatalogueNumbersRow={removeCatalogueNumbersRow}
+          onFieldFocus={onFocus}
         />
 
         <div className={styles.actions}>

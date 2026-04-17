@@ -4,6 +4,7 @@ import styles from "./AddReleaseCatalogueNumbersRow.module.css";
 
 import type {
   AddReleaseFormCatalogueNumberRowErrors,
+  AddReleaseFormInputFieldKey,
   CatalogueNumberRowState,
 } from "../../addReleaseFormUtils";
 
@@ -23,6 +24,7 @@ export type AddReleaseCatalogueNumbersRowProps = {
   onRemoveCatalogueNumberInput: (inputValueId: string) => void;
   onSetCatalogueNumber: (inputValueId: string, value: string) => void;
   onRemoveRow: () => void;
+  onFieldFocus: (key: AddReleaseFormInputFieldKey) => void;
 };
 
 const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
@@ -38,6 +40,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
   onRemoveCatalogueNumberInput,
   onSetCatalogueNumber,
   onRemoveRow,
+  onFieldFocus,
 }) => {
   const rowBlockClassName =
     rowIndex === 0
@@ -91,6 +94,13 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                           }
                           onChange={(e) =>
                             onSetLabelName(inputValue.id, e.target.value)
+                          }
+                          onFocus={() =>
+                            onFieldFocus({
+                              catNumberRowId: row.id,
+                              field: "label",
+                              inputValueId: inputValue.id,
+                            })
                           }
                         >
                           <option value="" />
@@ -172,6 +182,13 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                           onChange={(e) =>
                             onSetCatalogueNumber(inputValue.id, e.target.value)
                           }
+                          onFocus={() =>
+                            onFieldFocus({
+                              catNumberRowId: row.id,
+                              field: "catNumber",
+                              inputValueId: inputValue.id,
+                            })
+                          }
                           autoComplete="off"
                         />
                         <div
@@ -244,7 +261,5 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
 
 export default AddReleaseCatalogueNumbersRow;
 
-const errorSetToMessages = (
-  set?: Set<string>,
-): { message: string }[] | null =>
+const errorSetToMessages = (set?: Set<string>) =>
   set && set.size > 0 ? Array.from(set, (message) => ({ message })) : null;

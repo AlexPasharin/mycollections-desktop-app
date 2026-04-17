@@ -61,16 +61,27 @@ export type AddReleaseFormFieldErrors = {
     | undefined;
 };
 
+type CatalogueNumbersInputField = "label" | "catNumber";
+
 export type AddReleaseFormInputFieldKey =
   | "releaseVersion"
   | ReleaseDateFieldErrorSource
-  | { formatRowId: string; field: FormatField };
+  | { formatRowId: string; field: FormatField }
+  | {
+      catNumberRowId: string;
+      field: CatalogueNumbersInputField;
+      inputValueId: string;
+    };
 
 export const isReleaseDateInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
   key === "year" || key === "month" || key === "day";
 
 export const isFormatInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
-  typeof key === "object";
+  typeof key === "object" && "formatRowId" in key;
+
+export const isCatalogueNumbersInputFieldKey = (
+  key: AddReleaseFormInputFieldKey,
+) => typeof key === "object" && "catNumberRowId" in key;
 
 export const defaultFormatInputRow = (): AddReleaseFormFormatInput => ({
   id: uuidv4(),

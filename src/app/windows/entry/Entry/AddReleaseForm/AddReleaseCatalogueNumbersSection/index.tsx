@@ -7,6 +7,7 @@ import {
   emptyCatalogueNumberInputValue,
   emptyLabelInputValue,
   type AddReleaseFormFieldErrors,
+  type AddReleaseFormInputFieldKey,
   type CatalogueNumberRowState,
 } from "../addReleaseFormUtils";
 
@@ -23,6 +24,7 @@ export type AddReleaseCatalogueNumbersSectionProps = {
   errors?: AddReleaseFormFieldErrors["catalogueNumbers"];
   addCatalogueNumbersRow: () => void;
   removeCatalogueNumbersRow: (rowId: string) => void;
+  onFieldFocus: (key: AddReleaseFormInputFieldKey) => void;
 };
 
 const AddReleaseCatalogueNumbersSection: FC<
@@ -34,6 +36,7 @@ const AddReleaseCatalogueNumbersSection: FC<
   errors,
   addCatalogueNumbersRow,
   removeCatalogueNumbersRow,
+  onFieldFocus,
 }) => {
   const addNewLabelInput = (rowId: string) => {
     setCatalogueNumbers((prev) =>
@@ -169,6 +172,7 @@ const AddReleaseCatalogueNumbersSection: FC<
               setCatalogueNumber(row.id, inputValueId, value)
             }
             onRemoveRow={() => removeCatalogueNumbersRow(row.id)}
+            onFieldFocus={onFieldFocus}
           />
         </div>
       ))}
