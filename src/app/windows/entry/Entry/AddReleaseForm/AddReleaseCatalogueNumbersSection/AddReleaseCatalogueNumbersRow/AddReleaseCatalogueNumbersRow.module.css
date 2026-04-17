@@ -43,6 +43,14 @@
   width: 100%;
 }
 
+.fieldErrorSlot {
+  margin-top: 0.15rem;
+}
+
+.rowErrorSlot {
+  margin-top: 0.35rem;
+}
+
 .controlWithRemove {
   display: flex;
   flex-direction: row;

@@ -5,8 +5,8 @@ import styles from "./AddReleaseFormFormatBlock.module.css";
 import type {
   AddReleaseFormFormatInput,
   FormatField,
-  AddReleaseFormInputFieldKey,
   AddReleaseFormFieldError,
+  AddReleaseFormFormatInputFieldKey,
 } from "../../addReleaseFormUtils";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
@@ -25,7 +25,7 @@ type AddReleaseFormFormatBlockProps = {
   onFormatChange: (formatId: string) => void;
   patchFormat: (patch: AddReleaseFormFormatRowPatch) => void;
   onRemoveFormat?: (() => void) | undefined;
-  onFieldFocus: (key: AddReleaseFormInputFieldKey) => void;
+  onFieldFocus: (key: AddReleaseFormFormatInputFieldKey) => void;
   onBlur: () => void;
 };
 

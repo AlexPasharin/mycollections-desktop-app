@@ -4,16 +4,21 @@ import AddReleaseCatalogueNumbersSection from "./AddReleaseCatalogueNumbersSecti
 import styles from "./AddReleaseForm.module.css";
 import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
 import {
+  defaultCatalogueNumberRow,
   defaultFormatInputRow,
+  getCaNumbersFormFieldErrors,
   getFormatsFormFieldErrors,
   getReleaseDateFormFieldErrors,
   initialAddReleaseFormDraftValue,
+  updateCatNumberFieldErrors,
+  isCatalogueNumbersInputFieldKey,
   isFormatInputFieldKey,
   isReleaseDateInputFieldKey,
   type AddReleaseFormDraft,
   type AddReleaseFormEntry,
   type AddReleaseFormFieldErrors,
   type AddReleaseFormInputFieldKey,
+  type UpdateCatNumberFieldErrorsArgs,
 } from "./addReleaseFormUtils";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
@@ -90,15 +95,26 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       ({ path }) => path[0] === "releaseVersion",
     );
 
+    const catalogueNumbersErrorMessages = errorMessages.filter(
+      ({ path }) => path[0] === "catalogueNumbers",
+    );
+
     fieldErrorsPatch.releaseDate = getReleaseDateFormFieldErrors(
       releaseDateErrorMessages,
     );
+
     fieldErrorsPatch.formats = getFormatsFormFieldErrors(
       formatsErrorMessages,
       form.formats,
     );
+
     fieldErrorsPatch.releaseVersion = releaseVersionErrorMessages.map(
       ({ message }) => ({ message }),
+    );
+
+    fieldErrorsPatch.catalogueNumbers = getCaNumbersFormFieldErrors(
+      catalogueNumbersErrorMessages,
+      form.catalogueNumbers,
     );
 
     return fieldErrorsPatch;
@@ -130,6 +146,71 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         };
       }
 
+      if (isCatalogueNumbersInputFieldKey(key)) {
+        const { catNumberRowId, field, inputValueId } = key;
+        const { catalogueNumbers } = prev;
+
+        if (!catalogueNumbers) {
+          return prev;
+        }
+
+        const rowErrors = catalogueNumbers[catNumberRowId];
+
+        if (!rowErrors) {
+          return prev;
+        }
+
+        const nextRowErrors: typeof rowErrors = { ...rowErrors };
+
+        if (field === "label") {
+          const labelInputErrorMessages = nextRowErrors.labelInputErrorMessages;
+
+          if (labelInputErrorMessages) {
+            const { [inputValueId]: _removed, ...restLabelErrors } =
+              labelInputErrorMessages;
+
+            nextRowErrors.labelInputErrorMessages =
+              Object.keys(restLabelErrors).length > 0
+                ? restLabelErrors
+                : undefined;
+          }
+        } else {
+          const catNumberInputErrorMessages =
+            nextRowErrors.catNumberInputErrorMessages;
+
+          if (catNumberInputErrorMessages) {
+            const { [inputValueId]: _removed, ...restCatNumberErrors } =
+              catNumberInputErrorMessages;
+
+            nextRowErrors.catNumberInputErrorMessages =
+              Object.keys(restCatNumberErrors).length > 0
+                ? restCatNumberErrors
+                : undefined;
+          }
+        }
+
+        const rowStillHasErrors =
+          Object.keys(nextRowErrors.labelInputErrorMessages ?? {}).length > 0 ||
+          Object.keys(nextRowErrors.catNumberInputErrorMessages ?? {}).length >
+            0 ||
+          (nextRowErrors.rowErrorMessages?.size ?? 0) > 0;
+
+        const { [catNumberRowId]: _removedRow, ...otherRows } =
+          catalogueNumbers;
+
+        const nextCatalogueNumbers = rowStillHasErrors
+          ? { ...otherRows, [catNumberRowId]: nextRowErrors }
+          : otherRows;
+
+        return {
+          ...prev,
+          catalogueNumbers:
+            Object.keys(nextCatalogueNumbers).length > 0
+              ? nextCatalogueNumbers
+              : undefined,
+        };
+      }
+
       const errorKey = isReleaseDateInputFieldKey(key) ? "releaseDate" : key;
 
       const errors = prev[errorKey]?.filter(
@@ -143,12 +224,27 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     });
   };
 
-  const onBlur = (key: keyof AddReleaseFormDraft) => {
+  type onBlurKey =
+    | Exclude<keyof AddReleaseFormDraft, "catalogueNumbers">
+    | UpdateCatNumberFieldErrorsArgs;
+
+  const onBlur = (key: onBlurKey) => {
     setFieldErrors((prev) => {
+      if (typeof key === "object") {
+        return {
+          ...prev,
+          catalogueNumbers: updateCatNumberFieldErrors(
+            form.catalogueNumbers,
+            prev.catalogueNumbers,
+            key,
+          ),
+        };
+      }
+
       const errorMessages = getFieldValidationErrorMessages(
         addReleaseFormSchema,
-        key,
         form[key],
+        key,
       );
 
       return {
@@ -184,9 +280,48 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     );
   };
 
+  const addCatalogueNumbersRow = () => {
+    setField("catalogueNumbers", (prev) => [
+      ...prev.catalogueNumbers,
+      defaultCatalogueNumberRow(),
+    ]);
+  };
+
+  const removeCatalogueNumbersRow = (rowId: string) => {
+    setFieldErrors((prev) => {
+      const { catalogueNumbers } = prev;
+
+      if (!catalogueNumbers) {
+        return prev;
+      }
+
+      const { [rowId]: _removed, ...rest } = catalogueNumbers;
+
+      return {
+        ...prev,
+        catalogueNumbers: Object.keys(rest).length > 0 ? rest : undefined,
+      };
+    });
+
+    setField("catalogueNumbers", (prev) =>
+      prev.catalogueNumbers.filter((row) => row.id !== rowId),
+    );
+  };
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    const result = validateAgainstSchema(addReleaseFormSchema, form);
+
+    const dataToValidate = {
+      ...form,
+      catalogueNumbers: form.catalogueNumbers.map((row) => ({
+        labelInputValues: row.labelInputValues.map((label) => label.name),
+        catalogueNumberInputValues: row.catalogueNumberInputValues.map(
+          (catNumber) => catNumber.value,
+        ),
+      })),
+    };
+
+    const result = validateAgainstSchema(addReleaseFormSchema, dataToValidate);
 
     console.info({ form, result });
 
@@ -209,7 +344,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     <div className={styles.section}>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="add-release-version">
+          <label className={styles.heading} htmlFor="add-release-version">
             Release version
             <sup className={styles.requiredMark} aria-hidden="true">
               *
@@ -240,6 +375,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         </div>
 
         <div className={styles.field}>
+          <p className={styles.heading}>Release date</p>
           <GeneralizedDateFormInput
             date={form.releaseDate}
             startDate={entry.originalReleaseDate}
@@ -275,6 +411,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             setField("catalogueNumbers", (prev) =>
               update(prev.catalogueNumbers),
             )
+          }
+          errors={fieldErrors.catalogueNumbers}
+          addCatalogueNumbersRow={addCatalogueNumbersRow}
+          removeCatalogueNumbersRow={removeCatalogueNumbersRow}
+          onFieldFocus={onFocus}
+          onBlurRowColumn={(catNumberRowId, fieldType) =>
+            onBlur({ catNumberRowId, fieldType })
           }
         />
 
