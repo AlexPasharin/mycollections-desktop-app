@@ -20,6 +20,7 @@ import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
+import type { TagListItem } from "@/types/tags";
 import {
   getFieldValidationErrorMessages,
   validateAgainstSchema,
@@ -32,6 +33,7 @@ export type AddReleaseFormProps = {
   onCancel: () => void;
   releasesFormats: ReleasesFormatListItem[];
   labels: LabelListItem[];
+  tags: TagListItem[];
 };
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
@@ -42,6 +44,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   onCancel,
   releasesFormats,
   labels,
+  tags: _tags,
 }) => {
   const { originalReleaseDate } = entry;
 

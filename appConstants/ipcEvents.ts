@@ -6,6 +6,7 @@ export const GET_ENTRY_RELEASES = "get-entry-releases";
 export const GET_RELEASE_BY_ID = "get-release-by-id";
 export const FETCH_RELEASE_FORMATS = "fetch-release-formats";
 export const FETCH_LABELS = "fetch-labels";
+export const FETCH_TAGS = "fetch-tags";
 export const SEARCH_ARTIST_ENTRIES = "search-artist-entries";
 
 export const OPEN_ARTIST_WINDOW = "open-new-artist-window";
