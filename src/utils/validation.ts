@@ -25,20 +25,34 @@ export type ValidationResultErrorMessages = {
   path: PropertyKey[];
 }[];
 
-export const getFieldValidationErrorMessages = <
-  Shape extends z.core.$ZodLooseShape,
->(
-  schema: z.ZodObject<Shape>,
+export const getFieldValidationErrorMessages = (
+  schema: z.ZodType,
   value: unknown,
-  key?: keyof Shape & string,
+  key?: string,
 ): ValidationResultErrorMessages | undefined => {
-  const fieldSchema = key ? (schema.shape[key] as z.ZodType) : schema;
-  const result = fieldSchema.safeParse(value);
+  let validationSchema: z.ZodType;
 
-  return result.error?.issues.map(({ message, path }) => ({
-    message,
-    path: key ? [key, ...path] : path,
-  }));
+  if (key === undefined) {
+    validationSchema = schema;
+  } else {
+    if (!(schema instanceof z.ZodObject)) {
+      throw new Error(`Schema is not an object for key: ${key}`);
+    }
+
+    const shape = schema.shape as Record<string, z.ZodType>;
+
+    const fieldSchema = shape[key];
+
+    if (fieldSchema === undefined) {
+      throw new Error(`Field schema not found for key: ${key}`);
+    }
+
+    validationSchema = fieldSchema;
+  }
+
+  const result = validationSchema.safeParse(value);
+
+  return validationResultErrorMessagesFromSafeParseResult(result);
 };
 
 type ValidateAgainstSchemaResult<
@@ -64,9 +78,23 @@ export const validateAgainstSchema = <
 
   return {
     success: false,
-    errorMessages: parsed.error.issues.map(({ message, path }) => ({
-      message,
-      path,
-    })),
+    errorMessages: validationResultErrorMessagesFromSafeParseResult(parsed),
   };
 };
+
+function validationResultErrorMessagesFromSafeParseResult(
+  result: z.ZodSafeParseError<unknown>,
+): ValidationResultErrorMessages;
+
+function validationResultErrorMessagesFromSafeParseResult(
+  result: z.ZodSafeParseResult<unknown>,
+): ValidationResultErrorMessages | undefined;
+
+function validationResultErrorMessagesFromSafeParseResult(
+  result: z.ZodSafeParseResult<unknown>,
+): ValidationResultErrorMessages | undefined {
+  return result.error?.issues.map(({ message, path }) => ({
+    message,
+    path,
+  }));
+}

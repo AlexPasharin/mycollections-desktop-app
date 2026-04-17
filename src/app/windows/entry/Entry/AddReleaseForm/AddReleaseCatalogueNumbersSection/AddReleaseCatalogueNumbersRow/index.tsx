@@ -4,7 +4,8 @@ import styles from "./AddReleaseCatalogueNumbersRow.module.css";
 
 import type {
   AddReleaseFormCatalogueNumberRowErrors,
-  AddReleaseFormInputFieldKey,
+  AddReleaseFormCatalogueNumbersInputFieldKey,
+  CatalogueNumbersInputField,
   CatalogueNumberRowState,
 } from "../../addReleaseFormUtils";
 
@@ -16,6 +17,7 @@ export type AddReleaseCatalogueNumbersRowProps = {
   rowIndex: number;
   showDivider: boolean;
   labels: LabelListItem[];
+  catNumberSectionValuesAreInvalid: boolean;
   rowErrors?: AddReleaseFormCatalogueNumberRowErrors | undefined;
   onAddNewLabelInput: () => void;
   onRemoveLabelInput: (inputValueId: string) => void;
@@ -24,7 +26,8 @@ export type AddReleaseCatalogueNumbersRowProps = {
   onRemoveCatalogueNumberInput: (inputValueId: string) => void;
   onSetCatalogueNumber: (inputValueId: string, value: string) => void;
   onRemoveRow: () => void;
-  onFieldFocus: (key: AddReleaseFormInputFieldKey) => void;
+  onFieldFocus: (key: AddReleaseFormCatalogueNumbersInputFieldKey) => void;
+  onBlurRowColumn: (fieldType: CatalogueNumbersInputField) => void;
 };
 
 const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
@@ -32,6 +35,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
   rowIndex,
   showDivider,
   labels,
+  catNumberSectionValuesAreInvalid,
   rowErrors,
   onAddNewLabelInput,
   onRemoveLabelInput,
@@ -41,6 +45,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
   onSetCatalogueNumber,
   onRemoveRow,
   onFieldFocus,
+  onBlurRowColumn,
 }) => {
   const rowBlockClassName =
     rowIndex === 0
@@ -102,6 +107,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                               inputValueId: inputValue.id,
                             })
                           }
+                          onBlur={() => onBlurRowColumn("label")}
                         >
                           <option value="" />
                           {labels.map((label) => (
@@ -139,15 +145,17 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                   </div>
                 );
               })}
-              <div className={styles.rowActions}>
-                <button
-                  type="button"
-                  className={styles.addAnotherInputValue}
-                  onClick={onAddNewLabelInput}
-                >
-                  + Add another label
-                </button>
-              </div>
+              {!catNumberSectionValuesAreInvalid && (
+                <div className={styles.rowActions}>
+                  <button
+                    type="button"
+                    className={styles.addAnotherInputValue}
+                    onClick={onAddNewLabelInput}
+                  >
+                    + Add another label
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className={styles.column}>
@@ -189,6 +197,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                               inputValueId: inputValue.id,
                             })
                           }
+                          onBlur={() => onBlurRowColumn("catNumber")}
                           autoComplete="off"
                         />
                         <div
@@ -222,15 +231,17 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                   </div>
                 );
               })}
-              <div className={styles.rowActions}>
-                <button
-                  type="button"
-                  className={styles.addAnotherInputValue}
-                  onClick={onAddNewCatalogueNumberInput}
-                >
-                  + Add another catalogue number
-                </button>
-              </div>
+              {!catNumberSectionValuesAreInvalid && (
+                <div className={styles.rowActions}>
+                  <button
+                    type="button"
+                    className={styles.addAnotherInputValue}
+                    onClick={onAddNewCatalogueNumberInput}
+                  >
+                    + Add another catalogue number
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

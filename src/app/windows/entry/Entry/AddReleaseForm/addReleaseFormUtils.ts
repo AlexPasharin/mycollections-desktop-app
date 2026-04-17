@@ -3,7 +3,14 @@ import { v4 as uuidv4 } from "uuid";
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryByIdResult } from "@/types/entries";
-import type { ValidationResultErrorMessages } from "@/utils/validation";
+import {
+  getFieldValidationErrorMessages,
+  type ValidationResultErrorMessages,
+} from "@/utils/validation";
+import {
+  catalogueNumberInputValuesSchema,
+  labelInputValuesSchema,
+} from "@/validation/releases/addReleaseForm/catNumbers";
 
 export type AddReleaseFormEntry = Omit<
   EntryByIdResult,
@@ -61,17 +68,24 @@ export type AddReleaseFormFieldErrors = {
     | undefined;
 };
 
-type CatalogueNumbersInputField = "label" | "catNumber";
+export type CatalogueNumbersInputField = "label" | "catNumber";
+
+export type AddReleaseFormFormatInputFieldKey = {
+  formatRowId: string;
+  field: FormatField;
+};
+
+export type AddReleaseFormCatalogueNumbersInputFieldKey = {
+  catNumberRowId: string;
+  field: CatalogueNumbersInputField;
+  inputValueId: string;
+};
 
 export type AddReleaseFormInputFieldKey =
   | "releaseVersion"
   | ReleaseDateFieldErrorSource
-  | { formatRowId: string; field: FormatField }
-  | {
-      catNumberRowId: string;
-      field: CatalogueNumbersInputField;
-      inputValueId: string;
-    };
+  | AddReleaseFormFormatInputFieldKey
+  | AddReleaseFormCatalogueNumbersInputFieldKey;
 
 export const isReleaseDateInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
   key === "year" || key === "month" || key === "day";
@@ -335,4 +349,84 @@ export const getCaNumbersFormFieldErrors = (
   }
 
   return errorMessagesMap;
+};
+
+export type UpdateCatNumberFieldErrorsArgs = {
+  catNumberRowId: string;
+  fieldType: "label" | "catNumber";
+};
+
+export const updateCatNumberFieldErrors = (
+  currentCatalogueNumberFieldInputValues: CatalogueNumberRowState[],
+  currentCatNumberFieldErrors: AddReleaseFormFieldErrors["catalogueNumbers"],
+  args: UpdateCatNumberFieldErrorsArgs,
+): AddReleaseFormFieldErrors["catalogueNumbers"] => {
+  const catNumberRow = currentCatalogueNumberFieldInputValues.find(
+    (row) => row.id === args.catNumberRowId,
+  );
+
+  if (!catNumberRow) {
+    return currentCatNumberFieldErrors;
+  }
+
+  const { catNumberRowId, fieldType } = args;
+
+  const schema =
+    fieldType === "label"
+      ? labelInputValuesSchema
+      : catalogueNumberInputValuesSchema;
+
+  const value =
+    fieldType === "label"
+      ? catNumberRow.labelInputValues.map((label) => label.name)
+      : catNumberRow.catalogueNumberInputValues.map((input) => input.value);
+
+  const errorMessages = getFieldValidationErrorMessages(schema, value) ?? [];
+
+  const nextFieldTypeErrors: Record<string, Set<string>> = {};
+
+  const inputValues =
+    fieldType === "label"
+      ? catNumberRow.labelInputValues
+      : catNumberRow.catalogueNumberInputValues;
+
+  for (const { message, path } of errorMessages) {
+    const idx = path[0];
+    const inputId = typeof idx === "number" ? inputValues[idx]?.id : undefined;
+
+    if (!inputId) {
+      continue;
+    }
+
+    (nextFieldTypeErrors[inputId] ??= new Set()).add(message);
+  }
+
+  const errorsKey =
+    fieldType === "label"
+      ? "labelInputErrorMessages"
+      : "catNumberInputErrorMessages";
+
+  const nextRowErrors: AddReleaseFormCatalogueNumberRowErrors = {
+    ...currentCatNumberFieldErrors?.[catNumberRowId],
+    [errorsKey]:
+      Object.keys(nextFieldTypeErrors).length > 0
+        ? nextFieldTypeErrors
+        : undefined,
+  };
+
+  const hasRowErrors =
+    Object.keys(nextRowErrors.labelInputErrorMessages ?? {}).length > 0 ||
+    Object.keys(nextRowErrors.catNumberInputErrorMessages ?? {}).length > 0 ||
+    (nextRowErrors.rowErrorMessages?.size ?? 0) > 0;
+
+  const { [catNumberRowId]: _removed, ...restRows } =
+    currentCatNumberFieldErrors ?? {};
+
+  const nextCatalogueNumbers = hasRowErrors
+    ? { ...restRows, [catNumberRowId]: nextRowErrors }
+    : restRows;
+
+  return Object.keys(nextCatalogueNumbers).length > 0
+    ? nextCatalogueNumbers
+    : undefined;
 };

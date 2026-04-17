@@ -1,7 +1,5 @@
 import { useMemo, useState, type FC, type FormEvent } from "react";
 
-// import { z } from "zod";
-
 import AddReleaseCatalogueNumbersSection from "./AddReleaseCatalogueNumbersSection";
 import styles from "./AddReleaseForm.module.css";
 import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
@@ -12,6 +10,7 @@ import {
   getFormatsFormFieldErrors,
   getReleaseDateFormFieldErrors,
   initialAddReleaseFormDraftValue,
+  updateCatNumberFieldErrors,
   isCatalogueNumbersInputFieldKey,
   isFormatInputFieldKey,
   isReleaseDateInputFieldKey,
@@ -19,6 +18,7 @@ import {
   type AddReleaseFormEntry,
   type AddReleaseFormFieldErrors,
   type AddReleaseFormInputFieldKey,
+  type UpdateCatNumberFieldErrorsArgs,
 } from "./addReleaseFormUtils";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
@@ -31,9 +31,6 @@ import {
   type ValidationResultErrorMessages,
 } from "@/utils/validation";
 import { createAddReleaseFormSchema } from "@/validation/releases/addReleaseForm";
-
-// import { uniquePropertyArraySchema } from "@/validation/common";
-// import { catalogueNumberInputValuesSchema, labelInputValuesSchema } from "@/validation/releases/addReleaseForm/catNumbers";
 
 export type AddReleaseFormProps = {
   entry: AddReleaseFormEntry;
@@ -226,21 +223,19 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   type onBlurKey =
     | Exclude<keyof AddReleaseFormDraft, "catalogueNumbers">
-    | { catNumberRowId: string; fieldType: "label" | "catNumber" };
+    | UpdateCatNumberFieldErrorsArgs;
 
   const onBlur = (key: onBlurKey) => {
     setFieldErrors((prev) => {
       if (typeof key === "object") {
-        // const { catNumberRowId, fieldType } = key;
-
-        // const validationSchema = fieldType === "label" ? labelInputValuesSchema : catalogueNumberInputValuesSchema;
-
-        // const errorMessages = getFieldValidationErrorMessages(
-        //   addReleaseFormSchema,
-        //   validationSchema,
-        // );
-
-        return prev;
+        return {
+          ...prev,
+          catalogueNumbers: updateCatNumberFieldErrors(
+            form.catalogueNumbers,
+            prev.catalogueNumbers,
+            key,
+          ),
+        };
       }
 
       const errorMessages = getFieldValidationErrorMessages(
@@ -418,6 +413,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           addCatalogueNumbersRow={addCatalogueNumbersRow}
           removeCatalogueNumbersRow={removeCatalogueNumbersRow}
           onFieldFocus={onFocus}
+          onBlurRowColumn={(catNumberRowId, fieldType) =>
+            onBlur({ catNumberRowId, fieldType })
+          }
         />
 
         <div className={styles.actions}>

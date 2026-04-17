@@ -8,7 +8,7 @@ import styles from "./AddReleaseFormFormatsSection.module.css";
 import type {
   AddReleaseFormFormatInput,
   AddReleaseFormFieldErrors,
-  AddReleaseFormInputFieldKey,
+  AddReleaseFormFormatInputFieldKey,
 } from "../addReleaseFormUtils";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
@@ -27,7 +27,7 @@ type AddReleaseFormFormatsSectionProps = {
   setFormats: SetAddReleaseFormFormats;
   addFormatRow: () => void;
   removeFormatRow: (rowId: string) => void;
-  onFieldFocus: (key: AddReleaseFormInputFieldKey) => void;
+  onFieldFocus: (key: AddReleaseFormFormatInputFieldKey) => void;
   onBlur: () => void;
 };
 
