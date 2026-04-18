@@ -20,6 +20,7 @@ import {
   type AddReleaseFormInputFieldKey,
   type UpdateCatNumberFieldErrorsArgs,
 } from "./addReleaseFormUtils";
+import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
 import AddReleaseTagsSection from "./AddReleaseTagsSection";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
@@ -44,7 +45,6 @@ export type AddReleaseFormProps = {
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
 const RELEASE_VERSION_FIELD_ERROR_ID = "add-release-version-error";
-const MATRIX_RUNOUT_FIELD_ERROR_ID = "add-release-matrix-runout-error";
 
 const AddReleaseForm: FC<AddReleaseFormProps> = ({
   entry,
@@ -201,7 +201,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         const rowStillHasErrors =
           Object.keys(nextRowErrors.labelInputErrorMessages ?? {}).length > 0 ||
           Object.keys(nextRowErrors.catNumberInputErrorMessages ?? {}).length >
-          0 ||
+            0 ||
           (nextRowErrors.rowErrorMessages?.size ?? 0) > 0;
 
         const { [catNumberRowId]: _removedRow, ...otherRows } =
@@ -374,7 +374,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const matrixRunoutErrors = fieldErrors.matrixRunout ?? [];
   const releaseDateErrors = fieldErrors.releaseDate ?? [];
   const hasReleaseVersionErrors = releaseVersionErrors.length > 0;
-  const hasMatrixRunoutErrors = matrixRunoutErrors.length > 0;
   const hasReleaseDateErrors = releaseDateErrors.length > 0;
 
   return (
@@ -458,55 +457,24 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           }
         />
 
-        <div className={styles.field}>
-          <label className={styles.heading} htmlFor="add-release-matrix-runout">
-            Matrix / runout
-          </label>
-          <textarea
-            id="add-release-matrix-runout"
-            className={styles.textarea}
-            rows={4}
-            value={form.matrixRunout.value}
-            onChange={(e) =>
-              setField("matrixRunout", (draft) => ({
-                ...draft.matrixRunout,
-                value: e.target.value,
-              }))
-            }
-            onFocus={() => onFocus("matrixRunout")}
-            onBlur={() => onBlur("matrixRunout")}
-            aria-invalid={hasMatrixRunoutErrors}
-            aria-describedby={
-              hasMatrixRunoutErrors ? MATRIX_RUNOUT_FIELD_ERROR_ID : undefined
-            }
-            autoComplete="off"
-          />
-          <div className={styles.checkboxRow}>
-            <input
-              id="add-release-matrix-runout-plain-text"
-              type="checkbox"
-              checked={form.matrixRunout.treatAsText}
-              onChange={(e) =>
-                setField("matrixRunout", (draft) => ({
-                  ...draft.matrixRunout,
-                  treatAsText: e.target.checked,
-                }))
-              }
-              onFocus={() => onFocus("matrixRunout")}
-              onBlur={() => onBlur("matrixRunout")}
-            />
-            <label
-              className={styles.checkboxLabel}
-              htmlFor="add-release-matrix-runout-plain-text"
-            >
-              treat as plain text, not json object
-            </label>
-          </div>
-          <FormFieldErrorMessages
-            id={MATRIX_RUNOUT_FIELD_ERROR_ID}
-            messages={matrixRunoutErrors}
-          />
-        </div>
+        <AddReleaseMatrixRunoutField
+          matrixRunout={form.matrixRunout}
+          errorMessages={matrixRunoutErrors}
+          onValueChange={(value) =>
+            setField("matrixRunout", (draft) => ({
+              ...draft.matrixRunout,
+              value,
+            }))
+          }
+          onTreatAsTextChange={(treatAsText) =>
+            setField("matrixRunout", (draft) => ({
+              ...draft.matrixRunout,
+              treatAsText,
+            }))
+          }
+          onFocus={() => onFocus("matrixRunout")}
+          onBlur={() => onBlur("matrixRunout")}
+        />
 
         <AddReleaseTagsSection
           tags={tags}

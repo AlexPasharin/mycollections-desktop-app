@@ -1,0 +1,33 @@
+.heading {
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+}
+
+.textarea {
+  padding: 0.35rem 0.5rem;
+  font-size: 1em;
+  font-family: inherit;
+  line-height: 1.35;
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+}
+
+.checkboxLabel {
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.35;
+}
