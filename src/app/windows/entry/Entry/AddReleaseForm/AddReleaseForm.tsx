@@ -20,6 +20,7 @@ import {
   type AddReleaseFormInputFieldKey,
   type UpdateCatNumberFieldErrorsArgs,
 } from "./addReleaseFormUtils";
+import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
 import AddReleaseTagsSection from "./AddReleaseTagsSection";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
@@ -95,6 +96,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     const releaseVersionErrorMessages = errorMessages.filter(
       ({ path }) => path[0] === "releaseVersion",
     );
+    const matrixRunoutErrorMessages = errorMessages.filter(
+      ({ path }) => path[0] === "matrixRunout",
+    );
 
     const catalogueNumbersErrorMessages = errorMessages.filter(
       ({ path }) => path[0] === "catalogueNumbers",
@@ -110,6 +114,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     );
 
     fieldErrorsPatch.releaseVersion = releaseVersionErrorMessages.map(
+      ({ message }) => ({ message }),
+    );
+
+    fieldErrorsPatch.matrixRunout = matrixRunoutErrorMessages.map(
       ({ message }) => ({ message }),
     );
 
@@ -329,6 +337,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     const {
       releaseVersion,
+      matrixRunout,
       releaseDate,
       formats,
       catalogueNumbers,
@@ -337,6 +346,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     const dataToValidate = {
       releaseVersion,
+      matrixRunout,
       releaseDate,
       formats,
       catalogueNumbers: catalogueNumbers.map((row) => ({
@@ -361,6 +371,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const releaseVersionErrors = fieldErrors.releaseVersion ?? [];
+  const matrixRunoutErrors = fieldErrors.matrixRunout ?? [];
   const releaseDateErrors = fieldErrors.releaseDate ?? [];
   const hasReleaseVersionErrors = releaseVersionErrors.length > 0;
   const hasReleaseDateErrors = releaseDateErrors.length > 0;
@@ -429,13 +440,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           onBlur={() => onBlur("formats")}
         />
 
-        <AddReleaseTagsSection
-          tags={tags}
-          selectedTags={form.selectedTags}
-          onAddTag={addSelectedTag}
-          onRemoveTag={removeSelectedTag}
-        />
-
         <AddReleaseCatalogueNumbersSection
           labels={labels}
           catalogueNumbers={form.catalogueNumbers}
@@ -451,6 +455,32 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           onBlurRowColumn={(catNumberRowId, fieldType) =>
             onBlur({ catNumberRowId, fieldType })
           }
+        />
+
+        <AddReleaseMatrixRunoutField
+          matrixRunout={form.matrixRunout}
+          errorMessages={matrixRunoutErrors}
+          onValueChange={(value) =>
+            setField("matrixRunout", (draft) => ({
+              ...draft.matrixRunout,
+              value,
+            }))
+          }
+          onTreatAsTextChange={(treatAsText) =>
+            setField("matrixRunout", (draft) => ({
+              ...draft.matrixRunout,
+              treatAsText,
+            }))
+          }
+          onFocus={() => onFocus("matrixRunout")}
+          onBlur={() => onBlur("matrixRunout")}
+        />
+
+        <AddReleaseTagsSection
+          tags={tags}
+          selectedTags={form.selectedTags}
+          onAddTag={addSelectedTag}
+          onRemoveTag={removeSelectedTag}
         />
 
         <div className={styles.actions}>
