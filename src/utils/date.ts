@@ -106,15 +106,14 @@ export const startOfToday = (): Date => {
 };
 
 /**
- * Calendar length of `month` (**1–12**) for `year`, in UTC (same convention as {@link startOfToday}
- * and {@link toValidCalendarDate}).
+ * Calendar length of `month` (**1–12**) for `year`, in UTC
  */
 export const daysInCalendarMonth = (year: number, month: number): number =>
   new Date(Date.UTC(year, month, 0)).getUTCDate();
 
 /**
  * Converts a generalized date to a UTC `Date` at **00:00:00.000 UTC** for that calendar day,
- * or `null` if `date` is undefined or the combination is invalid (e.g. 2023-02-30).
+ * or `null` if `date` is undefined, year is not given or the combination is invalid (e.g. 2023-02-30).
  *
  * When month and/or day are omitted, the missing parts are filled like SQL `generalised_date_to_date`:
  * - `moveForwardIfIncomplete === false` (default): month → 1, day → 1 (start of year or month).
@@ -124,7 +123,7 @@ export const toValidCalendarDate = (
   date: GeneralizedDate | null | undefined,
   moveForwardIfIncomplete = false,
 ): Date | null => {
-  if (date == null) {
+  if (date?.year === undefined) {
     return null;
   }
 

@@ -34,7 +34,21 @@ export const createGeneralizedDateSchema = (
         const message = "Month is required when day is provided.";
 
         addCustomValidationIssues(ctx, message, ["month"], ["day"]);
+      }
 
+      if (date.month !== undefined && date.year === undefined) {
+        const message = "Year is required when month is provided.";
+
+        addCustomValidationIssues(ctx, message, ["year"], ["month"]);
+      }
+
+      if (date.day !== undefined && date.year === undefined) {
+        const message = "Year is required when day is provided.";
+
+        addCustomValidationIssues(ctx, message, ["year"], ["day"]);
+      }
+
+      if (ctx.issues.length > 0 || date.year === undefined) {
         return;
       }
 
@@ -60,7 +74,7 @@ export const createGeneralizedDateSchema = (
 const YEAR_MIN_MESSAGE = `Year must be ${MIN_CALENDAR_YEAR} or later.`;
 
 export const generalizedDateYearSchema = coercedIntSchema.pipe(
-  z.int().min(MIN_CALENDAR_YEAR, { error: YEAR_MIN_MESSAGE }),
+  z.optional(z.int().min(MIN_CALENDAR_YEAR, { error: YEAR_MIN_MESSAGE })),
 );
 
 const MONTH_RANGE_MESSAGE = "Month must be between 1 and 12.";

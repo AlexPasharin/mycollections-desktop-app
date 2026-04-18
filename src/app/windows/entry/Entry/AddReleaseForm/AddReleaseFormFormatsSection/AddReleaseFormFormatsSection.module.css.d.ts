@@ -7,6 +7,7 @@ interface CssExports {
   'formatBlock': string;
   'formatBlockFirst': string;
   'heading': string;
+  'requiredMark': string;
   'section': string;
 }
 export const cssExports: CssExports;

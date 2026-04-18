@@ -68,11 +68,11 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
       return prevFormatRows.map((formatRow) =>
         formatRow.id === rowId
           ? {
-              ...current,
-              formatId,
-              shortName,
-              jukeboxHole: isSevenInch ? current.jukeboxHole : false,
-            }
+            ...current,
+            formatId,
+            shortName,
+            jukeboxHole: isSevenInch ? current.jukeboxHole : false,
+          }
           : formatRow,
       );
     });
@@ -90,7 +90,12 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
 
   return (
     <div className={styles.section}>
-      <p className={styles.heading}>Formats</p>
+      <p className={styles.heading}>Formats
+        <sup className={styles.requiredMark} aria-hidden="true">
+          *
+        </sup>
+      </p>
+
 
       {formats.map((formatRow, rowIndex) => (
         <div key={formatRow.id}>
