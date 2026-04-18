@@ -25,6 +25,7 @@ import AddReleaseTagsSection from "./AddReleaseTagsSection";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
+import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
 import type { TagListItem } from "@/types/tags";
@@ -41,6 +42,7 @@ export type AddReleaseFormProps = {
   releasesFormats: ReleasesFormatListItem[];
   labels: LabelListItem[];
   tags: TagListItem[];
+  countries: CountryListItem[];
 };
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";

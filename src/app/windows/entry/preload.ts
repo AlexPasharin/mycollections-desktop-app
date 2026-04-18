@@ -3,6 +3,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { API } from "./api";
 
 import {
+  FETCH_COUNTRIES,
   FETCH_LABELS,
   FETCH_RELEASE_FORMATS,
   FETCH_TAGS,
@@ -12,6 +13,7 @@ import {
 } from "@/appConstants/ipcEvents";
 
 const api = {
+  fetchCountries: () => ipcRenderer.invoke(FETCH_COUNTRIES),
   fetchLabels: () => ipcRenderer.invoke(FETCH_LABELS),
   fetchReleasesFormats: () => ipcRenderer.invoke(FETCH_RELEASE_FORMATS),
   fetchTags: () => ipcRenderer.invoke(FETCH_TAGS),

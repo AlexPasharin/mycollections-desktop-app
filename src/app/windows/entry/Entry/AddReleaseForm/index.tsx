@@ -4,13 +4,14 @@ import AddReleaseForm, { type AddReleaseFormProps } from "./AddReleaseForm";
 import styles from "./AddReleaseForm.module.css";
 
 import api from "@/app/windows/entry/api";
+import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
 import type { TagListItem } from "@/types/tags";
 
 type AddReleaseFormWrapperProps = Omit<
   AddReleaseFormProps,
-  "releasesFormats" | "labels" | "tags"
+  "releasesFormats" | "labels" | "tags" | "countries"
 >;
 
 const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
@@ -19,6 +20,7 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
   >([]);
   const [labels, setLabels] = useState<LabelListItem[]>([]);
   const [tags, setTags] = useState<TagListItem[]>([]);
+  const [countries, setCountries] = useState<CountryListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [dataLoadingFailed, setDataLoadingFailed] = useState(false);
 
@@ -27,14 +29,19 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
       api.fetchReleasesFormats(),
       api.fetchLabels(),
       api.fetchTags(),
+      api.fetchCountries(),
     ])
-      .then(([formatsData, labelsData, tagsData]) => {
+      .then(([formatsData, labelsData, tagsData, countriesData]) => {
         setReleasesFormats(formatsData);
         setLabels(labelsData);
         setTags(tagsData);
+        setCountries(countriesData);
       })
       .catch((error: unknown) => {
-        console.error("Error fetching release formats, labels, or tags", error);
+        console.error(
+          "Error fetching release formats, labels, tags, or countries",
+          error,
+        );
         setDataLoadingFailed(true);
       })
       .finally(() => {
@@ -66,6 +73,7 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
       releasesFormats={releasesFormats}
       labels={labels}
       tags={tags}
+      countries={countries}
     />
   );
 };
