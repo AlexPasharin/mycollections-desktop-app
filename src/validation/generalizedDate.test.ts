@@ -189,13 +189,6 @@ describe("createGeneralizedDateSchema", () => {
     ).toThrow();
   });
 
-  it("rejects empty or whitespace-only year strings", () => {
-    const schema = createGeneralizedDateSchema();
-
-    expect(() => schema.parse({ year: "" })).toThrow();
-    expect(() => schema.parse({ year: "   " })).toThrow();
-  });
-
   it("treats empty or whitespace-only month and day strings as omitted", () => {
     const schema = createGeneralizedDateSchema();
 
@@ -251,13 +244,7 @@ describe("createGeneralizedDateSchema", () => {
 
     const result = schema.safeParse({ year: "2000", day: "15" });
 
-    expect(result.success).toBe(false);
-
-    if (result.success) {
-      throw new Error("expected parse failure");
-    }
-
-    expect(result.error.issues).toEqual([
+    expect(result.error?.issues).toEqual([
       expect.objectContaining({
         message: "Month is required when day is provided.",
         path: ["month"],
@@ -267,6 +254,117 @@ describe("createGeneralizedDateSchema", () => {
         path: ["day"],
       }),
     ]);
+  });
+
+  describe("partial date: year required when month or day is set", () => {
+    it("rejects month without year (string month)", () => {
+      const schema = createGeneralizedDateSchema();
+
+      const result = schema.safeParse({ month: "6" });
+
+      expect(result.error?.issues).toEqual([
+        expect.objectContaining({
+          message: "Year is required when month is provided.",
+          path: ["year"],
+        }),
+        expect.objectContaining({
+          message: "Year is required when month is provided.",
+          path: ["month"],
+        }),
+      ]);
+    });
+
+    it("rejects month without year (numeric month)", () => {
+      const schema = createGeneralizedDateSchema();
+
+      const result = schema.safeParse({ month: 6 });
+
+      expect(result.error?.issues).toEqual([
+        expect.objectContaining({
+          message: "Year is required when month is provided.",
+          path: ["year"],
+        }),
+        expect.objectContaining({
+          message: "Year is required when month is provided.",
+          path: ["month"],
+        }),
+      ]);
+    });
+
+    it("rejects day and month without year (both year rules apply)", () => {
+      const schema = createGeneralizedDateSchema();
+
+      const result = schema.safeParse({ month: "6", day: "15" });
+
+      expect(result.error?.issues).toEqual([
+        expect.objectContaining({
+          message: "Year is required when month is provided.",
+          path: ["year"],
+        }),
+        expect.objectContaining({
+          message: "Year is required when month is provided.",
+          path: ["month"],
+        }),
+        expect.objectContaining({
+          message: "Year is required when day is provided.",
+          path: ["year"],
+        }),
+        expect.objectContaining({
+          message: "Year is required when day is provided.",
+          path: ["day"],
+        }),
+      ]);
+    });
+
+    it("rejects day without month or year (month missing and year missing)", () => {
+      const schema = createGeneralizedDateSchema();
+
+      const result = schema.safeParse({ day: "15" });
+
+      expect(result.error?.issues).toEqual([
+        expect.objectContaining({
+          message: "Month is required when day is provided.",
+          path: ["month"],
+        }),
+        expect.objectContaining({
+          message: "Month is required when day is provided.",
+          path: ["day"],
+        }),
+        expect.objectContaining({
+          message: "Year is required when day is provided.",
+          path: ["year"],
+        }),
+        expect.objectContaining({
+          message: "Year is required when day is provided.",
+          path: ["day"],
+        }),
+      ]);
+    });
+
+    it("does not run calendar / future checks while year is missing", () => {
+      const schema = createGeneralizedDateSchema();
+
+      const result = schema.safeParse({
+        month: "2",
+        day: "30",
+      });
+
+      const messages = result.error?.issues.map((issue) => issue.message) ?? [];
+
+      expect(messages).not.toContain(
+        `Value "undefined, February 30" does not represent a valid existing date.`,
+      );
+      expect(messages).not.toContain(
+        `Value "undefined, February 30" represents a date in the future.`,
+      );
+      expect(messages).toEqual(
+        expect.arrayContaining([
+          "Year is required when month is provided.",
+          "Year is required when day is provided.",
+        ]),
+      );
+      expect(messages.length).toBe(4);
+    });
   });
 
   it("rejects invalid calendar dates", () => {

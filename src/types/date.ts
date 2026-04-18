@@ -1,5 +1,5 @@
 export type GeneralizedDate = {
-  year: number;
+  year?: number | undefined;
   month?: number | undefined;
   day?: number | undefined;
 };

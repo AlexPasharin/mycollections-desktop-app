@@ -44,3 +44,10 @@
   font-size: 0.85em;
   color: #b42318;
 }
+
+.requiredMark {
+  font-size: 1.1em;
+  font-weight: 600;
+  line-height: 0;
+  margin-left: 0.25em;
+}
