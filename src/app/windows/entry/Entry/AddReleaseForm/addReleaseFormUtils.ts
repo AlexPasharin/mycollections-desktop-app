@@ -56,6 +56,7 @@ export type AddReleaseFormCatalogueNumberRowErrors = {
 
 export type AddReleaseFormFieldErrors = {
   releaseVersion?: AddReleaseFormFieldError[] | undefined;
+  matrixRunout?: AddReleaseFormFieldError[] | undefined;
   releaseDate?: AddReleaseFormFieldError[] | undefined;
   formats?:
     | Record<FormatFieldsRowId, AddReleaseFormFieldError[] | undefined>
@@ -83,6 +84,7 @@ export type AddReleaseFormCatalogueNumbersInputFieldKey = {
 
 export type AddReleaseFormInputFieldKey =
   | "releaseVersion"
+  | "matrixRunout"
   | ReleaseDateFieldErrorSource
   | AddReleaseFormFormatInputFieldKey
   | AddReleaseFormCatalogueNumbersInputFieldKey;
@@ -134,8 +136,14 @@ export const defaultCatalogueNumberRow = (): CatalogueNumberRowState => ({
   catalogueNumberInputValues: [emptyCatalogueNumberInputValue()],
 });
 
+export type AddReleaseFormMatrixRunoutDraft = {
+  value: string;
+  treatAsText: boolean;
+};
+
 export type AddReleaseFormDraft = {
   releaseVersion: string;
+  matrixRunout: AddReleaseFormMatrixRunoutDraft;
   releaseDate: GeneralizedDateFormInputValue;
   formats: AddReleaseFormFormatInput[];
   catalogueNumbers: CatalogueNumberRowState[];
@@ -146,6 +154,7 @@ export const initialAddReleaseFormDraftValue = (
   originalReleaseDate: GeneralizedDate | null,
 ): AddReleaseFormDraft => ({
   releaseVersion: "",
+  matrixRunout: { value: "", treatAsText: false },
   releaseDate: {
     year: String(originalReleaseDate?.year ?? ""),
     month: String(originalReleaseDate?.month ?? ""),

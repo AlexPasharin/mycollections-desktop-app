@@ -52,7 +52,7 @@ export const getFieldValidationErrorMessages = (
 
   const result = validationSchema.safeParse(value);
 
-  return validationResultErrorMessagesFromSafeParseResult(result);
+  return validationResultErrorMessagesFromSafeParseResult(result, key);
 };
 
 type ValidateAgainstSchemaResult<
@@ -84,17 +84,19 @@ export const validateAgainstSchema = <
 
 function validationResultErrorMessagesFromSafeParseResult(
   result: z.ZodSafeParseError<unknown>,
+  key?: string,
 ): ValidationResultErrorMessages;
 
 function validationResultErrorMessagesFromSafeParseResult(
   result: z.ZodSafeParseResult<unknown>,
+  key?: string,
 ): ValidationResultErrorMessages | undefined;
 
 function validationResultErrorMessagesFromSafeParseResult(
   result: z.ZodSafeParseResult<unknown>,
+  key?: string,
 ): ValidationResultErrorMessages | undefined {
-  return result.error?.issues.map(({ message, path }) => ({
-    message,
-    path,
-  }));
+  return result.error?.issues.map(({ message, path }) => {
+    return { message, path: key === undefined ? path : [key, ...path] };
+  });
 }

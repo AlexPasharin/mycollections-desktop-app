@@ -44,6 +44,7 @@ export type AddReleaseFormProps = {
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
 const RELEASE_VERSION_FIELD_ERROR_ID = "add-release-version-error";
+const MATRIX_RUNOUT_FIELD_ERROR_ID = "add-release-matrix-runout-error";
 
 const AddReleaseForm: FC<AddReleaseFormProps> = ({
   entry,
@@ -95,6 +96,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     const releaseVersionErrorMessages = errorMessages.filter(
       ({ path }) => path[0] === "releaseVersion",
     );
+    const matrixRunoutErrorMessages = errorMessages.filter(
+      ({ path }) => path[0] === "matrixRunout",
+    );
 
     const catalogueNumbersErrorMessages = errorMessages.filter(
       ({ path }) => path[0] === "catalogueNumbers",
@@ -110,6 +114,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     );
 
     fieldErrorsPatch.releaseVersion = releaseVersionErrorMessages.map(
+      ({ message }) => ({ message }),
+    );
+
+    fieldErrorsPatch.matrixRunout = matrixRunoutErrorMessages.map(
       ({ message }) => ({ message }),
     );
 
@@ -193,7 +201,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         const rowStillHasErrors =
           Object.keys(nextRowErrors.labelInputErrorMessages ?? {}).length > 0 ||
           Object.keys(nextRowErrors.catNumberInputErrorMessages ?? {}).length >
-            0 ||
+          0 ||
           (nextRowErrors.rowErrorMessages?.size ?? 0) > 0;
 
         const { [catNumberRowId]: _removedRow, ...otherRows } =
@@ -329,6 +337,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     const {
       releaseVersion,
+      matrixRunout,
       releaseDate,
       formats,
       catalogueNumbers,
@@ -337,6 +346,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     const dataToValidate = {
       releaseVersion,
+      matrixRunout,
       releaseDate,
       formats,
       catalogueNumbers: catalogueNumbers.map((row) => ({
@@ -361,8 +371,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const releaseVersionErrors = fieldErrors.releaseVersion ?? [];
+  const matrixRunoutErrors = fieldErrors.matrixRunout ?? [];
   const releaseDateErrors = fieldErrors.releaseDate ?? [];
   const hasReleaseVersionErrors = releaseVersionErrors.length > 0;
+  const hasMatrixRunoutErrors = matrixRunoutErrors.length > 0;
   const hasReleaseDateErrors = releaseDateErrors.length > 0;
 
   return (
@@ -429,13 +441,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           onBlur={() => onBlur("formats")}
         />
 
-        <AddReleaseTagsSection
-          tags={tags}
-          selectedTags={form.selectedTags}
-          onAddTag={addSelectedTag}
-          onRemoveTag={removeSelectedTag}
-        />
-
         <AddReleaseCatalogueNumbersSection
           labels={labels}
           catalogueNumbers={form.catalogueNumbers}
@@ -451,6 +456,63 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           onBlurRowColumn={(catNumberRowId, fieldType) =>
             onBlur({ catNumberRowId, fieldType })
           }
+        />
+
+        <div className={styles.field}>
+          <label className={styles.heading} htmlFor="add-release-matrix-runout">
+            Matrix / runout
+          </label>
+          <textarea
+            id="add-release-matrix-runout"
+            className={styles.textarea}
+            rows={4}
+            value={form.matrixRunout.value}
+            onChange={(e) =>
+              setField("matrixRunout", (draft) => ({
+                ...draft.matrixRunout,
+                value: e.target.value,
+              }))
+            }
+            onFocus={() => onFocus("matrixRunout")}
+            onBlur={() => onBlur("matrixRunout")}
+            aria-invalid={hasMatrixRunoutErrors}
+            aria-describedby={
+              hasMatrixRunoutErrors ? MATRIX_RUNOUT_FIELD_ERROR_ID : undefined
+            }
+            autoComplete="off"
+          />
+          <div className={styles.checkboxRow}>
+            <input
+              id="add-release-matrix-runout-plain-text"
+              type="checkbox"
+              checked={form.matrixRunout.treatAsText}
+              onChange={(e) =>
+                setField("matrixRunout", (draft) => ({
+                  ...draft.matrixRunout,
+                  treatAsText: e.target.checked,
+                }))
+              }
+              onFocus={() => onFocus("matrixRunout")}
+              onBlur={() => onBlur("matrixRunout")}
+            />
+            <label
+              className={styles.checkboxLabel}
+              htmlFor="add-release-matrix-runout-plain-text"
+            >
+              treat as plain text, not json object
+            </label>
+          </div>
+          <FormFieldErrorMessages
+            id={MATRIX_RUNOUT_FIELD_ERROR_ID}
+            messages={matrixRunoutErrors}
+          />
+        </div>
+
+        <AddReleaseTagsSection
+          tags={tags}
+          selectedTags={form.selectedTags}
+          onAddTag={addSelectedTag}
+          onRemoveTag={removeSelectedTag}
         />
 
         <div className={styles.actions}>

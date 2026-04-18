@@ -2,6 +2,8 @@
 // Please do not change this file!
 interface CssExports {
   'actions': string;
+  'checkboxLabel': string;
+  'checkboxRow': string;
   'field': string;
   'form': string;
   'formatsLoadState': string;
@@ -9,6 +11,7 @@ interface CssExports {
   'input': string;
   'requiredMark': string;
   'section': string;
+  'textarea': string;
 }
 export const cssExports: CssExports;
 export default cssExports;
