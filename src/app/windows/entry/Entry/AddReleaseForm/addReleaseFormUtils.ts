@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryByIdResult } from "@/types/entries";
+import { omitProperty } from "@/utils/common";
 import {
   getFieldValidationErrorMessages,
   type ValidationResultErrorMessages,
@@ -347,7 +348,7 @@ export const removeMadeInCountrySelectionRowFromFieldErrors = (
     return countries;
   }
 
-  const { [rowId]: _removed, ...restSelect } = selectMap;
+  const restSelect = omitProperty(selectMap, rowId);
 
   const nextMadeIn = countriesSubsectionFromParts(
     Object.keys(restSelect).length > 0 ? restSelect : undefined,
@@ -373,7 +374,7 @@ export const stripPrintedInFromCountriesFieldErrors = (
     return countries;
   }
 
-  const { printedIn: _removedPrintedIn, ...rest } = countries;
+  const rest = omitProperty(countries, "printedIn");
 
   if (rest.madeIn === undefined) {
     return undefined;
@@ -633,8 +634,10 @@ export const updateCatNumberFieldErrors = (
     Object.keys(nextRowErrors.catNumberInputErrorMessages ?? {}).length > 0 ||
     (nextRowErrors.rowErrorMessages?.size ?? 0) > 0;
 
-  const { [catNumberRowId]: _removed, ...restRows } =
-    currentCatNumberFieldErrors ?? {};
+  const restRows = omitProperty(
+    currentCatNumberFieldErrors ?? {},
+    catNumberRowId,
+  );
 
   const nextCatalogueNumbers = hasRowErrors
     ? { ...restRows, [catNumberRowId]: nextRowErrors }

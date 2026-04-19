@@ -34,6 +34,7 @@ import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
 import type { TagListItem } from "@/types/tags";
+import { omitProperty } from "@/utils/common";
 import {
   getFieldValidationErrorMessages,
   validateAgainstSchema,
@@ -146,7 +147,11 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         const { catalogueNumbers } = prev;
         const { catNumberRowId, field, inputValueId } = key;
 
-        const rowErrors = catalogueNumbers?.[catNumberRowId];
+        if (!catalogueNumbers) {
+          return prev;
+        }
+
+        const rowErrors = catalogueNumbers[catNumberRowId];
 
         if (!rowErrors) {
           return prev;
@@ -160,18 +165,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         const currentErrors = nextRowErrors[errorKey];
 
         if (currentErrors) {
-          const { [inputValueId]: _removed, ...restErrors } =
-            currentErrors;
-
-          nextRowErrors[errorKey] = restErrors
+          nextRowErrors[errorKey] = omitProperty(currentErrors, inputValueId);
         }
-
-        const { [catNumberRowId]: _removedRow, ...otherRows } =
-          catalogueNumbers;
 
         return {
           ...prev,
-          catalogueNumbers: otherRows,
+          catalogueNumbers: omitProperty(catalogueNumbers, catNumberRowId),
         };
       }
 
@@ -231,7 +230,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         return prev;
       }
 
-      const { [rowId]: _removed, ...rest } = formats;
+      const rest = omitProperty(formats, rowId);
 
       return {
         ...prev,
@@ -259,11 +258,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const removeSelectedTag = (tagId: string) => {
-    setField("selectedTags", (prev) => {
-      const { [tagId]: _removed, ...rest } = prev.selectedTags;
-
-      return rest;
-    });
+    setField("selectedTags", (prev) => omitProperty(prev.selectedTags, tagId));
   };
 
   const addCountrySelectionRow = () => {
@@ -289,9 +284,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           return prev;
         }
 
-        const { countries: _omit, ...rest } = prev;
-
-        return rest;
+        return omitProperty(prev, "countries");
       }
 
       return { ...prev, countries: nextCountries };
@@ -304,11 +297,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   const clearAllCountries = () => {
     setPrintedInCountriesSectionOpen(false);
-    setFieldErrors((prev) => {
-      const { countries: _omit, ...rest } = prev;
-
-      return rest;
-    });
+    setFieldErrors((prev) => omitProperty(prev, "countries"));
     setForm((prev) => ({
       ...prev,
       countrySelections: [],
@@ -345,9 +334,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           return prev;
         }
 
-        const { countries: _omit, ...rest } = prev;
-
-        return rest;
+        return omitProperty(prev, "countries");
       }
 
       return { ...prev, countries: nextCountries };
@@ -387,7 +374,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         return prev;
       }
 
-      const { [rowId]: _removed, ...rest } = catalogueNumbers;
+      const rest = omitProperty(catalogueNumbers, rowId);
 
       return {
         ...prev,
