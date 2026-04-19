@@ -11,6 +11,8 @@ interface CssExports {
   'input': string;
   'requiredMark': string;
   'section': string;
+  'sectionDivider': string;
+  'sectionDividerMoreSpaceBefore': string;
   'textarea': string;
 }
 export const cssExports: CssExports;

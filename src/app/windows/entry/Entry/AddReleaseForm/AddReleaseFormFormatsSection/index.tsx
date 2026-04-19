@@ -90,12 +90,12 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
 
   return (
     <div className={styles.section}>
-      <p className={styles.heading}>
+      <h2 className={styles.heading}>
         Formats
         <sup className={styles.requiredMark} aria-hidden="true">
           *
         </sup>
-      </p>
+      </h2>
 
       {formats.map((formatRow, rowIndex) => (
         <div key={formatRow.id}>

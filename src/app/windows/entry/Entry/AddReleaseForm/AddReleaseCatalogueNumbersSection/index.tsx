@@ -156,7 +156,7 @@ const AddReleaseCatalogueNumbersSection: FC<
 
   return (
     <div className={styles.section}>
-      <p className={styles.heading}>Catalogue numbers</p>
+      <h2 className={styles.heading}>Catalogue numbers</h2>
 
       {catalogueNumbers.map((row, rowIndex) => (
         <div key={row.id}>

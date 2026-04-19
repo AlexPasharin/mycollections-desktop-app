@@ -130,6 +130,16 @@ export const emptyCatalogueNumberInputValue = () => ({
   value: "",
 });
 
+export type CountrySelectionInput = {
+  id: string;
+  codeName: string;
+};
+
+export const emptyCountrySelection = (): CountrySelectionInput => ({
+  id: uuidv4(),
+  codeName: "",
+});
+
 export const defaultCatalogueNumberRow = (): CatalogueNumberRowState => ({
   id: uuidv4(),
   labelInputValues: [emptyLabelInputValue()],
@@ -148,6 +158,7 @@ export type AddReleaseFormDraft = {
   formats: AddReleaseFormFormatInput[];
   catalogueNumbers: CatalogueNumberRowState[];
   selectedTags: Record<string, string>;
+  countrySelections: CountrySelectionInput[];
 };
 
 export const initialAddReleaseFormDraftValue = (
@@ -163,6 +174,7 @@ export const initialAddReleaseFormDraftValue = (
   formats: [defaultFormatInputRow()],
   catalogueNumbers: [defaultCatalogueNumberRow()],
   selectedTags: {},
+  countrySelections: [emptyCountrySelection()],
 });
 
 export const getReleaseDateFormFieldErrors = (

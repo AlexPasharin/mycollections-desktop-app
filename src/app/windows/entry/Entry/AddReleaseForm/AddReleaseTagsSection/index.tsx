@@ -23,7 +23,7 @@ const AddReleaseTagsSection: FC<AddReleaseTagsSectionProps> = ({
 
   return (
     <div className={styles.section}>
-      <h3 className={styles.heading}>Tags</h3>
+      <h2 className={styles.heading}>Tags</h2>
 
       {selectedEntries.length > 0 ? (
         <ul className={styles.selectedList} aria-label="Selected tags">
