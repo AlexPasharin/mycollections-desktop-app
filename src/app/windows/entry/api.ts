@@ -1,6 +1,6 @@
+import type { CountryListItem } from "@/types/countries";
 import type { GetEntryById } from "@/types/entries";
 import type { ReleasesFormatListItem } from "@/types/formats";
-import type { CountryListItem } from "@/types/countries";
 import type { LabelListItem } from "@/types/labels";
 import type { GetEntryReleases, GetReleaseById } from "@/types/releases";
 import type { TagListItem } from "@/types/tags";

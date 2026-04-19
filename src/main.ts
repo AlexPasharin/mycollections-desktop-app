@@ -25,9 +25,9 @@ import {
   SEARCH_ARTIST_ENTRIES,
 } from "@/appConstants/ipcEvents";
 import { fetchArtists, getArtistById, queryArtist } from "@/db/artists";
+import { fetchCountries } from "@/db/countries";
 import { getEntryById, searchArtistEntries } from "@/db/entries";
 import { fetchReleasesFormats } from "@/db/formats";
-import { fetchCountries } from "@/db/countries";
 import { fetchLabels } from "@/db/labels";
 import { getEntryReleases, getReleaseById } from "@/db/releases";
 import { fetchTags } from "@/db/tags";
