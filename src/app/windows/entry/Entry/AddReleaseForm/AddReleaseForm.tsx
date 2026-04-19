@@ -1,6 +1,7 @@
 import { useMemo, useState, type FC, type FormEvent } from "react";
 
 import AddReleaseCatalogueNumbersSection from "./AddReleaseCatalogueNumbersSection";
+import AddReleaseCountriesSection from "./AddReleaseCountriesSection";
 import styles from "./AddReleaseForm.module.css";
 import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
 import {
@@ -9,6 +10,7 @@ import {
   getCaNumbersFormFieldErrors,
   getFormatsFormFieldErrors,
   getReleaseDateFormFieldErrors,
+  emptyCountrySelection,
   initialAddReleaseFormDraftValue,
   updateCatNumberFieldErrors,
   isCatalogueNumbersInputFieldKey,
@@ -25,6 +27,7 @@ import AddReleaseTagsSection from "./AddReleaseTagsSection";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
+import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
 import type { TagListItem } from "@/types/tags";
@@ -41,6 +44,7 @@ export type AddReleaseFormProps = {
   releasesFormats: ReleasesFormatListItem[];
   labels: LabelListItem[];
   tags: TagListItem[];
+  countries: CountryListItem[];
 };
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
@@ -52,6 +56,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   releasesFormats,
   labels,
   tags,
+  countries,
 }) => {
   const { originalReleaseDate } = entry;
 
@@ -311,6 +316,31 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     });
   };
 
+  const addCountrySelectionRow = () => {
+    setField("countrySelections", (prev) => [
+      ...prev.countrySelections,
+      emptyCountrySelection(),
+    ]);
+  };
+
+  const removeCountrySelectionRow = (inputId: string) => {
+    setField("countrySelections", (prev) => {
+      if (prev.countrySelections.length <= 1) {
+        return prev.countrySelections;
+      }
+
+      return prev.countrySelections.filter((row) => row.id !== inputId);
+    });
+  };
+
+  const setCountrySelectionCodeName = (inputId: string, codeName: string) => {
+    setField("countrySelections", (prev) =>
+      prev.countrySelections.map((row) =>
+        row.id === inputId ? { ...row, codeName } : row,
+      ),
+    );
+  };
+
   const removeCatalogueNumbersRow = (rowId: string) => {
     setFieldErrors((prev) => {
       const { catalogueNumbers } = prev;
@@ -342,6 +372,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       formats,
       catalogueNumbers,
       selectedTags,
+      countrySelections,
     } = form;
 
     const dataToValidate = {
@@ -359,7 +390,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     const result = validateAgainstSchema(addReleaseFormSchema, dataToValidate);
 
-    console.info({ form, result, selectedTags: Object.entries(selectedTags) });
+    console.info({
+      form,
+      result,
+      selectedTags: Object.entries(selectedTags),
+      countrySelections: countrySelections.map((c) => c.codeName),
+    });
 
     if (!result.success) {
       setFieldErrors(getFieldErrorsPatch(result.errorMessages));
@@ -410,8 +446,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           />
         </div>
 
+        <hr
+          className={`${styles.sectionDivider} ${styles.sectionDividerMoreSpaceBefore}`}
+          aria-hidden
+        />
+
         <div className={styles.field}>
-          <p className={styles.heading}>Release date</p>
+          <h2 className={styles.heading}>Release date</h2>
           <GeneralizedDateFormInput
             date={form.releaseDate}
             startDate={entry.originalReleaseDate}
@@ -427,6 +468,21 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           />
         </div>
 
+        <hr
+          className={`${styles.sectionDivider} ${styles.sectionDividerMoreSpaceBefore}`}
+          aria-hidden
+        />
+
+        <AddReleaseCountriesSection
+          countries={countries}
+          countrySelections={form.countrySelections}
+          onSetCountryCodeName={setCountrySelectionCodeName}
+          onAddRow={addCountrySelectionRow}
+          onRemoveRow={removeCountrySelectionRow}
+        />
+
+        <hr className={styles.sectionDivider} aria-hidden />
+
         <AddReleaseFormFormatsSection
           formats={form.formats}
           releasesFormats={releasesFormats}
@@ -439,6 +495,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           onFieldFocus={onFocus}
           onBlur={() => onBlur("formats")}
         />
+
+        <hr className={styles.sectionDivider} aria-hidden />
 
         <AddReleaseCatalogueNumbersSection
           labels={labels}
@@ -456,6 +514,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             onBlur({ catNumberRowId, fieldType })
           }
         />
+
+        <hr className={styles.sectionDivider} aria-hidden />
 
         <AddReleaseMatrixRunoutField
           matrixRunout={form.matrixRunout}
@@ -475,6 +535,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           onFocus={() => onFocus("matrixRunout")}
           onBlur={() => onBlur("matrixRunout")}
         />
+
+        <hr className={styles.sectionDivider} aria-hidden />
 
         <AddReleaseTagsSection
           tags={tags}
