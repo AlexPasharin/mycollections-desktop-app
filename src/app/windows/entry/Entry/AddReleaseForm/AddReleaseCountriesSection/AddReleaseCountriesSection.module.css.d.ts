@@ -4,9 +4,12 @@ interface CssExports {
   'addAnotherRow': string;
   'controlWithRemove': string;
   'heading': string;
+  'headingRemoveSlot': string;
+  'headingRow': string;
   'inputValueBlock': string;
   'labelVisuallyHidden': string;
   'removeCross': string;
+  'removeCrossSection': string;
   'removeCrossSlot': string;
   'section': string;
   'segment': string;

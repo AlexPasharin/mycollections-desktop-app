@@ -12,10 +12,12 @@ type AddReleaseCountriesSectionProps = {
   onSetCountryCodeName: (inputId: string, codeName: string) => void;
   onAddRow: () => void;
   onRemoveRow: (inputId: string) => void;
-  heading?: string;
-  selectIdPrefix?: string;
-  rowLabelPrefix?: string;
-  removeRowAriaLabel?: string;
+  heading: string;
+  selectIdPrefix: string;
+  rowLabelPrefix: string;
+  removeRowAriaLabel: string;
+  onRemove: () => void;
+  removeAriaLabel: string;
 };
 
 const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
@@ -24,16 +26,29 @@ const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
   onSetCountryCodeName,
   onAddRow,
   onRemoveRow,
-  heading = "Countries",
-  selectIdPrefix = "add-release-country",
-  rowLabelPrefix = "Country",
-  removeRowAriaLabel = "Remove country row",
+  heading,
+  selectIdPrefix,
+  rowLabelPrefix,
+  removeRowAriaLabel,
+  onRemove,
+  removeAriaLabel,
 }) => {
-  const canRemoveRow = countrySelections.length > 1;
-
   return (
     <div className={styles.section}>
-      <h2 className={styles.heading}>{heading}</h2>
+      <div className={styles.headingRow}>
+        <h2 className={styles.heading}>{heading}</h2>
+        <div className={styles.headingRemoveSlot}>
+          <button
+            type="button"
+            className={`${styles.removeCross} ${styles.removeCrossSection}`}
+            aria-label={removeAriaLabel}
+            title={removeAriaLabel}
+            onClick={onRemove}
+          >
+            <span aria-hidden="true">❌</span>
+          </button>
+        </div>
+      </div>
 
       {countrySelections.map((row, rowIndex) => (
         <div key={row.id} className={styles.inputValueBlock}>
@@ -60,11 +75,8 @@ const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
                   </option>
                 ))}
               </select>
-              <div
-                className={styles.removeCrossSlot}
-                aria-hidden={canRemoveRow ? undefined : true}
-              >
-                {canRemoveRow && (
+              <div className={styles.removeCrossSlot}>
+                {rowIndex > 0 && (
                   <button
                     type="button"
                     className={styles.removeCross}

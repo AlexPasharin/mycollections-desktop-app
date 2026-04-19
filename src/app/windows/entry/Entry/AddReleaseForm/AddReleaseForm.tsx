@@ -324,13 +324,18 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const removeCountrySelectionRow = (inputId: string) => {
-    setField("countrySelections", (prev) => {
-      if (prev.countrySelections.length <= 1) {
-        return prev.countrySelections;
-      }
+    setField("countrySelections", (prev) =>
+      prev.countrySelections.filter((row) => row.id !== inputId),
+    );
+  };
 
-      return prev.countrySelections.filter((row) => row.id !== inputId);
-    });
+  const clearAllCountriesAndPrintedIn = () => {
+    setForm((prev) => ({
+      ...prev,
+      countrySelections: [],
+      printedInCountriesSectionOpen: false,
+      printedInCountrySelections: [],
+    }));
   };
 
   const setCountrySelectionCodeName = (inputId: string, codeName: string) => {
@@ -352,6 +357,14 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     }));
   };
 
+  const closePrintedInCountriesSection = () => {
+    setForm((prev) => ({
+      ...prev,
+      printedInCountriesSectionOpen: false,
+      printedInCountrySelections: [],
+    }));
+  };
+
   const addPrintedInCountrySelectionRow = () => {
     setField("printedInCountrySelections", (prev) => [
       ...prev.printedInCountrySelections,
@@ -360,13 +373,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const removePrintedInCountrySelectionRow = (inputId: string) => {
-    setField("printedInCountrySelections", (prev) => {
-      if (prev.printedInCountrySelections.length <= 1) {
-        return prev.printedInCountrySelections;
-      }
-
-      return prev.printedInCountrySelections.filter((row) => row.id !== inputId);
-    });
+    setField("printedInCountrySelections", (prev) =>
+      prev.printedInCountrySelections.filter((row) => row.id !== inputId),
+    );
   };
 
   const setPrintedInCountrySelectionCodeName = (
@@ -522,6 +531,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           onSetCountryCodeName={setCountrySelectionCodeName}
           onAddRow={addCountrySelectionRow}
           onRemoveRow={removeCountrySelectionRow}
+          heading="Countries"
+          selectIdPrefix="add-release-country"
+          rowLabelPrefix="Country"
+          removeRowAriaLabel="Remove country row"
+          onRemove={clearAllCountriesAndPrintedIn}
+          removeAriaLabel="Remove all countries and printed-in countries"
         />
 
         {form.printedInCountriesSectionOpen ? (
@@ -535,6 +550,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             selectIdPrefix="add-release-printed-in-country"
             rowLabelPrefix="Printed-in country"
             removeRowAriaLabel="Remove printed-in country row"
+            onRemove={closePrintedInCountriesSection}
+            removeAriaLabel='Remove "printed in" countries section'
           />
         ) : (
           <button
