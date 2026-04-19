@@ -341,6 +341,45 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     );
   };
 
+  const openPrintedInCountriesSection = () => {
+    setForm((prev) => ({
+      ...prev,
+      printedInCountriesSectionOpen: true,
+      printedInCountrySelections:
+        prev.printedInCountrySelections.length === 0
+          ? [emptyCountrySelection()]
+          : prev.printedInCountrySelections,
+    }));
+  };
+
+  const addPrintedInCountrySelectionRow = () => {
+    setField("printedInCountrySelections", (prev) => [
+      ...prev.printedInCountrySelections,
+      emptyCountrySelection(),
+    ]);
+  };
+
+  const removePrintedInCountrySelectionRow = (inputId: string) => {
+    setField("printedInCountrySelections", (prev) => {
+      if (prev.printedInCountrySelections.length <= 1) {
+        return prev.printedInCountrySelections;
+      }
+
+      return prev.printedInCountrySelections.filter((row) => row.id !== inputId);
+    });
+  };
+
+  const setPrintedInCountrySelectionCodeName = (
+    inputId: string,
+    codeName: string,
+  ) => {
+    setField("printedInCountrySelections", (prev) =>
+      prev.printedInCountrySelections.map((row) =>
+        row.id === inputId ? { ...row, codeName } : row,
+      ),
+    );
+  };
+
   const removeCatalogueNumbersRow = (rowId: string) => {
     setFieldErrors((prev) => {
       const { catalogueNumbers } = prev;
@@ -373,6 +412,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       catalogueNumbers,
       selectedTags,
       countrySelections,
+      printedInCountrySelections,
     } = form;
 
     const dataToValidate = {
@@ -395,6 +435,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       result,
       selectedTags: Object.entries(selectedTags),
       countrySelections: countrySelections.map((c) => c.codeName),
+      printedInCountrySelections: printedInCountrySelections.map(
+        (c) => c.codeName,
+      ),
     });
 
     if (!result.success) {
@@ -480,6 +523,28 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           onAddRow={addCountrySelectionRow}
           onRemoveRow={removeCountrySelectionRow}
         />
+
+        {form.printedInCountriesSectionOpen ? (
+          <AddReleaseCountriesSection
+            countries={countries}
+            countrySelections={form.printedInCountrySelections}
+            onSetCountryCodeName={setPrintedInCountrySelectionCodeName}
+            onAddRow={addPrintedInCountrySelectionRow}
+            onRemoveRow={removePrintedInCountrySelectionRow}
+            heading="Printed in countries"
+            selectIdPrefix="add-release-printed-in-country"
+            rowLabelPrefix="Printed-in country"
+            removeRowAriaLabel="Remove printed-in country row"
+          />
+        ) : (
+          <button
+            type="button"
+            className={styles.printedInCountriesCta}
+            onClick={openPrintedInCountriesSection}
+          >
+            Add &quot;printed in&quot; countries
+          </button>
+        )}
 
         <hr className={styles.sectionDivider} aria-hidden />
 

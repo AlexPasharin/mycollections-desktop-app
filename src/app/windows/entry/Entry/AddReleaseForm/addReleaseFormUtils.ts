@@ -159,6 +159,8 @@ export type AddReleaseFormDraft = {
   catalogueNumbers: CatalogueNumberRowState[];
   selectedTags: Record<string, string>;
   countrySelections: CountrySelectionInput[];
+  printedInCountriesSectionOpen: boolean;
+  printedInCountrySelections: CountrySelectionInput[];
 };
 
 export const initialAddReleaseFormDraftValue = (
@@ -175,6 +177,8 @@ export const initialAddReleaseFormDraftValue = (
   catalogueNumbers: [defaultCatalogueNumberRow()],
   selectedTags: {},
   countrySelections: [emptyCountrySelection()],
+  printedInCountriesSectionOpen: false,
+  printedInCountrySelections: [],
 });
 
 export const getReleaseDateFormFieldErrors = (
