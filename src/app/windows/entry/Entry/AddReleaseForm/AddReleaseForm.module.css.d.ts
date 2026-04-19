@@ -9,6 +9,7 @@ interface CssExports {
   'formatsLoadState': string;
   'heading': string;
   'input': string;
+  'printedInCountriesCta': string;
   'requiredMark': string;
   'section': string;
   'sectionDivider': string;

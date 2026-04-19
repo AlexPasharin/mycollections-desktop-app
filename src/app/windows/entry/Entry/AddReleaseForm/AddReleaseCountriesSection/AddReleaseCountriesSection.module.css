@@ -3,11 +3,37 @@
   margin-bottom: 0.65rem;
 }
 
+.headingRow {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+  min-width: 0;
+}
+
 .heading {
   font-size: 1em;
   font-weight: 600;
   line-height: 1.35;
   margin: 0 0 0.75rem;
+}
+
+.headingRow .heading {
+  margin-bottom: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.headingRemoveSlot {
+  box-sizing: border-box;
+  flex: 0 0 1.85rem;
+  width: 1.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .inputValueBlock {
@@ -78,6 +104,14 @@
 
 .removeCross:hover {
   color: #0d3d82;
+}
+
+.removeCrossSection {
+  color: #c01c28;
+}
+
+.removeCrossSection:hover {
+  color: #9e1420;
 }
 
 .addAnotherRow {

@@ -12,6 +12,12 @@ type AddReleaseCountriesSectionProps = {
   onSetCountryCodeName: (inputId: string, codeName: string) => void;
   onAddRow: () => void;
   onRemoveRow: (inputId: string) => void;
+  heading: string;
+  selectIdPrefix: string;
+  rowLabelPrefix: string;
+  removeRowAriaLabel: string;
+  onRemove: () => void;
+  removeAriaLabel: string;
 };
 
 const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
@@ -20,25 +26,42 @@ const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
   onSetCountryCodeName,
   onAddRow,
   onRemoveRow,
+  heading,
+  selectIdPrefix,
+  rowLabelPrefix,
+  removeRowAriaLabel,
+  onRemove,
+  removeAriaLabel,
 }) => {
-  const canRemoveRow = countrySelections.length > 1;
-
   return (
     <div className={styles.section}>
-      <h2 className={styles.heading}>Countries</h2>
+      <div className={styles.headingRow}>
+        <h2 className={styles.heading}>{heading}</h2>
+        <div className={styles.headingRemoveSlot}>
+          <button
+            type="button"
+            className={`${styles.removeCross} ${styles.removeCrossSection}`}
+            aria-label={removeAriaLabel}
+            title={removeAriaLabel}
+            onClick={onRemove}
+          >
+            <span aria-hidden="true">❌</span>
+          </button>
+        </div>
+      </div>
 
       {countrySelections.map((row, rowIndex) => (
         <div key={row.id} className={styles.inputValueBlock}>
           <div className={styles.segment}>
             <label
               className={styles.labelVisuallyHidden}
-              htmlFor={`add-release-country-${row.id}`}
+              htmlFor={`${selectIdPrefix}-${row.id}`}
             >
-              {`Country ${rowIndex + 1}`}
+              {`${rowLabelPrefix} ${rowIndex + 1}`}
             </label>
             <div className={styles.controlWithRemove}>
               <select
-                id={`add-release-country-${row.id}`}
+                id={`${selectIdPrefix}-${row.id}`}
                 className={styles.select}
                 value={row.codeName}
                 onChange={(e) => {
@@ -52,16 +75,13 @@ const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
                   </option>
                 ))}
               </select>
-              <div
-                className={styles.removeCrossSlot}
-                aria-hidden={canRemoveRow ? undefined : true}
-              >
-                {canRemoveRow && (
+              <div className={styles.removeCrossSlot}>
+                {rowIndex > 0 && (
                   <button
                     type="button"
                     className={styles.removeCross}
-                    aria-label="Remove country row"
-                    title="Remove country row"
+                    aria-label={removeRowAriaLabel}
+                    title={removeRowAriaLabel}
                     onClick={() => {
                       onRemoveRow(row.id);
                     }}
