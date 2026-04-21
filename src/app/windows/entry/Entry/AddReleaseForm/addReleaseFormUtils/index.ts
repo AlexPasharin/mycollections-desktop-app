@@ -296,28 +296,6 @@ export const getCountriesFormFieldErrors = (
   return Object.keys(patch).length > 0 ? patch : undefined;
 };
 
-const countriesSubsectionFromParts = (
-  countrySelectErrorMessages:
-    | Record<CountrySelectionRowId, Set<string>>
-    | undefined,
-  propertyErrorMessages: Set<string> | undefined,
-): AddReleaseFormCountriesErrors | undefined => {
-  const hasSelect =
-    countrySelectErrorMessages !== undefined &&
-    Object.keys(countrySelectErrorMessages).length > 0;
-  const hasProp =
-    propertyErrorMessages !== undefined && propertyErrorMessages.size > 0;
-
-  if (!hasSelect && !hasProp) {
-    return undefined;
-  }
-
-  return {
-    ...(hasSelect ? { countrySelectErrorMessages } : {}),
-    ...(hasProp ? { propertyErrorMessages } : {}),
-  };
-};
-
 export const removeMadeInCountrySelectionRowFromFieldErrors = (
   countries: AddReleaseFormFieldErrors["countries"],
   rowId: CountrySelectionRowId,
@@ -371,6 +349,28 @@ export const stripPrintedInFromCountriesFieldErrors = (
   }
 
   return rest;
+};
+
+const countriesSubsectionFromParts = (
+  countrySelectErrorMessages:
+    | Record<CountrySelectionRowId, Set<string>>
+    | undefined,
+  propertyErrorMessages: Set<string> | undefined,
+): AddReleaseFormCountriesErrors | undefined => {
+  const hasSelect =
+    countrySelectErrorMessages !== undefined &&
+    Object.keys(countrySelectErrorMessages).length > 0;
+  const hasProp =
+    propertyErrorMessages !== undefined && propertyErrorMessages.size > 0;
+
+  if (!hasSelect && !hasProp) {
+    return undefined;
+  }
+
+  return {
+    ...(hasSelect ? { countrySelectErrorMessages } : {}),
+    ...(hasProp ? { propertyErrorMessages } : {}),
+  };
 };
 
 export const getCaNumbersFormFieldErrors = (

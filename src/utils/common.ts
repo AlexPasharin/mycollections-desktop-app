@@ -1,32 +1,17 @@
 /**
  * Shallow copy of `object` without own property `key`.
- * If `object` is `null` or `undefined`, returns it unchanged.
  */
-export function omitProperty<
+export const omitProperty = <
   T extends Record<PropertyKey, unknown>,
   K extends keyof T,
->(object: undefined, key: K): undefined;
-export function omitProperty<
-  T extends Record<PropertyKey, unknown>,
-  K extends keyof T,
->(object: T, key: K): Omit<T, K>;
-export function omitProperty<
-  T extends Record<PropertyKey, unknown>,
-  K extends keyof T,
->(object: T | undefined, key: K): Omit<T, K> | undefined;
-
-export function omitProperty<
-  T extends Record<PropertyKey, unknown>,
-  K extends keyof T,
->(object: T | undefined, key: K): Omit<T, K> | undefined {
-  if (object === undefined) {
-    return object;
-  }
-
+>(
+  object: T,
+  key: K,
+): Omit<T, K> => {
   const { [key]: _removed, ...rest } = object;
 
   return rest;
-}
+};
 
 /**
  * Indices of items whose value at `key` repeats an earlier item's value at that key (in terms of basic equality)
