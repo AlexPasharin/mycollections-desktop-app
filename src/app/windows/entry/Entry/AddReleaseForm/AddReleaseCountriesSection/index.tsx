@@ -25,7 +25,6 @@ type AddReleaseCountriesSectionProps = {
   errors?: AddReleaseFormCountriesErrors | undefined;
 };
 
-
 const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
   countries,
   countrySelections,
@@ -143,7 +142,6 @@ const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
 };
 
 export default AddReleaseCountriesSection;
-
 
 const setToFormMessages = (set: Set<string>) =>
   [...set].map((message) => ({ message }));

@@ -106,12 +106,15 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       matrixRunout: errorMessages
         .filter(({ path }) => path[0] === "matrixRunout")
         .map(({ message }) => ({ message })),
-      catalogueNumbers: getCaNumbersFormFieldErrors(errorMessages, form.catalogueNumbers),
+      catalogueNumbers: getCaNumbersFormFieldErrors(
+        errorMessages,
+        form.catalogueNumbers,
+      ),
       countries: getCountriesFormFieldErrors(
         errorMessages,
         form.countrySelections,
         form.printedInCountrySelections,
-      )
+      ),
     };
   };
 
@@ -158,10 +161,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         }
 
         const nextRowErrors = {
-          ...rowErrors
+          ...rowErrors,
         };
 
-        const errorKey = field === "label" ? "labelInputErrorMessages" : "catNumberInputErrorMessages";
+        const errorKey =
+          field === "label"
+            ? "labelInputErrorMessages"
+            : "catNumberInputErrorMessages";
         const currentErrors = nextRowErrors[errorKey];
 
         if (currentErrors) {
