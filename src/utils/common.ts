@@ -1,4 +1,19 @@
 /**
+ * Shallow copy of `object` without own property `key`.
+ */
+export const omitProperty = <
+  T extends Record<PropertyKey, unknown>,
+  K extends keyof T,
+>(
+  object: T,
+  key: K,
+): Omit<T, K> => {
+  const { [key]: _removed, ...rest } = object;
+
+  return rest;
+};
+
+/**
  * Indices of items whose value at `key` repeats an earlier item's value at that key (in terms of basic equality)
  */
 export const duplicateIndicesByKey = <T, K extends keyof T>(

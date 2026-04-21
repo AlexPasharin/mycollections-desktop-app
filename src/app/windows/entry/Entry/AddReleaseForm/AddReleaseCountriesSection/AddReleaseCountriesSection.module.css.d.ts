@@ -8,6 +8,8 @@ interface CssExports {
   'headingRow': string;
   'inputValueBlock': string;
   'labelVisuallyHidden': string;
+  'propertyErrors': string;
+  'rowFieldErrors': string;
   'removeCross': string;
   'removeCrossSection': string;
   'removeCrossSlot': string;

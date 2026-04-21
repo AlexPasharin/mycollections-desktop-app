@@ -1,13 +1,14 @@
 import { z } from "zod";
 
 import { catalogueNumberRowSchema } from "./catNumbers";
+import { addReleaseFormCountriesSchema } from "./countries";
 import { addReleaseFormFormatInputArraySchema } from "./formats";
 
 import type { GeneralizedDate } from "@/types/date";
 import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
 import { releaseMatrixRunoutSchema } from "@/validation/releases/matrixRunout";
 
-export { catalogueNumberRowSchema };
+export { catalogueNumberRowSchema, addReleaseFormCountriesSchema };
 
 const releaseVersionSchema = z
   .string()
@@ -53,4 +54,5 @@ export const createAddReleaseFormSchema = (
     releaseDate: createGeneralizedDateSchema(releaseDateStart).optional(),
     formats: addReleaseFormFormatInputArraySchema,
     catalogueNumbers: z.array(catalogueNumberRowSchema).optional(),
+    countries: addReleaseFormCountriesSchema,
   });
