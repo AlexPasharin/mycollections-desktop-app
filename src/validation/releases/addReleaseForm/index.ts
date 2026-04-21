@@ -5,6 +5,7 @@ import { addReleaseFormCountriesSchema } from "./countries";
 import { addReleaseFormFormatInputArraySchema } from "./formats";
 
 import type { GeneralizedDate } from "@/types/date";
+import type { ReleasesFormatListItem } from "@/types/formats";
 import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
 import { releaseMatrixRunoutSchema } from "@/validation/releases/matrixRunout";
 
@@ -46,13 +47,14 @@ const matrixRunoutSchema = z
   .pipe(releaseMatrixRunoutSchema);
 
 export const createAddReleaseFormSchema = (
+  formats: ReleasesFormatListItem[],
   releaseDateStart?: GeneralizedDate | null,
 ) =>
   z.object({
     releaseVersion: releaseVersionSchema,
     matrixRunout: matrixRunoutSchema,
     releaseDate: createGeneralizedDateSchema(releaseDateStart).optional(),
-    formats: addReleaseFormFormatInputArraySchema,
+    formats: addReleaseFormFormatInputArraySchema(formats),
     catalogueNumbers: z.array(catalogueNumberRowSchema).optional(),
     countries: addReleaseFormCountriesSchema,
   });

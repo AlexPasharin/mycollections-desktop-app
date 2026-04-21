@@ -20,7 +20,6 @@ import {
   isFormatInputFieldKey,
   isReleaseDateInputFieldKey,
   type AddReleaseFormDraft,
-  type AddReleaseFormEntry,
   type AddReleaseFormFieldErrors,
   type AddReleaseFormInputFieldKey,
   type UpdateCatNumberFieldErrorsArgs,
@@ -31,6 +30,8 @@ import AddReleaseTagsSection from "./AddReleaseTagsSection";
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
 import type { CountryListItem } from "@/types/countries";
+import type { GeneralizedDate } from "@/types/date";
+import type { EntryByIdResult } from "@/types/entries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
 import type { TagListItem } from "@/types/tags";
@@ -42,13 +43,20 @@ import {
 } from "@/utils/validation";
 import { createAddReleaseFormSchema } from "@/validation/releases/addReleaseForm";
 
+type AddReleaseFormEntry = Omit<
+  EntryByIdResult,
+  "originalReleaseDate"
+> & {
+  originalReleaseDate: GeneralizedDate | null;
+};
+
 export type AddReleaseFormProps = {
   entry: AddReleaseFormEntry;
-  onCancel: () => void;
   releasesFormats: ReleasesFormatListItem[];
   labels: LabelListItem[];
   tags: TagListItem[];
   countries: CountryListItem[];
+  onCancel: () => void;
 };
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
@@ -65,8 +73,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const { originalReleaseDate } = entry;
 
   const addReleaseFormSchema = useMemo(
-    () => createAddReleaseFormSchema(originalReleaseDate),
-    [originalReleaseDate],
+    () => createAddReleaseFormSchema(releasesFormats, originalReleaseDate),
+    [releasesFormats, originalReleaseDate],
   );
 
   const [form, setForm] = useState<AddReleaseFormDraft>(
@@ -120,14 +128,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     setFieldErrors((prev) => {
       if (isFormatInputFieldKey(key)) {
         const { formats } = prev;
-
-        if (!formats) {
-          return prev;
-        }
-
         const { formatRowId, field } = key;
 
-        const nextFormatRowErrors = formats[formatRowId]?.filter(
+        const nextFormatRowErrors = prev.formats?.[formatRowId]?.filter(
           (error) => error.sources && !error.sources.includes(field),
         );
 
@@ -135,10 +138,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           ...prev,
           formats: {
             ...formats,
-            [formatRowId]:
-              nextFormatRowErrors && nextFormatRowErrors.length > 0
-                ? nextFormatRowErrors
-                : undefined,
+            [formatRowId]: nextFormatRowErrors
           },
         };
       }
@@ -147,30 +147,20 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         const { catalogueNumbers } = prev;
         const { catNumberRowId, field, inputValueId } = key;
 
-        if (!catalogueNumbers) {
-          return prev;
-        }
-
-        const rowErrors = catalogueNumbers[catNumberRowId];
-
-        if (!rowErrors) {
-          return prev;
-        }
+        const rowErrors = catalogueNumbers?.[catNumberRowId];
+        const errorKey = field === "label" ? "labelInputErrorMessages" : "catNumberInputErrorMessages";
 
         const nextRowErrors = {
-          ...rowErrors
+          ...rowErrors,
+          [errorKey]: omitProperty(rowErrors?.[errorKey], inputValueId)
         };
-
-        const errorKey = field === "label" ? "labelInputErrorMessages" : "catNumberInputErrorMessages";
-        const currentErrors = nextRowErrors[errorKey];
-
-        if (currentErrors) {
-          nextRowErrors[errorKey] = omitProperty(currentErrors, inputValueId);
-        }
 
         return {
           ...prev,
-          catalogueNumbers: omitProperty(catalogueNumbers, catNumberRowId),
+          catalogueNumbers: {
+            ...catalogueNumbers,
+            [catNumberRowId]: nextRowErrors
+          },
         };
       }
 
@@ -182,7 +172,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
       return {
         ...prev,
-        [errorKey]: errors && errors.length > 0 ? errors : undefined,
+        [errorKey]: errors
       };
     });
   };
@@ -223,20 +213,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   const removeFormatRow = (rowId: string) => {
     // if we remove format row, we should also remove errors associated with it
-    setFieldErrors((prev) => {
-      const { formats } = prev;
-
-      if (!formats) {
-        return prev;
-      }
-
-      const rest = omitProperty(formats, rowId);
-
-      return {
-        ...prev,
-        formats: Object.keys(rest).length > 0 ? rest : undefined,
-      };
-    });
+    setFieldErrors((prev) => ({
+      ...prev,
+      formats: omitProperty(prev.formats, rowId)
+    }));
 
     setField("formats", (prev) =>
       prev.formats.filter((formatRow) => formatRow.id !== rowId),
@@ -248,6 +228,18 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       ...prev.catalogueNumbers,
       defaultCatalogueNumberRow(),
     ]);
+  };
+
+
+  const removeCatalogueNumbersRow = (rowId: string) => {
+    setFieldErrors((prev) => ({
+      ...prev,
+      catalogueNumbers: omitProperty(prev.catalogueNumbers, rowId),
+    }));
+
+    setField("catalogueNumbers", (prev) =>
+      prev.catalogueNumbers.filter((row) => row.id !== rowId),
+    );
   };
 
   const addSelectedTag = (tagId: string, tag: string) => {
@@ -280,6 +272,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       }
 
       if (nextCountries === undefined) {
+
         if (prev.countries === undefined) {
           return prev;
         }
@@ -366,26 +359,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     );
   };
 
-  const removeCatalogueNumbersRow = (rowId: string) => {
-    setFieldErrors((prev) => {
-      const { catalogueNumbers } = prev;
-
-      if (!catalogueNumbers) {
-        return prev;
-      }
-
-      const rest = omitProperty(catalogueNumbers, rowId);
-
-      return {
-        ...prev,
-        catalogueNumbers: Object.keys(rest).length > 0 ? rest : undefined,
-      };
-    });
-
-    setField("catalogueNumbers", (prev) =>
-      prev.catalogueNumbers.filter((row) => row.id !== rowId),
-    );
-  };
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -549,7 +522,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         <hr className={styles.sectionDivider} aria-hidden />
 
         <AddReleaseFormFormatsSection
-          formats={form.formats}
+          formatInputs={form.formats}
           releasesFormats={releasesFormats}
           errors={fieldErrors.formats}
           setFormats={(stateUpdateFn) =>

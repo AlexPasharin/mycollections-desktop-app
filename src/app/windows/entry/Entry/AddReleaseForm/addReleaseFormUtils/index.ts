@@ -2,7 +2,6 @@ import { v4 as uuidv4 } from "uuid";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
-import type { EntryByIdResult } from "@/types/entries";
 import { omitProperty } from "@/utils/common";
 import {
   getFieldValidationErrorMessages,
@@ -13,17 +12,9 @@ import {
   labelInputValuesSchema,
 } from "@/validation/releases/addReleaseForm/catNumbers";
 
-export type AddReleaseFormEntry = Omit<
-  EntryByIdResult,
-  "originalReleaseDate"
-> & {
-  originalReleaseDate: GeneralizedDate | null;
-};
-
 export type AddReleaseFormFormatInput = {
   id: string;
   formatId: string;
-  shortName: string;
   amount: string;
   pictureSleeve: boolean;
   jukeboxHole: boolean;
@@ -117,7 +108,6 @@ export const isCatalogueNumbersInputFieldKey = (
 export const defaultFormatInputRow = (): AddReleaseFormFormatInput => ({
   id: uuidv4(),
   formatId: "",
-  shortName: "",
   amount: "1",
   pictureSleeve: true,
   jukeboxHole: false,
@@ -383,60 +373,6 @@ export const stripPrintedInFromCountriesFieldErrors = (
   return rest;
 };
 
-export const getFormatsFormFieldErrors = (
-  errorMessages: ValidationResultErrorMessages,
-  currentFormatInputValues: AddReleaseFormFormatInput[],
-): AddReleaseFormFieldErrors["formats"] => {
-  const errorMessagesMap: Record<
-    FormatFieldsRowId,
-    Record<string, PropertyKey[]>
-  > = {};
-
-  for (const { message, path } of errorMessages) {
-    if (path[0] !== "formats") {
-      continue;
-    }
-
-    const rowIndex = path[1];
-    const source = path[2];
-
-    const filterRowById =
-      typeof rowIndex === "number"
-        ? currentFormatInputValues[rowIndex]
-        : undefined;
-
-    if (!filterRowById) {
-      continue;
-    }
-
-    const mapEntry = errorMessagesMap[filterRowById.id] ?? {};
-    const messageEntry = mapEntry[message] ?? [];
-
-    if (source) {
-      messageEntry.push(source);
-    }
-
-    mapEntry[message] = messageEntry;
-    errorMessagesMap[filterRowById.id] = mapEntry;
-  }
-
-  const formatsErrorMessages: Exclude<
-    AddReleaseFormFieldErrors["formats"],
-    undefined
-  > = {};
-
-  for (const [rowId, messages] of Object.entries(errorMessagesMap)) {
-    formatsErrorMessages[rowId] = Object.entries(messages).map(
-      ([message, sources]) => ({
-        message,
-        sources: sources.length > 0 ? sources : undefined,
-      }),
-    );
-  }
-
-  return formatsErrorMessages;
-};
-
 export const getCaNumbersFormFieldErrors = (
   errorMessages: ValidationResultErrorMessages,
   currentCatalogueNumberInputValues: CatalogueNumberRowState[],
@@ -646,4 +582,58 @@ export const updateCatNumberFieldErrors = (
   return Object.keys(nextCatalogueNumbers).length > 0
     ? nextCatalogueNumbers
     : undefined;
+};
+
+export const getFormatsFormFieldErrors = (
+  errorMessages: ValidationResultErrorMessages,
+  currentFormatInputValues: AddReleaseFormFormatInput[],
+): AddReleaseFormFieldErrors["formats"] => {
+  const errorMessagesMap: Record<
+    FormatFieldsRowId,
+    Record<string, PropertyKey[]>
+  > = {};
+
+  for (const { message, path } of errorMessages) {
+    if (path[0] !== "formats") {
+      continue;
+    }
+
+    const rowIndex = path[1];
+    const source = path[2];
+
+    const filterRowById =
+      typeof rowIndex === "number"
+        ? currentFormatInputValues[rowIndex]
+        : undefined;
+
+    if (!filterRowById) {
+      continue;
+    }
+
+    const mapEntry = errorMessagesMap[filterRowById.id] ?? {};
+    const messageEntry = mapEntry[message] ?? [];
+
+    if (source) {
+      messageEntry.push(source);
+    }
+
+    mapEntry[message] = messageEntry;
+    errorMessagesMap[filterRowById.id] = mapEntry;
+  }
+
+  const formatsErrorMessages: Exclude<
+    AddReleaseFormFieldErrors["formats"],
+    undefined
+  > = {};
+
+  for (const [rowId, messages] of Object.entries(errorMessagesMap)) {
+    formatsErrorMessages[rowId] = Object.entries(messages).map(
+      ([message, sources]) => ({
+        message,
+        sources: sources.length > 0 ? sources : undefined,
+      }),
+    );
+  }
+
+  return formatsErrorMessages;
 };
