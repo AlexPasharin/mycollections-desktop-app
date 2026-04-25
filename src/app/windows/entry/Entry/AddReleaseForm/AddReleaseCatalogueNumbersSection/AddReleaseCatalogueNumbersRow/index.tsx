@@ -6,8 +6,8 @@ import type {
   AddReleaseFormCatalogueNumberRowErrors,
   AddReleaseFormCatalogueNumbersInputFieldKey,
   CatalogueNumbersInputField,
-  CatalogueNumberRowState,
-} from "../../addReleaseFormUtils";
+} from "../../addReleaseFormUtils/errorMessages";
+import type { CatalogueNumberRowState } from "../../addReleaseFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import type { LabelListItem } from "@/types/labels";

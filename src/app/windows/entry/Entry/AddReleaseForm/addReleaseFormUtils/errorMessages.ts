@@ -1,7 +1,10 @@
-import { v4 as uuidv4 } from "uuid";
+import type {
+  AddReleaseFormFormatInput,
+  CountrySelectionInput,
+  CatalogueNumberRowState,
+} from "./formValues";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
-import type { GeneralizedDate } from "@/types/date";
 import { omitProperty } from "@/utils/common";
 import {
   getFieldValidationErrorMessages,
@@ -11,14 +14,6 @@ import {
   catalogueNumberInputValuesSchema,
   labelInputValuesSchema,
 } from "@/validation/releases/addReleaseForm/catNumbers";
-
-export type AddReleaseFormFormatInput = {
-  id: string;
-  formatId: string;
-  amount: string;
-  pictureSleeve: boolean;
-  jukeboxHole: boolean;
-};
 
 export type FormatField =
   | "formatId"
@@ -105,84 +100,149 @@ export const isCatalogueNumbersInputFieldKey = (
   key: AddReleaseFormInputFieldKey,
 ) => typeof key === "object" && "catNumberRowId" in key;
 
-export const defaultFormatInputRow = (): AddReleaseFormFormatInput => ({
-  id: uuidv4(),
-  formatId: "",
-  amount: "1",
-  pictureSleeve: true,
-  jukeboxHole: false,
-});
+export const validationErrorsToFieldErrors = (
+  errorMessages: ValidationResultErrorMessages,
+  currentFormatInputValues: AddReleaseFormFormatInput[],
+) => {
+  const patch: AddReleaseFormFieldErrors = {};
 
-export type CatalogueNumberRowState = {
-  id: string;
-  labelInputValues: {
-    id: string;
-    name: string;
-  }[];
-  catalogueNumberInputValues: {
-    id: string;
-    value: string;
-  }[];
+  type ReleaseDateErrorMessage = string;
+  const releaseDateErrorMessagesMap: Record<
+    ReleaseDateErrorMessage,
+    PropertyKey[]
+  > = {};
+
+  type FormatErrorMessage = string;
+  const formatsErrorMessagesMap: Record<
+    FormatFieldsRowId,
+    Record<FormatErrorMessage, PropertyKey[]>
+  > = {};
+
+  for (const { message, path } of errorMessages) {
+    const firstLevelKey = path[0];
+
+    if (
+      firstLevelKey === "releaseVersion" ||
+      firstLevelKey === "matrixRunout"
+    ) {
+      const patchEntry = patch[firstLevelKey] ?? [];
+
+      patchEntry.push({ message });
+      patch[firstLevelKey] = patchEntry;
+    } else if (firstLevelKey === "releaseDate") {
+      const mapEntry = releaseDateErrorMessagesMap[message] ?? [];
+      const source = path[1];
+
+      if (source) {
+        mapEntry.push(source);
+      }
+
+      releaseDateErrorMessagesMap[message] = mapEntry;
+    } else if (firstLevelKey === "formats") {
+      const rowIndex = path[1];
+
+      const filterRowById =
+        typeof rowIndex === "number"
+          ? currentFormatInputValues[rowIndex]
+          : undefined;
+
+      if (!filterRowById) {
+        continue;
+      }
+
+      const formatsRowErrorMessagesMap =
+        formatsErrorMessagesMap[filterRowById.id] ?? {};
+      const messageEntry = formatsRowErrorMessagesMap[message] ?? [];
+
+      const source = path[2];
+
+      if (source) {
+        messageEntry.push(source);
+      }
+
+      formatsRowErrorMessagesMap[message] = messageEntry;
+      formatsErrorMessagesMap[filterRowById.id] = formatsRowErrorMessagesMap;
+    }
+  }
+
+  if (Object.keys(releaseDateErrorMessagesMap).length > 0) {
+    patch.releaseDate = Object.entries(releaseDateErrorMessagesMap).map(
+      ([message, sources]) => ({
+        message,
+        sources,
+      }),
+    );
+  }
+
+  if (Object.keys(formatsErrorMessagesMap).length > 0) {
+    patch.formats = {};
+
+    for (const [rowId, messages] of Object.entries(formatsErrorMessagesMap)) {
+      patch.formats[rowId] = Object.entries(messages).map(
+        ([message, sources]) => ({
+          message,
+          sources,
+        }),
+      );
+    }
+  }
+
+  return patch;
 };
 
-export const emptyLabelInputValue = () => ({
-  id: uuidv4(),
-  name: "",
-});
+export const getFormatsFormFieldErrors = (
+  errorMessages: ValidationResultErrorMessages,
+  currentFormatInputValues: AddReleaseFormFormatInput[],
+): AddReleaseFormFieldErrors["formats"] => {
+  const errorMessagesMap: Record<
+    FormatFieldsRowId,
+    Record<string, PropertyKey[]>
+  > = {};
 
-export const emptyCatalogueNumberInputValue = () => ({
-  id: uuidv4(),
-  value: "",
-});
+  for (const { message, path } of errorMessages) {
+    if (path[0] !== "formats") {
+      continue;
+    }
 
-export type CountrySelectionInput = {
-  id: string;
-  codeName: string;
+    const rowIndex = path[1];
+    const source = path[2];
+
+    const filterRowById =
+      typeof rowIndex === "number"
+        ? currentFormatInputValues[rowIndex]
+        : undefined;
+
+    if (!filterRowById) {
+      continue;
+    }
+
+    const mapEntry = errorMessagesMap[filterRowById.id] ?? {};
+    const messageEntry = mapEntry[message] ?? [];
+
+    if (source) {
+      messageEntry.push(source);
+    }
+
+    mapEntry[message] = messageEntry;
+    errorMessagesMap[filterRowById.id] = mapEntry;
+  }
+
+  const formatsErrorMessages: Exclude<
+    AddReleaseFormFieldErrors["formats"],
+    undefined
+  > = {};
+
+  for (const [rowId, messages] of Object.entries(errorMessagesMap)) {
+    formatsErrorMessages[rowId] = Object.entries(messages).map(
+      ([message, sources]) => ({
+        message,
+        sources: sources.length > 0 ? sources : undefined,
+      }),
+    );
+  }
+
+  return formatsErrorMessages;
 };
-
-export const emptyCountrySelection = (): CountrySelectionInput => ({
-  id: uuidv4(),
-  codeName: "",
-});
-
-export const defaultCatalogueNumberRow = (): CatalogueNumberRowState => ({
-  id: uuidv4(),
-  labelInputValues: [emptyLabelInputValue()],
-  catalogueNumberInputValues: [emptyCatalogueNumberInputValue()],
-});
-
-export type AddReleaseFormMatrixRunoutDraft = {
-  value: string;
-  treatAsText: boolean;
-};
-
-export type AddReleaseFormDraft = {
-  releaseVersion: string;
-  matrixRunout: AddReleaseFormMatrixRunoutDraft;
-  releaseDate: GeneralizedDateFormInputValue;
-  formats: AddReleaseFormFormatInput[];
-  catalogueNumbers: CatalogueNumberRowState[];
-  selectedTags: Record<string, string>;
-  countrySelections: CountrySelectionInput[];
-  printedInCountrySelections: CountrySelectionInput[];
-};
-
-export const initialAddReleaseFormDraftValue = (
-  originalReleaseDate: GeneralizedDate | null,
-): AddReleaseFormDraft => ({
-  releaseVersion: "",
-  matrixRunout: { value: "", treatAsText: false },
-  releaseDate: {
-    year: String(originalReleaseDate?.year ?? ""),
-    month: String(originalReleaseDate?.month ?? ""),
-    day: String(originalReleaseDate?.day ?? ""),
-  },
-  formats: [defaultFormatInputRow()],
-  catalogueNumbers: [defaultCatalogueNumberRow()],
-  selectedTags: {},
-  countrySelections: [emptyCountrySelection()],
-  printedInCountrySelections: [],
-});
 
 export const getReleaseDateFormFieldErrors = (
   errorMessages: ValidationResultErrorMessages,
@@ -582,58 +642,4 @@ export const updateCatNumberFieldErrors = (
   return Object.keys(nextCatalogueNumbers).length > 0
     ? nextCatalogueNumbers
     : undefined;
-};
-
-export const getFormatsFormFieldErrors = (
-  errorMessages: ValidationResultErrorMessages,
-  currentFormatInputValues: AddReleaseFormFormatInput[],
-): AddReleaseFormFieldErrors["formats"] => {
-  const errorMessagesMap: Record<
-    FormatFieldsRowId,
-    Record<string, PropertyKey[]>
-  > = {};
-
-  for (const { message, path } of errorMessages) {
-    if (path[0] !== "formats") {
-      continue;
-    }
-
-    const rowIndex = path[1];
-    const source = path[2];
-
-    const filterRowById =
-      typeof rowIndex === "number"
-        ? currentFormatInputValues[rowIndex]
-        : undefined;
-
-    if (!filterRowById) {
-      continue;
-    }
-
-    const mapEntry = errorMessagesMap[filterRowById.id] ?? {};
-    const messageEntry = mapEntry[message] ?? [];
-
-    if (source) {
-      messageEntry.push(source);
-    }
-
-    mapEntry[message] = messageEntry;
-    errorMessagesMap[filterRowById.id] = mapEntry;
-  }
-
-  const formatsErrorMessages: Exclude<
-    AddReleaseFormFieldErrors["formats"],
-    undefined
-  > = {};
-
-  for (const [rowId, messages] of Object.entries(errorMessagesMap)) {
-    formatsErrorMessages[rowId] = Object.entries(messages).map(
-      ([message, sources]) => ({
-        message,
-        sources: sources.length > 0 ? sources : undefined,
-      }),
-    );
-  }
-
-  return formatsErrorMessages;
 };

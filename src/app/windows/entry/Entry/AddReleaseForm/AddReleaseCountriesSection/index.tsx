@@ -2,10 +2,8 @@ import type { FC } from "react";
 
 import styles from "./AddReleaseCountriesSection.module.css";
 
-import type {
-  AddReleaseFormCountriesErrors,
-  CountrySelectionInput,
-} from "../addReleaseFormUtils";
+import type { AddReleaseFormCountriesErrors } from "../addReleaseFormUtils/errorMessages";
+import type { CountrySelectionInput } from "../addReleaseFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import type { CountryListItem } from "@/types/countries";
@@ -24,7 +22,6 @@ type AddReleaseCountriesSectionProps = {
   removeAriaLabel: string;
   errors?: AddReleaseFormCountriesErrors | undefined;
 };
-
 
 const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
   countries,

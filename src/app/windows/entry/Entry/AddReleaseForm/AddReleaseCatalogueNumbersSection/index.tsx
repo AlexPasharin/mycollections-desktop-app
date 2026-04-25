@@ -4,14 +4,16 @@ import AddReleaseCatalogueNumbersRow from "./AddReleaseCatalogueNumbersRow";
 import styles from "./AddReleaseCatalogueNumbersSection.module.css";
 
 import {
-  emptyCatalogueNumberInputValue,
-  emptyLabelInputValue,
   type AddReleaseFormCatalogueNumberRowErrors,
   type AddReleaseFormCatalogueNumbersInputFieldKey,
   type AddReleaseFormFieldErrors,
   type CatalogueNumbersInputField,
+} from "../addReleaseFormUtils/errorMessages";
+import {
+  emptyCatalogueNumberInputValue,
+  emptyLabelInputValue,
   type CatalogueNumberRowState,
-} from "../addReleaseFormUtils";
+} from "../addReleaseFormUtils/formValues";
 
 import type { LabelListItem } from "@/types/labels";
 
