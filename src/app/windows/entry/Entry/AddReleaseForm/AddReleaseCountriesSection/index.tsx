@@ -2,7 +2,7 @@ import type { FC } from "react";
 
 import styles from "./AddReleaseCountriesSection.module.css";
 
-import type { AddReleaseFormCountriesErrors } from "../addReleaseFormUtils/errorMessages";
+import type { AddReleaseFormCountriesSubsectionErrors } from "../addReleaseFormUtils/errorMessages";
 import type { CountrySelectionInput } from "../addReleaseFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
@@ -14,13 +14,15 @@ type AddReleaseCountriesSectionProps = {
   onSetCountryCodeName: (inputId: string, codeName: string) => void;
   onAddRow: () => void;
   onRemoveRow: (inputId: string) => void;
+  onFocus: (inputId: string) => void;
+  onBlur: () => void;
   heading: string;
   selectIdPrefix: string;
   rowLabelPrefix: string;
   removeRowAriaLabel: string;
   onRemove: () => void;
   removeAriaLabel: string;
-  errors?: AddReleaseFormCountriesErrors | undefined;
+  errors?: AddReleaseFormCountriesSubsectionErrors | undefined;
 };
 
 const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
@@ -29,6 +31,8 @@ const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
   onSetCountryCodeName,
   onAddRow,
   onRemoveRow,
+  onFocus,
+  onBlur,
   heading,
   selectIdPrefix,
   rowLabelPrefix,
@@ -68,7 +72,7 @@ const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
       )}
 
       {countrySelections.map((row, rowIndex) => {
-        const rowErrorSet = errors?.countrySelectErrorMessages?.[row.id];
+        const rowErrorSet = errors?.countrySelectErrorMessages[row.id];
         const rowErrorMessagesForDisplay =
           rowErrorSet !== undefined && rowErrorSet.size > 0
             ? rowErrorSet
@@ -95,6 +99,8 @@ const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
                   onChange={(e) => {
                     onSetCountryCodeName(row.id, e.target.value);
                   }}
+                  onFocus={() => onFocus(row.id)}
+                  onBlur={onBlur}
                 >
                   <option value="">Choose a country…</option>
                   {countries.map((c) => (
