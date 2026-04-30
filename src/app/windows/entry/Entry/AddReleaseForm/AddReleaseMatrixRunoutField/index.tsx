@@ -2,10 +2,8 @@ import { type FC } from "react";
 
 import styles from "./AddReleaseMatrixRunoutField.module.css";
 
-import type {
-  AddReleaseFormFieldError,
-  AddReleaseFormMatrixRunoutDraft,
-} from "../addReleaseFormUtils";
+import type { AddReleaseFormFieldError } from "../addReleaseFormUtils/errorMessages";
+import type { AddReleaseFormMatrixRunoutDraft } from "../addReleaseFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 

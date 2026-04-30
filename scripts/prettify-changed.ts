@@ -48,8 +48,12 @@ const prettierBin = join(
   "prettier.cjs",
 );
 
-const r = spawnSync(process.execPath, [prettierBin, "--write", ...files], {
-  stdio: "inherit",
-});
+const r = spawnSync(
+  process.execPath,
+  [prettierBin, "--write", "--log-level=warn", ...files],
+  {
+    stdio: "inherit",
+  },
+);
 
 process.exit(r.status ?? 1);

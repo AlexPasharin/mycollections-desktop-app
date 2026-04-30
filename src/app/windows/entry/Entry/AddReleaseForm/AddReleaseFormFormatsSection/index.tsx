@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import { useMemo, type FC } from "react";
 
 import AddReleaseFormFormatBlock, {
   type AddReleaseFormFormatRowPatch,
@@ -6,10 +6,10 @@ import AddReleaseFormFormatBlock, {
 import styles from "./AddReleaseFormFormatsSection.module.css";
 
 import type {
-  AddReleaseFormFormatInput,
   AddReleaseFormFieldErrors,
   AddReleaseFormFormatInputFieldKey,
-} from "../addReleaseFormUtils";
+} from "../addReleaseFormUtils/errorMessages";
+import type { AddReleaseFormFormatInput } from "../addReleaseFormUtils/formValues";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
 import type { ReleasesFormatListItem } from "@/types/formats";
@@ -21,7 +21,7 @@ type SetAddReleaseFormFormats = (
 ) => void;
 
 type AddReleaseFormFormatsSectionProps = {
-  formats: AddReleaseFormFormatInput[];
+  formatInputs: AddReleaseFormFormatInput[];
   releasesFormats: ReleasesFormatListItem[];
   errors?: AddReleaseFormFieldErrors["formats"];
   setFormats: SetAddReleaseFormFormats;
@@ -32,7 +32,7 @@ type AddReleaseFormFormatsSectionProps = {
 };
 
 const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
-  formats,
+  formatInputs: formats,
   releasesFormats,
   errors,
   setFormats,
@@ -41,6 +41,13 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
   onFieldFocus,
   onBlur,
 }) => {
+  const sevenInchFormatId = useMemo(
+    () =>
+      releasesFormats.find((f) => f.shortName === SEVEN_INCH_FORMAT_SHORT_NAME)
+        ?.formatId,
+    [releasesFormats],
+  );
+
   const patchFormat = (rowId: string, patch: AddReleaseFormFormatRowPatch) => {
     setFormats((prevFormatRows) =>
       prevFormatRows.map((formatRow) =>
@@ -59,18 +66,13 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
         return prevFormatRows;
       }
 
-      const fmt = releasesFormats.find((f) => f.formatId === formatId);
-
-      const shortName = fmt?.shortName ?? "";
-
-      const isSevenInch = shortName === SEVEN_INCH_FORMAT_SHORT_NAME;
+      const isSevenInch = formatId === sevenInchFormatId;
 
       return prevFormatRows.map((formatRow) =>
         formatRow.id === rowId
           ? {
               ...current,
               formatId,
-              shortName,
               jukeboxHole: isSevenInch ? current.jukeboxHole : false,
             }
           : formatRow,

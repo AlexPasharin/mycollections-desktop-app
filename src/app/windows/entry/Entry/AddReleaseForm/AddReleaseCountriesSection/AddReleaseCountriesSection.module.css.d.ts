@@ -9,10 +9,10 @@ interface CssExports {
   'inputValueBlock': string;
   'labelVisuallyHidden': string;
   'propertyErrors': string;
-  'rowFieldErrors': string;
   'removeCross': string;
   'removeCrossSection': string;
   'removeCrossSlot': string;
+  'rowFieldErrors': string;
   'section': string;
   'segment': string;
   'select': string;
