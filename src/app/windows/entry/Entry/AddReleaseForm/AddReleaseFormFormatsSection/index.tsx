@@ -6,7 +6,7 @@ import AddReleaseFormFormatBlock, {
 import styles from "./AddReleaseFormFormatsSection.module.css";
 
 import type {
-  AddReleaseFormFieldErrors,
+  AddReleaseFormFormatErrors,
   AddReleaseFormFormatInputFieldKey,
 } from "../addReleaseFormUtils/errorMessages";
 import type { AddReleaseFormFormatInput } from "../addReleaseFormUtils/formValues";
@@ -23,7 +23,7 @@ type SetAddReleaseFormFormats = (
 type AddReleaseFormFormatsSectionProps = {
   formatInputs: AddReleaseFormFormatInput[];
   releasesFormats: ReleasesFormatListItem[];
-  errors?: AddReleaseFormFieldErrors["formats"];
+  errors: AddReleaseFormFormatErrors;
   setFormats: SetAddReleaseFormFormats;
   addFormatRow: () => void;
   removeFormatRow: (rowId: string) => void;
@@ -80,11 +80,9 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
     });
   };
 
-  const hasErrors =
-    errors !== undefined &&
-    Object.values(errors).some(
-      (rowErrors) => rowErrors && rowErrors.length > 0,
-    );
+  const hasErrors = Object.values(errors).some(
+    (rowErrors) => rowErrors.length > 0,
+  );
 
   const hasEmptyFormatId = formats.some((row) => row.formatId === "");
 
@@ -113,7 +111,7 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
               row={formatRow}
               rowIndex={rowIndex}
               releasesFormats={releasesFormats}
-              formatRowErrors={errors?.[formatRow.id]}
+              formatRowErrors={errors[formatRow.id]}
               onFormatChange={(formatId) =>
                 onFormatChange(formatRow.id, formatId)
               }

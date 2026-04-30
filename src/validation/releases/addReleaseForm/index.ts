@@ -1,9 +1,7 @@
 import { z } from "zod";
 
 import { catalogueNumberRowSchema } from "./catNumbers";
-import { addReleaseFormFormatInputArraySchema } from "./formats";
 
-import type { ReleasesFormatListItem } from "@/types/formats";
 import { releaseMatrixRunoutSchema } from "@/validation/releases/matrixRunout";
 
 export { catalogueNumberRowSchema };
@@ -38,9 +36,8 @@ const matrixRunoutSchema = z
   })
   .pipe(releaseMatrixRunoutSchema);
 
-export const createAddReleaseFormSchema = (formats: ReleasesFormatListItem[]) =>
+export const createAddReleaseFormSchema = () =>
   z.object({
     matrixRunout: matrixRunoutSchema,
-    formats: addReleaseFormFormatInputArraySchema(formats),
     catalogueNumbers: z.array(catalogueNumberRowSchema).optional(),
   });
