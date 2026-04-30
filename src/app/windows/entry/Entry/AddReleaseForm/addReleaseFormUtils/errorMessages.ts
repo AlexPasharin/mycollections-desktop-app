@@ -1,6 +1,5 @@
 import type {
   AddReleaseFormFormatInput,
-  CountrySelectionInput,
   CatalogueNumberRowState,
 } from "./formValues";
 
@@ -42,16 +41,20 @@ export type AddReleaseFormCatalogueNumberRowErrors = {
   rowErrorMessages?: Set<string> | undefined;
 };
 
+export type AddReleaseFormCountriesSubsectionErrors = {
+  countrySelectErrorMessages: Record<CountrySelectionRowId, Set<string>>;
+  propertyErrorMessages: Set<string>;
+};
+
 export type AddReleaseFormCountriesErrors = {
-  countrySelectErrorMessages?:
-    | Record<CountrySelectionRowId, Set<string>>
-    | undefined;
-  propertyErrorMessages?: Set<string> | undefined;
+  madeIn: AddReleaseFormCountriesSubsectionErrors;
+  printedIn: AddReleaseFormCountriesSubsectionErrors;
 };
 
 export type AddReleaseFormFieldErrors = {
-  releaseVersion?: AddReleaseFormFieldError[] | undefined;
-  releaseDate?: AddReleaseFormFieldError[] | undefined;
+  releaseVersion: AddReleaseFormFieldError[];
+  releaseDate: AddReleaseFormFieldError[];
+  countries: AddReleaseFormCountriesErrors;
 
   matrixRunout?: AddReleaseFormFieldError[] | undefined;
   formats?:
@@ -63,12 +66,21 @@ export type AddReleaseFormFieldErrors = {
         AddReleaseFormCatalogueNumberRowErrors | undefined
       >
     | undefined;
-  countries?:
-    | {
-        madeIn?: AddReleaseFormCountriesErrors | undefined;
-        printedIn?: AddReleaseFormCountriesErrors | undefined;
-      }
-    | undefined;
+};
+
+export const emptyMutableCountriesSubsectionErrors =
+  (): AddReleaseFormCountriesSubsectionErrors => ({
+    countrySelectErrorMessages: {},
+    propertyErrorMessages: new Set(),
+  });
+
+export const initialAddReleaseFormFieldErrors = {
+  releaseVersion: [],
+  releaseDate: [],
+  countries: {
+    madeIn: emptyMutableCountriesSubsectionErrors(),
+    printedIn: emptyMutableCountriesSubsectionErrors(),
+  },
 };
 
 export type CatalogueNumbersInputField = "label" | "catNumber";
@@ -84,12 +96,20 @@ export type AddReleaseFormCatalogueNumbersInputFieldKey = {
   inputValueId: string;
 };
 
+export type CountriesSubsection = "madeIn" | "printedIn";
+
+export type AddReleaseFormCountriesInputFieldKey = {
+  countriesSubsection: CountriesSubsection;
+  rowId: string;
+};
+
 export type AddReleaseFormInputFieldKey =
   | "releaseVersion"
   | "matrixRunout"
   | ReleaseDateFieldErrorSource
   | AddReleaseFormFormatInputFieldKey
-  | AddReleaseFormCatalogueNumbersInputFieldKey;
+  | AddReleaseFormCatalogueNumbersInputFieldKey
+  | AddReleaseFormCountriesInputFieldKey;
 
 export const isReleaseDateInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
   key === "year" || key === "month" || key === "day";
@@ -101,95 +121,8 @@ export const isCatalogueNumbersInputFieldKey = (
   key: AddReleaseFormInputFieldKey,
 ) => typeof key === "object" && "catNumberRowId" in key;
 
-export const validationErrorsToFieldErrors = (
-  errorMessages: ValidationResultErrorMessages,
-  currentFormatInputValues: AddReleaseFormFormatInput[],
-) => {
-  const patch: AddReleaseFormFieldErrors = {};
-
-  type ReleaseDateErrorMessage = string;
-  const releaseDateErrorMessagesMap: Record<
-    ReleaseDateErrorMessage,
-    PropertyKey[]
-  > = {};
-
-  type FormatErrorMessage = string;
-  const formatsErrorMessagesMap: Record<
-    FormatFieldsRowId,
-    Record<FormatErrorMessage, PropertyKey[]>
-  > = {};
-
-  for (const { message, path } of errorMessages) {
-    const firstLevelKey = path[0];
-
-    if (
-      firstLevelKey === "releaseVersion" ||
-      firstLevelKey === "matrixRunout"
-    ) {
-      const patchEntry = patch[firstLevelKey] ?? [];
-
-      patchEntry.push({ message });
-      patch[firstLevelKey] = patchEntry;
-    } else if (firstLevelKey === "releaseDate") {
-      const mapEntry = releaseDateErrorMessagesMap[message] ?? [];
-      const source = path[1];
-
-      if (source) {
-        mapEntry.push(source);
-      }
-
-      releaseDateErrorMessagesMap[message] = mapEntry;
-    } else if (firstLevelKey === "formats") {
-      const rowIndex = path[1];
-
-      const filterRowById =
-        typeof rowIndex === "number"
-          ? currentFormatInputValues[rowIndex]
-          : undefined;
-
-      if (!filterRowById) {
-        continue;
-      }
-
-      const formatsRowErrorMessagesMap =
-        formatsErrorMessagesMap[filterRowById.id] ?? {};
-      const messageEntry = formatsRowErrorMessagesMap[message] ?? [];
-
-      const source = path[2];
-
-      if (source) {
-        messageEntry.push(source);
-      }
-
-      formatsRowErrorMessagesMap[message] = messageEntry;
-      formatsErrorMessagesMap[filterRowById.id] = formatsRowErrorMessagesMap;
-    }
-  }
-
-  if (Object.keys(releaseDateErrorMessagesMap).length > 0) {
-    patch.releaseDate = Object.entries(releaseDateErrorMessagesMap).map(
-      ([message, sources]) => ({
-        message,
-        sources,
-      }),
-    );
-  }
-
-  if (Object.keys(formatsErrorMessagesMap).length > 0) {
-    patch.formats = {};
-
-    for (const [rowId, messages] of Object.entries(formatsErrorMessagesMap)) {
-      patch.formats[rowId] = Object.entries(messages).map(
-        ([message, sources]) => ({
-          message,
-          sources,
-        }),
-      );
-    }
-  }
-
-  return patch;
-};
+export const isCountriesInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
+  typeof key === "object" && "countriesSubsection" in key;
 
 export const getFormatsFormFieldErrors = (
   errorMessages: ValidationResultErrorMessages,
@@ -245,194 +178,32 @@ export const getFormatsFormFieldErrors = (
   return formatsErrorMessages;
 };
 
-export const getReleaseDateFormFieldErrors = (
-  errorMessages: ValidationResultErrorMessages,
-) => {
-  const errorMessagesMap: Record<string, PropertyKey[]> = {};
-
-  for (const { message, path } of errorMessages) {
-    if (path[0] !== "releaseDate") {
-      continue;
-    }
-
-    const mapEntry = errorMessagesMap[message] ?? [];
-    const source = path[1];
-
-    if (source) {
-      mapEntry.push(source);
-    }
-
-    errorMessagesMap[message] = mapEntry;
-  }
-
-  return Object.entries(errorMessagesMap).map(([message, sources]) => ({
-    message,
-    sources: sources.length > 0 ? sources : undefined,
-  }));
-};
-
-type MutableCountriesSubsectionErrors = {
-  countrySelectErrorMessages: Record<CountrySelectionRowId, Set<string>>;
-  propertyErrorMessages: Set<string>;
-};
-
-const emptyMutableCountriesSubsectionErrors =
-  (): MutableCountriesSubsectionErrors => ({
-    countrySelectErrorMessages: {},
-    propertyErrorMessages: new Set(),
-  });
-
-const finalizeCountriesSubsectionErrors = (
-  mutable: MutableCountriesSubsectionErrors,
-): AddReleaseFormCountriesErrors | undefined => {
-  const hasRowMessages =
-    Object.keys(mutable.countrySelectErrorMessages).length > 0;
-  const hasPropertyMessages = mutable.propertyErrorMessages.size > 0;
-
-  if (!hasRowMessages && !hasPropertyMessages) {
-    return undefined;
-  }
-
-  const result: AddReleaseFormCountriesErrors = {
-    ...(hasRowMessages
-      ? { countrySelectErrorMessages: mutable.countrySelectErrorMessages }
-      : {}),
-    ...(hasPropertyMessages
-      ? { propertyErrorMessages: mutable.propertyErrorMessages }
-      : {}),
-  };
-
-  return result;
-};
-
-export const getCountriesFormFieldErrors = (
-  errorMessages: ValidationResultErrorMessages,
-  madeInSelections: CountrySelectionInput[],
-  printedInSelections: CountrySelectionInput[],
-): AddReleaseFormFieldErrors["countries"] => {
-  const madeInMutable = emptyMutableCountriesSubsectionErrors();
-  const printedInMutable = emptyMutableCountriesSubsectionErrors();
-
-  for (const { message, path } of errorMessages) {
-    if (path[0] !== "countries") {
-      continue;
-    }
-
-    const subsectionKey = path[1];
-
-    if (subsectionKey !== "madeIn" && subsectionKey !== "printedIn") {
-      continue;
-    }
-
-    const target =
-      subsectionKey === "madeIn" ? madeInMutable : printedInMutable;
-    const rowOrPropertyKey = path[2];
-
-    if (typeof rowOrPropertyKey === "number") {
-      const rows =
-        subsectionKey === "madeIn" ? madeInSelections : printedInSelections;
-      const row = rows[rowOrPropertyKey];
-
-      if (!row) {
-        continue;
-      }
-
-      const rowSet =
-        target.countrySelectErrorMessages[row.id] ?? new Set<string>();
-      rowSet.add(message);
-      target.countrySelectErrorMessages[row.id] = rowSet;
-    } else {
-      target.propertyErrorMessages.add(message);
-    }
-  }
-
-  const madeIn = finalizeCountriesSubsectionErrors(madeInMutable);
-  const printedIn = finalizeCountriesSubsectionErrors(printedInMutable);
-
-  const patch: NonNullable<AddReleaseFormFieldErrors["countries"]> = {
-    ...(madeIn === undefined ? {} : { madeIn }),
-    ...(printedIn === undefined ? {} : { printedIn }),
-  };
-
-  return Object.keys(patch).length > 0 ? patch : undefined;
-};
-
 export const removeMadeInCountrySelectionRowFromFieldErrors = (
-  countries: AddReleaseFormFieldErrors["countries"],
+  countries: AddReleaseFormCountriesErrors,
   rowId: CountrySelectionRowId,
-): AddReleaseFormFieldErrors["countries"] => {
-  if (countries === undefined) {
-    return undefined;
-  }
-
+): AddReleaseFormCountriesErrors => {
   const madeIn = countries.madeIn;
-
-  if (madeIn === undefined) {
-    return countries;
-  }
 
   const selectMap = madeIn.countrySelectErrorMessages;
 
-  if (selectMap?.[rowId] === undefined) {
+  if (!selectMap[rowId]) {
     return countries;
   }
 
-  const restSelect = omitProperty(selectMap, rowId);
-
-  const nextMadeIn = countriesSubsectionFromParts(
-    Object.keys(restSelect).length > 0 ? restSelect : undefined,
-    madeIn.propertyErrorMessages,
-  );
-
-  if (nextMadeIn === undefined && countries.printedIn === undefined) {
-    return undefined;
-  }
-
-  return {
-    ...(nextMadeIn === undefined ? {} : { madeIn: nextMadeIn }),
-    ...(countries.printedIn === undefined
-      ? {}
-      : { printedIn: countries.printedIn }),
+  const nextMadeIn = {
+    ...madeIn,
+    countrySelectErrorMessages: omitProperty(selectMap, rowId),
   };
+
+  return { madeIn: nextMadeIn, printedIn: countries.printedIn };
 };
 
 export const stripPrintedInFromCountriesFieldErrors = (
-  countries: AddReleaseFormFieldErrors["countries"],
-): AddReleaseFormFieldErrors["countries"] => {
-  if (!countries?.printedIn) {
-    return countries;
-  }
-
-  const rest = omitProperty(countries, "printedIn");
-
-  if (rest.madeIn === undefined) {
-    return undefined;
-  }
-
-  return rest;
-};
-
-const countriesSubsectionFromParts = (
-  countrySelectErrorMessages:
-    | Record<CountrySelectionRowId, Set<string>>
-    | undefined,
-  propertyErrorMessages: Set<string> | undefined,
-): AddReleaseFormCountriesErrors | undefined => {
-  const hasSelect =
-    countrySelectErrorMessages !== undefined &&
-    Object.keys(countrySelectErrorMessages).length > 0;
-  const hasProp =
-    propertyErrorMessages !== undefined && propertyErrorMessages.size > 0;
-
-  if (!hasSelect && !hasProp) {
-    return undefined;
-  }
-
-  return {
-    ...(hasSelect ? { countrySelectErrorMessages } : {}),
-    ...(hasProp ? { propertyErrorMessages } : {}),
-  };
-};
+  countries: AddReleaseFormCountriesErrors,
+): AddReleaseFormCountriesErrors => ({
+  ...countries,
+  printedIn: emptyMutableCountriesSubsectionErrors(),
+});
 
 export const getCaNumbersFormFieldErrors = (
   errorMessages: ValidationResultErrorMessages,

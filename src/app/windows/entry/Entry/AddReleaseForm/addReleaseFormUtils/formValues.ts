@@ -1,7 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
 
-import type { AddReleaseFormFieldError } from "./errorMessages";
+import type {
+  AddReleaseFormCountriesErrors,
+  AddReleaseFormFieldError,
+} from "./errorMessages";
 import { validateReleaseDate, validateReleaseVersion } from "./validation";
+import { validateReleaseCountries } from "./validation/countries";
 import type { FormFieldValidationResult } from "./validation/types";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
@@ -33,7 +37,12 @@ export type CountrySelectionInput = {
   codeName: string;
 };
 
-export const emptyCountrySelection = (): CountrySelectionInput => ({
+export type AddReleaseFormCountries = {
+  madeIn: CountrySelectionInput[];
+  printedIn: CountrySelectionInput[];
+};
+
+export const emptyCountrySelection = () => ({
   id: uuidv4(),
   codeName: "",
 });
@@ -84,10 +93,13 @@ export type AddReleaseFormDraft = {
       AddReleaseFormFieldError[] | undefined
     >
   >;
-  countries: {
-    madeIn: CountrySelectionInput[];
-    printedIn: CountrySelectionInput[];
-  };
+  countries: FormField<
+    AddReleaseFormCountries,
+    FormFieldValidationResult<
+      AddReleaseFormCountries,
+      AddReleaseFormCountriesErrors
+    >
+  >;
 
   matrixRunout: AddReleaseFormMatrixRunoutDraft;
   formats: AddReleaseFormFormatInput[];
@@ -113,8 +125,12 @@ export const initialAddReleaseFormDraftValue = (
     validationFn: validateReleaseDate(originalReleaseDate),
   },
   countries: {
-    madeIn: [emptyCountrySelection()],
-    printedIn: [],
+    value: {
+      madeIn: [emptyCountrySelection()],
+      printedIn: [],
+    },
+    valid: true,
+    validationFn: validateReleaseCountries,
   },
 
   matrixRunout: { value: "", treatAsText: false },

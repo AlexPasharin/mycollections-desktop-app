@@ -11,7 +11,7 @@ import type { TagListItem } from "@/types/tags";
 
 type AddReleaseFormWrapperProps = Omit<
   AddReleaseFormProps,
-  "releasesFormats" | "labels" | "tags" | "countries"
+  "allFormats" | "labels" | "tags" | "allCountries"
 >;
 
 const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
@@ -70,10 +70,10 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
   return (
     <AddReleaseForm
       {...props}
-      releasesFormats={releasesFormats}
+      allFormats={releasesFormats}
       labels={labels}
       tags={tags}
-      countries={countries}
+      allCountries={countries}
     />
   );
 };
