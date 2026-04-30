@@ -96,7 +96,8 @@ function validationResultErrorMessagesFromSafeParseResult(
   result: z.ZodSafeParseResult<unknown>,
   key?: string,
 ): ValidationResultErrorMessages | undefined {
-  return result.error?.issues.map(({ message, path }) => {
-    return { message, path: key === undefined ? path : [key, ...path] };
-  });
+  return result.error?.issues.map(({ message, path }) => ({
+    message,
+    path: key === undefined ? path : [key, ...path],
+  }));
 }

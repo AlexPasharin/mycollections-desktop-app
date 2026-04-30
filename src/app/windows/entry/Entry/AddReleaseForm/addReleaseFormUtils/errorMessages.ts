@@ -51,8 +51,9 @@ export type AddReleaseFormCountriesErrors = {
 
 export type AddReleaseFormFieldErrors = {
   releaseVersion?: AddReleaseFormFieldError[] | undefined;
-  matrixRunout?: AddReleaseFormFieldError[] | undefined;
   releaseDate?: AddReleaseFormFieldError[] | undefined;
+
+  matrixRunout?: AddReleaseFormFieldError[] | undefined;
   formats?:
     | Record<FormatFieldsRowId, AddReleaseFormFieldError[] | undefined>
     | undefined;

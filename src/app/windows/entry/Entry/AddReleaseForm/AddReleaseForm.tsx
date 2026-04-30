@@ -26,10 +26,12 @@ import {
   initialAddReleaseFormDraftValue,
   type AddReleaseFormDraft,
 } from "./addReleaseFormUtils/formValues";
+import type { AddReleaseFormFieldNotifications } from "./addReleaseFormUtils/notifications";
 import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
 import AddReleaseTagsSection from "./AddReleaseTagsSection";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
+import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
 import type { CountryListItem } from "@/types/countries";
 import type { GeneralizedDate } from "@/types/date";
@@ -60,6 +62,8 @@ export type AddReleaseFormProps = {
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
 const RELEASE_VERSION_FIELD_ERROR_ID = "add-release-version-error";
+const RELEASE_VERSION_FIELD_NOTIFICATIONS_ID =
+  "add-release-version-notifications";
 
 const AddReleaseForm: FC<AddReleaseFormProps> = ({
   entry,
@@ -72,18 +76,34 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const { originalReleaseDate } = entry;
 
   const addReleaseFormSchema = useMemo(
-    () => createAddReleaseFormSchema(releasesFormats, originalReleaseDate),
-    [releasesFormats, originalReleaseDate],
+    () => createAddReleaseFormSchema(releasesFormats),
+    [releasesFormats],
   );
 
   const [form, setForm] = useState<AddReleaseFormDraft>(
     initialAddReleaseFormDraftValue(originalReleaseDate),
   );
 
+  const [fieldErrors, setFieldErrors] = useState<AddReleaseFormFieldErrors>({});
+
+  const [notifications, setNotifications] =
+    useState<AddReleaseFormFieldNotifications>({});
+
   const [printedInCountriesSectionOpen, setPrintedInCountriesSectionOpen] =
     useState(false);
 
-  const [fieldErrors, setFieldErrors] = useState<AddReleaseFormFieldErrors>({});
+  const setFieldValue = <K extends "releaseVersion" | "releaseDate">(
+    key: K,
+    value: AddReleaseFormDraft[K]["value"],
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        value,
+      },
+    }));
+  };
 
   const setField = <K extends keyof AddReleaseFormDraft>(
     key: K,
@@ -127,6 +147,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   // on focus we attempt to remove errors related to the field that is being focused
   const onFocus = (key: AddReleaseFormInputFieldKey) => {
+    if (key === "releaseVersion") {
+      setNotifications((prev) => omitProperty(prev, key));
+    }
+
     setFieldErrors((prev) => {
       if (isFormatInputFieldKey(key)) {
         const { formats } = prev;
@@ -188,11 +212,62 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     });
   };
 
+  const validateField = <K extends "releaseVersion" | "releaseDate">(
+    key: K,
+  ) => {
+    const formFieldData = form[key];
+
+    // Correlated union: TS can't see that `value` and `validationFn`'s parameter
+    // share the same K, so we narrow the call signature locally. Sound because
+    // both fields come from the same `form[key]` instance.
+    type Value = AddReleaseFormDraft[K]["value"];
+    type Result = ReturnType<AddReleaseFormDraft[K]["validationFn"]>;
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    const validationFn = formFieldData.validationFn as (v: Value) => Result;
+    const validationResult = validationFn(formFieldData.value);
+    const { valid, value } = validationResult;
+
+    setField(key, (prev) => ({ ...prev[key], valid, value }));
+
+    if (!validationResult.valid) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [key]: validationResult.errorMessages,
+      }));
+    }
+
+    return validationResult;
+  };
+
+  const validateReleaseVersionField = () => {
+    const validationResult = validateField("releaseVersion");
+
+    if (validationResult.valid) {
+      setNotifications((prev) => ({
+        ...prev,
+        releaseVersion: validationResult.notifications,
+      }));
+    }
+
+    return validationResult;
+  };
+
+  const validateReleaseDateFields = () => validateField("releaseDate");
+
   type onBlurKey =
     | Exclude<keyof AddReleaseFormDraft, "catalogueNumbers">
     | UpdateCatNumberFieldErrorsArgs;
 
   const onBlur = (key: onBlurKey) => {
+    if (key === "releaseVersion") {
+      return validateReleaseVersionField();
+    }
+
+    if (key === "releaseDate") {
+      return validateReleaseDateFields();
+    }
+
     setFieldErrors((prev) => {
       if (typeof key === "object") {
         return {
@@ -216,6 +291,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         ...getFieldErrorsPatch(errorMessages),
       };
     });
+
+    return undefined;
   };
 
   const addFormatRow = () => {
@@ -382,10 +459,11 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       printedInCountrySelections,
     } = form;
 
+    validateReleaseVersionField();
+    validateReleaseDateFields();
+
     const dataToValidate = {
-      releaseVersion,
       matrixRunout,
-      releaseDate,
       formats,
       catalogueNumbers: catalogueNumbers.map((row) => ({
         labelInputValues: row.labelInputValues.map((label) => label.name),
@@ -401,8 +479,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     const result = validateAgainstSchema(addReleaseFormSchema, dataToValidate);
 
+    const formIsValid =
+      releaseVersion.valid && releaseDate.valid && result.success;
+
     console.info({
       form,
+      formIsValid,
       result,
       selectedTags: Object.entries(selectedTags),
       countrySelections: countrySelections.map((c) => c.codeName),
@@ -421,10 +503,21 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const releaseVersionErrors = fieldErrors.releaseVersion ?? [];
+  const releaseVersionNotifications = notifications.releaseVersion ?? [];
   const matrixRunoutErrors = fieldErrors.matrixRunout ?? [];
   const releaseDateErrors = fieldErrors.releaseDate ?? [];
   const hasReleaseVersionErrors = releaseVersionErrors.length > 0;
+  const hasReleaseVersionNotifications = releaseVersionNotifications.length > 0;
   const hasReleaseDateErrors = releaseDateErrors.length > 0;
+
+  const releaseVersionDescribedByIds = [
+    hasReleaseVersionErrors ? RELEASE_VERSION_FIELD_ERROR_ID : null,
+    hasReleaseVersionNotifications
+      ? RELEASE_VERSION_FIELD_NOTIFICATIONS_ID
+      : null,
+  ]
+    .filter((id): id is string => id !== null)
+    .join(" ");
 
   return (
     <div className={styles.section}>
@@ -441,22 +534,22 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             className={styles.input}
             type="text"
             aria-required
-            value={form.releaseVersion}
-            onChange={(e) => setField("releaseVersion", e.target.value)}
+            value={form.releaseVersion.value}
+            onChange={(e) => setFieldValue("releaseVersion", e.target.value)}
             onFocus={() => onFocus("releaseVersion")}
             onBlur={() => onBlur("releaseVersion")}
             aria-invalid={hasReleaseVersionErrors}
-            aria-describedby={
-              hasReleaseVersionErrors
-                ? RELEASE_VERSION_FIELD_ERROR_ID
-                : undefined
-            }
+            aria-describedby={releaseVersionDescribedByIds || undefined}
             autoComplete="off"
             required
           />
           <FormFieldErrorMessages
             id={RELEASE_VERSION_FIELD_ERROR_ID}
             messages={releaseVersionErrors}
+          />
+          <FormFieldNotifications
+            id={RELEASE_VERSION_FIELD_NOTIFICATIONS_ID}
+            messages={releaseVersionNotifications}
           />
         </div>
 
@@ -468,9 +561,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         <div className={styles.field}>
           <h2 className={styles.heading}>Release date</h2>
           <GeneralizedDateFormInput
-            date={form.releaseDate}
+            date={form.releaseDate.value}
             startDate={entry.originalReleaseDate}
-            setDate={(releaseDate) => setField("releaseDate", releaseDate)}
+            setDate={(releaseDate) => setFieldValue("releaseDate", releaseDate)}
             onFocus={onFocus}
             onBlur={() => onBlur("releaseDate")}
             invalid={hasReleaseDateErrors}
@@ -595,7 +688,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           <button type="button" onClick={onCancel}>
             Cancel
           </button>
-          <button type="submit">Save</button>
+          <button type="submit" onMouseDown={(e) => e.preventDefault()}>
+            Save
+          </button>
         </div>
       </form>
     </div>

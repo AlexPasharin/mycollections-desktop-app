@@ -4,17 +4,10 @@ import { catalogueNumberRowSchema } from "./catNumbers";
 import { addReleaseFormCountriesSchema } from "./countries";
 import { addReleaseFormFormatInputArraySchema } from "./formats";
 
-import type { GeneralizedDate } from "@/types/date";
 import type { ReleasesFormatListItem } from "@/types/formats";
-import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
 import { releaseMatrixRunoutSchema } from "@/validation/releases/matrixRunout";
 
 export { catalogueNumberRowSchema, addReleaseFormCountriesSchema };
-
-const releaseVersionSchema = z
-  .string()
-  .trim()
-  .min(1, "Release version is required");
 
 const matrixRunoutSchema = z
   .object({
@@ -46,14 +39,9 @@ const matrixRunoutSchema = z
   })
   .pipe(releaseMatrixRunoutSchema);
 
-export const createAddReleaseFormSchema = (
-  formats: ReleasesFormatListItem[],
-  releaseDateStart?: GeneralizedDate | null,
-) =>
+export const createAddReleaseFormSchema = (formats: ReleasesFormatListItem[]) =>
   z.object({
-    releaseVersion: releaseVersionSchema,
     matrixRunout: matrixRunoutSchema,
-    releaseDate: createGeneralizedDateSchema(releaseDateStart).optional(),
     formats: addReleaseFormFormatInputArraySchema(formats),
     catalogueNumbers: z.array(catalogueNumberRowSchema).optional(),
     countries: addReleaseFormCountriesSchema,

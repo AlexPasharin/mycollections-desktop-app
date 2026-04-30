@@ -18,7 +18,7 @@ const addReleaseFormFormatInputSchema = (formats: ReleasesFormatListItem[]) => {
   );
 
   return z
-    .strictObject({
+    .object({
       formatId: z
         .string()
         .trim()

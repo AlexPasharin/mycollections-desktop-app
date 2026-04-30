@@ -1,5 +1,9 @@
 import { v4 as uuidv4 } from "uuid";
 
+import type { AddReleaseFormFieldError } from "./errorMessages";
+import { validateReleaseDate, validateReleaseVersion } from "./validation";
+import type { FormFieldValidationResult } from "./validation/types";
+
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
 
@@ -62,10 +66,26 @@ export type AddReleaseFormMatrixRunoutDraft = {
   treatAsText: boolean;
 };
 
+type FormField<T, U> = {
+  value: T;
+  valid: boolean;
+  validationFn: (value: T) => U;
+};
+
 export type AddReleaseFormDraft = {
-  releaseVersion: string;
+  releaseVersion: FormField<
+    string,
+    FormFieldValidationResult<string, AddReleaseFormFieldError[] | undefined>
+  >;
+  releaseDate: FormField<
+    GeneralizedDateFormInputValue,
+    FormFieldValidationResult<
+      GeneralizedDateFormInputValue,
+      AddReleaseFormFieldError[] | undefined
+    >
+  >;
+
   matrixRunout: AddReleaseFormMatrixRunoutDraft;
-  releaseDate: GeneralizedDateFormInputValue;
   formats: AddReleaseFormFormatInput[];
   catalogueNumbers: CatalogueNumberRowState[];
   selectedTags: Record<string, string>;
@@ -76,16 +96,26 @@ export type AddReleaseFormDraft = {
 export const initialAddReleaseFormDraftValue = (
   originalReleaseDate: GeneralizedDate | null,
 ): AddReleaseFormDraft => ({
-  releaseVersion: "",
-  matrixRunout: { value: "", treatAsText: false },
-  releaseDate: {
-    year: String(originalReleaseDate?.year ?? ""),
-    month: String(originalReleaseDate?.month ?? ""),
-    day: String(originalReleaseDate?.day ?? ""),
+  releaseVersion: {
+    value: "",
+    valid: true,
+    validationFn: validateReleaseVersion,
   },
+  releaseDate: {
+    value: {
+      year: String(originalReleaseDate?.year ?? ""),
+      month: String(originalReleaseDate?.month ?? ""),
+      day: String(originalReleaseDate?.day ?? ""),
+    },
+    valid: true,
+    validationFn: validateReleaseDate(originalReleaseDate),
+  },
+  countrySelections: [emptyCountrySelection()],
+
+  matrixRunout: { value: "", treatAsText: false },
   formats: [defaultFormatInputRow()],
   catalogueNumbers: [defaultCatalogueNumberRow()],
   selectedTags: {},
-  countrySelections: [emptyCountrySelection()],
+
   printedInCountrySelections: [],
 });
