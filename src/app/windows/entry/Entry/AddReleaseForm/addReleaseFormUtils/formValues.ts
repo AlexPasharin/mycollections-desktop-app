@@ -84,13 +84,15 @@ export type AddReleaseFormDraft = {
       AddReleaseFormFieldError[] | undefined
     >
   >;
+  countries: {
+    madeIn: CountrySelectionInput[];
+    printedIn: CountrySelectionInput[];
+  };
 
   matrixRunout: AddReleaseFormMatrixRunoutDraft;
   formats: AddReleaseFormFormatInput[];
   catalogueNumbers: CatalogueNumberRowState[];
   selectedTags: Record<string, string>;
-  countrySelections: CountrySelectionInput[];
-  printedInCountrySelections: CountrySelectionInput[];
 };
 
 export const initialAddReleaseFormDraftValue = (
@@ -110,12 +112,13 @@ export const initialAddReleaseFormDraftValue = (
     valid: true,
     validationFn: validateReleaseDate(originalReleaseDate),
   },
-  countrySelections: [emptyCountrySelection()],
+  countries: {
+    madeIn: [emptyCountrySelection()],
+    printedIn: [],
+  },
 
   matrixRunout: { value: "", treatAsText: false },
   formats: [defaultFormatInputRow()],
   catalogueNumbers: [defaultCatalogueNumberRow()],
   selectedTags: {},
-
-  printedInCountrySelections: [],
 });

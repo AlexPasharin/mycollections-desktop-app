@@ -139,8 +139,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       ),
       countries: getCountriesFormFieldErrors(
         errorMessages,
-        form.countrySelections,
-        form.printedInCountrySelections,
+        form.countries.madeIn,
+        form.countries.printedIn,
       ),
     };
   };
@@ -341,10 +341,11 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const addCountrySelectionRow = () => {
-    setField("countrySelections", (prev) => [
-      ...prev.countrySelections,
-      emptyCountrySelection(),
-    ]);
+    setField("countries", (prev) => ({
+      ...prev.countries,
+      madeIn: [...prev.countries.madeIn, emptyCountrySelection()],
+    }),
+    );
   };
 
   const removeCountrySelectionRow = (inputId: string) => {
@@ -369,32 +370,37 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       return { ...prev, countries: nextCountries };
     });
 
-    setField("countrySelections", (prev) =>
-      prev.countrySelections.filter((row) => row.id !== inputId),
-    );
+    setField("countries", (prev) => ({
+      ...prev.countries,
+      madeIn: prev.countries.madeIn.filter((row) => row.id !== inputId),
+    }));
   };
 
   const clearAllCountries = () => {
     setPrintedInCountriesSectionOpen(false);
     setFieldErrors((prev) => omitProperty(prev, "countries"));
-    setForm((prev) => ({
-      ...prev,
-      countrySelections: [],
-      printedInCountrySelections: [],
+    setField("countries", (prev) => ({
+      ...prev.countries,
+      madeIn: [],
+      printedIn: [],
     }));
   };
 
   const setCountrySelectionCodeName = (inputId: string, codeName: string) => {
-    setField("countrySelections", (prev) =>
-      prev.countrySelections.map((row) =>
+    setField("countries", (prev) => ({
+      ...prev.countries,
+      madeIn: prev.countries.madeIn.map((row) =>
         row.id === inputId ? { ...row, codeName } : row,
       ),
-    );
+    }));
   };
 
   const openPrintedInCountriesSection = () => {
     setPrintedInCountriesSectionOpen(true);
-    setField("printedInCountrySelections", [emptyCountrySelection()]);
+    setField("countries", (prev) => ({
+      ...prev.countries,
+      printedIn: [...prev.countries.printedIn, emptyCountrySelection()],
+    }));
   };
 
   const closePrintedInCountriesSection = () => {
@@ -418,31 +424,36 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
       return { ...prev, countries: nextCountries };
     });
-    setField("printedInCountrySelections", []);
+    setField("countries", (prev) => ({
+      ...prev.countries,
+      printedIn: [],
+    }));
   };
 
   const addPrintedInCountrySelectionRow = () => {
-    setField("printedInCountrySelections", (prev) => [
-      ...prev.printedInCountrySelections,
-      emptyCountrySelection(),
-    ]);
+    setField("countries", (prev) => ({
+      ...prev.countries,
+      printedIn: [...prev.countries.printedIn, emptyCountrySelection()],
+    }));
   };
 
   const removePrintedInCountrySelectionRow = (inputId: string) => {
-    setField("printedInCountrySelections", (prev) =>
-      prev.printedInCountrySelections.filter((row) => row.id !== inputId),
-    );
+    setField("countries", (prev) => ({
+      ...prev.countries,
+      printedIn: prev.countries.printedIn.filter((row) => row.id !== inputId),
+    }));
   };
 
   const setPrintedInCountrySelectionCodeName = (
     inputId: string,
     codeName: string,
   ) => {
-    setField("printedInCountrySelections", (prev) =>
-      prev.printedInCountrySelections.map((row) =>
+    setField("countries", (prev) => ({
+      ...prev.countries,
+      printedIn: prev.countries.printedIn.map((row) =>
         row.id === inputId ? { ...row, codeName } : row,
       ),
-    );
+    }));
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -455,8 +466,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       formats,
       catalogueNumbers,
       selectedTags,
-      countrySelections,
-      printedInCountrySelections,
+      countries,
     } = form;
 
     validateReleaseVersionField();
@@ -472,8 +482,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         ),
       })),
       countries: {
-        madeIn: countrySelections.map((c) => c.codeName),
-        printedIn: printedInCountrySelections.map((c) => c.codeName),
+        madeIn: countries.madeIn.map((c) => c.codeName),
+        printedIn: countries.printedIn.map((c) => c.codeName),
       },
     };
 
@@ -487,10 +497,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       formIsValid,
       result,
       selectedTags: Object.entries(selectedTags),
-      countrySelections: countrySelections.map((c) => c.codeName),
-      printedInCountrySelections: printedInCountrySelections.map(
-        (c) => c.codeName,
-      ),
+      countries: countries.madeIn.map((c) => c.codeName),
+      printedIn: countries.printedIn.map((c) => c.codeName),
     });
 
     if (!result.success) {
@@ -582,7 +590,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
         <AddReleaseCountriesSection
           countries={countries}
-          countrySelections={form.countrySelections}
+          countrySelections={form.countries.madeIn}
           onSetCountryCodeName={setCountrySelectionCodeName}
           onAddRow={addCountrySelectionRow}
           onRemoveRow={removeCountrySelectionRow}
@@ -598,7 +606,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         {printedInCountriesSectionOpen ? (
           <AddReleaseCountriesSection
             countries={countries}
-            countrySelections={form.printedInCountrySelections}
+            countrySelections={form.countries.printedIn}
             onSetCountryCodeName={setPrintedInCountrySelectionCodeName}
             onAddRow={addPrintedInCountrySelectionRow}
             onRemoveRow={removePrintedInCountrySelectionRow}
