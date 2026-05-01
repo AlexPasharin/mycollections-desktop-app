@@ -1,7 +1,4 @@
-import type {
-  AddReleaseFormFormatInput,
-  CatalogueNumberRowState,
-} from "./formValues";
+import type { CatalogueNumberRowState } from "./formValues";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import { omitProperty } from "@/utils/common";
@@ -27,7 +24,7 @@ export type AddReleaseFormFieldError = {
   sources?: PropertyKey[] | undefined;
 };
 
-type FormatFieldsRowId = string;
+export type FormatFieldsRowId = string;
 type CatNumberFieldsRowId = string;
 type LabelInputId = string;
 type CatNumberInputId = string;
@@ -51,15 +48,19 @@ export type AddReleaseFormCountriesErrors = {
   printedIn: AddReleaseFormCountriesSubsectionErrors;
 };
 
+export type AddReleaseFormFormatErrors = Record<
+  FormatFieldsRowId,
+  AddReleaseFormFieldError[]
+>;
+
 export type AddReleaseFormFieldErrors = {
   releaseVersion: AddReleaseFormFieldError[];
   releaseDate: AddReleaseFormFieldError[];
   countries: AddReleaseFormCountriesErrors;
+  formats: AddReleaseFormFormatErrors;
 
   matrixRunout?: AddReleaseFormFieldError[] | undefined;
-  formats?:
-    | Record<FormatFieldsRowId, AddReleaseFormFieldError[] | undefined>
-    | undefined;
+
   catalogueNumbers?:
     | Record<
         CatNumberFieldsRowId,
@@ -74,13 +75,14 @@ export const emptyMutableCountriesSubsectionErrors =
     propertyErrorMessages: new Set(),
   });
 
-export const initialAddReleaseFormFieldErrors = {
+export const initialAddReleaseFormFieldErrors: AddReleaseFormFieldErrors = {
   releaseVersion: [],
   releaseDate: [],
   countries: {
     madeIn: emptyMutableCountriesSubsectionErrors(),
     printedIn: emptyMutableCountriesSubsectionErrors(),
   },
+  formats: {},
 };
 
 export type CatalogueNumbersInputField = "label" | "catNumber";
@@ -123,60 +125,6 @@ export const isCatalogueNumbersInputFieldKey = (
 
 export const isCountriesInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
   typeof key === "object" && "countriesSubsection" in key;
-
-export const getFormatsFormFieldErrors = (
-  errorMessages: ValidationResultErrorMessages,
-  currentFormatInputValues: AddReleaseFormFormatInput[],
-): AddReleaseFormFieldErrors["formats"] => {
-  const errorMessagesMap: Record<
-    FormatFieldsRowId,
-    Record<string, PropertyKey[]>
-  > = {};
-
-  for (const { message, path } of errorMessages) {
-    if (path[0] !== "formats") {
-      continue;
-    }
-
-    const rowIndex = path[1];
-    const source = path[2];
-
-    const filterRowById =
-      typeof rowIndex === "number"
-        ? currentFormatInputValues[rowIndex]
-        : undefined;
-
-    if (!filterRowById) {
-      continue;
-    }
-
-    const mapEntry = errorMessagesMap[filterRowById.id] ?? {};
-    const messageEntry = mapEntry[message] ?? [];
-
-    if (source) {
-      messageEntry.push(source);
-    }
-
-    mapEntry[message] = messageEntry;
-    errorMessagesMap[filterRowById.id] = mapEntry;
-  }
-
-  const formatsErrorMessages: Exclude<
-    AddReleaseFormFieldErrors["formats"],
-    undefined
-  > = {};
-
-  for (const [rowId, messages] of Object.entries(errorMessagesMap)) {
-    formatsErrorMessages[rowId] = Object.entries(messages).map(
-      ([message, sources]) => ({
-        message,
-        sources: sources.length > 0 ? sources : undefined,
-      }),
-    );
-  }
-
-  return formatsErrorMessages;
-};
 
 export const removeMadeInCountrySelectionRowFromFieldErrors = (
   countries: AddReleaseFormCountriesErrors,

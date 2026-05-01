@@ -6,7 +6,6 @@ import styles from "./AddReleaseForm.module.css";
 import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
 import {
   getCaNumbersFormFieldErrors,
-  getFormatsFormFieldErrors,
   removeMadeInCountrySelectionRowFromFieldErrors,
   stripPrintedInFromCountriesFieldErrors,
   updateCatNumberFieldErrors,
@@ -77,12 +76,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const { originalReleaseDate } = entry;
 
   const addReleaseFormSchema = useMemo(
-    () => createAddReleaseFormSchema(allFormats),
+    () => createAddReleaseFormSchema(),
     [allFormats],
   );
 
   const [form, setForm] = useState<AddReleaseFormDraft>(
-    initialAddReleaseFormDraftValue(originalReleaseDate),
+    initialAddReleaseFormDraftValue(originalReleaseDate, allFormats),
   );
 
   const [fieldErrors, setFieldErrors] = useState<AddReleaseFormFieldErrors>(
@@ -96,7 +95,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     useState(false);
 
   const setFieldValue = <
-    K extends "releaseVersion" | "releaseDate" | "countries",
+    K extends "releaseVersion" | "releaseDate" | "countries" | "formats",
   >(
     key: K,
     value:
@@ -131,7 +130,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     }
 
     return {
-      formats: getFormatsFormFieldErrors(errorMessages, form.formats),
       matrixRunout: errorMessages
         .filter(({ path }) => path[0] === "matrixRunout")
         .map(({ message }) => ({ message })),
@@ -153,7 +151,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         const { formats } = prev;
         const { formatRowId, field } = key;
 
-        const nextFormatRowErrors = prev.formats?.[formatRowId]?.filter(
+        const nextFormatRowErrors = prev.formats[formatRowId]?.filter(
           (error) =>
             error.sources &&
             error.sources.length > 0 &&
@@ -162,10 +160,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
         return {
           ...prev,
-          formats: {
-            ...formats,
-            [formatRowId]: nextFormatRowErrors,
-          },
+          formats: nextFormatRowErrors
+            ? {
+                ...formats,
+                [formatRowId]: nextFormatRowErrors,
+              }
+            : omitProperty(formats, formatRowId),
         };
       }
 
@@ -237,7 +237,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const validateField = <
-    K extends "releaseVersion" | "releaseDate" | "countries",
+    K extends "releaseVersion" | "releaseDate" | "countries" | "formats",
   >(
     key: K,
   ) => {
@@ -281,6 +281,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   const validateReleaseDateFields = () => validateField("releaseDate");
   const validateCountriesFields = () => validateField("countries");
+  const validateFormatsFields = () => validateField("formats");
 
   type onBlurKey =
     | Exclude<keyof AddReleaseFormDraft, "catalogueNumbers">
@@ -297,6 +298,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     if (key === "countries") {
       return validateCountriesFields();
+    }
+
+    if (key === "formats") {
+      return validateFormatsFields();
     }
 
     setFieldErrors((prev) => {
@@ -327,18 +332,15 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const addFormatRow = () => {
-    setField("formats", (prev) => [...prev.formats, defaultFormatInputRow()]);
+    setFieldValue("formats", (prev) => [
+      ...prev.formats.value,
+      defaultFormatInputRow(),
+    ]);
   };
 
   const removeFormatRow = (rowId: string) => {
-    // if we remove format row, we should also remove errors associated with it
-    setFieldErrors((prev) => ({
-      ...prev,
-      formats: omitProperty(prev.formats, rowId),
-    }));
-
-    setField("formats", (prev) =>
-      prev.formats.filter((formatRow) => formatRow.id !== rowId),
+    setFieldValue("formats", (prev) =>
+      prev.formats.value.filter((formatRow) => formatRow.id !== rowId),
     );
   };
 
@@ -484,15 +486,15 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
 
-    const { matrixRunout, formats, catalogueNumbers, selectedTags } = form;
+    const { matrixRunout, catalogueNumbers, selectedTags } = form;
 
     const releaseVersionValidationResult = validateReleaseVersionField();
     const releaseDateValidationResult = validateReleaseDateFields();
     const countriesValidationResult = validateCountriesFields();
+    const formatsValidationResult = validateFormatsFields();
 
     const dataToValidate = {
       matrixRunout,
-      formats,
       catalogueNumbers: catalogueNumbers.map((row) => ({
         labelInputValues: row.labelInputValues.map((label) => label.name),
         catalogueNumberInputValues: row.catalogueNumberInputValues.map(
@@ -507,6 +509,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       releaseVersionValidationResult.valid &&
       releaseDateValidationResult.valid &&
       countriesValidationResult.valid &&
+      formatsValidationResult.valid &&
       result.success;
 
     console.info({
@@ -651,11 +654,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         <hr className={styles.sectionDivider} aria-hidden />
 
         <AddReleaseFormFormatsSection
-          formatInputs={form.formats}
+          formatInputs={form.formats.value}
           releasesFormats={allFormats}
           errors={fieldErrors.formats}
           setFormats={(stateUpdateFn) =>
-            setField("formats", (prev) => stateUpdateFn(prev.formats))
+            setFieldValue("formats", (prev) =>
+              stateUpdateFn(prev.formats.value),
+            )
           }
           addFormatRow={addFormatRow}
           removeFormatRow={removeFormatRow}

@@ -15,7 +15,7 @@ export const validateReleaseDate = (
     value: GeneralizedDateFormInputValue,
   ): FormFieldValidationResult<
     GeneralizedDateFormInputValue,
-    AddReleaseFormFieldError[] | undefined
+    AddReleaseFormFieldError[]
   > => {
     const validationResult = validationSchema.safeParse(value);
 

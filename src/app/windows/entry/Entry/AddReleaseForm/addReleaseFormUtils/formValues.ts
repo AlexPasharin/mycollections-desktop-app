@@ -3,13 +3,16 @@ import { v4 as uuidv4 } from "uuid";
 import type {
   AddReleaseFormCountriesErrors,
   AddReleaseFormFieldError,
+  AddReleaseFormFormatErrors,
 } from "./errorMessages";
 import { validateReleaseDate, validateReleaseVersion } from "./validation";
 import { validateReleaseCountries } from "./validation/countries";
+import { validateReleaseFormats } from "./validation/formats";
 import type { FormFieldValidationResult } from "./validation/types";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
+import type { ReleasesFormatListItem } from "@/types/formats";
 
 export type AddReleaseFormFormatInput = {
   id: string;
@@ -75,6 +78,8 @@ export type AddReleaseFormMatrixRunoutDraft = {
   treatAsText: boolean;
 };
 
+export type AddReleaseFormFormatInputs = AddReleaseFormFormatInput[];
+
 type FormField<T, U> = {
   value: T;
   valid: boolean;
@@ -100,15 +105,23 @@ export type AddReleaseFormDraft = {
       AddReleaseFormCountriesErrors
     >
   >;
+  formats: FormField<
+    AddReleaseFormFormatInputs,
+    FormFieldValidationResult<
+      AddReleaseFormFormatInputs,
+      AddReleaseFormFormatErrors
+    >
+  >;
 
   matrixRunout: AddReleaseFormMatrixRunoutDraft;
-  formats: AddReleaseFormFormatInput[];
+
   catalogueNumbers: CatalogueNumberRowState[];
   selectedTags: Record<string, string>;
 };
 
 export const initialAddReleaseFormDraftValue = (
   originalReleaseDate: GeneralizedDate | null,
+  allFormats: ReleasesFormatListItem[],
 ): AddReleaseFormDraft => ({
   releaseVersion: {
     value: "",
@@ -134,7 +147,11 @@ export const initialAddReleaseFormDraftValue = (
   },
 
   matrixRunout: { value: "", treatAsText: false },
-  formats: [defaultFormatInputRow()],
+  formats: {
+    value: [defaultFormatInputRow()],
+    valid: true,
+    validationFn: validateReleaseFormats(allFormats),
+  },
   catalogueNumbers: [defaultCatalogueNumberRow()],
   selectedTags: {},
 });
