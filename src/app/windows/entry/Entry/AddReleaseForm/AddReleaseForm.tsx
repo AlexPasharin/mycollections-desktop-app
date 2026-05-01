@@ -26,7 +26,6 @@ import {
   initialAddReleaseFormDraftValue,
   type AddReleaseFormDraft,
 } from "./addReleaseFormUtils/formValues";
-import type { AddReleaseFormFieldNotifications } from "./addReleaseFormUtils/notifications";
 import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
 import AddReleaseTagsSection from "./AddReleaseTagsSection";
 
@@ -88,9 +87,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     initialAddReleaseFormFieldErrors,
   );
 
-  const [notifications, setNotifications] =
-    useState<AddReleaseFormFieldNotifications>({});
-
   const [printedInCountriesSectionOpen, setPrintedInCountriesSectionOpen] =
     useState(false);
 
@@ -143,7 +139,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   // on focus we attempt to remove errors related to the field that is being focused
   const onFocus = (key: AddReleaseFormInputFieldKey) => {
     if (key === "releaseVersion") {
-      setNotifications((prev) => omitProperty(prev, key));
+      setField("releaseVersion", (prev) => ({
+        ...prev.releaseVersion,
+        notifications: [],
+      }));
     }
 
     setFieldErrors((prev) => {
@@ -254,7 +253,14 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     const validationResult = validationFn(formFieldData.value);
     const { valid, value } = validationResult;
 
-    setField(key, (prev) => ({ ...prev[key], valid, value }));
+    setField(key, (prev) => ({
+      ...prev[key],
+      valid,
+      value,
+      notifications: validationResult.valid
+        ? (validationResult.notifications ?? [])
+        : [],
+    }));
 
     setFieldErrors((prev) => ({
       ...prev,
@@ -266,18 +272,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     return validationResult;
   };
 
-  const validateReleaseVersionField = () => {
-    const validationResult = validateField("releaseVersion");
-
-    if (validationResult.valid) {
-      setNotifications((prev) => ({
-        ...prev,
-        releaseVersion: validationResult.notifications,
-      }));
-    }
-
-    return validationResult;
-  };
+  const validateReleaseVersionField = () => validateField("releaseVersion");
 
   const validateReleaseDateFields = () => validateField("releaseDate");
   const validateCountriesFields = () => validateField("countries");
@@ -528,7 +523,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const releaseVersionErrors = fieldErrors.releaseVersion;
-  const releaseVersionNotifications = notifications.releaseVersion ?? [];
+  const releaseVersionNotifications = form.releaseVersion.notifications;
   const matrixRunoutErrors = fieldErrors.matrixRunout ?? [];
   const releaseDateErrors = fieldErrors.releaseDate;
   const hasReleaseVersionErrors = releaseVersionErrors.length > 0;

@@ -84,6 +84,9 @@ type FormField<T, U> = {
   value: T;
   valid: boolean;
   validationFn: (value: T) => U;
+  notifications: {
+    notification: string;
+  }[];
 };
 
 export type AddReleaseFormDraft = {
@@ -114,7 +117,6 @@ export type AddReleaseFormDraft = {
   >;
 
   matrixRunout: AddReleaseFormMatrixRunoutDraft;
-
   catalogueNumbers: CatalogueNumberRowState[];
   selectedTags: Record<string, string>;
 };
@@ -127,6 +129,7 @@ export const initialAddReleaseFormDraftValue = (
     value: "",
     valid: true,
     validationFn: validateReleaseVersion,
+    notifications: [],
   },
   releaseDate: {
     value: {
@@ -136,6 +139,7 @@ export const initialAddReleaseFormDraftValue = (
     },
     valid: true,
     validationFn: validateReleaseDate(originalReleaseDate),
+    notifications: [],
   },
   countries: {
     value: {
@@ -144,14 +148,16 @@ export const initialAddReleaseFormDraftValue = (
     },
     valid: true,
     validationFn: validateReleaseCountries,
+    notifications: [],
   },
-
-  matrixRunout: { value: "", treatAsText: false },
   formats: {
     value: [defaultFormatInputRow()],
     valid: true,
     validationFn: validateReleaseFormats(allFormats),
+    notifications: [],
   },
+
+  matrixRunout: { value: "", treatAsText: false },
   catalogueNumbers: [defaultCatalogueNumberRow()],
   selectedTags: {},
 });
