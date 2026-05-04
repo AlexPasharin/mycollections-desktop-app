@@ -1,4 +1,4 @@
-import { useMemo, useState, type FC, type FormEvent } from "react";
+import { useState, type FC, type FormEvent } from "react";
 
 import AddReleaseCatalogueNumbersSection from "./AddReleaseCatalogueNumbersSection";
 import AddReleaseCountriesSection from "./AddReleaseCountriesSection";
@@ -36,12 +36,6 @@ import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
 import type { TagListItem } from "@/types/tags";
 import { omitProperty } from "@/utils/common";
-import {
-  getFieldValidationErrorMessages,
-  validateAgainstSchema,
-  type ValidationResultErrorMessages,
-} from "@/utils/validation";
-import { createAddReleaseFormSchema } from "@/validation/releases/addReleaseForm";
 
 type AddReleaseFormEntry = Omit<EntryByIdResult, "originalReleaseDate"> & {
   originalReleaseDate: GeneralizedDate | null;
@@ -71,11 +65,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 }) => {
   const { originalReleaseDate } = entry;
 
-  const addReleaseFormSchema = useMemo(
-    () => createAddReleaseFormSchema(),
-    [allFormats],
-  );
-
   const [form, setForm] = useState<AddReleaseFormDraft>(
     initialAddReleaseFormDraftValue(originalReleaseDate, allFormats),
   );
@@ -93,7 +82,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       | "releaseDate"
       | "countries"
       | "formats"
-      | "catalogueNumbers",
+      | "catalogueNumbers"
+      | "matrixRunout",
   >(
     key: K,
     value:
@@ -118,20 +108,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       ...prev,
       [key]: typeof value === "function" ? value(prev) : value,
     }));
-  };
-
-  const getFieldErrorsPatch = (
-    errorMessages?: ValidationResultErrorMessages,
-  ) => {
-    if (errorMessages === undefined || errorMessages.length === 0) {
-      return initialAddReleaseFormFieldErrors;
-    }
-
-    return {
-      matrixRunout: errorMessages
-        .filter(({ path }) => path[0] === "matrixRunout")
-        .map(({ message }) => ({ message })),
-    };
   };
 
   // on focus we attempt to remove errors related to the field that is being focused
@@ -224,7 +200,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
       const errorKey = isReleaseDateInputFieldKey(key) ? "releaseDate" : key;
 
-      const errors = prev[errorKey]?.filter(
+      const errors = prev[errorKey].filter(
         (error) =>
           error.sources &&
           error.sources.length > 0 &&
@@ -244,7 +220,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       | "releaseDate"
       | "countries"
       | "formats"
-      | "catalogueNumbers",
+      | "catalogueNumbers"
+      | "matrixRunout",
   >(
     key: K,
   ) => {
@@ -285,23 +262,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const onBlur = (key: keyof AddReleaseFormDraft) => {
     if (key === "selectedTags") {
       return;
-    }
-
-    if (key === "matrixRunout") {
-      setFieldErrors((prev) => {
-        const errorMessages = getFieldValidationErrorMessages(
-          addReleaseFormSchema,
-          form[key],
-          key,
-        );
-
-        return {
-          ...prev,
-          ...getFieldErrorsPatch(errorMessages ?? []),
-        };
-      });
-
-      return undefined;
     }
 
     return validateField(key);
@@ -464,23 +424,19 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const validateCountriesFields = () => validateField("countries");
   const validateFormatsFields = () => validateField("formats");
   const validateCatNumbersFields = () => validateField("catalogueNumbers");
+  const validateMatrixRunoutField = () => validateField("matrixRunout");
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
 
-    const { matrixRunout, selectedTags } = form;
+    const { selectedTags } = form;
 
     const releaseVersionValidationResult = validateReleaseVersionField();
     const releaseDateValidationResult = validateReleaseDateFields();
     const countriesValidationResult = validateCountriesFields();
     const formatsValidationResult = validateFormatsFields();
     const catNumbersValidationResult = validateCatNumbersFields();
-
-    const dataToValidate = {
-      matrixRunout,
-    };
-
-    const result = validateAgainstSchema(addReleaseFormSchema, dataToValidate);
+    const matrixRunoutValidationResult = validateMatrixRunoutField();
 
     const formIsValid =
       releaseVersionValidationResult.valid &&
@@ -488,26 +444,18 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       countriesValidationResult.valid &&
       formatsValidationResult.valid &&
       catNumbersValidationResult.valid &&
-      result.success;
+      matrixRunoutValidationResult.valid;
 
     console.info({
       form,
       formIsValid,
-      result,
       selectedTags: Object.entries(selectedTags),
     });
-
-    if (!result.success) {
-      setFieldErrors((prev) => ({
-        ...prev,
-        ...getFieldErrorsPatch(result.errorMessages),
-      }));
-    }
   };
 
   const releaseVersionErrors = fieldErrors.releaseVersion;
   const releaseVersionNotifications = form.releaseVersion.notifications;
-  const matrixRunoutErrors = fieldErrors.matrixRunout ?? [];
+  const matrixRunoutErrors = fieldErrors.matrixRunout;
   const releaseDateErrors = fieldErrors.releaseDate;
   const hasReleaseVersionErrors = releaseVersionErrors.length > 0;
   const hasReleaseVersionNotifications = releaseVersionNotifications.length > 0;
@@ -666,17 +614,17 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         <hr className={styles.sectionDivider} aria-hidden />
 
         <AddReleaseMatrixRunoutField
-          matrixRunout={form.matrixRunout}
+          matrixRunout={form.matrixRunout.value}
           errorMessages={matrixRunoutErrors}
           onValueChange={(value) =>
-            setField("matrixRunout", (draft) => ({
-              ...draft.matrixRunout,
+            setFieldValue("matrixRunout", (prev) => ({
+              ...prev.matrixRunout.value,
               value,
             }))
           }
           onTreatAsTextChange={(treatAsText) =>
-            setField("matrixRunout", (draft) => ({
-              ...draft.matrixRunout,
+            setFieldValue("matrixRunout", (draft) => ({
+              ...draft.matrixRunout.value,
               treatAsText,
             }))
           }
