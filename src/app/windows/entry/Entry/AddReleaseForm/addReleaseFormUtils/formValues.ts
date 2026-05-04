@@ -1,11 +1,13 @@
 import { v4 as uuidv4 } from "uuid";
 
 import type {
+  AddReleaseFormCatNumbersErrors,
   AddReleaseFormCountriesErrors,
   AddReleaseFormFieldError,
   AddReleaseFormFormatErrors,
 } from "./errorMessages";
 import { validateReleaseDate, validateReleaseVersion } from "./validation";
+import { validateReleaseCatNumbers } from "./validation/catalogueNumbers";
 import { validateReleaseCountries } from "./validation/countries";
 import { validateReleaseFormats } from "./validation/formats";
 import type { FormFieldValidationResult } from "./validation/types";
@@ -79,11 +81,15 @@ export type AddReleaseFormMatrixRunoutDraft = {
 };
 
 export type AddReleaseFormFormatInputs = AddReleaseFormFormatInput[];
+export type AddReleaseFormCatNumbersInputs = CatalogueNumberRowState[];
 
 type FormField<T, U> = {
   value: T;
   valid: boolean;
   validationFn: (value: T) => U;
+  notifications: {
+    notification: string;
+  }[];
 };
 
 export type AddReleaseFormDraft = {
@@ -112,10 +118,15 @@ export type AddReleaseFormDraft = {
       AddReleaseFormFormatErrors
     >
   >;
+  catalogueNumbers: FormField<
+    AddReleaseFormCatNumbersInputs,
+    FormFieldValidationResult<
+      AddReleaseFormCatNumbersInputs,
+      AddReleaseFormCatNumbersErrors
+    >
+  >;
 
   matrixRunout: AddReleaseFormMatrixRunoutDraft;
-
-  catalogueNumbers: CatalogueNumberRowState[];
   selectedTags: Record<string, string>;
 };
 
@@ -127,6 +138,7 @@ export const initialAddReleaseFormDraftValue = (
     value: "",
     valid: true,
     validationFn: validateReleaseVersion,
+    notifications: [],
   },
   releaseDate: {
     value: {
@@ -136,6 +148,7 @@ export const initialAddReleaseFormDraftValue = (
     },
     valid: true,
     validationFn: validateReleaseDate(originalReleaseDate),
+    notifications: [],
   },
   countries: {
     value: {
@@ -144,14 +157,22 @@ export const initialAddReleaseFormDraftValue = (
     },
     valid: true,
     validationFn: validateReleaseCountries,
+    notifications: [],
   },
-
-  matrixRunout: { value: "", treatAsText: false },
   formats: {
     value: [defaultFormatInputRow()],
     valid: true,
     validationFn: validateReleaseFormats(allFormats),
+    notifications: [],
   },
-  catalogueNumbers: [defaultCatalogueNumberRow()],
+  catalogueNumbers: {
+    value: [defaultCatalogueNumberRow()],
+    valid: true,
+    validationFn: validateReleaseCatNumbers,
+    notifications: [],
+  },
+
+  matrixRunout: { value: "", treatAsText: false },
+
   selectedTags: {},
 });

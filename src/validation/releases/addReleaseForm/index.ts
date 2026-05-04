@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-import { catalogueNumberRowSchema } from "./catNumbers";
-
 import { releaseMatrixRunoutSchema } from "@/validation/releases/matrixRunout";
-
-export { catalogueNumberRowSchema };
 
 const matrixRunoutSchema = z
   .object({
@@ -39,5 +35,4 @@ const matrixRunoutSchema = z
 export const createAddReleaseFormSchema = () =>
   z.object({
     matrixRunout: matrixRunoutSchema,
-    catalogueNumbers: z.array(catalogueNumberRowSchema).optional(),
   });

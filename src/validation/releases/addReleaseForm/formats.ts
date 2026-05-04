@@ -5,37 +5,6 @@ import type { ReleasesFormatListItem } from "@/types/formats";
 import { addCustomValidationIssues } from "@/utils/validation";
 import { strictStringToIntSchema } from "@/validation/common";
 
-const AMOUNT_MIN_MESSAGE = "Amount must be at least 1.";
-
-/** Integer ≥ 1, either as `z.int()` or as a string that parses to a base-10 integer. */
-const addReleaseFormFormatAmountSchema = z
-  .union([z.int(), z.string().trim().pipe(strictStringToIntSchema)])
-  .pipe(z.int().min(1, { error: AMOUNT_MIN_MESSAGE }));
-
-const addReleaseFormFormatInputSchema = (formats: ReleasesFormatListItem[]) => {
-  const sevenInchFormat = formats.find(
-    (f) => f.shortName === SEVEN_INCH_FORMAT_SHORT_NAME,
-  );
-
-  return z
-    .object({
-      formatId: z
-        .string()
-        .trim()
-        .min(1, { message: "Format is required", abort: true }),
-      amount: addReleaseFormFormatAmountSchema,
-      pictureSleeve: z.boolean(),
-      jukeboxHole: z.boolean(),
-    })
-    .superRefine((val, ctx) => {
-      if (val.jukeboxHole && val.formatId !== sevenInchFormat?.formatId) {
-        const message = `Short name must be "${sevenInchFormat?.shortName ?? SEVEN_INCH_FORMAT_SHORT_NAME}" when jukebox hole is true.`;
-
-        addCustomValidationIssues(ctx, message, ["jukeboxHole"], ["formatId"]);
-      }
-    });
-};
-
 export const addReleaseFormFormatInputArraySchema = (
   formats: ReleasesFormatListItem[],
 ) =>
@@ -68,3 +37,35 @@ export const addReleaseFormFormatInputArraySchema = (
         index += 1;
       }
     });
+
+const AMOUNT_MIN_MESSAGE = "Amount must be at least 1.";
+
+/** Integer ≥ 1, either as `z.int()` or as a string that parses to a base-10 integer. */
+const addReleaseFormFormatAmountSchema = z
+  .union([z.int(), z.string().trim().pipe(strictStringToIntSchema)])
+  .pipe(z.int().min(1, { error: AMOUNT_MIN_MESSAGE }));
+
+const addReleaseFormFormatInputSchema = (formats: ReleasesFormatListItem[]) => {
+  const sevenInchFormat = formats.find(
+    (f) => f.shortName === SEVEN_INCH_FORMAT_SHORT_NAME,
+  );
+
+  return z
+    .object({
+      id: z.string(),
+      formatId: z
+        .string()
+        .trim()
+        .min(1, { message: "Format is required", abort: true }),
+      amount: addReleaseFormFormatAmountSchema,
+      pictureSleeve: z.boolean(),
+      jukeboxHole: z.boolean(),
+    })
+    .superRefine((val, ctx) => {
+      if (val.jukeboxHole && val.formatId !== sevenInchFormat?.formatId) {
+        const message = `Short name must be "${sevenInchFormat?.shortName ?? SEVEN_INCH_FORMAT_SHORT_NAME}" when jukebox hole is true.`;
+
+        addCustomValidationIssues(ctx, message, ["jukeboxHole"], ["formatId"]);
+      }
+    });
+};

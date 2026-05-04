@@ -5,17 +5,14 @@ import AddReleaseCountriesSection from "./AddReleaseCountriesSection";
 import styles from "./AddReleaseForm.module.css";
 import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
 import {
-  getCaNumbersFormFieldErrors,
   removeMadeInCountrySelectionRowFromFieldErrors,
   stripPrintedInFromCountriesFieldErrors,
-  updateCatNumberFieldErrors,
   isCatalogueNumbersInputFieldKey,
   isCountriesInputFieldKey,
   isFormatInputFieldKey,
   isReleaseDateInputFieldKey,
   type AddReleaseFormFieldErrors,
   type AddReleaseFormInputFieldKey,
-  type UpdateCatNumberFieldErrorsArgs,
   emptyMutableCountriesSubsectionErrors,
   initialAddReleaseFormFieldErrors,
 } from "./addReleaseFormUtils/errorMessages";
@@ -26,7 +23,6 @@ import {
   initialAddReleaseFormDraftValue,
   type AddReleaseFormDraft,
 } from "./addReleaseFormUtils/formValues";
-import type { AddReleaseFormFieldNotifications } from "./addReleaseFormUtils/notifications";
 import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
 import AddReleaseTagsSection from "./AddReleaseTagsSection";
 
@@ -88,14 +84,16 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     initialAddReleaseFormFieldErrors,
   );
 
-  const [notifications, setNotifications] =
-    useState<AddReleaseFormFieldNotifications>({});
-
   const [printedInCountriesSectionOpen, setPrintedInCountriesSectionOpen] =
     useState(false);
 
   const setFieldValue = <
-    K extends "releaseVersion" | "releaseDate" | "countries" | "formats",
+    K extends
+      | "releaseVersion"
+      | "releaseDate"
+      | "countries"
+      | "formats"
+      | "catalogueNumbers",
   >(
     key: K,
     value:
@@ -133,17 +131,16 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       matrixRunout: errorMessages
         .filter(({ path }) => path[0] === "matrixRunout")
         .map(({ message }) => ({ message })),
-      catalogueNumbers: getCaNumbersFormFieldErrors(
-        errorMessages,
-        form.catalogueNumbers,
-      ),
     };
   };
 
   // on focus we attempt to remove errors related to the field that is being focused
   const onFocus = (key: AddReleaseFormInputFieldKey) => {
     if (key === "releaseVersion") {
-      setNotifications((prev) => omitProperty(prev, key));
+      setField("releaseVersion", (prev) => ({
+        ...prev.releaseVersion,
+        notifications: [],
+      }));
     }
 
     setFieldErrors((prev) => {
@@ -173,7 +170,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         const { catalogueNumbers } = prev;
         const { catNumberRowId, field, inputValueId } = key;
 
-        const rowErrors = catalogueNumbers?.[catNumberRowId];
+        const rowErrors = catalogueNumbers[catNumberRowId];
+
+        if (!rowErrors) {
+          return prev;
+        }
+
         const errorKey =
           field === "label"
             ? "labelInputErrorMessages"
@@ -181,7 +183,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
         const nextRowErrors = {
           ...rowErrors,
-          [errorKey]: omitProperty(rowErrors?.[errorKey], inputValueId),
+          [errorKey]: omitProperty(rowErrors[errorKey], inputValueId),
         };
 
         return {
@@ -237,7 +239,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const validateField = <
-    K extends "releaseVersion" | "releaseDate" | "countries" | "formats",
+    K extends
+      | "releaseVersion"
+      | "releaseDate"
+      | "countries"
+      | "formats"
+      | "catalogueNumbers",
   >(
     key: K,
   ) => {
@@ -246,15 +253,24 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     // Correlated union: TS can't see that `value` and `validationFn`'s parameter
     // share the same K, so we narrow the call signature locally. Sound because
     // both fields come from the same `form[key]` instance.
-    type Value = AddReleaseFormDraft[K]["value"];
-    type Result = ReturnType<AddReleaseFormDraft[K]["validationFn"]>;
+    type ValueType = AddReleaseFormDraft[K]["value"];
+    type ResultType = ReturnType<AddReleaseFormDraft[K]["validationFn"]>;
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const validationFn = formFieldData.validationFn as (v: Value) => Result;
+    const validationFn = formFieldData.validationFn as (
+      v: ValueType,
+    ) => ResultType;
     const validationResult = validationFn(formFieldData.value);
     const { valid, value } = validationResult;
 
-    setField(key, (prev) => ({ ...prev[key], valid, value }));
+    setField(key, (prev) => ({
+      ...prev[key],
+      valid,
+      value,
+      notifications: validationResult.valid
+        ? (validationResult.notifications ?? [])
+        : [],
+    }));
 
     setFieldErrors((prev) => ({
       ...prev,
@@ -266,69 +282,29 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     return validationResult;
   };
 
-  const validateReleaseVersionField = () => {
-    const validationResult = validateField("releaseVersion");
-
-    if (validationResult.valid) {
-      setNotifications((prev) => ({
-        ...prev,
-        releaseVersion: validationResult.notifications,
-      }));
+  const onBlur = (key: keyof AddReleaseFormDraft) => {
+    if (key === "selectedTags") {
+      return;
     }
 
-    return validationResult;
-  };
+    if (key === "matrixRunout") {
+      setFieldErrors((prev) => {
+        const errorMessages = getFieldValidationErrorMessages(
+          addReleaseFormSchema,
+          form[key],
+          key,
+        );
 
-  const validateReleaseDateFields = () => validateField("releaseDate");
-  const validateCountriesFields = () => validateField("countries");
-  const validateFormatsFields = () => validateField("formats");
-
-  type onBlurKey =
-    | Exclude<keyof AddReleaseFormDraft, "catalogueNumbers">
-    | UpdateCatNumberFieldErrorsArgs;
-
-  const onBlur = (key: onBlurKey) => {
-    if (key === "releaseVersion") {
-      return validateReleaseVersionField();
-    }
-
-    if (key === "releaseDate") {
-      return validateReleaseDateFields();
-    }
-
-    if (key === "countries") {
-      return validateCountriesFields();
-    }
-
-    if (key === "formats") {
-      return validateFormatsFields();
-    }
-
-    setFieldErrors((prev) => {
-      if (typeof key === "object") {
         return {
           ...prev,
-          catalogueNumbers: updateCatNumberFieldErrors(
-            form.catalogueNumbers,
-            prev.catalogueNumbers,
-            key,
-          ),
+          ...getFieldErrorsPatch(errorMessages ?? []),
         };
-      }
+      });
 
-      const errorMessages = getFieldValidationErrorMessages(
-        addReleaseFormSchema,
-        form[key],
-        key,
-      );
+      return undefined;
+    }
 
-      return {
-        ...prev,
-        ...getFieldErrorsPatch(errorMessages ?? []),
-      };
-    });
-
-    return undefined;
+    return validateField(key);
   };
 
   const addFormatRow = () => {
@@ -345,8 +321,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const addCatalogueNumbersRow = () => {
-    setField("catalogueNumbers", (prev) => [
-      ...prev.catalogueNumbers,
+    setFieldValue("catalogueNumbers", (prev) => [
+      ...prev.catalogueNumbers.value,
       defaultCatalogueNumberRow(),
     ]);
   };
@@ -357,8 +333,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       catalogueNumbers: omitProperty(prev.catalogueNumbers, rowId),
     }));
 
-    setField("catalogueNumbers", (prev) =>
-      prev.catalogueNumbers.filter((row) => row.id !== rowId),
+    setFieldValue("catalogueNumbers", (prev) =>
+      prev.catalogueNumbers.value.filter((row) => row.id !== rowId),
     );
   };
 
@@ -483,24 +459,25 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     }));
   };
 
+  const validateReleaseVersionField = () => validateField("releaseVersion");
+  const validateReleaseDateFields = () => validateField("releaseDate");
+  const validateCountriesFields = () => validateField("countries");
+  const validateFormatsFields = () => validateField("formats");
+  const validateCatNumbersFields = () => validateField("catalogueNumbers");
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
 
-    const { matrixRunout, catalogueNumbers, selectedTags } = form;
+    const { matrixRunout, selectedTags } = form;
 
     const releaseVersionValidationResult = validateReleaseVersionField();
     const releaseDateValidationResult = validateReleaseDateFields();
     const countriesValidationResult = validateCountriesFields();
     const formatsValidationResult = validateFormatsFields();
+    const catNumbersValidationResult = validateCatNumbersFields();
 
     const dataToValidate = {
       matrixRunout,
-      catalogueNumbers: catalogueNumbers.map((row) => ({
-        labelInputValues: row.labelInputValues.map((label) => label.name),
-        catalogueNumberInputValues: row.catalogueNumberInputValues.map(
-          (catNumber) => catNumber.value,
-        ),
-      })),
     };
 
     const result = validateAgainstSchema(addReleaseFormSchema, dataToValidate);
@@ -510,6 +487,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       releaseDateValidationResult.valid &&
       countriesValidationResult.valid &&
       formatsValidationResult.valid &&
+      catNumbersValidationResult.valid &&
       result.success;
 
     console.info({
@@ -528,7 +506,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const releaseVersionErrors = fieldErrors.releaseVersion;
-  const releaseVersionNotifications = notifications.releaseVersion ?? [];
+  const releaseVersionNotifications = form.releaseVersion.notifications;
   const matrixRunoutErrors = fieldErrors.matrixRunout ?? [];
   const releaseDateErrors = fieldErrors.releaseDate;
   const hasReleaseVersionErrors = releaseVersionErrors.length > 0;
@@ -672,19 +650,17 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
         <AddReleaseCatalogueNumbersSection
           labels={labels}
-          catalogueNumbers={form.catalogueNumbers}
+          catalogueNumbers={form.catalogueNumbers.value}
           setCatalogueNumbers={(update) =>
-            setField("catalogueNumbers", (prev) =>
-              update(prev.catalogueNumbers),
+            setFieldValue("catalogueNumbers", (prev) =>
+              update(prev.catalogueNumbers.value),
             )
           }
           errors={fieldErrors.catalogueNumbers}
           addCatalogueNumbersRow={addCatalogueNumbersRow}
           removeCatalogueNumbersRow={removeCatalogueNumbersRow}
           onFieldFocus={onFocus}
-          onBlurRowColumn={(catNumberRowId, fieldType) =>
-            onBlur({ catNumberRowId, fieldType })
-          }
+          onBlurRowColumn={() => onBlur("catalogueNumbers")}
         />
 
         <hr className={styles.sectionDivider} aria-hidden />

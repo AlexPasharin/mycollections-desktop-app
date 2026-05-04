@@ -214,20 +214,18 @@ const catalogueNumberRowErrorsHasMessages = (
     return false;
   }
 
-  if ((rowErrors.rowErrorMessages?.size ?? 0) > 0) {
+  if (rowErrors.rowErrorMessages.size > 0) {
     return true;
   }
 
-  for (const messageSet of Object.values(
-    rowErrors.labelInputErrorMessages ?? {},
-  )) {
+  for (const messageSet of Object.values(rowErrors.labelInputErrorMessages)) {
     if (messageSet.size > 0) {
       return true;
     }
   }
 
   for (const messageSet of Object.values(
-    rowErrors.catNumberInputErrorMessages ?? {},
+    rowErrors.catNumberInputErrorMessages,
   )) {
     if (messageSet.size > 0) {
       return true;
@@ -253,6 +251,6 @@ const catalogueNumbersSectionHasAnyErrors = (
     | AddReleaseFormFieldErrors["catalogueNumbers"]
     | undefined,
 ): boolean =>
-  Object.values(catalogueNumbersErrors ?? {}).some((rowErrors) =>
-    catalogueNumberRowErrorsHasMessages(rowErrors),
+  Object.values(catalogueNumbersErrors ?? {}).some(
+    catalogueNumberRowErrorsHasMessages,
   );

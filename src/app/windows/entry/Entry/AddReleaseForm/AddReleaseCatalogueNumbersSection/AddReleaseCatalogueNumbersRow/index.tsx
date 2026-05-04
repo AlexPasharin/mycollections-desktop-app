@@ -73,7 +73,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
             <div className={styles.column}>
               {row.labelInputValues.map((inputValue) => {
                 const labelErrorMessages = errorSetToMessages(
-                  rowErrors?.labelInputErrorMessages?.[inputValue.id],
+                  rowErrors?.labelInputErrorMessages[inputValue.id],
                 );
                 const labelErrorId = `add-release-cat-label-error-${row.id}-${inputValue.id}`;
                 const hasLabelErrors =
@@ -161,7 +161,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
             <div className={styles.column}>
               {row.catalogueNumberInputValues.map((inputValue) => {
                 const catNumberErrorMessages = errorSetToMessages(
-                  rowErrors?.catNumberInputErrorMessages?.[inputValue.id],
+                  rowErrors?.catNumberInputErrorMessages[inputValue.id],
                 );
                 const catNumberErrorId = `add-release-cat-number-error-${row.id}-${inputValue.id}`;
                 const hasCatNumberErrors =
@@ -262,7 +262,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
             aria-label={`Remove catalogue numbers row ${rowIndex + 1}`}
             onClick={onRemoveRow}
           >
-            Remove catalogue row
+            Remove catalogue numbers row
           </button>
         </div>
       </div>

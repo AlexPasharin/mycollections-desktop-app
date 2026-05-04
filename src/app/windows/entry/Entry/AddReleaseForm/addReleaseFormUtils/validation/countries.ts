@@ -40,12 +40,24 @@ export const validateReleaseCountries = (
 
 const madeInCountryCodeRowSchema = z.object({
   id: z.string(),
-  codeName: z.string().trim().min(1, "Made-in country is required"),
+  codeName: z
+    .string()
+    .trim()
+    .min(
+      1,
+      "Made-in country is required (or remove countries section all together",
+    ),
 });
 
 const printedInCountryCodeRowSchema = z.object({
   id: z.string(),
-  codeName: z.string().trim().min(1, "Printed-in country is required"),
+  codeName: z
+    .string()
+    .trim()
+    .min(
+      1,
+      "Printed-in country is required (or remove printed-in countries section or the whole countries section all together)",
+    ),
 });
 
 const madeInCountryCodesSchema = uniquePropertyArraySchema(
