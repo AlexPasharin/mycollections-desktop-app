@@ -1,11 +1,13 @@
 import { v4 as uuidv4 } from "uuid";
 
 import type {
+  AddReleaseFormCatNumbersErrors,
   AddReleaseFormCountriesErrors,
   AddReleaseFormFieldError,
   AddReleaseFormFormatErrors,
 } from "./errorMessages";
 import { validateReleaseDate, validateReleaseVersion } from "./validation";
+import { validateReleaseCatNumbers } from "./validation/catalogueNumbers";
 import { validateReleaseCountries } from "./validation/countries";
 import { validateReleaseFormats } from "./validation/formats";
 import type { FormFieldValidationResult } from "./validation/types";
@@ -79,6 +81,7 @@ export type AddReleaseFormMatrixRunoutDraft = {
 };
 
 export type AddReleaseFormFormatInputs = AddReleaseFormFormatInput[];
+export type AddReleaseFormCatNumbersInputs = CatalogueNumberRowState[];
 
 type FormField<T, U> = {
   value: T;
@@ -115,9 +118,15 @@ export type AddReleaseFormDraft = {
       AddReleaseFormFormatErrors
     >
   >;
+  catalogueNumbers: FormField<
+    AddReleaseFormCatNumbersInputs,
+    FormFieldValidationResult<
+      AddReleaseFormCatNumbersInputs,
+      AddReleaseFormCatNumbersErrors
+    >
+  >;
 
   matrixRunout: AddReleaseFormMatrixRunoutDraft;
-  catalogueNumbers: CatalogueNumberRowState[];
   selectedTags: Record<string, string>;
 };
 
@@ -156,8 +165,14 @@ export const initialAddReleaseFormDraftValue = (
     validationFn: validateReleaseFormats(allFormats),
     notifications: [],
   },
+  catalogueNumbers: {
+    value: [defaultCatalogueNumberRow()],
+    valid: true,
+    validationFn: validateReleaseCatNumbers,
+    notifications: [],
+  },
 
   matrixRunout: { value: "", treatAsText: false },
-  catalogueNumbers: [defaultCatalogueNumberRow()],
+
   selectedTags: {},
 });

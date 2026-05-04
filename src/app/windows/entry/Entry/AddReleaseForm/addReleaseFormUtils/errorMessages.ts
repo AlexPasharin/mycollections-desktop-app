@@ -1,15 +1,5 @@
-import type { CatalogueNumberRowState } from "./formValues";
-
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import { omitProperty } from "@/utils/common";
-import {
-  getFieldValidationErrorMessages,
-  type ValidationResultErrorMessages,
-} from "@/utils/validation";
-import {
-  catalogueNumberInputValuesSchema,
-  labelInputValuesSchema,
-} from "@/validation/releases/addReleaseForm/catNumbers";
 
 export type FormatField =
   | "formatId"
@@ -25,17 +15,15 @@ export type AddReleaseFormFieldError = {
 };
 
 export type FormatFieldsRowId = string;
-type CatNumberFieldsRowId = string;
+export type CatNumberFieldsRowId = string;
 type LabelInputId = string;
 type CatNumberInputId = string;
 type CountrySelectionRowId = string;
 
 export type AddReleaseFormCatalogueNumberRowErrors = {
-  labelInputErrorMessages?: Record<LabelInputId, Set<string>> | undefined;
-  catNumberInputErrorMessages?:
-    | Record<CatNumberInputId, Set<string>>
-    | undefined;
-  rowErrorMessages?: Set<string> | undefined;
+  labelInputErrorMessages: Record<LabelInputId, Set<string>>;
+  catNumberInputErrorMessages: Record<CatNumberInputId, Set<string>>;
+  rowErrorMessages: Set<string>;
 };
 
 export type AddReleaseFormCountriesSubsectionErrors = {
@@ -53,20 +41,19 @@ export type AddReleaseFormFormatErrors = Record<
   AddReleaseFormFieldError[]
 >;
 
+export type AddReleaseFormCatNumbersErrors = Record<
+  CatNumberFieldsRowId,
+  AddReleaseFormCatalogueNumberRowErrors
+>;
+
 export type AddReleaseFormFieldErrors = {
   releaseVersion: AddReleaseFormFieldError[];
   releaseDate: AddReleaseFormFieldError[];
   countries: AddReleaseFormCountriesErrors;
   formats: AddReleaseFormFormatErrors;
+  catalogueNumbers: AddReleaseFormCatNumbersErrors;
 
   matrixRunout?: AddReleaseFormFieldError[] | undefined;
-
-  catalogueNumbers?:
-    | Record<
-        CatNumberFieldsRowId,
-        AddReleaseFormCatalogueNumberRowErrors | undefined
-      >
-    | undefined;
 };
 
 export const emptyMutableCountriesSubsectionErrors =
@@ -83,6 +70,7 @@ export const initialAddReleaseFormFieldErrors: AddReleaseFormFieldErrors = {
     printedIn: emptyMutableCountriesSubsectionErrors(),
   },
   formats: {},
+  catalogueNumbers: {},
 };
 
 export type CatalogueNumbersInputField = "label" | "catNumber";
@@ -152,214 +140,3 @@ export const stripPrintedInFromCountriesFieldErrors = (
   ...countries,
   printedIn: emptyMutableCountriesSubsectionErrors(),
 });
-
-export const getCaNumbersFormFieldErrors = (
-  errorMessages: ValidationResultErrorMessages,
-  currentCatalogueNumberInputValues: CatalogueNumberRowState[],
-): AddReleaseFormFieldErrors["catalogueNumbers"] => {
-  if (errorMessages.length === 0) {
-    return undefined;
-  }
-
-  const errorMessagesMap: Record<
-    CatNumberFieldsRowId,
-    AddReleaseFormCatalogueNumberRowErrors
-  > = {};
-
-  for (const { message, path } of errorMessages) {
-    if (path[0] !== "catalogueNumbers") {
-      continue;
-    }
-
-    const rowIndex = path[1];
-
-    // id of the catalogue number row that the error belongs to
-    const catNumbersRowById =
-      typeof rowIndex === "number"
-        ? currentCatalogueNumberInputValues[rowIndex]
-        : undefined;
-
-    if (!catNumbersRowById) {
-      continue;
-    }
-
-    const fieldKey = path[2];
-
-    const addReleaseFormCatalogueNumberRowErrorsKey:
-      | keyof AddReleaseFormCatalogueNumberRowErrors
-      | undefined =
-      fieldKey === "labelInputValues"
-        ? "labelInputErrorMessages"
-        : fieldKey === "catalogueNumberInputValues"
-          ? "catNumberInputErrorMessages"
-          : fieldKey === undefined
-            ? "rowErrorMessages"
-            : undefined;
-
-    if (!addReleaseFormCatalogueNumberRowErrorsKey) {
-      continue;
-    }
-
-    // entry for the catalogue number row that the error belongs to
-    const rowErrorMessages = errorMessagesMap[catNumbersRowById.id] ?? {};
-
-    if (fieldKey === "labelInputValues") {
-      const labelInputIndex = path[3];
-
-      if (typeof labelInputIndex !== "number") {
-        continue;
-      }
-
-      // id of the label input that the error belongs to
-      const labelInputId =
-        catNumbersRowById.labelInputValues[labelInputIndex]?.id;
-
-      if (!labelInputId) {
-        continue;
-      }
-
-      // error messages that belong to row's label inputs
-      const labelInputsErrorMessages =
-        rowErrorMessages.labelInputErrorMessages ?? {};
-
-      // error messages that belong to this particular label input
-      const labelInputErrorMessages =
-        labelInputsErrorMessages[labelInputId] ?? new Set();
-
-      labelInputErrorMessages.add(message);
-
-      rowErrorMessages.labelInputErrorMessages = {
-        ...labelInputsErrorMessages,
-        [labelInputId]: labelInputErrorMessages,
-      };
-
-      rowErrorMessages.labelInputErrorMessages[labelInputId] =
-        labelInputErrorMessages;
-    } else if (fieldKey === "catalogueNumberInputValues") {
-      const catalogueNumberInputIndex = path[3];
-
-      if (typeof catalogueNumberInputIndex !== "number") {
-        continue;
-      }
-
-      const catalogueNumberInputId =
-        catNumbersRowById.catalogueNumberInputValues[catalogueNumberInputIndex]
-          ?.id;
-
-      if (!catalogueNumberInputId) {
-        continue;
-      }
-
-      // error messages that belong to row's catalogue number inputs
-      const catNumberInputsErrorMessages =
-        rowErrorMessages.catNumberInputErrorMessages ?? {};
-
-      // error messages that belong to this particular catalogue number input
-      const catNumberInputErrorMessages =
-        catNumberInputsErrorMessages[catalogueNumberInputId] ?? new Set();
-
-      catNumberInputErrorMessages.add(message);
-
-      rowErrorMessages.catNumberInputErrorMessages = {
-        ...catNumberInputsErrorMessages,
-        [catalogueNumberInputId]: catNumberInputErrorMessages,
-      };
-
-      rowErrorMessages.catNumberInputErrorMessages[catalogueNumberInputId] =
-        catNumberInputErrorMessages;
-    } else {
-      // error messages that belong to the row
-      const rowCommonErrorMessages =
-        rowErrorMessages.rowErrorMessages ?? new Set();
-      rowCommonErrorMessages.add(message);
-
-      rowErrorMessages.rowErrorMessages = rowCommonErrorMessages;
-    }
-
-    errorMessagesMap[catNumbersRowById.id] = rowErrorMessages;
-  }
-
-  return errorMessagesMap;
-};
-
-export type UpdateCatNumberFieldErrorsArgs = {
-  catNumberRowId: string;
-  fieldType: "label" | "catNumber";
-};
-
-export const updateCatNumberFieldErrors = (
-  currentCatalogueNumberFieldInputValues: CatalogueNumberRowState[],
-  currentCatNumberFieldErrors: AddReleaseFormFieldErrors["catalogueNumbers"],
-  args: UpdateCatNumberFieldErrorsArgs,
-): AddReleaseFormFieldErrors["catalogueNumbers"] => {
-  const catNumberRow = currentCatalogueNumberFieldInputValues.find(
-    (row) => row.id === args.catNumberRowId,
-  );
-
-  if (!catNumberRow) {
-    return currentCatNumberFieldErrors;
-  }
-
-  const { catNumberRowId, fieldType } = args;
-
-  const schema =
-    fieldType === "label"
-      ? labelInputValuesSchema
-      : catalogueNumberInputValuesSchema;
-
-  const value =
-    fieldType === "label"
-      ? catNumberRow.labelInputValues.map((label) => label.name)
-      : catNumberRow.catalogueNumberInputValues.map((input) => input.value);
-
-  const errorMessages = getFieldValidationErrorMessages(schema, value) ?? [];
-
-  const nextFieldTypeErrors: Record<string, Set<string>> = {};
-
-  const inputValues =
-    fieldType === "label"
-      ? catNumberRow.labelInputValues
-      : catNumberRow.catalogueNumberInputValues;
-
-  for (const { message, path } of errorMessages) {
-    const idx = path[0];
-    const inputId = typeof idx === "number" ? inputValues[idx]?.id : undefined;
-
-    if (!inputId) {
-      continue;
-    }
-
-    (nextFieldTypeErrors[inputId] ??= new Set()).add(message);
-  }
-
-  const errorsKey =
-    fieldType === "label"
-      ? "labelInputErrorMessages"
-      : "catNumberInputErrorMessages";
-
-  const nextRowErrors: AddReleaseFormCatalogueNumberRowErrors = {
-    ...currentCatNumberFieldErrors?.[catNumberRowId],
-    [errorsKey]:
-      Object.keys(nextFieldTypeErrors).length > 0
-        ? nextFieldTypeErrors
-        : undefined,
-  };
-
-  const hasRowErrors =
-    Object.keys(nextRowErrors.labelInputErrorMessages ?? {}).length > 0 ||
-    Object.keys(nextRowErrors.catNumberInputErrorMessages ?? {}).length > 0 ||
-    (nextRowErrors.rowErrorMessages?.size ?? 0) > 0;
-
-  const restRows = omitProperty(
-    currentCatNumberFieldErrors ?? {},
-    catNumberRowId,
-  );
-
-  const nextCatalogueNumbers = hasRowErrors
-    ? { ...restRows, [catNumberRowId]: nextRowErrors }
-    : restRows;
-
-  return Object.keys(nextCatalogueNumbers).length > 0
-    ? nextCatalogueNumbers
-    : undefined;
-};
