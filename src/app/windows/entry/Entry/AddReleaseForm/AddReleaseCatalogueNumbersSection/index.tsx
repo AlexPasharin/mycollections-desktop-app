@@ -47,48 +47,48 @@ const AddReleaseCatalogueNumbersSection: FC<
   onFieldFocus,
   onBlurRowColumn,
 }) => {
-    const catNumberSectionValuesAreInvalid =
-      !catalogueNumberRowsAreFullyFilled(catalogueNumbers) ||
-      catalogueNumbersSectionHasAnyErrors(errors);
+  const catNumberSectionValuesAreInvalid =
+    !catalogueNumberRowsAreFullyFilled(catalogueNumbers) ||
+    catalogueNumbersSectionHasAnyErrors(errors);
 
-    const addNewLabelInput = (rowId: string) => {
-      setCatalogueNumbers((prev) =>
-        prev.map((row) =>
-          row.id === rowId
-            ? {
+  const addNewLabelInput = (rowId: string) => {
+    setCatalogueNumbers((prev) =>
+      prev.map((row) =>
+        row.id === rowId
+          ? {
               ...row,
               labelInputValues: [
                 ...row.labelInputValues,
                 emptyLabelInputValue(),
               ],
             }
-            : row,
-        ),
-      );
-    };
+          : row,
+      ),
+    );
+  };
 
-    const removeLabelInput = (rowId: string, inputValueId: string) => {
-      setCatalogueNumbers((prev) =>
-        prev.map((row) => {
-          if (row.id !== rowId) {
-            return row;
-          }
+  const removeLabelInput = (rowId: string, inputValueId: string) => {
+    setCatalogueNumbers((prev) =>
+      prev.map((row) => {
+        if (row.id !== rowId) {
+          return row;
+        }
 
-          return {
-            ...row,
-            labelInputValues: row.labelInputValues.filter(
-              (inputValue) => inputValue.id !== inputValueId,
-            ),
-          };
-        }),
-      );
-    };
+        return {
+          ...row,
+          labelInputValues: row.labelInputValues.filter(
+            (inputValue) => inputValue.id !== inputValueId,
+          ),
+        };
+      }),
+    );
+  };
 
-    const setLabelName = (rowId: string, inputValueId: string, name: string) => {
-      setCatalogueNumbers((prev) =>
-        prev.map((row) =>
-          row.id === rowId
-            ? {
+  const setLabelName = (rowId: string, inputValueId: string, name: string) => {
+    setCatalogueNumbers((prev) =>
+      prev.map((row) =>
+        row.id === rowId
+          ? {
               ...row,
               labelInputValues: row.labelInputValues.map((inputValue) =>
                 inputValue.id === inputValueId
@@ -96,53 +96,53 @@ const AddReleaseCatalogueNumbersSection: FC<
                   : inputValue,
               ),
             }
-            : row,
-        ),
-      );
-    };
+          : row,
+      ),
+    );
+  };
 
-    const addNewCatalogueNumberInput = (rowId: string) => {
-      setCatalogueNumbers((prev) =>
-        prev.map((row) =>
-          row.id === rowId
-            ? {
+  const addNewCatalogueNumberInput = (rowId: string) => {
+    setCatalogueNumbers((prev) =>
+      prev.map((row) =>
+        row.id === rowId
+          ? {
               ...row,
               catalogueNumberInputValues: [
                 ...row.catalogueNumberInputValues,
                 emptyCatalogueNumberInputValue(),
               ],
             }
-            : row,
-        ),
-      );
-    };
+          : row,
+      ),
+    );
+  };
 
-    const removeCatalogueNumberInput = (rowId: string, inputValueId: string) => {
-      setCatalogueNumbers((prev) =>
-        prev.map((row) => {
-          if (row.id !== rowId) {
-            return row;
-          }
+  const removeCatalogueNumberInput = (rowId: string, inputValueId: string) => {
+    setCatalogueNumbers((prev) =>
+      prev.map((row) => {
+        if (row.id !== rowId) {
+          return row;
+        }
 
-          return {
-            ...row,
-            catalogueNumberInputValues: row.catalogueNumberInputValues.filter(
-              (inputValue) => inputValue.id !== inputValueId,
-            ),
-          };
-        }),
-      );
-    };
+        return {
+          ...row,
+          catalogueNumberInputValues: row.catalogueNumberInputValues.filter(
+            (inputValue) => inputValue.id !== inputValueId,
+          ),
+        };
+      }),
+    );
+  };
 
-    const setCatalogueNumber = (
-      rowId: string,
-      inputValueId: string,
-      value: string,
-    ) => {
-      setCatalogueNumbers((prev) =>
-        prev.map((row) =>
-          row.id === rowId
-            ? {
+  const setCatalogueNumber = (
+    rowId: string,
+    inputValueId: string,
+    value: string,
+  ) => {
+    setCatalogueNumbers((prev) =>
+      prev.map((row) =>
+        row.id === rowId
+          ? {
               ...row,
               catalogueNumberInputValues: row.catalogueNumberInputValues.map(
                 (inputValue) =>
@@ -151,59 +151,59 @@ const AddReleaseCatalogueNumbersSection: FC<
                     : inputValue,
               ),
             }
-            : row,
-        ),
-      );
-    };
-
-    return (
-      <div className={styles.section}>
-        <h2 className={styles.heading}>Catalogue numbers</h2>
-
-        {catalogueNumbers.map((row, rowIndex) => (
-          <div key={row.id}>
-            <AddReleaseCatalogueNumbersRow
-              row={row}
-              rowIndex={rowIndex}
-              showDivider={rowIndex > 0}
-              labels={labels}
-              catNumberSectionValuesAreInvalid={catNumberSectionValuesAreInvalid}
-              rowErrors={errors?.[row.id]}
-              onAddNewLabelInput={() => addNewLabelInput(row.id)}
-              onSetLabelName={(inputValueId, name) =>
-                setLabelName(row.id, inputValueId, name)
-              }
-              onRemoveLabelInput={(inputValueId) =>
-                removeLabelInput(row.id, inputValueId)
-              }
-              onAddNewCatalogueNumberInput={() =>
-                addNewCatalogueNumberInput(row.id)
-              }
-              onRemoveCatalogueNumberInput={(inputValueId) =>
-                removeCatalogueNumberInput(row.id, inputValueId)
-              }
-              onSetCatalogueNumber={(inputValueId, value) =>
-                setCatalogueNumber(row.id, inputValueId, value)
-              }
-              onRemoveRow={() => removeCatalogueNumbersRow(row.id)}
-              onFieldFocus={onFieldFocus}
-              onBlurRowColumn={(fieldType) => onBlurRowColumn(row.id, fieldType)}
-            />
-          </div>
-        ))}
-
-        {!catNumberSectionValuesAreInvalid && (
-          <button
-            type="button"
-            className={styles.addAnotherRow}
-            onClick={addCatalogueNumbersRow}
-          >
-            + Add another catalogue row
-          </button>
-        )}
-      </div>
+          : row,
+      ),
     );
   };
+
+  return (
+    <div className={styles.section}>
+      <h2 className={styles.heading}>Catalogue numbers</h2>
+
+      {catalogueNumbers.map((row, rowIndex) => (
+        <div key={row.id}>
+          <AddReleaseCatalogueNumbersRow
+            row={row}
+            rowIndex={rowIndex}
+            showDivider={rowIndex > 0}
+            labels={labels}
+            catNumberSectionValuesAreInvalid={catNumberSectionValuesAreInvalid}
+            rowErrors={errors?.[row.id]}
+            onAddNewLabelInput={() => addNewLabelInput(row.id)}
+            onSetLabelName={(inputValueId, name) =>
+              setLabelName(row.id, inputValueId, name)
+            }
+            onRemoveLabelInput={(inputValueId) =>
+              removeLabelInput(row.id, inputValueId)
+            }
+            onAddNewCatalogueNumberInput={() =>
+              addNewCatalogueNumberInput(row.id)
+            }
+            onRemoveCatalogueNumberInput={(inputValueId) =>
+              removeCatalogueNumberInput(row.id, inputValueId)
+            }
+            onSetCatalogueNumber={(inputValueId, value) =>
+              setCatalogueNumber(row.id, inputValueId, value)
+            }
+            onRemoveRow={() => removeCatalogueNumbersRow(row.id)}
+            onFieldFocus={onFieldFocus}
+            onBlurRowColumn={(fieldType) => onBlurRowColumn(row.id, fieldType)}
+          />
+        </div>
+      ))}
+
+      {!catNumberSectionValuesAreInvalid && (
+        <button
+          type="button"
+          className={styles.addAnotherRow}
+          onClick={addCatalogueNumbersRow}
+        >
+          + Add another catalogue row
+        </button>
+      )}
+    </div>
+  );
+};
 
 export default AddReleaseCatalogueNumbersSection;
 
@@ -251,4 +251,6 @@ const catalogueNumbersSectionHasAnyErrors = (
     | AddReleaseFormFieldErrors["catalogueNumbers"]
     | undefined,
 ): boolean =>
-  Object.values(catalogueNumbersErrors ?? {}).some(catalogueNumberRowErrorsHasMessages)
+  Object.values(catalogueNumbersErrors ?? {}).some(
+    catalogueNumberRowErrorsHasMessages,
+  );
