@@ -6,10 +6,7 @@ import type { AddReleaseFormFieldError } from "../errorMessages";
 
 export const validateReleaseVersion = (
   value: string,
-): FormFieldValidationResult<
-  string,
-  AddReleaseFormFieldError[] | undefined
-> => {
+): FormFieldValidationResult<string, AddReleaseFormFieldError[]> => {
   const validationResult = releaseVersionSchema.safeParse(value);
 
   if (!validationResult.success) {

@@ -6,11 +6,15 @@ import type {
   AddReleaseFormFieldError,
   AddReleaseFormFormatErrors,
 } from "./errorMessages";
-import { validateReleaseDate, validateReleaseVersion } from "./validation";
-import { validateReleaseCatNumbers } from "./validation/catalogueNumbers";
-import { validateReleaseCountries } from "./validation/countries";
-import { validateReleaseFormats } from "./validation/formats";
-import type { FormFieldValidationResult } from "./validation/types";
+import {
+  validateReleaseDate,
+  validateReleaseVersion,
+  validateReleaseCountries,
+  validateReleaseFormats,
+  validateReleaseCatNumbers,
+  validateReleaseMatrixRunout,
+  type FormFieldValidationResult,
+} from "./validation";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
@@ -95,13 +99,13 @@ type FormField<T, U> = {
 export type AddReleaseFormDraft = {
   releaseVersion: FormField<
     string,
-    FormFieldValidationResult<string, AddReleaseFormFieldError[] | undefined>
+    FormFieldValidationResult<string, AddReleaseFormFieldError[]>
   >;
   releaseDate: FormField<
     GeneralizedDateFormInputValue,
     FormFieldValidationResult<
       GeneralizedDateFormInputValue,
-      AddReleaseFormFieldError[] | undefined
+      AddReleaseFormFieldError[]
     >
   >;
   countries: FormField<
@@ -125,8 +129,14 @@ export type AddReleaseFormDraft = {
       AddReleaseFormCatNumbersErrors
     >
   >;
+  matrixRunout: FormField<
+    AddReleaseFormMatrixRunoutDraft,
+    FormFieldValidationResult<
+      AddReleaseFormMatrixRunoutDraft,
+      AddReleaseFormFieldError[]
+    >
+  >;
 
-  matrixRunout: AddReleaseFormMatrixRunoutDraft;
   selectedTags: Record<string, string>;
 };
 
@@ -172,7 +182,12 @@ export const initialAddReleaseFormDraftValue = (
     notifications: [],
   },
 
-  matrixRunout: { value: "", treatAsText: false },
+  matrixRunout: {
+    value: { value: "", treatAsText: false },
+    valid: true,
+    validationFn: validateReleaseMatrixRunout,
+    notifications: [],
+  },
 
   selectedTags: {},
 });
