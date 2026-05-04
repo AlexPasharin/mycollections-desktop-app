@@ -78,12 +78,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   const setFieldValue = <
     K extends
-    | "releaseVersion"
-    | "releaseDate"
-    | "countries"
-    | "formats"
-    | "catalogueNumbers"
-    | "matrixRunout",
+      | "releaseVersion"
+      | "releaseDate"
+      | "countries"
+      | "formats"
+      | "catalogueNumbers"
+      | "matrixRunout",
   >(
     key: K,
     value:
@@ -135,9 +135,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           ...prev,
           formats: nextFormatRowErrors
             ? {
-              ...formats,
-              [formatRowId]: nextFormatRowErrors,
-            }
+                ...formats,
+                [formatRowId]: nextFormatRowErrors,
+              }
             : omitProperty(formats, formatRowId),
         };
       }
@@ -216,12 +216,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   const validateField = <
     K extends
-    | "releaseVersion"
-    | "releaseDate"
-    | "countries"
-    | "formats"
-    | "catalogueNumbers"
-    | "matrixRunout",
+      | "releaseVersion"
+      | "releaseDate"
+      | "countries"
+      | "formats"
+      | "catalogueNumbers"
+      | "matrixRunout",
   >(
     key: K,
   ) => {
