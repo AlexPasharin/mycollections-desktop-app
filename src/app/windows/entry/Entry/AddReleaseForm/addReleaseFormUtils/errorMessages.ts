@@ -53,6 +53,7 @@ export type AddReleaseFormFieldErrors = {
   formats: AddReleaseFormFormatErrors;
   catalogueNumbers: AddReleaseFormCatNumbersErrors;
   matrixRunout: AddReleaseFormFieldError[];
+  selectedTags: undefined;
 };
 
 export const emptyMutableCountriesSubsectionErrors =
@@ -71,6 +72,7 @@ export const initialAddReleaseFormFieldErrors: AddReleaseFormFieldErrors = {
   formats: {},
   catalogueNumbers: {},
   matrixRunout: [],
+  selectedTags: undefined,
 };
 
 export type CatalogueNumbersInputField = "label" | "catNumber";

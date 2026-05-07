@@ -90,54 +90,30 @@ export type AddReleaseFormCatNumbersInputs = CatalogueNumberRowState[];
 type FormField<T, U> = {
   value: T;
   valid: boolean;
-  validationFn: (value: T) => U;
+  validationFn: (value: T) => FormFieldValidationResult<T, U>;
   notifications: {
     notification: string;
   }[];
 };
 
 export type AddReleaseFormDraft = {
-  releaseVersion: FormField<
-    string,
-    FormFieldValidationResult<string, AddReleaseFormFieldError[]>
-  >;
+  releaseVersion: FormField<string, AddReleaseFormFieldError[]>;
   releaseDate: FormField<
     GeneralizedDateFormInputValue,
-    FormFieldValidationResult<
-      GeneralizedDateFormInputValue,
-      AddReleaseFormFieldError[]
-    >
+    AddReleaseFormFieldError[]
   >;
-  countries: FormField<
-    AddReleaseFormCountries,
-    FormFieldValidationResult<
-      AddReleaseFormCountries,
-      AddReleaseFormCountriesErrors
-    >
-  >;
-  formats: FormField<
-    AddReleaseFormFormatInputs,
-    FormFieldValidationResult<
-      AddReleaseFormFormatInputs,
-      AddReleaseFormFormatErrors
-    >
-  >;
+  countries: FormField<AddReleaseFormCountries, AddReleaseFormCountriesErrors>;
+  formats: FormField<AddReleaseFormFormatInputs, AddReleaseFormFormatErrors>;
   catalogueNumbers: FormField<
     AddReleaseFormCatNumbersInputs,
-    FormFieldValidationResult<
-      AddReleaseFormCatNumbersInputs,
-      AddReleaseFormCatNumbersErrors
-    >
+    AddReleaseFormCatNumbersErrors
   >;
   matrixRunout: FormField<
     AddReleaseFormMatrixRunoutDraft,
-    FormFieldValidationResult<
-      AddReleaseFormMatrixRunoutDraft,
-      AddReleaseFormFieldError[]
-    >
+    AddReleaseFormFieldError[]
   >;
 
-  selectedTags: Record<string, string>;
+  selectedTags: FormField<Record<string, string>, never>;
 };
 
 export const initialAddReleaseFormDraftValue = (
@@ -189,5 +165,19 @@ export const initialAddReleaseFormDraftValue = (
     notifications: [],
   },
 
-  selectedTags: {},
+  selectedTags: {
+    value: {},
+    valid: true,
+    validationFn: validateSelectedTags,
+    notifications: [] as const,
+  },
 });
+
+const validateSelectedTags = (
+  value: Record<string, string>,
+): FormFieldValidationResult<Record<string, string>, never> => {
+  return {
+    valid: true,
+    value,
+  };
+};

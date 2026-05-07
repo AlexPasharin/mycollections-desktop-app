@@ -76,15 +76,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const [printedInCountriesSectionOpen, setPrintedInCountriesSectionOpen] =
     useState(false);
 
-  const setFieldValue = <
-    K extends
-      | "releaseVersion"
-      | "releaseDate"
-      | "countries"
-      | "formats"
-      | "catalogueNumbers"
-      | "matrixRunout",
-  >(
+  const setFieldValue = <K extends keyof AddReleaseFormDraft>(
     key: K,
     value:
       | AddReleaseFormDraft[K]["value"]
@@ -214,17 +206,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     });
   };
 
-  const validateField = <
-    K extends
-      | "releaseVersion"
-      | "releaseDate"
-      | "countries"
-      | "formats"
-      | "catalogueNumbers"
-      | "matrixRunout",
-  >(
-    key: K,
-  ) => {
+  const validateField = <K extends keyof AddReleaseFormDraft>(key: K) => {
     const formFieldData = form[key];
 
     // Correlated union: TS can't see that `value` and `validationFn`'s parameter
@@ -306,7 +288,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const removeSelectedTag = (tagId: string) => {
-    setField("selectedTags", (prev) => omitProperty(prev.selectedTags, tagId));
+    setField("selectedTags", (prev) => ({
+      ...prev.selectedTags,
+      value: omitProperty(prev.selectedTags.value, tagId),
+    }));
   };
 
   const addCountrySelectionRow = () => {
@@ -636,7 +621,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
         <AddReleaseTagsSection
           tags={tags}
-          selectedTags={form.selectedTags}
+          selectedTags={form.selectedTags.value}
           onAddTag={addSelectedTag}
           onRemoveTag={removeSelectedTag}
         />
