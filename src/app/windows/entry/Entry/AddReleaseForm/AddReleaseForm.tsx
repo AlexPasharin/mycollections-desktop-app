@@ -76,9 +76,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const [printedInCountriesSectionOpen, setPrintedInCountriesSectionOpen] =
     useState(false);
 
-  const setFieldValue = <
-    K extends keyof AddReleaseFormDraft,
-  >(
+  const setFieldValue = <K extends keyof AddReleaseFormDraft>(
     key: K,
     value:
       | AddReleaseFormDraft[K]["value"]
@@ -129,9 +127,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           ...prev,
           formats: nextFormatRowErrors
             ? {
-              ...formats,
-              [formatRowId]: nextFormatRowErrors,
-            }
+                ...formats,
+                [formatRowId]: nextFormatRowErrors,
+              }
             : omitProperty(formats, formatRowId),
         };
       }
@@ -208,11 +206,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     });
   };
 
-  const validateField = <
-    K extends keyof AddReleaseFormDraft
-  >(
-    key: K,
-  ) => {
+  const validateField = <K extends keyof AddReleaseFormDraft>(key: K) => {
     const formFieldData = form[key];
 
     // Correlated union: TS can't see that `value` and `validationFn`'s parameter
