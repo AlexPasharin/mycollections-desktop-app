@@ -77,13 +77,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     useState(false);
 
   const setFieldValue = <
-    K extends
-      | "releaseVersion"
-      | "releaseDate"
-      | "countries"
-      | "formats"
-      | "catalogueNumbers"
-      | "matrixRunout",
+    K extends keyof AddReleaseFormDraft,
   >(
     key: K,
     value:
@@ -135,9 +129,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           ...prev,
           formats: nextFormatRowErrors
             ? {
-                ...formats,
-                [formatRowId]: nextFormatRowErrors,
-              }
+              ...formats,
+              [formatRowId]: nextFormatRowErrors,
+            }
             : omitProperty(formats, formatRowId),
         };
       }
@@ -215,13 +209,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const validateField = <
-    K extends
-      | "releaseVersion"
-      | "releaseDate"
-      | "countries"
-      | "formats"
-      | "catalogueNumbers"
-      | "matrixRunout",
+    K extends keyof AddReleaseFormDraft
   >(
     key: K,
   ) => {
@@ -306,7 +294,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const removeSelectedTag = (tagId: string) => {
-    setField("selectedTags", (prev) => omitProperty(prev.selectedTags, tagId));
+    setField("selectedTags", (prev) => ({
+      ...prev.selectedTags,
+      value: omitProperty(prev.selectedTags.value, tagId),
+    }));
   };
 
   const addCountrySelectionRow = () => {
@@ -636,7 +627,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
         <AddReleaseTagsSection
           tags={tags}
-          selectedTags={form.selectedTags}
+          selectedTags={form.selectedTags.value}
           onAddTag={addSelectedTag}
           onRemoveTag={removeSelectedTag}
         />
