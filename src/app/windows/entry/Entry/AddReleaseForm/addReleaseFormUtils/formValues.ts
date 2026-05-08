@@ -9,6 +9,7 @@ import type {
 import {
   validateReleaseDate,
   validateReleaseVersion,
+  validateDiscogsUrl,
   validateReleaseCountries,
   validateReleaseFormats,
   validateReleaseCatNumbers,
@@ -98,6 +99,7 @@ type FormField<T, U> = {
 
 export type AddReleaseFormDraft = {
   releaseVersion: FormField<string, AddReleaseFormFieldError[]>;
+  discogsUrl: FormField<string, AddReleaseFormFieldError[]>;
   releaseDate: FormField<
     GeneralizedDateFormInputValue,
     AddReleaseFormFieldError[]
@@ -112,7 +114,6 @@ export type AddReleaseFormDraft = {
     AddReleaseFormMatrixRunoutDraft,
     AddReleaseFormFieldError[]
   >;
-
   selectedTags: FormField<Record<string, string>, never>;
 };
 
@@ -124,6 +125,12 @@ export const initialAddReleaseFormDraftValue = (
     value: "",
     valid: true,
     validationFn: validateReleaseVersion,
+    notifications: [],
+  },
+  discogsUrl: {
+    value: "",
+    valid: true,
+    validationFn: validateDiscogsUrl,
     notifications: [],
   },
   releaseDate: {
