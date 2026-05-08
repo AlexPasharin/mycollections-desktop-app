@@ -39,5 +39,5 @@ const discogsUrlSchema = z
   .trim()
   .refine(
     (value) => value === "" || discogsUrlPattern.test(value),
-    "Discogs URL must start with https://www.discogs.com/release/<id>-",
+    "Discogs URL must be of the form https://www.discogs.com/release/<numerical id>-<arbitrary text>",
   );
