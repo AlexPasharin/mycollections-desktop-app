@@ -404,37 +404,50 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     }));
   };
 
-  const validateReleaseVersionField = () => validateField("releaseVersion");
-  const validateReleaseDateFields = () => validateField("releaseDate");
-  const validateCountriesFields = () => validateField("countries");
-  const validateFormatsFields = () => validateField("formats");
-  const validateCatNumbersFields = () => validateField("catalogueNumbers");
-  const validateMatrixRunoutField = () => validateField("matrixRunout");
-
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
 
-    const { selectedTags } = form;
+    const validationResults = {
+      releaseVersion: validateField("releaseVersion"),
+      releaseDate: validateField("releaseDate"),
+      countries: validateField("countries"),
+      formats: validateField("formats"),
+      catalogueNumbers: validateField("catalogueNumbers"),
+      matrixRunout: validateField("matrixRunout"),
+      selectedTags: validateField("selectedTags"),
+    };
 
-    const releaseVersionValidationResult = validateReleaseVersionField();
-    const releaseDateValidationResult = validateReleaseDateFields();
-    const countriesValidationResult = validateCountriesFields();
-    const formatsValidationResult = validateFormatsFields();
-    const catNumbersValidationResult = validateCatNumbersFields();
-    const matrixRunoutValidationResult = validateMatrixRunoutField();
-
-    const formIsValid =
-      releaseVersionValidationResult.valid &&
-      releaseDateValidationResult.valid &&
-      countriesValidationResult.valid &&
-      formatsValidationResult.valid &&
-      catNumbersValidationResult.valid &&
-      matrixRunoutValidationResult.valid;
+    const formIsValid = Object.values(validationResults).every(
+      (result) => result.valid,
+    );
 
     console.info({
       form,
       formIsValid,
-      selectedTags: Object.entries(selectedTags),
+    });
+
+    if (!formIsValid) {
+      return;
+    }
+
+    const {
+      releaseVersion: { value: releaseVersion },
+      releaseDate: { value: releaseDate },
+      countries: { value: countries },
+      formats: { value: formats },
+      catalogueNumbers: { value: catalogueNumbers },
+      matrixRunout: { value: matrixRunout },
+      selectedTags: { value: selectedTags },
+    } = validationResults;
+
+    console.info({
+      releaseVersion,
+      releaseDate,
+      countries,
+      formats,
+      catalogueNumbers,
+      matrixRunout,
+      selectedTags,
     });
   };
 
