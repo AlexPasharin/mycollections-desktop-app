@@ -54,6 +54,9 @@ const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
 const RELEASE_VERSION_FIELD_ERROR_ID = "add-release-version-error";
 const RELEASE_VERSION_FIELD_NOTIFICATIONS_ID =
   "add-release-version-notifications";
+const DISCOGS_URL_FIELD_ERROR_ID = "add-release-discogs-url-error";
+const DISCOGS_URL_FIELD_NOTIFICATIONS_ID =
+  "add-release-discogs-url-notifications";
 
 const AddReleaseForm: FC<AddReleaseFormProps> = ({
   entry,
@@ -104,9 +107,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   // on focus we attempt to remove errors related to the field that is being focused
   const onFocus = (key: AddReleaseFormInputFieldKey) => {
-    if (key === "releaseVersion") {
-      setField("releaseVersion", (prev) => ({
-        ...prev.releaseVersion,
+    if (key === "releaseVersion" || key === "discogsUrl") {
+      setField(key, (prev) => ({
+        ...prev[key],
         notifications: [],
       }));
     }
@@ -409,6 +412,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     const validationResults = {
       releaseVersion: validateField("releaseVersion"),
+      discogsUrl: validateField("discogsUrl"),
       releaseDate: validateField("releaseDate"),
       countries: validateField("countries"),
       formats: validateField("formats"),
@@ -432,6 +436,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     const {
       releaseVersion: { value: releaseVersion },
+      discogsUrl: { value: discogsUrl },
       releaseDate: { value: releaseDate },
       countries: { value: countries },
       formats: { value: formats },
@@ -442,6 +447,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     console.info({
       releaseVersion,
+      discogsUrl,
       releaseDate,
       countries,
       formats,
@@ -453,10 +459,14 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   const releaseVersionErrors = fieldErrors.releaseVersion;
   const releaseVersionNotifications = form.releaseVersion.notifications;
+  const discogsUrlErrors = fieldErrors.discogsUrl;
+  const discogsUrlNotifications = form.discogsUrl.notifications;
   const matrixRunoutErrors = fieldErrors.matrixRunout;
   const releaseDateErrors = fieldErrors.releaseDate;
   const hasReleaseVersionErrors = releaseVersionErrors.length > 0;
   const hasReleaseVersionNotifications = releaseVersionNotifications.length > 0;
+  const hasDiscogsUrlErrors = discogsUrlErrors.length > 0;
+  const hasDiscogsUrlNotifications = discogsUrlNotifications.length > 0;
   const hasReleaseDateErrors = releaseDateErrors.length > 0;
 
   const releaseVersionDescribedByIds = [
@@ -464,6 +474,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     hasReleaseVersionNotifications
       ? RELEASE_VERSION_FIELD_NOTIFICATIONS_ID
       : null,
+  ]
+    .filter((id): id is string => id !== null)
+    .join(" ");
+
+  const discogsUrlDescribedByIds = [
+    hasDiscogsUrlErrors ? DISCOGS_URL_FIELD_ERROR_ID : null,
+    hasDiscogsUrlNotifications ? DISCOGS_URL_FIELD_NOTIFICATIONS_ID : null,
   ]
     .filter((id): id is string => id !== null)
     .join(" ");
@@ -521,6 +538,38 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           <FormFieldErrorMessages
             id={RELEASE_DATE_FIELD_ERROR_ID}
             messages={releaseDateErrors}
+          />
+        </div>
+
+        <hr
+          className={`${styles.sectionDivider} ${styles.sectionDividerMoreSpaceBefore}`}
+          aria-hidden
+        />
+
+        <div className={styles.field}>
+          <label className={styles.heading} htmlFor="add-release-discogs-url">
+            Discogs URL
+          </label>
+          <input
+            id="add-release-discogs-url"
+            className={styles.input}
+            type="url"
+            value={form.discogsUrl.value}
+            onChange={(e) => setFieldValue("discogsUrl", e.target.value)}
+            onFocus={() => onFocus("discogsUrl")}
+            onBlur={() => onBlur("discogsUrl")}
+            aria-invalid={hasDiscogsUrlErrors}
+            aria-describedby={discogsUrlDescribedByIds || undefined}
+            autoComplete="off"
+            placeholder="https://www.discogs.com/release/<id>-..."
+          />
+          <FormFieldErrorMessages
+            id={DISCOGS_URL_FIELD_ERROR_ID}
+            messages={discogsUrlErrors}
+          />
+          <FormFieldNotifications
+            id={DISCOGS_URL_FIELD_NOTIFICATIONS_ID}
+            messages={discogsUrlNotifications}
           />
         </div>
 
