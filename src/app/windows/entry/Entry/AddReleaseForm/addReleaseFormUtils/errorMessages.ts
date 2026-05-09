@@ -49,6 +49,8 @@ export type AddReleaseFormCatNumbersErrors = Record<
 export type AddReleaseFormFieldErrors = {
   releaseVersion: AddReleaseFormFieldError[];
   discogsUrl: AddReleaseFormFieldError[];
+  comment: undefined;
+  conditionProblems: undefined;
   releaseDate: AddReleaseFormFieldError[];
   countries: AddReleaseFormCountriesErrors;
   formats: AddReleaseFormFormatErrors;
@@ -66,6 +68,8 @@ export const emptyMutableCountriesSubsectionErrors =
 export const initialAddReleaseFormFieldErrors: AddReleaseFormFieldErrors = {
   releaseVersion: [],
   discogsUrl: [],
+  comment: undefined,
+  conditionProblems: undefined,
   releaseDate: [],
   countries: {
     madeIn: emptyMutableCountriesSubsectionErrors(),
@@ -100,6 +104,8 @@ export type AddReleaseFormCountriesInputFieldKey = {
 export type AddReleaseFormInputFieldKey =
   | "releaseVersion"
   | "discogsUrl"
+  | "comment"
+  | "conditionProblems"
   | "matrixRunout"
   | ReleaseDateFieldErrorSource
   | AddReleaseFormFormatInputFieldKey

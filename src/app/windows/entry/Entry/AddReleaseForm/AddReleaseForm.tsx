@@ -57,6 +57,9 @@ const RELEASE_VERSION_FIELD_NOTIFICATIONS_ID =
 const DISCOGS_URL_FIELD_ERROR_ID = "add-release-discogs-url-error";
 const DISCOGS_URL_FIELD_NOTIFICATIONS_ID =
   "add-release-discogs-url-notifications";
+const COMMENT_FIELD_NOTIFICATIONS_ID = "add-release-comment-notifications";
+const CONDITION_PROBLEMS_FIELD_NOTIFICATIONS_ID =
+  "add-release-condition-problems-notifications";
 
 const AddReleaseForm: FC<AddReleaseFormProps> = ({
   entry,
@@ -107,7 +110,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   // on focus we attempt to remove errors related to the field that is being focused
   const onFocus = (key: AddReleaseFormInputFieldKey) => {
-    if (key === "releaseVersion" || key === "discogsUrl") {
+    if (
+      key === "releaseVersion" ||
+      key === "discogsUrl" ||
+      key === "comment" ||
+      key === "conditionProblems"
+    ) {
       setField(key, (prev) => ({
         ...prev[key],
         notifications: [],
@@ -195,7 +203,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
       const errorKey = isReleaseDateInputFieldKey(key) ? "releaseDate" : key;
 
-      const errors = prev[errorKey].filter(
+      const errors = prev[errorKey]?.filter(
         (error) =>
           error.sources &&
           error.sources.length > 0 &&
@@ -413,6 +421,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     const validationResults = {
       releaseVersion: validateField("releaseVersion"),
       discogsUrl: validateField("discogsUrl"),
+      comment: validateField("comment"),
+      conditionProblems: validateField("conditionProblems"),
       releaseDate: validateField("releaseDate"),
       countries: validateField("countries"),
       formats: validateField("formats"),
@@ -437,6 +447,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     const {
       releaseVersion: { value: releaseVersion },
       discogsUrl: { value: discogsUrl },
+      comment: { value: comment },
+      conditionProblems: { value: conditionProblems },
       releaseDate: { value: releaseDate },
       countries: { value: countries },
       formats: { value: formats },
@@ -448,6 +460,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     console.info({
       releaseVersion,
       discogsUrl,
+      comment,
+      conditionProblems,
       releaseDate,
       countries,
       formats,
@@ -461,12 +475,17 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const releaseVersionNotifications = form.releaseVersion.notifications;
   const discogsUrlErrors = fieldErrors.discogsUrl;
   const discogsUrlNotifications = form.discogsUrl.notifications;
+  const commentNotifications = form.comment.notifications;
+  const conditionProblemsNotifications = form.conditionProblems.notifications;
   const matrixRunoutErrors = fieldErrors.matrixRunout;
   const releaseDateErrors = fieldErrors.releaseDate;
   const hasReleaseVersionErrors = releaseVersionErrors.length > 0;
   const hasReleaseVersionNotifications = releaseVersionNotifications.length > 0;
   const hasDiscogsUrlErrors = discogsUrlErrors.length > 0;
   const hasDiscogsUrlNotifications = discogsUrlNotifications.length > 0;
+  const hasCommentNotifications = commentNotifications.length > 0;
+  const hasConditionProblemsNotifications =
+    conditionProblemsNotifications.length > 0;
   const hasReleaseDateErrors = releaseDateErrors.length > 0;
 
   const releaseVersionDescribedByIds = [
@@ -687,6 +706,57 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           onAddTag={addSelectedTag}
           onRemoveTag={removeSelectedTag}
         />
+
+        <hr className={styles.sectionDivider} aria-hidden />
+
+        <div className={styles.field}>
+          <label className={styles.heading} htmlFor="add-release-comment">
+            Comment
+          </label>
+          <textarea
+            id="add-release-comment"
+            className={styles.textarea}
+            value={form.comment.value}
+            onChange={(e) => setFieldValue("comment", e.target.value)}
+            onFocus={() => onFocus("comment")}
+            onBlur={() => onBlur("comment")}
+            aria-describedby={
+              hasCommentNotifications
+                ? COMMENT_FIELD_NOTIFICATIONS_ID
+                : undefined
+            }
+          />
+          <FormFieldNotifications
+            id={COMMENT_FIELD_NOTIFICATIONS_ID}
+            messages={commentNotifications}
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label
+            className={styles.heading}
+            htmlFor="add-release-condition-problems"
+          >
+            Condition problems
+          </label>
+          <textarea
+            id="add-release-condition-problems"
+            className={styles.textarea}
+            value={form.conditionProblems.value}
+            onChange={(e) => setFieldValue("conditionProblems", e.target.value)}
+            onFocus={() => onFocus("conditionProblems")}
+            onBlur={() => onBlur("conditionProblems")}
+            aria-describedby={
+              hasConditionProblemsNotifications
+                ? CONDITION_PROBLEMS_FIELD_NOTIFICATIONS_ID
+                : undefined
+            }
+          />
+          <FormFieldNotifications
+            id={CONDITION_PROBLEMS_FIELD_NOTIFICATIONS_ID}
+            messages={conditionProblemsNotifications}
+          />
+        </div>
 
         <div className={styles.actions}>
           <button type="button" onClick={onCancel}>
