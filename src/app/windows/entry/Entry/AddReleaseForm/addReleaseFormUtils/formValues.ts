@@ -10,6 +10,7 @@ import {
   validateReleaseDate,
   validateReleaseVersion,
   validateDiscogsUrl,
+  validateOptionalTrimmedText,
   validateReleaseCountries,
   validateReleaseFormats,
   validateReleaseCatNumbers,
@@ -115,6 +116,8 @@ export type AddReleaseFormDraft = {
     AddReleaseFormFieldError[]
   >;
   selectedTags: FormField<Record<string, string>, never>;
+  comment: FormField<string, never>;
+  conditionProblems: FormField<string, never>;
 };
 
 export const initialAddReleaseFormDraftValue = (
@@ -164,19 +167,29 @@ export const initialAddReleaseFormDraftValue = (
     validationFn: validateReleaseCatNumbers,
     notifications: [],
   },
-
   matrixRunout: {
     value: { value: "", treatAsText: false },
     valid: true,
     validationFn: validateReleaseMatrixRunout,
     notifications: [],
   },
-
   selectedTags: {
     value: {},
     valid: true,
     validationFn: validateSelectedTags,
-    notifications: [] as const,
+    notifications: [],
+  },
+  comment: {
+    value: "",
+    valid: true,
+    validationFn: validateOptionalTrimmedText,
+    notifications: [],
+  },
+  conditionProblems: {
+    value: "",
+    valid: true,
+    validationFn: validateOptionalTrimmedText,
+    notifications: [],
   },
 });
 
