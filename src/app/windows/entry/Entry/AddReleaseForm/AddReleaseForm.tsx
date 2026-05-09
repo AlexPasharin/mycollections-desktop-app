@@ -138,9 +138,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           ...prev,
           formats: nextFormatRowErrors
             ? {
-              ...formats,
-              [formatRowId]: nextFormatRowErrors,
-            }
+                ...formats,
+                [formatRowId]: nextFormatRowErrors,
+              }
             : omitProperty(formats, formatRowId),
         };
       }
@@ -743,9 +743,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             id="add-release-condition-problems"
             className={styles.textarea}
             value={form.conditionProblems.value}
-            onChange={(e) =>
-              setFieldValue("conditionProblems", e.target.value)
-            }
+            onChange={(e) => setFieldValue("conditionProblems", e.target.value)}
             onFocus={() => onFocus("conditionProblems")}
             onBlur={() => onBlur("conditionProblems")}
             aria-describedby={
