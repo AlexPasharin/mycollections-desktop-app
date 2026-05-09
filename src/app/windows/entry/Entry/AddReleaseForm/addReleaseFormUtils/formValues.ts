@@ -116,6 +116,7 @@ export type AddReleaseFormDraft = {
     AddReleaseFormFieldError[]
   >;
   selectedTags: FormField<Record<string, string>, never>;
+  partOfQueenCollection: FormField<boolean, never>;
   comment: FormField<string, never>;
   conditionProblems: FormField<string, never>;
 };
@@ -123,6 +124,7 @@ export type AddReleaseFormDraft = {
 export const initialAddReleaseFormDraftValue = (
   originalReleaseDate: GeneralizedDate | null,
   allFormats: ReleasesFormatListItem[],
+  partOfQueenCollection: boolean,
 ): AddReleaseFormDraft => ({
   releaseVersion: {
     value: "",
@@ -176,7 +178,13 @@ export const initialAddReleaseFormDraftValue = (
   selectedTags: {
     value: {},
     valid: true,
-    validationFn: validateSelectedTags,
+    validationFn: validatePassThrough,
+    notifications: [],
+  },
+  partOfQueenCollection: {
+    value: partOfQueenCollection,
+    valid: true,
+    validationFn: validatePassThrough,
     notifications: [],
   },
   comment: {
@@ -193,9 +201,9 @@ export const initialAddReleaseFormDraftValue = (
   },
 });
 
-const validateSelectedTags = (
-  value: Record<string, string>,
-): FormFieldValidationResult<Record<string, string>, never> => {
+const validatePassThrough = <T>(
+  value: T,
+): FormFieldValidationResult<T, never> => {
   return {
     valid: true,
     value,

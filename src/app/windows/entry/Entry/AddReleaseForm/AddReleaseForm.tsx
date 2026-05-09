@@ -72,7 +72,11 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const { originalReleaseDate } = entry;
 
   const [form, setForm] = useState<AddReleaseFormDraft>(
-    initialAddReleaseFormDraftValue(originalReleaseDate, allFormats),
+    initialAddReleaseFormDraftValue(
+      originalReleaseDate,
+      allFormats,
+      entry.partOfQueenCollection,
+    ),
   );
 
   const [fieldErrors, setFieldErrors] = useState<AddReleaseFormFieldErrors>(
@@ -253,7 +257,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const onBlur = (key: keyof AddReleaseFormDraft) => {
-    if (key === "selectedTags") {
+    if (key === "selectedTags" || key === "partOfQueenCollection") {
       return;
     }
 
@@ -429,6 +433,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       catalogueNumbers: validateField("catalogueNumbers"),
       matrixRunout: validateField("matrixRunout"),
       selectedTags: validateField("selectedTags"),
+      partOfQueenCollection: validateField("partOfQueenCollection"),
     };
 
     const formIsValid = Object.values(validationResults).every(
@@ -455,6 +460,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       catalogueNumbers: { value: catalogueNumbers },
       matrixRunout: { value: matrixRunout },
       selectedTags: { value: selectedTags },
+      partOfQueenCollection: { value: partOfQueenCollection },
     } = validationResults;
 
     console.info({
@@ -468,6 +474,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       catalogueNumbers,
       matrixRunout,
       selectedTags,
+      partOfQueenCollection,
     });
   };
 
@@ -706,6 +713,26 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           onAddTag={addSelectedTag}
           onRemoveTag={removeSelectedTag}
         />
+
+        <hr className={styles.sectionDivider} aria-hidden />
+
+        <div className={styles.checkboxRow}>
+          <input
+            id="add-release-part-of-queen-collection"
+            type="checkbox"
+            checked={form.partOfQueenCollection.value}
+            disabled={entry.partOfQueenCollection}
+            onChange={(e) =>
+              setFieldValue("partOfQueenCollection", e.target.checked)
+            }
+          />
+          <label
+            className={styles.checkboxLabel}
+            htmlFor="add-release-part-of-queen-collection"
+          >
+            Part of Queen collection
+          </label>
+        </div>
 
         <hr className={styles.sectionDivider} aria-hidden />
 
