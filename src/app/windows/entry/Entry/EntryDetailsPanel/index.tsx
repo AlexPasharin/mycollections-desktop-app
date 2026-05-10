@@ -32,7 +32,7 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry }) => (
     {entry.altNames.length > 0 && (
       <p className={styles.field}>
         <span className={styles.fieldLabel}>Also known as: </span>
-        {entry.altNames.join(", ")}
+        {entry.altNames.map(({ name }) => name).join(", ")}
       </p>
     )}
 
