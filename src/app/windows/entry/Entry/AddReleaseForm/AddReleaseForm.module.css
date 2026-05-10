@@ -36,6 +36,10 @@
   margin-bottom: 0.65rem;
 }
 
+.fieldMoreSpaceBefore {
+  margin-top: 0.85rem;
+}
+
 .requiredMark {
   font-size: 1.1em;
   font-weight: 600;

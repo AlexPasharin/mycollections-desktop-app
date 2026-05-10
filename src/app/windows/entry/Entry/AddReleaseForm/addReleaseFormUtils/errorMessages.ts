@@ -58,6 +58,7 @@ export type AddReleaseFormFieldErrors = {
   matrixRunout: AddReleaseFormFieldError[];
   selectedTags: undefined;
   partOfQueenCollection: undefined;
+  relationToQueen: undefined;
 };
 
 export const emptyMutableCountriesSubsectionErrors =
@@ -81,6 +82,7 @@ export const initialAddReleaseFormFieldErrors: AddReleaseFormFieldErrors = {
   matrixRunout: [],
   selectedTags: undefined,
   partOfQueenCollection: undefined,
+  relationToQueen: undefined,
 };
 
 export type CatalogueNumbersInputField = "label" | "catNumber";
@@ -109,6 +111,7 @@ export type AddReleaseFormInputFieldKey =
   | "comment"
   | "conditionProblems"
   | "matrixRunout"
+  | "relationToQueen"
   | ReleaseDateFieldErrorSource
   | AddReleaseFormFormatInputFieldKey
   | AddReleaseFormCatalogueNumbersInputFieldKey

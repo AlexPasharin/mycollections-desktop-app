@@ -60,6 +60,8 @@ const DISCOGS_URL_FIELD_NOTIFICATIONS_ID =
 const COMMENT_FIELD_NOTIFICATIONS_ID = "add-release-comment-notifications";
 const CONDITION_PROBLEMS_FIELD_NOTIFICATIONS_ID =
   "add-release-condition-problems-notifications";
+const RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID =
+  "add-release-relation-to-queen-notifications";
 
 const AddReleaseForm: FC<AddReleaseFormProps> = ({
   entry,
@@ -118,7 +120,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       key === "releaseVersion" ||
       key === "discogsUrl" ||
       key === "comment" ||
-      key === "conditionProblems"
+      key === "conditionProblems" ||
+      key === "relationToQueen"
     ) {
       setField(key, (prev) => ({
         ...prev[key],
@@ -434,6 +437,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       matrixRunout: validateField("matrixRunout"),
       selectedTags: validateField("selectedTags"),
       partOfQueenCollection: validateField("partOfQueenCollection"),
+      relationToQueen: validateField("relationToQueen"),
     };
 
     const formIsValid = Object.values(validationResults).every(
@@ -461,7 +465,16 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       matrixRunout: { value: matrixRunout },
       selectedTags: { value: selectedTags },
       partOfQueenCollection: { value: partOfQueenCollection },
+      relationToQueen: { value: relationToQueenDraft },
     } = validationResults;
+
+    // The "relation to Queen" textarea is only visible when the
+    // "part of Queen collection" checkbox is on, but its value is intentionally
+    // kept across toggles for UX. Drop it before persisting so we never send
+    // text the DB would reject (it requires partOfQueenCollection=true).
+    const relationToQueen: string | null = partOfQueenCollection
+      ? relationToQueenDraft
+      : null;
 
     console.info({
       releaseVersion,
@@ -475,6 +488,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       matrixRunout,
       selectedTags,
       partOfQueenCollection,
+      relationToQueen,
     });
   };
 
@@ -484,6 +498,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const discogsUrlNotifications = form.discogsUrl.notifications;
   const commentNotifications = form.comment.notifications;
   const conditionProblemsNotifications = form.conditionProblems.notifications;
+  const relationToQueenNotifications = form.relationToQueen.notifications;
   const matrixRunoutErrors = fieldErrors.matrixRunout;
   const releaseDateErrors = fieldErrors.releaseDate;
   const hasReleaseVersionErrors = releaseVersionErrors.length > 0;
@@ -493,6 +508,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const hasCommentNotifications = commentNotifications.length > 0;
   const hasConditionProblemsNotifications =
     conditionProblemsNotifications.length > 0;
+  const hasRelationToQueenNotifications =
+    relationToQueenNotifications.length > 0;
   const hasReleaseDateErrors = releaseDateErrors.length > 0;
 
   const releaseVersionDescribedByIds = [
@@ -733,6 +750,34 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             Part of Queen collection
           </label>
         </div>
+
+        {form.partOfQueenCollection.value && (
+          <div className={`${styles.field} ${styles.fieldMoreSpaceBefore}`}>
+            <label
+              className={styles.heading}
+              htmlFor="add-release-relation-to-queen"
+            >
+              Relation to Queen
+            </label>
+            <textarea
+              id="add-release-relation-to-queen"
+              className={styles.textarea}
+              value={form.relationToQueen.value}
+              onChange={(e) => setFieldValue("relationToQueen", e.target.value)}
+              onFocus={() => onFocus("relationToQueen")}
+              onBlur={() => onBlur("relationToQueen")}
+              aria-describedby={
+                hasRelationToQueenNotifications
+                  ? RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID
+                  : undefined
+              }
+            />
+            <FormFieldNotifications
+              id={RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID}
+              messages={relationToQueenNotifications}
+            />
+          </div>
+        )}
 
         <hr className={styles.sectionDivider} aria-hidden />
 

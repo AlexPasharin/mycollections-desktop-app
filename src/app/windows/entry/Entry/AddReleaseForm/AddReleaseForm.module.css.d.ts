@@ -5,6 +5,7 @@ interface CssExports {
   'checkboxLabel': string;
   'checkboxRow': string;
   'field': string;
+  'fieldMoreSpaceBefore': string;
   'form': string;
   'formatsLoadState': string;
   'heading': string;

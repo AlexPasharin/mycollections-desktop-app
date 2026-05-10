@@ -117,6 +117,7 @@ export type AddReleaseFormDraft = {
   >;
   selectedTags: FormField<Record<string, string>, never>;
   partOfQueenCollection: FormField<boolean, never>;
+  relationToQueen: FormField<string, never>;
   comment: FormField<string, never>;
   conditionProblems: FormField<string, never>;
 };
@@ -185,6 +186,12 @@ export const initialAddReleaseFormDraftValue = (
     value: partOfQueenCollection,
     valid: true,
     validationFn: validatePassThrough,
+    notifications: [],
+  },
+  relationToQueen: {
+    value: "",
+    valid: true,
+    validationFn: validateOptionalTrimmedText,
     notifications: [],
   },
   comment: {
