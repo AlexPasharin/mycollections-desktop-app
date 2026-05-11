@@ -19,6 +19,11 @@ export type EntryArtistInfo = {
   artistName: string;
 };
 
+export type EntryAltNameInfo = {
+  nameId: string;
+  name: string;
+};
+
 export type EntryByIdResult = {
   entryId: string;
   mainName: string;
@@ -29,7 +34,7 @@ export type EntryByIdResult = {
   relationToQueen: string | null;
   artists: EntryArtistInfo[];
   types: string[];
-  altNames: string[];
+  altNames: EntryAltNameInfo[];
   tags: string[];
 };
 

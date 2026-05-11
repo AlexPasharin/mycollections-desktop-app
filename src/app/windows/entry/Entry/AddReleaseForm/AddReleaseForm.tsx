@@ -22,24 +22,20 @@ import {
   emptyCountrySelection,
   initialAddReleaseFormDraftValue,
   type AddReleaseFormDraft,
+  type AddReleaseFormEntry,
 } from "./addReleaseFormUtils/formValues";
 import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
+import AddReleaseNameField from "./AddReleaseNameField";
 import AddReleaseTagsSection from "./AddReleaseTagsSection";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
 import type { CountryListItem } from "@/types/countries";
-import type { GeneralizedDate } from "@/types/date";
-import type { EntryByIdResult } from "@/types/entries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
 import type { TagListItem } from "@/types/tags";
 import { omitProperty } from "@/utils/common";
-
-type AddReleaseFormEntry = Omit<EntryByIdResult, "originalReleaseDate"> & {
-  originalReleaseDate: GeneralizedDate | null;
-};
 
 export type AddReleaseFormProps = {
   entry: AddReleaseFormEntry;
@@ -71,14 +67,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   tags,
   allCountries,
 }) => {
-  const { originalReleaseDate } = entry;
-
   const [form, setForm] = useState<AddReleaseFormDraft>(
-    initialAddReleaseFormDraftValue(
-      originalReleaseDate,
-      allFormats,
-      entry.partOfQueenCollection,
-    ),
+    initialAddReleaseFormDraftValue(entry, allFormats),
   );
 
   const [fieldErrors, setFieldErrors] = useState<AddReleaseFormFieldErrors>(
@@ -116,13 +106,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   // on focus we attempt to remove errors related to the field that is being focused
   const onFocus = (key: AddReleaseFormInputFieldKey) => {
-    if (
-      key === "releaseVersion" ||
-      key === "discogsUrl" ||
-      key === "comment" ||
-      key === "conditionProblems" ||
-      key === "relationToQueen"
-    ) {
+    if (typeof key === "string" && !isReleaseDateInputFieldKey(key)) {
       setField(key, (prev) => ({
         ...prev[key],
         notifications: [],
@@ -259,13 +243,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     return validationResult;
   };
 
-  const onBlur = (key: keyof AddReleaseFormDraft) => {
-    if (key === "selectedTags" || key === "partOfQueenCollection") {
-      return;
-    }
-
-    return validateField(key);
-  };
+  const onBlur = (key: keyof AddReleaseFormDraft) => validateField(key);
 
   const addFormatRow = () => {
     setFieldValue("formats", (prev) => [
@@ -561,6 +539,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             messages={releaseVersionNotifications}
           />
         </div>
+
+        <AddReleaseNameField
+          entryMainName={entry.mainName}
+          entryAltNames={entry.altNames}
+          value={form.name.value}
+          onChange={(value) => setFieldValue("name", value)}
+        />
 
         <hr
           className={`${styles.sectionDivider} ${styles.sectionDividerMoreSpaceBefore}`}

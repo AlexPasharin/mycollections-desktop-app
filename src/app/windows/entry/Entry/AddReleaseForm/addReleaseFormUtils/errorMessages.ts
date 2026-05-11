@@ -47,6 +47,7 @@ export type AddReleaseFormCatNumbersErrors = Record<
 >;
 
 export type AddReleaseFormFieldErrors = {
+  name: undefined;
   releaseVersion: AddReleaseFormFieldError[];
   discogsUrl: AddReleaseFormFieldError[];
   comment: undefined;
@@ -68,6 +69,7 @@ export const emptyMutableCountriesSubsectionErrors =
   });
 
 export const initialAddReleaseFormFieldErrors: AddReleaseFormFieldErrors = {
+  name: undefined,
   releaseVersion: [],
   discogsUrl: [],
   comment: undefined,

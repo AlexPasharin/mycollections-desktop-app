@@ -4,7 +4,11 @@ import { selectFromExtendedMusicalEntryRows } from "./utils";
 
 import { aggregateDistinctValuesToArray } from "../utils";
 
-import type { EntryArtistInfo, GetEntryById } from "@/types/entries";
+import type {
+  EntryAltNameInfo,
+  EntryArtistInfo,
+  GetEntryById,
+} from "@/types/entries";
 import { parseStringAsGeneralizedDate } from "@/utils/date";
 
 export const getEntryById: GetEntryById = async (entryId) => {
@@ -40,10 +44,15 @@ export const getEntryById: GetEntryById = async (entryId) => {
       )`.as("artists"),
 
       aggregateDistinctValuesToArray("musicalEntryTypes.name", "types"),
-      aggregateDistinctValuesToArray(
-        "alternativeMusicalEntryNames.name",
-        "altNames",
-      ),
+
+      sql<EntryAltNameInfo[]>`coalesce(
+        jsonb_agg(DISTINCT jsonb_build_object(
+          'nameId', ${sql.ref("alternativeMusicalEntryNames.nameId")},
+          'name', ${sql.ref("alternativeMusicalEntryNames.name")}
+        )) FILTER (WHERE ${sql.ref("alternativeMusicalEntryNames.nameId")} IS NOT NULL),
+        '[]'::jsonb
+      )`.as("altNames"),
+
       aggregateDistinctValuesToArray("tags.tag", "tags"),
     ])
     .groupBy([
