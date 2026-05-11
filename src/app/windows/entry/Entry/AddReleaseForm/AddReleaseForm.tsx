@@ -24,6 +24,7 @@ import {
   type AddReleaseFormDraft,
   type AddReleaseFormEntry,
 } from "./addReleaseFormUtils/formValues";
+import { toMusicalReleaseInsertValues } from "./addReleaseFormUtils/toMusicalReleaseInsertValues";
 import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
 import AddReleaseNameField from "./AddReleaseNameField";
 import AddReleaseTagsSection from "./AddReleaseTagsSection";
@@ -31,6 +32,7 @@ import AddReleaseTagsSection from "./AddReleaseTagsSection";
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
+import api from "@/app/windows/entry/api";
 import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
@@ -441,16 +443,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       matrixRunout: { value: matrixRunout },
       selectedTags: { value: selectedTags },
       partOfQueenCollection: { value: partOfQueenCollection },
-      relationToQueen: { value: relationToQueenDraft },
+      relationToQueen: { value: relationToQueen },
     } = validationResults;
-
-    // The "relation to Queen" textarea is only visible when the
-    // "part of Queen collection" checkbox is on, but its value is intentionally
-    // kept across toggles for UX. Drop it before persisting so we never send
-    // text the DB would reject (it requires partOfQueenCollection=true).
-    const relationToQueen: string | null = partOfQueenCollection
-      ? relationToQueenDraft
-      : null;
 
     console.info({
       releaseVersion,
@@ -466,6 +460,33 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       partOfQueenCollection,
       relationToQueen,
     });
+
+    // Only the row in `musicalReleases` is inserted here. Related rows
+    // (formats, tags, alt artists, freshly-typed alt names) are not yet wired
+    // up — those will need a transactional create-release helper.
+    const insertValues = toMusicalReleaseInsertValues({
+      entry,
+      name: form.name.value,
+      releaseVersion,
+      releaseDate,
+      discogsUrl,
+      countries,
+      catalogueNumbers,
+      matrixRunout,
+      partOfQueenCollection,
+      relationToQueen,
+      comment,
+      conditionProblems,
+    });
+
+    api
+      .insertMusicalRelease(insertValues)
+      .then((releaseId) => {
+        console.info("Inserted musical release", { releaseId });
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to insert musical release", error);
+      });
   };
 
   const releaseVersionErrors = fieldErrors.releaseVersion;
