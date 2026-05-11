@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { type FC, type FocusEvent } from "react";
 
 import styles from "./AddReleaseMatrixRunoutField.module.css";
 
@@ -6,12 +6,16 @@ import type { AddReleaseFormFieldError } from "../addReleaseFormUtils/errorMessa
 import type { AddReleaseFormMatrixRunoutDraft } from "../addReleaseFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
+import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 
 const MATRIX_RUNOUT_FIELD_ERROR_ID = "add-release-matrix-runout-error";
+const MATRIX_RUNOUT_FIELD_NOTIFICATIONS_ID =
+  "add-release-matrix-runout-notifications";
 
 type AddReleaseMatrixRunoutFieldProps = {
   matrixRunout: AddReleaseFormMatrixRunoutDraft;
   errorMessages: AddReleaseFormFieldError[];
+  notifications: { notification: string }[];
   onValueChange: (value: string) => void;
   onTreatAsTextChange: (treatAsText: boolean) => void;
   onFocus: () => void;
@@ -21,15 +25,44 @@ type AddReleaseMatrixRunoutFieldProps = {
 const AddReleaseMatrixRunoutField: FC<AddReleaseMatrixRunoutFieldProps> = ({
   matrixRunout,
   errorMessages,
+  notifications,
   onValueChange,
   onTreatAsTextChange,
   onFocus,
   onBlur,
 }) => {
   const hasErrors = errorMessages.length > 0;
+  const hasNotifications = notifications.length > 0;
+
+  const describedByIds = [
+    hasErrors ? MATRIX_RUNOUT_FIELD_ERROR_ID : null,
+    hasNotifications ? MATRIX_RUNOUT_FIELD_NOTIFICATIONS_ID : null,
+  ]
+    .filter((id): id is string => id !== null)
+    .join(" ");
+
+  // The textarea and the "treat as text" checkbox belong to one logical field,
+  // so we only invoke the parent's onFocus / onBlur when focus actually crosses
+  // the wrapper boundary. Without this, tabbing between the textarea and the
+  // checkbox would fire blur → validateField → focus → clear-notifications in
+  // immediate succession, wiping the prettified-JSON notification.
+  const focusLeftWrapper = (e: FocusEvent<HTMLDivElement>) =>
+    !e.currentTarget.contains(e.relatedTarget);
+
+  const handleFocus = (e: FocusEvent<HTMLDivElement>) => {
+    if (focusLeftWrapper(e)) {
+      onFocus();
+    }
+  };
+
+  const handleBlur = (e: FocusEvent<HTMLDivElement>) => {
+    if (focusLeftWrapper(e)) {
+      onBlur();
+    }
+  };
 
   return (
-    <div className={styles.field}>
+    <div className={styles.field} onFocus={handleFocus} onBlur={handleBlur}>
       <label className={styles.heading} htmlFor="add-release-matrix-runout">
         Matrix / runout
       </label>
@@ -39,10 +72,8 @@ const AddReleaseMatrixRunoutField: FC<AddReleaseMatrixRunoutFieldProps> = ({
         rows={4}
         value={matrixRunout.value}
         onChange={(e) => onValueChange(e.target.value)}
-        onFocus={onFocus}
-        onBlur={onBlur}
         aria-invalid={hasErrors}
-        aria-describedby={hasErrors ? MATRIX_RUNOUT_FIELD_ERROR_ID : undefined}
+        aria-describedby={describedByIds === "" ? undefined : describedByIds}
         autoComplete="off"
       />
       <div className={styles.checkboxRow}>
@@ -51,8 +82,6 @@ const AddReleaseMatrixRunoutField: FC<AddReleaseMatrixRunoutFieldProps> = ({
           type="checkbox"
           checked={matrixRunout.treatAsText}
           onChange={(e) => onTreatAsTextChange(e.target.checked)}
-          onFocus={onFocus}
-          onBlur={onBlur}
         />
         <label
           className={styles.checkboxLabel}
@@ -64,6 +93,10 @@ const AddReleaseMatrixRunoutField: FC<AddReleaseMatrixRunoutFieldProps> = ({
       <FormFieldErrorMessages
         id={MATRIX_RUNOUT_FIELD_ERROR_ID}
         messages={errorMessages}
+      />
+      <FormFieldNotifications
+        id={MATRIX_RUNOUT_FIELD_NOTIFICATIONS_ID}
+        messages={notifications}
       />
     </div>
   );
