@@ -129,9 +129,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           ...prev,
           formats: nextFormatRowErrors
             ? {
-                ...formats,
-                [formatRowId]: nextFormatRowErrors,
-              }
+              ...formats,
+              [formatRowId]: nextFormatRowErrors,
+            }
             : omitProperty(formats, formatRowId),
         };
       }
@@ -222,15 +222,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       v: ValueType,
     ) => ResultType;
     const validationResult = validationFn(formFieldData.value);
-    const { valid, value } = validationResult;
+    const { valid, value, notifications } = validationResult;
 
     setField(key, (prev) => ({
       ...prev[key],
       valid,
       value,
-      notifications: validationResult.valid
-        ? (validationResult.notifications ?? [])
-        : [],
+      notifications,
     }));
 
     setFieldErrors((prev) => ({
@@ -478,6 +476,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const conditionProblemsNotifications = form.conditionProblems.notifications;
   const relationToQueenNotifications = form.relationToQueen.notifications;
   const matrixRunoutErrors = fieldErrors.matrixRunout;
+  const matrixRunoutNotifications = form.matrixRunout.notifications;
   const releaseDateErrors = fieldErrors.releaseDate;
   const hasReleaseVersionErrors = releaseVersionErrors.length > 0;
   const hasReleaseVersionNotifications = releaseVersionNotifications.length > 0;
@@ -691,6 +690,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         <AddReleaseMatrixRunoutField
           matrixRunout={form.matrixRunout.value}
           errorMessages={matrixRunoutErrors}
+          notifications={matrixRunoutNotifications}
           onValueChange={(value) =>
             setFieldValue("matrixRunout", (prev) => ({
               ...prev.matrixRunout.value,
