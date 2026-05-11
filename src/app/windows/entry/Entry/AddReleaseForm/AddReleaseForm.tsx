@@ -25,6 +25,7 @@ import {
   type AddReleaseFormEntry,
 } from "./addReleaseFormUtils/formValues";
 import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
+import AddReleaseNameField from "./AddReleaseNameField";
 import AddReleaseTagsSection from "./AddReleaseTagsSection";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
@@ -105,9 +106,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   // on focus we attempt to remove errors related to the field that is being focused
   const onFocus = (key: AddReleaseFormInputFieldKey) => {
-    if (
-      typeof key === "string" && !isReleaseDateInputFieldKey(key)
-    ) {
+    if (typeof key === "string" && !isReleaseDateInputFieldKey(key)) {
       setField(key, (prev) => ({
         ...prev[key],
         notifications: [],
@@ -130,9 +129,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           ...prev,
           formats: nextFormatRowErrors
             ? {
-              ...formats,
-              [formatRowId]: nextFormatRowErrors,
-            }
+                ...formats,
+                [formatRowId]: nextFormatRowErrors,
+              }
             : omitProperty(formats, formatRowId),
         };
       }
@@ -540,6 +539,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             messages={releaseVersionNotifications}
           />
         </div>
+
+        <AddReleaseNameField
+          entryMainName={entry.mainName}
+          entryAltNames={entry.altNames}
+          value={form.name.value}
+          onChange={(value) => setFieldValue("name", value)}
+        />
 
         <hr
           className={`${styles.sectionDivider} ${styles.sectionDividerMoreSpaceBefore}`}

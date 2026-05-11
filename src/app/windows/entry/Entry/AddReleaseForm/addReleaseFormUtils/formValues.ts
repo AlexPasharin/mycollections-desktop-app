@@ -27,6 +27,11 @@ export type AddReleaseFormNameInput = Omit<EntryAltNameInfo, "nameId"> & {
   nameId: string | null;
 };
 
+export const defaultNameInput = (name: string): AddReleaseFormNameInput => ({
+  nameId: null,
+  name,
+});
+
 export type AddReleaseFormEntry = Omit<
   EntryByIdResult,
   "originalReleaseDate"
@@ -143,7 +148,7 @@ export const initialAddReleaseFormDraftValue = (
 
   return {
     name: {
-      value: { nameId: null, name: mainName },
+      value: defaultNameInput(mainName),
       valid: true,
       validationFn: validatePassThrough,
       notifications: [],

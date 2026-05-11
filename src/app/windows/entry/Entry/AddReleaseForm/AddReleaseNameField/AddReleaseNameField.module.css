@@ -1,0 +1,22 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.85rem;
+  margin-bottom: 0.65rem;
+}
+
+.heading {
+  font-size: 1em;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0 0 0.75rem;
+}
+
+.select {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 24rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 1em;
+}
