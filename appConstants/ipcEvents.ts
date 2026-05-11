@@ -4,6 +4,7 @@ export const GET_ARTIST_BY_ID = "get-artist-by-id";
 export const GET_ENTRY_BY_ID = "get-entry-by-id";
 export const GET_ENTRY_RELEASES = "get-entry-releases";
 export const GET_RELEASE_BY_ID = "get-release-by-id";
+export const INSERT_MUSICAL_RELEASE = "insert-musical-release";
 export const FETCH_RELEASE_FORMATS = "fetch-release-formats";
 export const FETCH_LABELS = "fetch-labels";
 export const FETCH_TAGS = "fetch-tags";
