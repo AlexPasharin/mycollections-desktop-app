@@ -20,7 +20,19 @@ import {
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
+import type { EntryAltNameInfo, EntryByIdResult } from "@/types/entries";
 import type { ReleasesFormatListItem } from "@/types/formats";
+
+export type AddReleaseFormNameInput = Omit<EntryAltNameInfo, "nameId"> & {
+  nameId: string | null;
+};
+
+export type AddReleaseFormEntry = Omit<
+  EntryByIdResult,
+  "originalReleaseDate"
+> & {
+  originalReleaseDate: GeneralizedDate | null;
+};
 
 export type AddReleaseFormFormatInput = {
   id: string;
@@ -99,6 +111,7 @@ type FormField<T, U> = {
 };
 
 export type AddReleaseFormDraft = {
+  name: FormField<AddReleaseFormNameInput, never>;
   releaseVersion: FormField<string, AddReleaseFormFieldError[]>;
   discogsUrl: FormField<string, AddReleaseFormFieldError[]>;
   releaseDate: FormField<
@@ -123,90 +136,99 @@ export type AddReleaseFormDraft = {
 };
 
 export const initialAddReleaseFormDraftValue = (
-  originalReleaseDate: GeneralizedDate | null,
+  entry: AddReleaseFormEntry,
   allFormats: ReleasesFormatListItem[],
-  partOfQueenCollection: boolean,
-): AddReleaseFormDraft => ({
-  releaseVersion: {
-    value: "",
-    valid: true,
-    validationFn: validateReleaseVersion,
-    notifications: [],
-  },
-  discogsUrl: {
-    value: "",
-    valid: true,
-    validationFn: validateDiscogsUrl,
-    notifications: [],
-  },
-  releaseDate: {
-    value: {
-      year: String(originalReleaseDate?.year ?? ""),
-      month: String(originalReleaseDate?.month ?? ""),
-      day: String(originalReleaseDate?.day ?? ""),
+): AddReleaseFormDraft => {
+  const { mainName, originalReleaseDate, partOfQueenCollection } = entry;
+
+  return {
+    name: {
+      value: { nameId: null, name: mainName },
+      valid: true,
+      validationFn: validatePassThrough,
+      notifications: [],
     },
-    valid: true,
-    validationFn: validateReleaseDate(originalReleaseDate),
-    notifications: [],
-  },
-  countries: {
-    value: {
-      madeIn: [emptyCountrySelection()],
-      printedIn: [],
+    releaseVersion: {
+      value: "",
+      valid: true,
+      validationFn: validateReleaseVersion,
+      notifications: [],
     },
-    valid: true,
-    validationFn: validateReleaseCountries,
-    notifications: [],
-  },
-  formats: {
-    value: [defaultFormatInputRow()],
-    valid: true,
-    validationFn: validateReleaseFormats(allFormats),
-    notifications: [],
-  },
-  catalogueNumbers: {
-    value: [defaultCatalogueNumberRow()],
-    valid: true,
-    validationFn: validateReleaseCatNumbers,
-    notifications: [],
-  },
-  matrixRunout: {
-    value: { value: "", treatAsText: false },
-    valid: true,
-    validationFn: validateReleaseMatrixRunout,
-    notifications: [],
-  },
-  selectedTags: {
-    value: {},
-    valid: true,
-    validationFn: validatePassThrough,
-    notifications: [],
-  },
-  partOfQueenCollection: {
-    value: partOfQueenCollection,
-    valid: true,
-    validationFn: validatePassThrough,
-    notifications: [],
-  },
-  relationToQueen: {
-    value: "",
-    valid: true,
-    validationFn: validateOptionalTrimmedText,
-    notifications: [],
-  },
-  comment: {
-    value: "",
-    valid: true,
-    validationFn: validateOptionalTrimmedText,
-    notifications: [],
-  },
-  conditionProblems: {
-    value: "",
-    valid: true,
-    validationFn: validateOptionalTrimmedText,
-    notifications: [],
-  },
-});
+    discogsUrl: {
+      value: "",
+      valid: true,
+      validationFn: validateDiscogsUrl,
+      notifications: [],
+    },
+    releaseDate: {
+      value: {
+        year: String(originalReleaseDate?.year ?? ""),
+        month: String(originalReleaseDate?.month ?? ""),
+        day: String(originalReleaseDate?.day ?? ""),
+      },
+      valid: true,
+      validationFn: validateReleaseDate(originalReleaseDate),
+      notifications: [],
+    },
+    countries: {
+      value: {
+        madeIn: [emptyCountrySelection()],
+        printedIn: [],
+      },
+      valid: true,
+      validationFn: validateReleaseCountries,
+      notifications: [],
+    },
+    formats: {
+      value: [defaultFormatInputRow()],
+      valid: true,
+      validationFn: validateReleaseFormats(allFormats),
+      notifications: [],
+    },
+    catalogueNumbers: {
+      value: [defaultCatalogueNumberRow()],
+      valid: true,
+      validationFn: validateReleaseCatNumbers,
+      notifications: [],
+    },
+    matrixRunout: {
+      value: { value: "", treatAsText: false },
+      valid: true,
+      validationFn: validateReleaseMatrixRunout,
+      notifications: [],
+    },
+    selectedTags: {
+      value: {},
+      valid: true,
+      validationFn: validatePassThrough,
+      notifications: [],
+    },
+    partOfQueenCollection: {
+      value: partOfQueenCollection,
+      valid: true,
+      validationFn: validatePassThrough,
+      notifications: [],
+    },
+    relationToQueen: {
+      value: "",
+      valid: true,
+      validationFn: validateOptionalTrimmedText,
+      notifications: [],
+    },
+    comment: {
+      value: "",
+      valid: true,
+      validationFn: validateOptionalTrimmedText,
+      notifications: [],
+    },
+    conditionProblems: {
+      value: "",
+      valid: true,
+      validationFn: validateOptionalTrimmedText,
+      notifications: [],
+    },
+  };
+};
 
 const validatePassThrough = <T>(
   value: T,
