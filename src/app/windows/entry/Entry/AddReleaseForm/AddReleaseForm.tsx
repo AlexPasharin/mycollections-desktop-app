@@ -416,6 +416,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       selectedTags: validateField("selectedTags"),
       partOfQueenCollection: validateField("partOfQueenCollection"),
       relationToQueen: validateField("relationToQueen"),
+      name: validateField("name"),
     };
 
     const formIsValid = Object.values(validationResults).every(
@@ -444,6 +445,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       selectedTags: { value: selectedTags },
       partOfQueenCollection: { value: partOfQueenCollection },
       relationToQueen: { value: relationToQueen },
+      name: { value: name },
     } = validationResults;
 
     console.info({
@@ -459,6 +461,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       selectedTags,
       partOfQueenCollection,
       relationToQueen,
+      name,
     });
 
     // Only the row in `musicalReleases` is inserted here. Related rows
@@ -466,7 +469,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     // up — those will need a transactional create-release helper.
     const insertValues = toMusicalReleaseInsertValues({
       entry,
-      name: form.name.value,
+      name,
       releaseVersion,
       releaseDate,
       discogsUrl,

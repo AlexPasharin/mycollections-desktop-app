@@ -14,7 +14,6 @@ import type { GeneralizedDateFormInputValue } from "@/app/components/Generalized
 import type { MusicalRelease } from "@/types/db/database";
 
 export type ToMusicalReleaseInsertValuesArgs = {
-  entry: AddReleaseFormEntry;
   name: AddReleaseFormNameInput;
   releaseVersion: string;
   releaseDate: GeneralizedDateFormInputValue;
@@ -23,16 +22,10 @@ export type ToMusicalReleaseInsertValuesArgs = {
   catalogueNumbers: AddReleaseFormCatNumbersInputs;
   matrixRunout: AddReleaseFormMatrixRunoutDraft;
   partOfQueenCollection: boolean;
-
-  /**
-   * Raw draft value as held in the form. The "relation to Queen" textarea is
-   * only visible when `partOfQueenCollection` is on, but its value is kept
-   * across toggles for UX, so this helper drops it whenever
-   * `partOfQueenCollection` is off (the DB rejects the text otherwise).
-   */
   relationToQueen: string;
   comment: string;
   conditionProblems: string;
+  entry: AddReleaseFormEntry;
 };
 
 /**
@@ -59,7 +52,6 @@ export const toMusicalReleaseInsertValues = ({
   comment,
   conditionProblems,
 }: ToMusicalReleaseInsertValuesArgs): Insertable<MusicalRelease> => ({
-  entryId: entry.entryId,
   releaseVersion,
   releaseDate: toReleaseDateString(releaseDate),
   discogsUrl: nullIfEmpty(discogsUrl),
@@ -70,10 +62,7 @@ export const toMusicalReleaseInsertValues = ({
   conditionProblems: nullIfEmpty(conditionProblems),
   partOfQueenCollection,
   relationToQueen: partOfQueenCollection ? nullIfEmpty(relationToQueen) : null,
-
-  // TODO: when the user typed a fresh alternative name (nameId === null but
-  // text differs from the entry's main name), insert a new
-  // `alternativeMusicalEntryNames` row in a transaction and use its id here.
+  entryId: entry.entryId,
   releaseAlternativeNameId: name.nameId,
 });
 
@@ -91,25 +80,27 @@ const nullIfEmpty = (value: string): string | null => {
  * Trusts the caller to have validated the input — empty month with a non-empty
  * day, leading zeros, etc. would otherwise produce a malformed string.
  */
-const toReleaseDateString = (
-  input: GeneralizedDateFormInputValue,
-): string | null => {
-  const year = input.year.trim();
+export const toReleaseDateString = ({
+  year,
+  month,
+  day,
+}: GeneralizedDateFormInputValue): string | null => {
+  const yearTrimmed = year.trim();
 
-  if (year === "") {
+  if (yearTrimmed === "") {
     return null;
   }
 
-  const segments = [year];
-  const month = input.month.trim();
-  const day = input.day.trim();
+  const segments = [yearTrimmed];
+  const monthTrimmed = month.trim();
+  const dayTrimmed = day.trim();
 
-  if (month !== "") {
-    segments.push(month.padStart(2, "0"));
+  if (monthTrimmed !== "") {
+    segments.push(monthTrimmed.padStart(2, "0"));
   }
 
-  if (day !== "") {
-    segments.push(day.padStart(2, "0"));
+  if (dayTrimmed !== "") {
+    segments.push(dayTrimmed.padStart(2, "0"));
   }
 
   return segments.join("-");
@@ -121,13 +112,11 @@ const toReleaseDateString = (
  * array for many, or `{ "made in": ..., "printed in": ... }` when printed-in
  * is also set. The form does not produce the CD/slipcase variant.
  */
-const toReleaseCountriesJson = (
-  countries: AddReleaseFormCountries,
-): unknown => {
+const toReleaseCountriesJson = (countries: AddReleaseFormCountries) => {
   const madeIn = toCodeNamesJson(countries.madeIn);
   const printedIn = toCodeNamesJson(countries.printedIn);
 
-  if (madeIn === null && printedIn === null) {
+  if (madeIn === null) {
     return null;
   }
 
