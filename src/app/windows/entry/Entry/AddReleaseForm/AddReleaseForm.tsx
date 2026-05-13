@@ -24,6 +24,7 @@ import {
   type AddReleaseFormDraft,
   type AddReleaseFormEntry,
 } from "./addReleaseFormUtils/formValues";
+import { toMusicalReleaseInsertValues } from "./addReleaseFormUtils/toMusicalReleaseInsertValues";
 import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
 import AddReleaseNameField from "./AddReleaseNameField";
 import AddReleaseTagsSection from "./AddReleaseTagsSection";
@@ -31,6 +32,7 @@ import AddReleaseTagsSection from "./AddReleaseTagsSection";
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
+import api from "@/app/windows/entry/api";
 import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
@@ -74,9 +76,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const [fieldErrors, setFieldErrors] = useState<AddReleaseFormFieldErrors>(
     initialAddReleaseFormFieldErrors,
   );
-
-  const [printedInCountriesSectionOpen, setPrintedInCountriesSectionOpen] =
-    useState(false);
 
   const setFieldValue = <K extends keyof AddReleaseFormDraft>(
     key: K,
@@ -222,7 +221,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       v: ValueType,
     ) => ResultType;
     const validationResult = validationFn(formFieldData.value);
-    const { valid, value, notifications } = validationResult;
+    const { valid, value, notifications = [] } = validationResult;
 
     setField(key, (prev) => ({
       ...prev[key],
@@ -275,17 +274,16 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const addSelectedTag = (tagId: string, tag: string) => {
-    setField("selectedTags", (prev) => ({
-      ...prev.selectedTags,
+    setFieldValue("selectedTags", (prev) => ({
+      ...prev.selectedTags.value,
       [tagId]: tag,
     }));
   };
 
   const removeSelectedTag = (tagId: string) => {
-    setField("selectedTags", (prev) => ({
-      ...prev.selectedTags,
-      value: omitProperty(prev.selectedTags.value, tagId),
-    }));
+    setFieldValue("selectedTags", (prev) =>
+      omitProperty(prev.selectedTags.value, tagId),
+    );
   };
 
   const addCountrySelectionRow = () => {
@@ -316,8 +314,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const clearAllCountries = () => {
-    setPrintedInCountriesSectionOpen(false);
-
     setFieldErrors((prev) => ({
       ...prev,
       countries: {
@@ -342,16 +338,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   };
 
   const openPrintedInCountriesSection = () => {
-    setPrintedInCountriesSectionOpen(true);
     setFieldValue("countries", (prev) => ({
       ...prev.countries.value,
-      printedIn: [...prev.countries.value.printedIn, emptyCountrySelection()],
+      printedIn: [emptyCountrySelection()],
     }));
   };
 
   const closePrintedInCountriesSection = () => {
-    setPrintedInCountriesSectionOpen(false);
-
     setFieldErrors((prev) => {
       const nextCountries = stripPrintedInFromCountriesFieldErrors(
         prev.countries,
@@ -366,7 +359,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     setFieldValue("countries", (prev) => ({
       ...prev.countries.value,
-      printedIn: [...prev.countries.value.printedIn, emptyCountrySelection()],
+      printedIn: [],
     }));
   };
 
@@ -414,6 +407,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       selectedTags: validateField("selectedTags"),
       partOfQueenCollection: validateField("partOfQueenCollection"),
       relationToQueen: validateField("relationToQueen"),
+      name: validateField("name"),
     };
 
     const formIsValid = Object.values(validationResults).every(
@@ -422,6 +416,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     console.info({
       form,
+      validationResults,
       formIsValid,
     });
 
@@ -441,16 +436,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       matrixRunout: { value: matrixRunout },
       selectedTags: { value: selectedTags },
       partOfQueenCollection: { value: partOfQueenCollection },
-      relationToQueen: { value: relationToQueenDraft },
+      relationToQueen: { value: relationToQueen },
+      name: { value: name },
     } = validationResults;
-
-    // The "relation to Queen" textarea is only visible when the
-    // "part of Queen collection" checkbox is on, but its value is intentionally
-    // kept across toggles for UX. Drop it before persisting so we never send
-    // text the DB would reject (it requires partOfQueenCollection=true).
-    const relationToQueen: string | null = partOfQueenCollection
-      ? relationToQueenDraft
-      : null;
 
     console.info({
       releaseVersion,
@@ -465,7 +453,35 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       selectedTags,
       partOfQueenCollection,
       relationToQueen,
+      name,
     });
+
+    // Only the row in `musicalReleases` is inserted here. Related rows
+    // (formats, tags, alt artists, freshly-typed alt names) are not yet wired
+    // up — those will need a transactional create-release helper.
+    const insertValues = toMusicalReleaseInsertValues({
+      entry,
+      name,
+      releaseVersion,
+      releaseDate,
+      discogsUrl,
+      countries,
+      catalogueNumbers,
+      matrixRunout,
+      partOfQueenCollection,
+      relationToQueen,
+      comment,
+      conditionProblems,
+    });
+
+    api
+      .insertMusicalRelease(insertValues)
+      .then((releaseId) => {
+        console.info("Inserted musical release", { releaseId });
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to insert musical release", error);
+      });
   };
 
   const releaseVersionErrors = fieldErrors.releaseVersion;
@@ -622,7 +638,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           errors={fieldErrors.countries.madeIn}
         />
 
-        {printedInCountriesSectionOpen ? (
+        {form.countries.value.printedIn.length > 0 ? (
           <AddReleaseCountriesSection
             countries={allCountries}
             countrySelections={form.countries.value.printedIn}

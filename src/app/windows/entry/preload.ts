@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
+import type { Insertable } from "kysely";
 
 import type { API } from "./api";
 
@@ -10,7 +11,9 @@ import {
   GET_ENTRY_BY_ID,
   GET_ENTRY_RELEASES,
   GET_RELEASE_BY_ID,
+  INSERT_MUSICAL_RELEASE,
 } from "@/appConstants/ipcEvents";
+import type { MusicalRelease } from "@/types/db/database";
 
 const api = {
   fetchCountries: () => ipcRenderer.invoke(FETCH_COUNTRIES),
@@ -23,6 +26,8 @@ const api = {
     ipcRenderer.invoke(GET_ENTRY_RELEASES, entryId),
   getReleaseById: (releaseId: string) =>
     ipcRenderer.invoke(GET_RELEASE_BY_ID, releaseId),
+  insertMusicalRelease: (values: Insertable<MusicalRelease>) =>
+    ipcRenderer.invoke(INSERT_MUSICAL_RELEASE, values),
 } as const satisfies API;
 
 contextBridge.exposeInMainWorld("api", api);

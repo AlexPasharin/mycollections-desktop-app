@@ -1,4 +1,4 @@
-import type { Selectable } from "kysely";
+import type { Insertable, Selectable } from "kysely";
 
 import type { ReleaseCatNumbers } from "../validation/releases/catNumbers";
 import type { ReleaseCountries } from "../validation/releases/countries";
@@ -46,3 +46,7 @@ export type ReleaseByIdResult = Omit<
 export type GetReleaseById = (
   releaseId: string,
 ) => Promise<ReleaseByIdResult | undefined>;
+
+export type InsertMusicalRelease = (
+  values: Insertable<MusicalRelease>,
+) => Promise<string>;

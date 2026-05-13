@@ -95,7 +95,7 @@ export const emptyLabelInputValue = () => ({
 export const defaultCatalogueNumberRow = (): CatalogueNumberRowState => ({
   id: uuidv4(),
   labelInputValues: [emptyLabelInputValue()],
-  catalogueNumberInputValues: [emptyCatalogueNumberInputValue()],
+  catalogueNumberInputValues: [],
 });
 
 export type AddReleaseFormMatrixRunoutDraft = {

@@ -8,6 +8,9 @@ import {
 
 import type { DB } from "@/types/db/database";
 
+export const toJsonbParam = (value: unknown): string | null =>
+  value == null ? null : JSON.stringify(value);
+
 /** For `.where(...)`: `similarity(lower(fieldRef), matchText) > 0`. */
 export const hasSimilarityToText =
   <TB extends keyof DB>(fieldRef: string, matchText: string) =>
