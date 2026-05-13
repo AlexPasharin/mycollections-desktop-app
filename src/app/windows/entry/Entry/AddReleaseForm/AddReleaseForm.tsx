@@ -47,6 +47,7 @@ export type AddReleaseFormProps = {
   tags: TagListItem[];
   allCountries: CountryListItem[];
   onCancel: () => void;
+  onReleaseCreated: (releaseId: string) => void;
 };
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
@@ -65,6 +66,7 @@ const RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID =
 const AddReleaseForm: FC<AddReleaseFormProps> = ({
   entry,
   onCancel,
+  onReleaseCreated,
   allFormats,
   labels,
   tags,
@@ -77,6 +79,11 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const [fieldErrors, setFieldErrors] = useState<AddReleaseFormFieldErrors>(
     initialAddReleaseFormFieldErrors,
   );
+
+  const [showSubmissionValidationError, setShowSubmissionValidationError] =
+    useState(false);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const setFieldValue = <K extends keyof AddReleaseFormDraft>(
     key: K,
@@ -106,6 +113,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   // on focus we attempt to remove errors related to the field that is being focused
   const onFocus = (key: AddReleaseFormInputFieldKey) => {
+    setShowSubmissionValidationError(false);
+
     if (typeof key === "string" && !isReleaseDateInputFieldKey(key)) {
       setField(key, (prev) => ({
         ...prev[key],
@@ -392,6 +401,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
 
+    if (isSubmitting) {
+      return;
+    }
+
     const validationResults = {
       releaseVersion: validateField("releaseVersion"),
       discogsUrl: validateField("discogsUrl"),
@@ -419,8 +432,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     });
 
     if (!formIsValid) {
+      setShowSubmissionValidationError(true);
+
       return;
     }
+
+    setShowSubmissionValidationError(false);
 
     const {
       releaseVersion: { value: releaseVersion },
@@ -429,30 +446,16 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       conditionProblems: { value: conditionProblems },
       releaseDate: { value: releaseDate },
       countries: { value: countries },
-      formats: { value: formats },
+
+      // formats: { value: formats },
       catalogueNumbers: { value: catalogueNumbers },
       matrixRunout: { value: matrixRunout },
-      selectedTags: { value: selectedTags },
+
+      // selectedTags: { value: selectedTags },
       partOfQueenCollection: { value: partOfQueenCollection },
       relationToQueen: { value: relationToQueen },
       name: { value: name },
     } = validationResults;
-
-    console.info({
-      releaseVersion,
-      discogsUrl,
-      comment,
-      conditionProblems,
-      releaseDate,
-      countries,
-      formats,
-      catalogueNumbers,
-      matrixRunout,
-      selectedTags,
-      partOfQueenCollection,
-      relationToQueen,
-      name,
-    });
 
     // Only the row in `musicalReleases` is inserted here. Related rows
     // (formats, tags, alt artists, freshly-typed alt names) are not yet wired
@@ -472,13 +475,19 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       conditionProblems,
     });
 
+    setIsSubmitting(true);
+
     api
       .insertMusicalRelease(insertValues)
       .then((releaseId) => {
         console.info("Inserted musical release", { releaseId });
+        onReleaseCreated(releaseId);
       })
       .catch((error: unknown) => {
         console.error("Failed to insert musical release", error);
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
   };
 
@@ -830,13 +839,28 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         </div>
 
         <div className={styles.actions}>
-          <button type="button" onClick={onCancel}>
+          <button
+            type="button"
+            className={styles.cancelButton}
+            onClick={onCancel}
+          >
             Cancel
           </button>
-          <button type="submit" onMouseDown={(e) => e.preventDefault()}>
-            Save
+          <button
+            type="submit"
+            className={styles.submitButton}
+            disabled={isSubmitting}
+            onMouseDown={(e) => e.preventDefault()}
+          >
+            {isSubmitting ? "Saving…" : "Save"}
           </button>
         </div>
+        {showSubmissionValidationError && (
+          <p className={styles.submissionError} role="alert">
+            Release submission failed due to validation errors, check the form
+            values
+          </p>
+        )}
       </form>
     </div>
   );

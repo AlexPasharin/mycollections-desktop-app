@@ -10,14 +10,27 @@ import type { EntryRelease } from "@/types/releases";
 
 type EntryReleasesProps = {
   entry: EntryByIdResult;
+  isActive: boolean;
+  latestAddedReleaseId: string | undefined;
 };
 
-const EntryReleases: FC<EntryReleasesProps> = ({ entry }) => {
+const EntryReleases: FC<EntryReleasesProps> = ({
+  entry,
+  isActive,
+  latestAddedReleaseId,
+}) => {
   const [releases, setReleases] = useState<EntryRelease[]>();
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
 
+  // Re-fetch every time this tab becomes active, so the list is always fresh
+  // after the user has been on the "Add release" tab (including right after a
+  // successful submission, which switches `activeTab` back to "releases").
   useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+
     let cancelled = false;
     setLoading(true);
     setLoadFailed(false);
@@ -44,7 +57,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({ entry }) => {
     return () => {
       cancelled = true;
     };
-  }, [entry.entryId]);
+  }, [entry.entryId, isActive]);
 
   if (loading) {
     return <p className={styles.emptyState}>Loading releases&hellip;</p>;
@@ -66,7 +79,11 @@ const EntryReleases: FC<EntryReleasesProps> = ({ entry }) => {
     <div className={styles.panel}>
       <h2 className={styles.sectionTitle}>Releases in collection: </h2>
       <div className={styles.field}>
-        <EntryReleasesList entry={entry} releases={releases} />
+        <EntryReleasesList
+          entry={entry}
+          releases={releases}
+          latestAddedReleaseId={latestAddedReleaseId}
+        />
       </div>
     </div>
   );

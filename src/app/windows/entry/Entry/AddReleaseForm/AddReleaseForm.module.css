@@ -81,6 +81,58 @@
   margin-top: 1rem;
 }
 
+.submissionError {
+  margin: 0.6rem 0 0;
+  font-size: 0.9em;
+  color: #b42318;
+}
+
+.cancelButton {
+  padding: 0.35rem 0.9rem;
+  font-weight: 500;
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #bcbcbc;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background-color: #f1f1f1;
+  border-color: #9a9a9a;
+}
+
+.cancelButton:focus-visible {
+  outline: 2px solid #1a5fb4;
+  outline-offset: 2px;
+}
+
+.submitButton {
+  padding: 0.35rem 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: #1a5fb4;
+  border: 1px solid #154f96;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #154f96;
+}
+
+.submitButton:focus-visible {
+  outline: 2px solid #1a5fb4;
+  outline-offset: 2px;
+}
+
+.submitButton:disabled {
+  color: #6b6b6b;
+  background-color: #d6d6d6;
+  border-color: #bcbcbc;
+  cursor: not-allowed;
+}
+
 .formatsLoadState {
   margin: 0;
   font-size: 1.2rem;

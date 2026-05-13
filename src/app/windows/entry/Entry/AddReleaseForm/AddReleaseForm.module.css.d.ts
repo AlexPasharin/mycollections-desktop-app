@@ -2,6 +2,7 @@
 // Please do not change this file!
 interface CssExports {
   'actions': string;
+  'cancelButton': string;
   'checkboxLabel': string;
   'checkboxRow': string;
   'field': string;
@@ -15,6 +16,8 @@ interface CssExports {
   'section': string;
   'sectionDivider': string;
   'sectionDividerMoreSpaceBefore': string;
+  'submissionError': string;
+  'submitButton': string;
   'textarea': string;
 }
 export const cssExports: CssExports;
