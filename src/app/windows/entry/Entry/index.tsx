@@ -24,6 +24,13 @@ const ADD_RELEASE_PANEL_ID = "add-release-panel";
 const Entry: FC<EntryProps> = ({ entry }) => {
   const [activeTab, setActiveTab] = useState<EntryTab>("addRelease");
 
+  const [latestAddedReleaseId, setLatestAddedReleaseId] = useState<string>();
+
+  const handleReleaseCreated = (releaseId: string) => {
+    setLatestAddedReleaseId(releaseId);
+    setActiveTab("releases");
+  };
+
   return (
     <div>
       <h1>{entry.mainName}</h1>
@@ -62,7 +69,7 @@ const Entry: FC<EntryProps> = ({ entry }) => {
             }
             onClick={() => setActiveTab("addRelease")}
           >
-            Add release
+            Add new release
           </button>
         </div>
 
@@ -73,7 +80,11 @@ const Entry: FC<EntryProps> = ({ entry }) => {
           hidden={activeTab !== "releases"}
           className={styles.tabPanel}
         >
-          <EntryReleases entry={entry} />
+          <EntryReleases
+            entry={entry}
+            isActive={activeTab === "releases"}
+            latestAddedReleaseId={latestAddedReleaseId}
+          />
         </div>
 
         <div
@@ -91,6 +102,7 @@ const Entry: FC<EntryProps> = ({ entry }) => {
               ),
             }}
             onCancel={() => setActiveTab("releases")}
+            onReleaseCreated={handleReleaseCreated}
           />
         </div>
       </section>

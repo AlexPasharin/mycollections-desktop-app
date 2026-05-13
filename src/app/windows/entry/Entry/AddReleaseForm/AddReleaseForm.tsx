@@ -47,6 +47,7 @@ export type AddReleaseFormProps = {
   tags: TagListItem[];
   allCountries: CountryListItem[];
   onCancel: () => void;
+  onReleaseCreated: (releaseId: string) => void;
 };
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
@@ -65,6 +66,7 @@ const RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID =
 const AddReleaseForm: FC<AddReleaseFormProps> = ({
   entry,
   onCancel,
+  onReleaseCreated,
   allFormats,
   labels,
   tags,
@@ -479,6 +481,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       .insertMusicalRelease(insertValues)
       .then((releaseId) => {
         console.info("Inserted musical release", { releaseId });
+        onReleaseCreated(releaseId);
       })
       .catch((error: unknown) => {
         console.error("Failed to insert musical release", error);

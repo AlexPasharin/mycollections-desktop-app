@@ -18,6 +18,7 @@ type EntryReleaseProps = {
   releaseDetails: ReleaseByIdResult | undefined;
   loadFailed: boolean;
   isLoading: boolean;
+  isRecentlyAdded: boolean;
 };
 
 const EntryRelease: FC<EntryReleaseProps> = ({
@@ -28,6 +29,7 @@ const EntryRelease: FC<EntryReleaseProps> = ({
   releaseDetails,
   loadFailed,
   isLoading,
+  isRecentlyAdded,
 }) => (
   <li className={styles.entryRelease}>
     <button
@@ -39,6 +41,9 @@ const EntryRelease: FC<EntryReleaseProps> = ({
       <span className={styles.releaseRowMain}>
         <span className={styles.releaseVersion}>{release.version}</span>
         {release.formats.length > 0 && ` (${release.formats.join(", ")})`}
+        {isRecentlyAdded && (
+          <span className={styles.recentlyAddedBadge}>Recently added</span>
+        )}
       </span>
       <span
         className={isExpanded ? styles.chevronExpanded : styles.chevron}

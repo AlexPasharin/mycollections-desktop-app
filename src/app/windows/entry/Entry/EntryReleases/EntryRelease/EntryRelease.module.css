@@ -41,6 +41,20 @@
   color: #3730a3;
 }
 
+.recentlyAddedBadge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.45rem;
+  font-size: 0.75em;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #14532d;
+  background-color: #d1fae5;
+  border: 1px solid #6ee7b7;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
 .chevron,
 .chevronExpanded {
   flex-shrink: 0;

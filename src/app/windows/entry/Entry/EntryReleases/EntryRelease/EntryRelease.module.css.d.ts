@@ -9,6 +9,7 @@ interface CssExports {
   'detailsSlideInner': string;
   'detailsSlideOpen': string;
   'entryRelease': string;
+  'recentlyAddedBadge': string;
   'releaseDetailsPanel': string;
   'releaseRow': string;
   'releaseRowMain': string;

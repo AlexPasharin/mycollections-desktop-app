@@ -15,9 +15,14 @@ import { updateImmutableSet } from "@/utils/immutableSet";
 type EntryReleasesListProps = {
   entry: EntryByIdResult;
   releases: EntryReleaseRow[];
+  latestAddedReleaseId: string | undefined;
 };
 
-const EntryReleasesList: FC<EntryReleasesListProps> = ({ entry, releases }) => {
+const EntryReleasesList: FC<EntryReleasesListProps> = ({
+  entry,
+  releases,
+  latestAddedReleaseId,
+}) => {
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(
     () => new Set(),
   );
@@ -105,6 +110,7 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({ entry, releases }) => {
           releaseDetails={releaseDetails.get(r.releaseId)}
           loadFailed={failedIds.has(r.releaseId)}
           isLoading={loadingIds.has(r.releaseId)}
+          isRecentlyAdded={r.releaseId === latestAddedReleaseId}
         />
       ))}
     </ul>
