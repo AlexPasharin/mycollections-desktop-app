@@ -45,7 +45,7 @@ const madeInCountryCodeRowSchema = z.object({
     .trim()
     .min(
       1,
-      "Made-in country is required (or remove countries section all together",
+      "Made-in country is required (or remove countries section all together)",
     ),
 });
 

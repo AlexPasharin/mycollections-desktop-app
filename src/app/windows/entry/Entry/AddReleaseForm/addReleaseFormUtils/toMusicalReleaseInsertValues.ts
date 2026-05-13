@@ -13,7 +13,7 @@ import type {
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { MusicalRelease } from "@/types/db/database";
 
-export type ToMusicalReleaseInsertValuesArgs = {
+type ToMusicalReleaseInsertValuesArgs = {
   name: AddReleaseFormNameInput;
   releaseVersion: string;
   releaseDate: GeneralizedDateFormInputValue;
@@ -112,7 +112,7 @@ export const toReleaseDateString = ({
  * array for many, or `{ "made in": ..., "printed in": ... }` when printed-in
  * is also set. The form does not produce the CD/slipcase variant.
  */
-const toReleaseCountriesJson = (countries: AddReleaseFormCountries) => {
+export const toReleaseCountriesJson = (countries: AddReleaseFormCountries) => {
   const madeIn = toCodeNamesJson(countries.madeIn);
   const printedIn = toCodeNamesJson(countries.printedIn);
 
@@ -131,77 +131,49 @@ const toReleaseCountriesJson = (countries: AddReleaseFormCountries) => {
 
 const toCodeNamesJson = (
   rows: CountrySelectionInput[],
-): string | string[] | null => {
-  const codeNames = rows.map((row) => row.codeName);
-  const [first, second] = codeNames;
-
-  if (first === undefined) {
-    return null;
-  }
-
-  if (second === undefined) {
-    return first;
-  }
-
-  return codeNames;
-};
+): string | string[] | null =>
+  singleOrArrayOrNull(rows.map((row) => row.codeName));
 
 /**
  * Maps the form's catalogue-number rows to the jsonb shape: `null` when there
- * are no rows, a single object for one row, or an array for many. Each row
- * picks `label` / `labels` and `cat_number` / `cat_numbers` keys based on
- * count, omitting either side when empty. The form does not produce the
+ * are no rows (or every row is empty), a single object for one row, or an
+ * array for many. Each row picks `label` / `labels` and `cat_number` /
+ * `cat_numbers` keys based on count, omitting either side when empty; rows
+ * that would produce `{}` are dropped. The form does not produce the
  * Europe/UK or CD/slipcase nested variants.
  */
-const toReleaseCatNumbersJson = (
-  rows: AddReleaseFormCatNumbersInputs,
-): unknown => {
-  if (rows.length === 0) {
-    return null;
-  }
+export const toReleaseCatNumbersJson = (rows: AddReleaseFormCatNumbersInputs) =>
+  singleOrArrayOrNull(
+    rows.map(catNumberRowToJson).filter((row) => Object.keys(row).length > 0),
+  );
 
-  const objects = rows.map(catNumberRowToJson);
-  const [first, second] = objects;
-
-  if (first === undefined) {
-    return null;
-  }
-
-  if (second === undefined) {
-    return first;
-  }
-
-  return objects;
-};
-
-const catNumberRowToJson = (
-  row: CatalogueNumberRowState,
-): Record<string, unknown> => {
+const catNumberRowToJson = (row: CatalogueNumberRowState) => {
   const labels = row.labelInputValues.map((entry) => entry.name);
   const catNumbers = row.catalogueNumberInputValues.map((entry) => entry.value);
 
   return {
-    ...singleOrArrayEntry(labels, "label", "labels"),
-    ...singleOrArrayEntry(catNumbers, "cat_number", "cat_numbers"),
+    ...singleOrArrayEntry(labels, "label"),
+    ...singleOrArrayEntry(catNumbers, "cat_number"),
   };
 };
 
 const singleOrArrayEntry = (
   values: string[],
-  singularKey: string,
-  pluralKey: string,
+  key: string,
 ): Record<string, string | string[]> => {
-  const [first, second] = values;
+  const collapsed = singleOrArrayOrNull(values);
 
-  if (first === undefined) {
+  if (collapsed === null) {
     return {};
   }
 
-  if (second === undefined) {
-    return { [singularKey]: first };
+  if (typeof collapsed === "string") {
+    return { [key]: collapsed };
   }
 
-  return { [pluralKey]: values };
+  const pluralKey = `${key}s`;
+
+  return { [pluralKey]: collapsed };
 };
 
 /**
@@ -224,4 +196,23 @@ const toReleaseMatrixRunoutJson = (
   }
 
   return JSON.parse(trimmed);
+};
+
+/**
+ * Collapses a list to the jsonb single/array shape:
+ * `null` when empty, the single element when there is exactly one, or the
+ * whole array otherwise.
+ */
+const singleOrArrayOrNull = <T>(items: T[]): T | T[] | null => {
+  const [first, second] = items;
+
+  if (first === undefined) {
+    return null;
+  }
+
+  if (second === undefined) {
+    return first;
+  }
+
+  return items;
 };
