@@ -23,6 +23,8 @@ type CountrySelectionRowId = string;
 export type AddReleaseFormCatalogueNumberRowErrors = {
   labelInputErrorMessages: Record<LabelInputId, Set<string>>;
   catNumberInputErrorMessages: Record<CatNumberInputId, Set<string>>;
+  europeCatNumberInputErrorMessages: Record<CatNumberInputId, Set<string>>;
+  ukCatNumberInputErrorMessages: Record<CatNumberInputId, Set<string>>;
   rowErrorMessages: Set<string>;
 };
 
@@ -87,7 +89,11 @@ export const initialAddReleaseFormFieldErrors: AddReleaseFormFieldErrors = {
   relationToQueen: undefined,
 };
 
-export type CatalogueNumbersInputField = "label" | "catNumber";
+export type CatalogueNumbersInputField =
+  | "label"
+  | "catNumber"
+  | "europeCatNumber"
+  | "ukCatNumber";
 
 export type AddReleaseFormFormatInputFieldKey = {
   formatRowId: string;
@@ -128,6 +134,30 @@ export const isFormatInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
 export const isCatalogueNumbersInputFieldKey = (
   key: AddReleaseFormInputFieldKey,
 ) => typeof key === "object" && "catNumberRowId" in key;
+
+// Maps a per-input field key to the matching errors bucket on the row-errors
+// object. Used by focus-handlers to clear the right bucket without each call
+// site rebuilding the same conditional.
+export const catalogueNumbersInputBucketKeyFor = (
+  field: CatalogueNumbersInputField,
+): keyof Pick<
+  AddReleaseFormCatalogueNumberRowErrors,
+  | "labelInputErrorMessages"
+  | "catNumberInputErrorMessages"
+  | "europeCatNumberInputErrorMessages"
+  | "ukCatNumberInputErrorMessages"
+> => {
+  switch (field) {
+    case "label":
+      return "labelInputErrorMessages";
+    case "catNumber":
+      return "catNumberInputErrorMessages";
+    case "europeCatNumber":
+      return "europeCatNumberInputErrorMessages";
+    case "ukCatNumber":
+      return "ukCatNumberInputErrorMessages";
+  }
+};
 
 export const isCountriesInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
   typeof key === "object" && "countriesSubsection" in key;

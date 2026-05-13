@@ -55,10 +55,11 @@ export const defaultFormatInputRow = (): AddReleaseFormFormatInput => ({
   jukeboxHole: false,
 });
 
-export const emptyCatalogueNumberInputValue = () => ({
-  id: uuidv4(),
-  value: "",
-});
+export const emptyCatalogueNumberInputValue =
+  (): CatalogueNumberInputValue => ({
+    id: uuidv4(),
+    value: "",
+  });
 
 export type CountrySelectionInput = {
   id: string;
@@ -75,28 +76,85 @@ export const emptyCountrySelection = () => ({
   codeName: "",
 });
 
-export type CatalogueNumberRowState = {
+export type CatalogueNumberInputValue = { id: string; value: string };
+export type LabelInputValue = { id: string; name: string };
+
+export type CatalogueNumberRowShape = "flat" | "europeUk";
+
+export type CatalogueNumberRowStateFlat = {
   id: string;
-  labelInputValues: {
-    id: string;
-    name: string;
-  }[];
-  catalogueNumberInputValues: {
-    id: string;
-    value: string;
-  }[];
+  shape: "flat";
+  labelInputValues: LabelInputValue[];
+  catalogueNumberInputValues: CatalogueNumberInputValue[];
 };
 
-export const emptyLabelInputValue = () => ({
+export type CatalogueNumberRowStateEuropeUk = {
+  id: string;
+  shape: "europeUk";
+  labelInputValues: LabelInputValue[];
+  europeCatalogueNumberInputValues: CatalogueNumberInputValue[];
+  ukCatalogueNumberInputValues: CatalogueNumberInputValue[];
+};
+
+export type CatalogueNumberRowState =
+  | CatalogueNumberRowStateFlat
+  | CatalogueNumberRowStateEuropeUk;
+
+export const emptyLabelInputValue = (): LabelInputValue => ({
   id: uuidv4(),
   name: "",
 });
 
-export const defaultCatalogueNumberRow = (): CatalogueNumberRowState => ({
+export const defaultCatalogueNumberRow = (): CatalogueNumberRowStateFlat => ({
   id: uuidv4(),
+  shape: "flat",
   labelInputValues: [emptyLabelInputValue()],
-  catalogueNumberInputValues: [],
+  catalogueNumberInputValues: [emptyCatalogueNumberInputValue()],
 });
+
+// flat → europeUk: keep labels, move existing flat values into "in Europe",
+// seed "in UK" with one empty input so the user has somewhere to type. If the
+// flat row had no catalogue numbers at all, seed "in Europe" with an empty
+// input too — both regions are required in europeUk shape.
+export const toEuropeUkRow = (
+  row: CatalogueNumberRowState,
+): CatalogueNumberRowStateEuropeUk => {
+  if (row.shape === "europeUk") {
+    return row;
+  }
+
+  return {
+    id: row.id,
+    shape: "europeUk",
+    labelInputValues: row.labelInputValues,
+    europeCatalogueNumberInputValues:
+      row.catalogueNumberInputValues.length > 0
+        ? row.catalogueNumberInputValues
+        : [emptyCatalogueNumberInputValue()],
+    ukCatalogueNumberInputValues: [emptyCatalogueNumberInputValue()],
+  };
+};
+
+// europeUk → flat: keep labels, concatenate europe then UK values into a single
+// flat list, preserving ids so React keys and per-input errors survive the
+// transition.
+export const toFlatRow = (
+  row: CatalogueNumberRowState,
+): CatalogueNumberRowStateFlat => {
+  if (row.shape === "flat") {
+    return row;
+  }
+
+  return {
+    id: row.id,
+    shape: "flat",
+    labelInputValues: row.labelInputValues,
+    catalogueNumberInputValues: [
+      ...row.europeCatalogueNumberInputValues,
+      ...row.ukCatalogueNumberInputValues,
+    ],
+  };
+};
 
 export type AddReleaseFormMatrixRunoutDraft = {
   value: string;
