@@ -81,6 +81,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
     useState(false);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const setFieldValue = <K extends keyof AddReleaseFormDraft>(
     key: K,
     value:
@@ -134,9 +136,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           ...prev,
           formats: nextFormatRowErrors
             ? {
-                ...formats,
-                [formatRowId]: nextFormatRowErrors,
-              }
+              ...formats,
+              [formatRowId]: nextFormatRowErrors,
+            }
             : omitProperty(formats, formatRowId),
         };
       }
@@ -397,6 +399,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
 
+    if (isSubmitting) {
+      return;
+    }
+
     const validationResults = {
       releaseVersion: validateField("releaseVersion"),
       discogsUrl: validateField("discogsUrl"),
@@ -438,30 +444,16 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       conditionProblems: { value: conditionProblems },
       releaseDate: { value: releaseDate },
       countries: { value: countries },
-      formats: { value: formats },
+
+      // formats: { value: formats },
       catalogueNumbers: { value: catalogueNumbers },
       matrixRunout: { value: matrixRunout },
-      selectedTags: { value: selectedTags },
+
+      // selectedTags: { value: selectedTags },
       partOfQueenCollection: { value: partOfQueenCollection },
       relationToQueen: { value: relationToQueen },
       name: { value: name },
     } = validationResults;
-
-    console.info({
-      releaseVersion,
-      discogsUrl,
-      comment,
-      conditionProblems,
-      releaseDate,
-      countries,
-      formats,
-      catalogueNumbers,
-      matrixRunout,
-      selectedTags,
-      partOfQueenCollection,
-      relationToQueen,
-      name,
-    });
 
     // Only the row in `musicalReleases` is inserted here. Related rows
     // (formats, tags, alt artists, freshly-typed alt names) are not yet wired
@@ -481,6 +473,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       conditionProblems,
     });
 
+    setIsSubmitting(true);
+
     api
       .insertMusicalRelease(insertValues)
       .then((releaseId) => {
@@ -488,6 +482,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       })
       .catch((error: unknown) => {
         console.error("Failed to insert musical release", error);
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
   };
 
@@ -842,8 +839,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           <button type="button" onClick={onCancel}>
             Cancel
           </button>
-          <button type="submit" onMouseDown={(e) => e.preventDefault()}>
-            Save
+          <button
+            type="submit"
+            className={styles.submitButton}
+            disabled={isSubmitting}
+            onMouseDown={(e) => e.preventDefault()}
+          >
+            {isSubmitting ? "Saving…" : "Save"}
           </button>
         </div>
         {showSubmissionValidationError && (

@@ -87,6 +87,32 @@
   color: #b42318;
 }
 
+.submitButton {
+  padding: 0.35rem 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: #1a5fb4;
+  border: 1px solid #154f96;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #154f96;
+}
+
+.submitButton:focus-visible {
+  outline: 2px solid #1a5fb4;
+  outline-offset: 2px;
+}
+
+.submitButton:disabled {
+  color: #6b6b6b;
+  background-color: #d6d6d6;
+  border-color: #bcbcbc;
+  cursor: not-allowed;
+}
+
 .formatsLoadState {
   margin: 0;
   font-size: 1.2rem;

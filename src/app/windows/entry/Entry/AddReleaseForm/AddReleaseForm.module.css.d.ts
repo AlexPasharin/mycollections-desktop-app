@@ -16,6 +16,7 @@ interface CssExports {
   'sectionDivider': string;
   'sectionDividerMoreSpaceBefore': string;
   'submissionError': string;
+  'submitButton': string;
   'textarea': string;
 }
 export const cssExports: CssExports;
