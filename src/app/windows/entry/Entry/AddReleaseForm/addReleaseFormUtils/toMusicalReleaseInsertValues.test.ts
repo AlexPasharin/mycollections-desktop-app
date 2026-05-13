@@ -18,12 +18,34 @@ const catNumberRow = (
   catNumbers: string[],
 ): CatalogueNumberRowState => ({
   id: `${labels.join(",")}|${catNumbers.join(",")}`,
+  shape: "flat",
   labelInputValues: labels.map((name, index) => ({
     id: `label-${index}-${name}`,
     name,
   })),
   catalogueNumberInputValues: catNumbers.map((value, index) => ({
     id: `cat-${index}-${value}`,
+    value,
+  })),
+});
+
+const europeUkCatNumberRow = (
+  labels: string[],
+  europeCatNumbers: string[],
+  ukCatNumbers: string[],
+): CatalogueNumberRowState => ({
+  id: `${labels.join(",")}|EU:${europeCatNumbers.join(",")}|UK:${ukCatNumbers.join(",")}`,
+  shape: "europeUk",
+  labelInputValues: labels.map((name, index) => ({
+    id: `label-${index}-${name}`,
+    name,
+  })),
+  europeCatalogueNumberInputValues: europeCatNumbers.map((value, index) => ({
+    id: `eu-cat-${index}-${value}`,
+    value,
+  })),
+  ukCatalogueNumberInputValues: ukCatNumbers.map((value, index) => ({
+    id: `uk-cat-${index}-${value}`,
     value,
   })),
 });
@@ -340,6 +362,30 @@ describe("toReleaseCatNumbersJson", () => {
     ]);
   });
 
+  it("drops empty-string label inputs while keeping filled cat numbers", () => {
+    expect(toReleaseCatNumbersJson([catNumberRow([""], ["EMC 3001"])])).toEqual(
+      { cat_number: "EMC 3001" },
+    );
+  });
+
+  it("drops empty-string catalogue-number inputs while keeping filled labels", () => {
+    expect(toReleaseCatNumbersJson([catNumberRow(["EMI"], [""])])).toEqual({
+      label: "EMI",
+    });
+  });
+
+  it("trims values and skips entries that are whitespace-only", () => {
+    expect(
+      toReleaseCatNumbersJson([
+        catNumberRow(["  EMI  ", "   "], ["EMC 3001", " "]),
+      ]),
+    ).toEqual({ label: "EMI", cat_number: "EMC 3001" });
+  });
+
+  it("drops a row whose inputs are all empty strings", () => {
+    expect(toReleaseCatNumbersJson([catNumberRow([""], [""])])).toBeNull();
+  });
+
   it("preserves the order of labels and cat numbers within a row", () => {
     expect(
       toReleaseCatNumbersJson([catNumberRow(["C", "A", "B"], ["3", "1", "2"])]),
@@ -347,5 +393,100 @@ describe("toReleaseCatNumbersJson", () => {
       labels: ["C", "A", "B"],
       cat_numbers: ["3", "1", "2"],
     });
+  });
+
+  it("emits cat_numbers as an in-Europe/in-UK object for a single europeUk row with one value per side", () => {
+    expect(
+      toReleaseCatNumbersJson([
+        europeUkCatNumberRow(["EMI"], ["EMC 3001"], ["PCS 7066"]),
+      ]),
+    ).toEqual({
+      label: "EMI",
+      cat_numbers: { "in Europe": "EMC 3001", "in UK": "PCS 7066" },
+    });
+  });
+
+  it("uses arrays inside the in-Europe/in-UK object when a side has multiple values", () => {
+    expect(
+      toReleaseCatNumbersJson([
+        europeUkCatNumberRow(
+          ["EMI", "Parlophone"],
+          ["EMC 3001", "EMC 3002"],
+          ["PCS 7066", "PCS 7067"],
+        ),
+      ]),
+    ).toEqual({
+      labels: ["EMI", "Parlophone"],
+      cat_numbers: {
+        "in Europe": ["EMC 3001", "EMC 3002"],
+        "in UK": ["PCS 7066", "PCS 7067"],
+      },
+    });
+  });
+
+  it("mixes a single value on one side and multiple on the other inside the regions object", () => {
+    expect(
+      toReleaseCatNumbersJson([
+        europeUkCatNumberRow(["EMI"], ["EMC 3001"], ["PCS 7066", "PCS 7067"]),
+      ]),
+    ).toEqual({
+      label: "EMI",
+      cat_numbers: {
+        "in Europe": "EMC 3001",
+        "in UK": ["PCS 7066", "PCS 7067"],
+      },
+    });
+  });
+
+  it("omits the label side of a europeUk row when there are no labels", () => {
+    expect(
+      toReleaseCatNumbersJson([
+        europeUkCatNumberRow([], ["EMC 3001"], ["PCS 7066"]),
+      ]),
+    ).toEqual({
+      cat_numbers: { "in Europe": "EMC 3001", "in UK": "PCS 7066" },
+    });
+  });
+
+  it("supports mixing flat and europeUk rows in the same submission", () => {
+    expect(
+      toReleaseCatNumbersJson([
+        catNumberRow(["Capitol"], ["SMAS 11163"]),
+        europeUkCatNumberRow(["EMI"], ["EMC 3001"], ["PCS 7066"]),
+      ]),
+    ).toEqual([
+      { label: "Capitol", cat_number: "SMAS 11163" },
+      {
+        label: "EMI",
+        cat_numbers: { "in Europe": "EMC 3001", "in UK": "PCS 7066" },
+      },
+    ]);
+  });
+
+  it("preserves order across mixed flat and europeUk rows", () => {
+    expect(
+      toReleaseCatNumbersJson([
+        europeUkCatNumberRow(["EMI"], ["EMC 3001"], ["PCS 7066"]),
+        catNumberRow(["Capitol"], ["SMAS 11163"]),
+        europeUkCatNumberRow(
+          ["Parlophone"],
+          ["EMC 3002"],
+          ["PCS 7067", "PCS 7068"],
+        ),
+      ]),
+    ).toEqual([
+      {
+        label: "EMI",
+        cat_numbers: { "in Europe": "EMC 3001", "in UK": "PCS 7066" },
+      },
+      { label: "Capitol", cat_number: "SMAS 11163" },
+      {
+        label: "Parlophone",
+        cat_numbers: {
+          "in Europe": "EMC 3002",
+          "in UK": ["PCS 7067", "PCS 7068"],
+        },
+      },
+    ]);
   });
 });

@@ -3,12 +3,12 @@
 interface CssExports {
   'addAnotherInputValue': string;
   'column': string;
+  'columnHeading': string;
   'controlWithRemove': string;
   'divider': string;
   'fieldErrorSlot': string;
   'input': string;
   'inputValueBlock': string;
-  'label': string;
   'removeCross': string;
   'removeCrossInputValue': string;
   'removeRow': string;
@@ -18,7 +18,9 @@ interface CssExports {
   'rowBlockFirst': string;
   'rowColumns': string;
   'rowErrorSlot': string;
-  'segment': string;
+  'shapeToggle': string;
+  'shapeToggleLegend': string;
+  'shapeToggleOption': string;
 }
 export const cssExports: CssExports;
 export default cssExports;

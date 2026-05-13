@@ -137,10 +137,16 @@ const toCodeNamesJson = (
 /**
  * Maps the form's catalogue-number rows to the jsonb shape: `null` when there
  * are no rows (or every row is empty), a single object for one row, or an
- * array for many. Each row picks `label` / `labels` and `cat_number` /
- * `cat_numbers` keys based on count, omitting either side when empty; rows
- * that would produce `{}` are dropped. The form does not produce the
- * Europe/UK or CD/slipcase nested variants.
+ * array for many. Each row picks `label` / `labels` keys based on count, and
+ * its cat-number side is shaped by `row.shape`:
+ *
+ * - "flat" rows pick `cat_number` / `cat_numbers: string | string[]`, omitting
+ *   the cat-number side entirely when no values are filled in;
+ * - "europeUk" rows always emit `cat_numbers: { "in Europe", "in UK" }` (both
+ *   sides guaranteed non-empty by the validator).
+ *
+ * Rows that would produce `{}` are dropped. The form does not produce the
+ * CD/slipcase nested variant.
  */
 export const toReleaseCatNumbersJson = (rows: AddReleaseFormCatNumbersInputs) =>
   singleOrArrayOrNull(
@@ -148,13 +154,59 @@ export const toReleaseCatNumbersJson = (rows: AddReleaseFormCatNumbersInputs) =>
   );
 
 const catNumberRowToJson = (row: CatalogueNumberRowState) => {
-  const labels = row.labelInputValues.map((entry) => entry.name);
-  const catNumbers = row.catalogueNumberInputValues.map((entry) => entry.value);
+  const labels = collectNonEmptyValues(
+    row.labelInputValues.map((entry) => entry.name),
+  );
+  const labelEntry = singleOrArrayEntry(labels, "label");
+
+  if (row.shape === "flat") {
+    const catNumbers = collectNonEmptyValues(
+      row.catalogueNumberInputValues.map((entry) => entry.value),
+    );
+
+    return {
+      ...labelEntry,
+      ...singleOrArrayEntry(catNumbers, "cat_number"),
+    };
+  }
+
+  const europe = collectNonEmptyValues(
+    row.europeCatalogueNumberInputValues.map((entry) => entry.value),
+  );
+  const uk = collectNonEmptyValues(
+    row.ukCatalogueNumberInputValues.map((entry) => entry.value),
+  );
+
+  const europeJson = singleOrArrayOrNull(europe);
+  const ukJson = singleOrArrayOrNull(uk);
+
+  if (europeJson === null || ukJson === null) {
+    // Validator forbids this; falling back to labels-only keeps the row
+    // structurally valid against the DB schema if it somehow slips through.
+    return labelEntry;
+  }
 
   return {
-    ...singleOrArrayEntry(labels, "label"),
-    ...singleOrArrayEntry(catNumbers, "cat_number"),
+    ...labelEntry,
+    cat_numbers: { "in Europe": europeJson, "in UK": ukJson },
   };
+};
+
+// Trims each value and drops empties so a stray placeholder input (e.g. the
+// default empty cat-number slot the user left untouched on a labels-only row)
+// doesn't leak into the JSON.
+const collectNonEmptyValues = (values: string[]): string[] => {
+  const result: string[] = [];
+
+  for (const value of values) {
+    const trimmed = value.trim();
+
+    if (trimmed.length > 0) {
+      result.push(trimmed);
+    }
+  }
+
+  return result;
 };
 
 const singleOrArrayEntry = (

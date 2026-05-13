@@ -5,6 +5,7 @@ import AddReleaseCountriesSection from "./AddReleaseCountriesSection";
 import styles from "./AddReleaseForm.module.css";
 import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
 import {
+  catalogueNumbersInputBucketKeyFor,
   removeMadeInCountrySelectionRowFromFieldErrors,
   stripPrintedInFromCountriesFieldErrors,
   isCatalogueNumbersInputFieldKey,
@@ -145,10 +146,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           return prev;
         }
 
-        const errorKey =
-          field === "label"
-            ? "labelInputErrorMessages"
-            : "catNumberInputErrorMessages";
+        const errorKey = catalogueNumbersInputBucketKeyFor(field);
 
         const nextRowErrors = {
           ...rowErrors,
