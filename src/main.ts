@@ -1,6 +1,5 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import electronSquirrelStartup from "electron-squirrel-startup";
-import type { Insertable } from "kysely";
 
 import createArtistWindow from "./app/windows/artists/artist/createWindow";
 import createEntryWindow from "./app/windows/entry/createWindow";
@@ -20,7 +19,7 @@ import {
   FETCH_LABELS,
   FETCH_COUNTRIES,
   FETCH_TAGS,
-  INSERT_MUSICAL_RELEASE,
+  CREATE_MUSICAL_RELEASE,
   OPEN_ARTIST_WINDOW,
   OPEN_ENTRY_WINDOW,
   QUERY_ARTIST,
@@ -32,14 +31,14 @@ import { getEntryById, searchArtistEntries } from "@/db/entries";
 import { fetchReleasesFormats } from "@/db/formats";
 import { fetchLabels } from "@/db/labels";
 import {
+  createMusicalRelease,
   getEntryReleases,
   getReleaseById,
-  insertMusicalRelease,
 } from "@/db/releases";
 import { fetchTags } from "@/db/tags";
 import type { FetchArtistsParams } from "@/types/artists";
-import type { MusicalRelease } from "@/types/db/database";
 import type { SearchArtistEntriesParams } from "@/types/entries";
+import type { CreateMusicalReleaseInput } from "@/types/releases";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (electronSquirrelStartup) {
@@ -68,8 +67,8 @@ await app.whenReady().then(async () => {
     getReleaseById(releaseId),
   );
   ipcMain.handle(
-    INSERT_MUSICAL_RELEASE,
-    (_, values: Insertable<MusicalRelease>) => insertMusicalRelease(values),
+    CREATE_MUSICAL_RELEASE,
+    (_, input: CreateMusicalReleaseInput) => createMusicalRelease(input),
   );
   ipcMain.handle(FETCH_RELEASE_FORMATS, () => fetchReleasesFormats());
   ipcMain.handle(FETCH_LABELS, () => fetchLabels());

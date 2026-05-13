@@ -25,7 +25,7 @@ import {
   type AddReleaseFormDraft,
   type AddReleaseFormEntry,
 } from "./addReleaseFormUtils/formValues";
-import { toMusicalReleaseInsertValues } from "./addReleaseFormUtils/toMusicalReleaseInsertValues";
+import { toCreateMusicalReleaseInput } from "./addReleaseFormUtils/toCreateMusicalReleaseInput";
 import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
 import AddReleaseNameField from "./AddReleaseNameField";
 import AddReleaseTagsSection from "./AddReleaseTagsSection";
@@ -446,29 +446,26 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       conditionProblems: { value: conditionProblems },
       releaseDate: { value: releaseDate },
       countries: { value: countries },
-
-      // formats: { value: formats },
+      formats: { value: formats },
       catalogueNumbers: { value: catalogueNumbers },
       matrixRunout: { value: matrixRunout },
-
-      // selectedTags: { value: selectedTags },
+      selectedTags: { value: selectedTags },
       partOfQueenCollection: { value: partOfQueenCollection },
       relationToQueen: { value: relationToQueen },
       name: { value: name },
     } = validationResults;
 
-    // Only the row in `musicalReleases` is inserted here. Related rows
-    // (formats, tags, alt artists, freshly-typed alt names) are not yet wired
-    // up — those will need a transactional create-release helper.
-    const insertValues = toMusicalReleaseInsertValues({
+    const createInput = toCreateMusicalReleaseInput({
       entry,
       name,
       releaseVersion,
       releaseDate,
       discogsUrl,
       countries,
+      formats,
       catalogueNumbers,
       matrixRunout,
+      selectedTags,
       partOfQueenCollection,
       relationToQueen,
       comment,
@@ -478,13 +475,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     setIsSubmitting(true);
 
     api
-      .insertMusicalRelease(insertValues)
+      .createMusicalRelease(createInput)
       .then((releaseId) => {
-        console.info("Inserted musical release", { releaseId });
+        console.info("Created musical release", { releaseId });
         onReleaseCreated(releaseId);
       })
       .catch((error: unknown) => {
-        console.error("Failed to insert musical release", error);
+        console.error("Failed to create musical release", error);
       })
       .finally(() => {
         setIsSubmitting(false);

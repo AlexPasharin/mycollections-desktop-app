@@ -1,9 +1,8 @@
-import type { Insertable } from "kysely";
-
 import type {
   AddReleaseFormCatNumbersInputs,
   AddReleaseFormCountries,
   AddReleaseFormEntry,
+  AddReleaseFormFormatInputs,
   AddReleaseFormMatrixRunoutDraft,
   AddReleaseFormNameInput,
   CatalogueNumberRowState,
@@ -11,16 +10,18 @@ import type {
 } from "./formValues";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
-import type { MusicalRelease } from "@/types/db/database";
+import type { CreateMusicalReleaseInput } from "@/types/releases";
 
-type ToMusicalReleaseInsertValuesArgs = {
+type ToCreateMusicalReleaseInputArgs = {
   name: AddReleaseFormNameInput;
   releaseVersion: string;
   releaseDate: GeneralizedDateFormInputValue;
   discogsUrl: string;
   countries: AddReleaseFormCountries;
+  formats: AddReleaseFormFormatInputs;
   catalogueNumbers: AddReleaseFormCatNumbersInputs;
   matrixRunout: AddReleaseFormMatrixRunoutDraft;
+  selectedTags: Record<string, string>;
   partOfQueenCollection: boolean;
   relationToQueen: string;
   comment: string;
@@ -29,41 +30,56 @@ type ToMusicalReleaseInsertValuesArgs = {
 };
 
 /**
- * Build the values for a `musicalReleases` insert from validated form fields.
+ * Build the composite payload for `createMusicalRelease` from validated form
+ * fields: the `musicalReleases` row plus the related `formatsOfReleases` and
+ * `musicalReleasesTags` rows that share the new release id.
  *
  * Assumes the caller has already validated every field; in particular this
- * trusts the release date / matrix-runout drafts to be parseable, and the
- * countries / catalogue-numbers shapes to satisfy their validators.
+ * trusts the release date / matrix-runout drafts to be parseable, the
+ * countries / catalogue-numbers shapes to satisfy their validators, and each
+ * format row's `amount` to parse as an integer.
  *
- * Related rows (formats, tags, alt artists, newly-typed alt names) are not
- * handled here — only the row in `musicalReleases` itself.
+ * Alt artists and freshly-typed alt names are not handled here.
  */
-export const toMusicalReleaseInsertValues = ({
+export const toCreateMusicalReleaseInput = ({
   entry,
   name,
   releaseVersion,
   releaseDate,
   discogsUrl,
   countries,
+  formats,
   catalogueNumbers,
   matrixRunout,
+  selectedTags,
   partOfQueenCollection,
   relationToQueen,
   comment,
   conditionProblems,
-}: ToMusicalReleaseInsertValuesArgs): Insertable<MusicalRelease> => ({
-  releaseVersion,
-  releaseDate: toReleaseDateString(releaseDate),
-  discogsUrl: nullIfEmpty(discogsUrl),
-  countries: toReleaseCountriesJson(countries),
-  catalogueNumbers: toReleaseCatNumbersJson(catalogueNumbers),
-  matrixRunout: toReleaseMatrixRunoutJson(matrixRunout),
-  comment: nullIfEmpty(comment),
-  conditionProblems: nullIfEmpty(conditionProblems),
-  partOfQueenCollection,
-  relationToQueen: partOfQueenCollection ? nullIfEmpty(relationToQueen) : null,
-  entryId: entry.entryId,
-  releaseAlternativeNameId: name.nameId,
+}: ToCreateMusicalReleaseInputArgs): CreateMusicalReleaseInput => ({
+  release: {
+    releaseVersion,
+    releaseDate: toReleaseDateString(releaseDate),
+    discogsUrl: nullIfEmpty(discogsUrl),
+    countries: toReleaseCountriesJson(countries),
+    catalogueNumbers: toReleaseCatNumbersJson(catalogueNumbers),
+    matrixRunout: toReleaseMatrixRunoutJson(matrixRunout),
+    comment: nullIfEmpty(comment),
+    conditionProblems: nullIfEmpty(conditionProblems),
+    partOfQueenCollection,
+    relationToQueen: partOfQueenCollection
+      ? nullIfEmpty(relationToQueen)
+      : null,
+    entryId: entry.entryId,
+    releaseAlternativeNameId: name.nameId,
+  },
+  formats: formats.map((format) => ({
+    formatId: format.formatId,
+    amount: parseInt(format.amount, 10),
+    pictureSleeve: format.pictureSleeve,
+    jukeboxHole: format.jukeboxHole,
+  })),
+  tagIds: Object.keys(selectedTags),
 });
 
 const nullIfEmpty = (value: string): string | null => {

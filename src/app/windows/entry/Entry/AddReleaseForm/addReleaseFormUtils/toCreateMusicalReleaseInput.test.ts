@@ -6,7 +6,7 @@ import {
   toReleaseCatNumbersJson,
   toReleaseCountriesJson,
   toReleaseDateString,
-} from "./toMusicalReleaseInsertValues";
+} from "./toCreateMusicalReleaseInput";
 
 const country = (codeName: string): CountrySelectionInput => ({
   id: codeName || "empty",
