@@ -78,6 +78,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     initialAddReleaseFormFieldErrors,
   );
 
+  const [showSubmissionValidationError, setShowSubmissionValidationError] =
+    useState(false);
+
   const setFieldValue = <K extends keyof AddReleaseFormDraft>(
     key: K,
     value:
@@ -106,6 +109,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   // on focus we attempt to remove errors related to the field that is being focused
   const onFocus = (key: AddReleaseFormInputFieldKey) => {
+    setShowSubmissionValidationError(false);
+
     if (typeof key === "string" && !isReleaseDateInputFieldKey(key)) {
       setField(key, (prev) => ({
         ...prev[key],
@@ -419,8 +424,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     });
 
     if (!formIsValid) {
+      setShowSubmissionValidationError(true);
+
       return;
     }
+
+    setShowSubmissionValidationError(false);
 
     const {
       releaseVersion: { value: releaseVersion },
@@ -837,6 +846,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             Save
           </button>
         </div>
+        {showSubmissionValidationError && (
+          <p className={styles.submissionError} role="alert">
+            Release submission failed due to validation errors, check the form
+            values
+          </p>
+        )}
       </form>
     </div>
   );

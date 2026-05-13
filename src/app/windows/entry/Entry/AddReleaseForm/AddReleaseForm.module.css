@@ -81,6 +81,12 @@
   margin-top: 1rem;
 }
 
+.submissionError {
+  margin: 0.6rem 0 0;
+  font-size: 0.9em;
+  color: #b42318;
+}
+
 .formatsLoadState {
   margin: 0;
   font-size: 1.2rem;
