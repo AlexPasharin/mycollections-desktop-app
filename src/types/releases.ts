@@ -5,7 +5,7 @@ import type { ReleaseCountries } from "../validation/releases/countries";
 import type { ReleaseMatrixRunout } from "../validation/releases/matrixRunout";
 
 import type { GeneralizedDateFromDb } from "@/types/date";
-import type { MusicalRelease } from "@/types/db/database";
+import type { FormatOfRelease, MusicalRelease } from "@/types/db/database";
 
 export type ReleaseFormatOfReleaseItem = {
   id: string;
@@ -47,6 +47,12 @@ export type GetReleaseById = (
   releaseId: string,
 ) => Promise<ReleaseByIdResult | undefined>;
 
-export type InsertMusicalRelease = (
-  values: Insertable<MusicalRelease>,
+export type CreateMusicalReleaseInput = {
+  release: Insertable<MusicalRelease>;
+  formats: Omit<Insertable<FormatOfRelease>, "releaseId">[];
+  tagIds: string[];
+};
+
+export type CreateMusicalRelease = (
+  input: CreateMusicalReleaseInput,
 ) => Promise<string>;
