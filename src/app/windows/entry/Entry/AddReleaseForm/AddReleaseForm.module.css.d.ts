@@ -2,6 +2,7 @@
 // Please do not change this file!
 interface CssExports {
   'actions': string;
+  'cancelButton': string;
   'checkboxLabel': string;
   'checkboxRow': string;
   'field': string;

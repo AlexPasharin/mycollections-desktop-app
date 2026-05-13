@@ -136,9 +136,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           ...prev,
           formats: nextFormatRowErrors
             ? {
-              ...formats,
-              [formatRowId]: nextFormatRowErrors,
-            }
+                ...formats,
+                [formatRowId]: nextFormatRowErrors,
+              }
             : omitProperty(formats, formatRowId),
         };
       }
@@ -836,7 +836,11 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         </div>
 
         <div className={styles.actions}>
-          <button type="button" onClick={onCancel}>
+          <button
+            type="button"
+            className={styles.cancelButton}
+            onClick={onCancel}
+          >
             Cancel
           </button>
           <button

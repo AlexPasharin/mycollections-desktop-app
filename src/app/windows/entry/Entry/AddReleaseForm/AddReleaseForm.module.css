@@ -87,6 +87,26 @@
   color: #b42318;
 }
 
+.cancelButton {
+  padding: 0.35rem 0.9rem;
+  font-weight: 500;
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #bcbcbc;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background-color: #f1f1f1;
+  border-color: #9a9a9a;
+}
+
+.cancelButton:focus-visible {
+  outline: 2px solid #1a5fb4;
+  outline-offset: 2px;
+}
+
 .submitButton {
   padding: 0.35rem 0.9rem;
   font-weight: 600;
