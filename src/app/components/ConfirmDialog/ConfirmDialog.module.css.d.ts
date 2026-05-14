@@ -6,9 +6,11 @@ interface CssExports {
   'button': string;
   'cancel': string;
   'card': string;
+  'cardWide': string;
   'confirmDanger': string;
   'confirmDefault': string;
   'description': string;
+  'descriptionScrollable': string;
   'error': string;
   'title': string;
 }

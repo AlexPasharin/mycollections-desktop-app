@@ -82,7 +82,7 @@ export const toCreateMusicalReleaseInput = ({
   tagIds: Object.keys(selectedTags),
 });
 
-const nullIfEmpty = (value: string): string | null => {
+export const nullIfEmpty = (value: string): string | null => {
   const trimmed = value.trim();
 
   return trimmed === "" ? null : trimmed;
@@ -250,7 +250,7 @@ const singleOrArrayEntry = (
  * value. Trusts that the form has already validated the draft, so `JSON.parse`
  * is safe here.
  */
-const toReleaseMatrixRunoutJson = (
+export const toReleaseMatrixRunoutJson = (
   draft: AddReleaseFormMatrixRunoutDraft,
 ): unknown => {
   const trimmed = draft.value.trim();
