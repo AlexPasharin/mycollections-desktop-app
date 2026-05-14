@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, type FC, type ReactNode } from "react";
 import styles from "./ConfirmDialog.module.css";
 
 type ConfirmDialogTone = "default" | "danger";
+type ConfirmDialogSize = "default" | "wide";
 
 export type ConfirmDialogProps = {
   isOpen: boolean;
@@ -11,6 +12,7 @@ export type ConfirmDialogProps = {
   confirmLabel?: string;
   cancelLabel?: string;
   tone?: ConfirmDialogTone;
+  size?: ConfirmDialogSize;
   isBusy?: boolean;
   errorMessage?: string | undefined;
   onConfirm: () => void;
@@ -24,6 +26,7 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
   tone = "default",
+  size = "default",
   isBusy = false,
   errorMessage,
   onConfirm,
@@ -68,6 +71,13 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
       ? `${styles.button} ${styles.confirmDanger}`
       : `${styles.button} ${styles.confirmDefault}`;
 
+  const cardClassName =
+    size === "wide" ? `${styles.card} ${styles.cardWide}` : styles.card;
+  const descriptionClassName =
+    size === "wide"
+      ? `${styles.description} ${styles.descriptionScrollable}`
+      : styles.description;
+
   return (
     <div
       className={styles.backdrop}
@@ -75,7 +85,7 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
       role="presentation"
     >
       <div
-        className={styles.card}
+        className={cardClassName}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -85,7 +95,7 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
           {title}
         </h2>
         {description && (
-          <div id={descriptionId} className={styles.description}>
+          <div id={descriptionId} className={descriptionClassName}>
             {description}
           </div>
         )}

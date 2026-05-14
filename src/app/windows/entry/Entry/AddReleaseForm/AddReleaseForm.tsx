@@ -4,6 +4,7 @@ import AddReleaseCatalogueNumbersSection from "./AddReleaseCatalogueNumbersSecti
 import AddReleaseCountriesSection from "./AddReleaseCountriesSection";
 import styles from "./AddReleaseForm.module.css";
 import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
+import AddReleaseFormPreview from "./AddReleaseFormPreview";
 import {
   catalogueNumbersInputBucketKeyFor,
   removeMadeInCountrySelectionRowFromFieldErrors,
@@ -29,6 +30,7 @@ import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
 import AddReleaseNameField from "./AddReleaseNameField";
 import AddReleaseTagsSection from "./AddReleaseTagsSection";
 
+import ConfirmDialog from "@/app/components/ConfirmDialog";
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
@@ -79,6 +81,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  const [submitError, setSubmitError] = useState<string | undefined>();
 
   const setFieldValue = <K extends keyof AddReleaseFormDraft>(
     key: K,
@@ -424,13 +430,20 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     }
 
     setShowSubmissionValidationError(false);
+    setSubmitError(undefined);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmCreate = () => {
+    if (isSubmitting) {
+      return;
+    }
 
     const {
+      name: { value: name },
       releaseVersion: { value: releaseVersion },
-      discogsUrl: { value: discogsUrl },
-      comment: { value: comment },
-      conditionProblems: { value: conditionProblems },
       releaseDate: { value: releaseDate },
+      discogsUrl: { value: discogsUrl },
       countries: { value: countries },
       formats: { value: formats },
       catalogueNumbers: { value: catalogueNumbers },
@@ -438,8 +451,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       selectedTags: { value: selectedTags },
       partOfQueenCollection: { value: partOfQueenCollection },
       relationToQueen: { value: relationToQueen },
-      name: { value: name },
-    } = validationResults;
+      comment: { value: comment },
+      conditionProblems: { value: conditionProblems },
+    } = form;
 
     const createInput = toCreateMusicalReleaseInput({
       entry,
@@ -459,19 +473,35 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     });
 
     setIsSubmitting(true);
+    setSubmitError(undefined);
 
     api
       .createMusicalRelease(createInput)
       .then((releaseId) => {
         console.info("Created musical release", { releaseId });
+        setIsConfirmOpen(false);
         onReleaseCreated(releaseId);
       })
       .catch((error: unknown) => {
         console.error("Failed to create musical release", error);
+        setSubmitError(
+          error instanceof Error
+            ? error.message
+            : "Failed to create musical release",
+        );
       })
       .finally(() => {
         setIsSubmitting(false);
       });
+  };
+
+  const handleCancelConfirm = () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsConfirmOpen(false);
+    setSubmitError(undefined);
   };
 
   const releaseVersionErrors = form.releaseVersion.errors;
@@ -831,10 +861,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           <button
             type="submit"
             className={styles.submitButton}
-            disabled={isSubmitting}
             onMouseDown={(e) => e.preventDefault()}
           >
-            {isSubmitting ? "Saving…" : "Save"}
+            Save
           </button>
         </div>
         {showSubmissionValidationError && (
@@ -844,6 +873,22 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           </p>
         )}
       </form>
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        size="wide"
+        title="Confirm new release"
+        description={
+          isConfirmOpen && (
+            <AddReleaseFormPreview form={form} allFormats={allFormats} />
+          )
+        }
+        confirmLabel="Create release"
+        cancelLabel="Back to edit"
+        isBusy={isSubmitting}
+        errorMessage={submitError}
+        onConfirm={handleConfirmCreate}
+        onCancel={handleCancelConfirm}
+      />
     </div>
   );
 };
