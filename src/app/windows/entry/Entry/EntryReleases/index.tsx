@@ -91,7 +91,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     return <p className={styles.emptyState}>Could not load releases.</p>;
   }
 
-  const deletedNotification = recentlyDeletedVersion && (
+  const deletedNotification = !!recentlyDeletedVersion && (
     <div className={styles.deletedNotification} role="status">
       <span className={styles.deletedNotificationText}>
         Release &quot;{recentlyDeletedVersion}&quot; was deleted successfully.
