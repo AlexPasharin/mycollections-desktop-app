@@ -1,4 +1,5 @@
 import type { GeneralizedDateFromDb } from "@/types/date";
+import type { TagListItem } from "@/types/tags";
 
 export type CreateArtistWindowParams = { artistId: string };
 
@@ -35,7 +36,7 @@ export type EntryByIdResult = {
   artists: EntryArtistInfo[];
   types: string[];
   altNames: EntryAltNameInfo[];
-  tags: string[];
+  tags: TagListItem[];
 };
 
 export type GetEntryById = (

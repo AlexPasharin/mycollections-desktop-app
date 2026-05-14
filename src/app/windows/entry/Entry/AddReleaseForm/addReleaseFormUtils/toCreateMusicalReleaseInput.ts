@@ -11,6 +11,7 @@ import type {
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { CreateMusicalReleaseInput } from "@/types/releases";
+import type { TagId } from "@/types/tags";
 
 type ToCreateMusicalReleaseInputArgs = {
   name: AddReleaseFormNameInput;
@@ -21,7 +22,7 @@ type ToCreateMusicalReleaseInputArgs = {
   formats: AddReleaseFormFormatInputs;
   catalogueNumbers: AddReleaseFormCatNumbersInputs;
   matrixRunout: AddReleaseFormMatrixRunoutDraft;
-  selectedTags: Record<string, string>;
+  selectedTags: Set<TagId>;
   partOfQueenCollection: boolean;
   relationToQueen: string;
   comment: string;
@@ -79,7 +80,7 @@ export const toCreateMusicalReleaseInput = ({
     pictureSleeve: format.pictureSleeve,
     jukeboxHole: format.jukeboxHole,
   })),
-  tagIds: Object.keys(selectedTags),
+  tagIds: Array.from(selectedTags),
 });
 
 export const nullIfEmpty = (value: string): string | null => {

@@ -1,4 +1,4 @@
-import { useState, type FC, type FormEvent } from "react";
+import { useMemo, useState, type FC, type FormEvent } from "react";
 
 import AddReleaseCatalogueNumbersSection from "./AddReleaseCatalogueNumbersSection";
 import AddReleaseCountriesSection from "./AddReleaseCountriesSection";
@@ -38,14 +38,15 @@ import api from "@/app/windows/entry/api";
 import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
-import type { TagListItem } from "@/types/tags";
+import type { TagId, TagName, TagsById } from "@/types/tags";
 import { omitProperty } from "@/utils/common";
 
 export type AddReleaseFormProps = {
   entry: AddReleaseFormEntry;
   allFormats: ReleasesFormatListItem[];
   labels: LabelListItem[];
-  tags: TagListItem[];
+  tags: TagsById;
+  sortedTagEntries: [TagId, TagName][];
   allCountries: CountryListItem[];
   onCancel: () => void;
   onReleaseCreated: (releaseId: string) => void;
@@ -71,6 +72,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   allFormats,
   labels,
   tags,
+  sortedTagEntries,
   allCountries,
 }) => {
   const [form, setForm] = useState<AddReleaseFormDraft>(
@@ -287,18 +289,31 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     }));
   };
 
-  const addSelectedTag = (tagId: string, tag: string) => {
-    setFieldValue("selectedTags", (prev) => ({
-      ...prev.selectedTags.value,
-      [tagId]: tag,
-    }));
+  const addSelectedTag = (tagId: string) => {
+    setFieldValue("selectedTags", (prev) =>
+      new Set(prev.selectedTags.value).add(tagId),
+    );
   };
 
   const removeSelectedTag = (tagId: string) => {
-    setFieldValue("selectedTags", (prev) =>
-      omitProperty(prev.selectedTags.value, tagId),
-    );
+    setFieldValue("selectedTags", (prev) => {
+      const next = new Set(prev.selectedTags.value);
+      next.delete(tagId);
+
+      return next;
+    });
   };
+
+  const selectedTagsById = useMemo<TagsById>(
+    () =>
+      Object.fromEntries(
+        Array.from(form.selectedTags.value, (tagId) => [
+          tagId,
+          tags[tagId] ?? tagId,
+        ]),
+      ),
+    [form.selectedTags.value, tags],
+  );
 
   const addCountrySelectionRow = () => {
     setFieldValue("countries", (prev) => ({
@@ -745,8 +760,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         <hr className={styles.sectionDivider} aria-hidden />
 
         <AddReleaseTagsSection
-          tags={tags}
-          selectedTags={form.selectedTags.value}
+          sortedTagEntries={sortedTagEntries}
+          selectedTagsById={selectedTagsById}
           onAddTag={addSelectedTag}
           onRemoveTag={removeSelectedTag}
         />
@@ -879,7 +894,11 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         title="Confirm new release"
         description={
           isConfirmOpen && (
-            <AddReleaseFormPreview form={form} allFormats={allFormats} />
+            <AddReleaseFormPreview
+              form={form}
+              allFormats={allFormats}
+              tags={tags}
+            />
           )
         }
         confirmLabel="Create release"
