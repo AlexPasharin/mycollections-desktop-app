@@ -5,7 +5,7 @@ import styles from "./AddReleaseCatalogueNumbersSection.module.css";
 
 import {
   type AddReleaseFormCatalogueNumbersInputFieldKey,
-  type AddReleaseFormFieldErrors,
+  type AddReleaseFormCatNumbersErrors,
   type CatalogueNumbersInputField,
 } from "../addReleaseFormUtils/errorMessages";
 import {
@@ -31,7 +31,7 @@ export type AddReleaseCatalogueNumbersSectionProps = {
   labels: LabelListItem[];
   catalogueNumbers: CatalogueNumberRowState[];
   setCatalogueNumbers: SetAddReleaseCatalogueNumbers;
-  errors?: AddReleaseFormFieldErrors["catalogueNumbers"];
+  errors?: AddReleaseFormCatNumbersErrors;
   addCatalogueNumbersRow: () => void;
   removeCatalogueNumbersRow: (rowId: string) => void;
   onFieldFocus: (key: AddReleaseFormCatalogueNumbersInputFieldKey) => void;

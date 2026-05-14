@@ -1,10 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
 
-import type {
-  AddReleaseFormCatNumbersErrors,
-  AddReleaseFormCountriesErrors,
-  AddReleaseFormFieldError,
-  AddReleaseFormFormatErrors,
+import {
+  initialAddReleaseFormFieldErrors,
+  type AddReleaseFormCatNumbersErrors,
+  type AddReleaseFormCountriesErrors,
+  type AddReleaseFormFieldError,
+  type AddReleaseFormFormatErrors,
 } from "./errorMessages";
 import {
   validateReleaseDate,
@@ -168,13 +169,14 @@ type FormField<T, U> = {
   value: T;
   valid: boolean;
   validationFn: (value: T) => FormFieldValidationResult<T, U>;
+  errors: U;
   notifications: {
     notification: string;
   }[];
 };
 
 export type AddReleaseFormDraft = {
-  name: FormField<AddReleaseFormNameInput, never>;
+  name: FormField<AddReleaseFormNameInput, undefined>;
   releaseVersion: FormField<string, AddReleaseFormFieldError[]>;
   discogsUrl: FormField<string, AddReleaseFormFieldError[]>;
   releaseDate: FormField<
@@ -191,11 +193,11 @@ export type AddReleaseFormDraft = {
     AddReleaseFormMatrixRunoutDraft,
     AddReleaseFormFieldError[]
   >;
-  selectedTags: FormField<Record<string, string>, never>;
-  partOfQueenCollection: FormField<boolean, never>;
-  relationToQueen: FormField<string, never>;
-  comment: FormField<string, never>;
-  conditionProblems: FormField<string, never>;
+  selectedTags: FormField<Record<string, string>, undefined>;
+  partOfQueenCollection: FormField<boolean, undefined>;
+  relationToQueen: FormField<string, undefined>;
+  comment: FormField<string, undefined>;
+  conditionProblems: FormField<string, undefined>;
 };
 
 export const initialAddReleaseFormDraftValue = (
@@ -209,18 +211,21 @@ export const initialAddReleaseFormDraftValue = (
       value: defaultNameInput(mainName),
       valid: true,
       validationFn: validatePassThrough,
+      errors: initialAddReleaseFormFieldErrors.name,
       notifications: [],
     },
     releaseVersion: {
       value: "",
       valid: true,
       validationFn: validateReleaseVersion,
+      errors: initialAddReleaseFormFieldErrors.releaseVersion,
       notifications: [],
     },
     discogsUrl: {
       value: "https://www.discogs.com/release/<id>-...",
       valid: true,
       validationFn: validateDiscogsUrl,
+      errors: initialAddReleaseFormFieldErrors.discogsUrl,
       notifications: [],
     },
     releaseDate: {
@@ -231,6 +236,7 @@ export const initialAddReleaseFormDraftValue = (
       },
       valid: true,
       validationFn: validateReleaseDate(originalReleaseDate),
+      errors: initialAddReleaseFormFieldErrors.releaseDate,
       notifications: [],
     },
     countries: {
@@ -240,54 +246,63 @@ export const initialAddReleaseFormDraftValue = (
       },
       valid: true,
       validationFn: validateReleaseCountries,
+      errors: initialAddReleaseFormFieldErrors.countries,
       notifications: [],
     },
     formats: {
       value: [defaultFormatInputRow()],
       valid: true,
       validationFn: validateReleaseFormats(allFormats),
+      errors: initialAddReleaseFormFieldErrors.formats,
       notifications: [],
     },
     catalogueNumbers: {
       value: [defaultCatalogueNumberRow()],
       valid: true,
       validationFn: validateReleaseCatNumbers,
+      errors: initialAddReleaseFormFieldErrors.catalogueNumbers,
       notifications: [],
     },
     matrixRunout: {
       value: { value: "", treatAsText: false },
       valid: true,
       validationFn: validateReleaseMatrixRunout,
+      errors: initialAddReleaseFormFieldErrors.matrixRunout,
       notifications: [],
     },
     selectedTags: {
       value: {},
       valid: true,
       validationFn: validatePassThrough,
+      errors: initialAddReleaseFormFieldErrors.selectedTags,
       notifications: [],
     },
     partOfQueenCollection: {
       value: partOfQueenCollection,
       valid: true,
       validationFn: validatePassThrough,
+      errors: initialAddReleaseFormFieldErrors.partOfQueenCollection,
       notifications: [],
     },
     relationToQueen: {
       value: "",
       valid: true,
       validationFn: validateOptionalTrimmedText,
+      errors: initialAddReleaseFormFieldErrors.relationToQueen,
       notifications: [],
     },
     comment: {
       value: "",
       valid: true,
       validationFn: validateOptionalTrimmedText,
+      errors: initialAddReleaseFormFieldErrors.comment,
       notifications: [],
     },
     conditionProblems: {
       value: "",
       valid: true,
       validationFn: validateOptionalTrimmedText,
+      errors: initialAddReleaseFormFieldErrors.conditionProblems,
       notifications: [],
     },
   };
@@ -295,7 +310,7 @@ export const initialAddReleaseFormDraftValue = (
 
 const validatePassThrough = <T>(
   value: T,
-): FormFieldValidationResult<T, never> => {
+): FormFieldValidationResult<T, undefined> => {
   return {
     valid: true,
     value,
