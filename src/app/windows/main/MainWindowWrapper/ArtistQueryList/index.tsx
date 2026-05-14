@@ -15,7 +15,7 @@ const ArtistQueryList: FC<ArtistQueryListProps> = ({ artists }) => {
   }
 
   return (
-    <ol>
+    <ul>
       {artists.map(({ artistId, name, altNameId }) => (
         <ArtistListElement
           key={altNameId ? `${artistId}-${altNameId}` : artistId}
@@ -23,7 +23,7 @@ const ArtistQueryList: FC<ArtistQueryListProps> = ({ artists }) => {
           onArtistSelect={() => api.openNewArtistWindow({ artistId })}
         />
       ))}
-    </ol>
+    </ul>
   );
 };
 
