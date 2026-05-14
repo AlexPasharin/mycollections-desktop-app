@@ -48,29 +48,13 @@ export type AddReleaseFormCatNumbersErrors = Record<
   AddReleaseFormCatalogueNumberRowErrors
 >;
 
-export type AddReleaseFormFieldErrors = {
-  name: undefined;
-  releaseVersion: AddReleaseFormFieldError[];
-  discogsUrl: AddReleaseFormFieldError[];
-  comment: undefined;
-  conditionProblems: undefined;
-  releaseDate: AddReleaseFormFieldError[];
-  countries: AddReleaseFormCountriesErrors;
-  formats: AddReleaseFormFormatErrors;
-  catalogueNumbers: AddReleaseFormCatNumbersErrors;
-  matrixRunout: AddReleaseFormFieldError[];
-  selectedTags: undefined;
-  partOfQueenCollection: undefined;
-  relationToQueen: undefined;
-};
-
 export const emptyMutableCountriesSubsectionErrors =
   (): AddReleaseFormCountriesSubsectionErrors => ({
     countrySelectErrorMessages: {},
     propertyErrorMessages: new Set(),
   });
 
-export const initialAddReleaseFormFieldErrors: AddReleaseFormFieldErrors = {
+export const initialAddReleaseFormFieldErrors = {
   name: undefined,
   releaseVersion: [],
   discogsUrl: [],
