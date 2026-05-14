@@ -4,6 +4,7 @@ import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
 import type {
   CreateMusicalRelease,
+  DeleteRelease,
   GetEntryReleases,
   GetReleaseById,
 } from "@/types/releases";
@@ -18,6 +19,7 @@ export type API = {
   getEntryReleases: GetEntryReleases;
   getReleaseById: GetReleaseById;
   createMusicalRelease: CreateMusicalRelease;
+  deleteRelease: DeleteRelease;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access

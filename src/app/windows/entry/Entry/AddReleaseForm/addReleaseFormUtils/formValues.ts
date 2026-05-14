@@ -218,7 +218,7 @@ export const initialAddReleaseFormDraftValue = (
       notifications: [],
     },
     discogsUrl: {
-      value: "",
+      value: "https://www.discogs.com/release/<id>-...",
       valid: true,
       validationFn: validateDiscogsUrl,
       notifications: [],

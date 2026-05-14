@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from "react";
+import { useCallback, useEffect, useRef, useState, type FC } from "react";
 
 import styles from "./EntryReleases.module.css";
 import EntryReleasesList from "./EntryReleasesList";
@@ -22,6 +22,41 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   const [releases, setReleases] = useState<EntryRelease[]>();
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [recentlyDeletedVersion, setRecentlyDeletedVersion] =
+    useState<string>();
+
+  // Token bumped on every fetch / unmount; in-flight responses with a stale
+  // token are discarded so we never setState on stale data or after unmount.
+  const fetchTokenRef = useRef(0);
+
+  const fetchReleases = useCallback(() => {
+    const token = ++fetchTokenRef.current;
+    setLoading(true);
+    setLoadFailed(false);
+    setReleases(undefined);
+
+    api
+      .getEntryReleases(entry.entryId)
+      .then((data) => {
+        if (token !== fetchTokenRef.current) {
+          return;
+        }
+
+        setReleases(data);
+        setLoading(false);
+      })
+      .catch((error: unknown) => {
+        console.error("Error getting entry releases", error);
+
+        if (token !== fetchTokenRef.current) {
+          return;
+        }
+
+        setLoadFailed(true);
+        setReleases([]);
+        setLoading(false);
+      });
+  }, [entry.entryId]);
 
   // Re-fetch every time this tab becomes active, so the list is always fresh
   // after the user has been on the "Add release" tab (including right after a
@@ -31,33 +66,22 @@ const EntryReleases: FC<EntryReleasesProps> = ({
       return;
     }
 
-    let cancelled = false;
-    setLoading(true);
-    setLoadFailed(false);
-    setReleases(undefined);
-
-    api
-      .getEntryReleases(entry.entryId)
-      .then((data) => {
-        if (!cancelled) {
-          setReleases(data);
-          setLoading(false);
-        }
-      })
-      .catch((error: unknown) => {
-        console.error("Error getting entry releases", error);
-
-        if (!cancelled) {
-          setLoadFailed(true);
-          setReleases([]);
-          setLoading(false);
-        }
-      });
+    fetchReleases();
 
     return () => {
-      cancelled = true;
+      // Invalidate the in-flight fetch (if any) so its setState is skipped.
+      fetchTokenRef.current += 1;
     };
-  }, [entry.entryId, isActive]);
+  }, [isActive, fetchReleases]);
+
+  const handleReleaseDeleted = (deletedReleaseVersion: string) => {
+    setRecentlyDeletedVersion(deletedReleaseVersion);
+    fetchReleases();
+  };
+
+  const dismissDeletedNotification = () => {
+    setRecentlyDeletedVersion(undefined);
+  };
 
   if (loading) {
     return <p className={styles.emptyState}>Loading releases&hellip;</p>;
@@ -67,11 +91,30 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     return <p className={styles.emptyState}>Could not load releases.</p>;
   }
 
+  const deletedNotification = recentlyDeletedVersion && (
+    <div className={styles.deletedNotification} role="status">
+      <span className={styles.deletedNotificationText}>
+        Release &quot;{recentlyDeletedVersion}&quot; was deleted successfully.
+      </span>
+      <button
+        type="button"
+        className={styles.deletedNotificationDismiss}
+        onClick={dismissDeletedNotification}
+        aria-label="Dismiss notification"
+      >
+        Dismiss
+      </button>
+    </div>
+  );
+
   if (!releases || releases.length === 0) {
     return (
-      <p className={styles.emptyState}>
-        This entry has no releases in collection
-      </p>
+      <>
+        <p className={styles.emptyState}>
+          This entry has no releases in collection
+        </p>
+        {deletedNotification}
+      </>
     );
   }
 
@@ -83,8 +126,10 @@ const EntryReleases: FC<EntryReleasesProps> = ({
           entry={entry}
           releases={releases}
           latestAddedReleaseId={latestAddedReleaseId}
+          onReleaseDeleted={handleReleaseDeleted}
         />
       </div>
+      {deletedNotification}
     </div>
   );
 };

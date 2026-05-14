@@ -16,12 +16,14 @@ type EntryReleasesListProps = {
   entry: EntryByIdResult;
   releases: EntryReleaseRow[];
   latestAddedReleaseId: string | undefined;
+  onReleaseDeleted: (deletedReleaseVersion: string) => void;
 };
 
 const EntryReleasesList: FC<EntryReleasesListProps> = ({
   entry,
   releases,
   latestAddedReleaseId,
+  onReleaseDeleted,
 }) => {
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(
     () => new Set(),
@@ -111,6 +113,7 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
           loadFailed={failedIds.has(r.releaseId)}
           isLoading={loadingIds.has(r.releaseId)}
           isRecentlyAdded={r.releaseId === latestAddedReleaseId}
+          onDeleted={onReleaseDeleted}
         />
       ))}
     </ul>
