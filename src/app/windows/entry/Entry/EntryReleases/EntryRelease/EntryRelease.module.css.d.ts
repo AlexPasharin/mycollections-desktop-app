@@ -11,8 +11,10 @@ interface CssExports {
   'entryRelease': string;
   'recentlyAddedBadge': string;
   'releaseDetailsPanel': string;
+  'releaseRemove': string;
   'releaseRow': string;
   'releaseRowMain': string;
+  'releaseToggle': string;
   'releaseVersion': string;
 }
 export const cssExports: CssExports;

@@ -16,3 +16,51 @@
   font-size: 1.2rem;
   font-weight: 700;
 }
+
+.deletedNotification {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0.75rem 0 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.92rem;
+  color: #14532d;
+  background-color: #d1fae5;
+  border: 1px solid #6ee7b7;
+  border-radius: 6px;
+}
+
+.deletedNotificationText {
+  flex: 1;
+  min-width: 0;
+}
+
+.deletedNotificationDismiss {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0.2rem 0.55rem;
+  font: inherit;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: #14532d;
+  background: transparent;
+  border: 1px solid #6ee7b7;
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.deletedNotificationDismiss:hover {
+  color: #ffffff;
+  background-color: #14532d;
+  border-color: #14532d;
+}
+
+.deletedNotificationDismiss:focus-visible {
+  outline: 2px solid #14532d;
+  outline-offset: 2px;
+}

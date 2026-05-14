@@ -5,7 +5,11 @@ import type { ReleaseCountries } from "../validation/releases/countries";
 import type { ReleaseMatrixRunout } from "../validation/releases/matrixRunout";
 
 import type { GeneralizedDateFromDb } from "@/types/date";
-import type { FormatOfRelease, MusicalRelease } from "@/types/db/database";
+import type {
+  FormatOfRelease,
+  MusicalRelease,
+  MusicalReleaseTag,
+} from "@/types/db/database";
 
 export type ReleaseFormatOfReleaseItem = {
   id: string;
@@ -56,3 +60,11 @@ export type CreateMusicalReleaseInput = {
 export type CreateMusicalRelease = (
   input: CreateMusicalReleaseInput,
 ) => Promise<string>;
+
+export type DeleteReleaseResult = {
+  release: Selectable<MusicalRelease>;
+  formats: Selectable<FormatOfRelease>[];
+  tags: Selectable<MusicalReleaseTag>[];
+};
+
+export type DeleteRelease = (releaseId: string) => Promise<DeleteReleaseResult>;

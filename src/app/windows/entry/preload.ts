@@ -11,6 +11,7 @@ import {
   GET_ENTRY_RELEASES,
   GET_RELEASE_BY_ID,
   CREATE_MUSICAL_RELEASE,
+  DELETE_RELEASE,
 } from "@/appConstants/ipcEvents";
 import type { CreateMusicalReleaseInput } from "@/types/releases";
 
@@ -27,6 +28,8 @@ const api = {
     ipcRenderer.invoke(GET_RELEASE_BY_ID, releaseId),
   createMusicalRelease: (input: CreateMusicalReleaseInput) =>
     ipcRenderer.invoke(CREATE_MUSICAL_RELEASE, input),
+  deleteRelease: (releaseId: string) =>
+    ipcRenderer.invoke(DELETE_RELEASE, releaseId),
 } as const satisfies API;
 
 contextBridge.exposeInMainWorld("api", api);

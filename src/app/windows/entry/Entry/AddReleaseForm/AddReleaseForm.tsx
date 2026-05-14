@@ -608,7 +608,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             aria-invalid={hasDiscogsUrlErrors}
             aria-describedby={discogsUrlDescribedByIds || undefined}
             autoComplete="off"
-            placeholder="https://www.discogs.com/release/<id>-..."
           />
           <FormFieldErrorMessages
             id={DISCOGS_URL_FIELD_ERROR_ID}

@@ -20,6 +20,7 @@ import {
   FETCH_COUNTRIES,
   FETCH_TAGS,
   CREATE_MUSICAL_RELEASE,
+  DELETE_RELEASE,
   OPEN_ARTIST_WINDOW,
   OPEN_ENTRY_WINDOW,
   QUERY_ARTIST,
@@ -32,6 +33,7 @@ import { fetchReleasesFormats } from "@/db/formats";
 import { fetchLabels } from "@/db/labels";
 import {
   createMusicalRelease,
+  deleteRelease,
   getEntryReleases,
   getReleaseById,
 } from "@/db/releases";
@@ -69,6 +71,9 @@ await app.whenReady().then(async () => {
   ipcMain.handle(
     CREATE_MUSICAL_RELEASE,
     (_, input: CreateMusicalReleaseInput) => createMusicalRelease(input),
+  );
+  ipcMain.handle(DELETE_RELEASE, (_, releaseId: string) =>
+    deleteRelease(releaseId),
   );
   ipcMain.handle(FETCH_RELEASE_FORMATS, () => fetchReleasesFormats());
   ipcMain.handle(FETCH_LABELS, () => fetchLabels());
