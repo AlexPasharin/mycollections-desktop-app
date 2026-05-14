@@ -57,9 +57,7 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
     return null;
   }
 
-  const handleBackdropMouseDown = (
-    event: React.MouseEvent<HTMLDivElement>,
-  ) => {
+  const handleBackdropMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget && !isBusy) {
       onCancel();
     }
