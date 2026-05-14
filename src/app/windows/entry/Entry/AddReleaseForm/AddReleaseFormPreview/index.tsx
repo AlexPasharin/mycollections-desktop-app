@@ -12,17 +12,20 @@ import {
 } from "../addReleaseFormUtils/toCreateMusicalReleaseInput";
 
 import type { ReleasesFormatListItem } from "@/types/formats";
+import type { TagsById } from "@/types/tags";
 
 const EMPTY_PLACEHOLDER = "(none)";
 
 type AddReleaseFormPreviewProps = {
   form: AddReleaseFormDraft;
   allFormats: ReleasesFormatListItem[];
+  tags: TagsById;
 };
 
 const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
   form,
   allFormats,
+  tags,
 }) => {
   const formatShortNameById = new Map(
     allFormats.map((format) => [format.formatId, format.shortName] as const),
@@ -30,7 +33,9 @@ const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
 
   const releaseDate = toReleaseDateString(form.releaseDate.value);
   const discogsUrl = nullIfEmpty(form.discogsUrl.value);
-  const tags = Object.values(form.selectedTags.value);
+  const selectedTagNames = Array.from(form.selectedTags.value, (tagId) => {
+    return tags[tagId] ?? tagId;
+  });
   const comment = nullIfEmpty(form.comment.value);
   const conditionProblems = nullIfEmpty(form.conditionProblems.value);
   const relationToQueen = nullIfEmpty(form.relationToQueen.value);
@@ -80,7 +85,9 @@ const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
       <JsonField label="Catalogue numbers" value={catNumbersJson} />
       <JsonField label="Matrix / runout" value={matrixRunoutJson} />
       <Field label="Tags">
-        {orPlaceholder(tags.length === 0 ? null : tags.join(", "))}
+        {orPlaceholder(
+          selectedTagNames.length === 0 ? null : selectedTagNames.join(", "),
+        )}
       </Field>
       <Field label="Part of Queen collection">
         {form.partOfQueenCollection.value ? "Yes" : "No"}

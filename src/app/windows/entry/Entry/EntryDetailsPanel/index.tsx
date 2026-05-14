@@ -90,8 +90,8 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry }) => {
         <div className={styles.field}>
           <span className={styles.fieldLabel}>Tags:</span>
           <ul className={styles.typesList}>
-            {tags.map((tag) => (
-              <li key={tag} className={styles.tagsListItem}>
+            {tags.map(({ tagId, tag }) => (
+              <li key={tagId} className={styles.tagsListItem}>
                 {tag}
               </li>
             ))}

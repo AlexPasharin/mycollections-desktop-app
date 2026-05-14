@@ -9,6 +9,7 @@ import type {
   EntryArtistInfo,
   GetEntryById,
 } from "@/types/entries";
+import type { TagListItem } from "@/types/tags";
 import { parseStringAsGeneralizedDate } from "@/utils/date";
 
 export const getEntryById: GetEntryById = async (entryId) => {
@@ -53,7 +54,13 @@ export const getEntryById: GetEntryById = async (entryId) => {
         '[]'::jsonb
       )`.as("altNames"),
 
-      aggregateDistinctValuesToArray("tags.tag", "tags"),
+      sql<TagListItem[]>`coalesce(
+        jsonb_agg(DISTINCT jsonb_build_object(
+          'tagId', ${sql.ref("tags.tagId")},
+          'tag', ${sql.ref("tags.tag")}
+        )) FILTER (WHERE ${sql.ref("tags.tagId")} IS NOT NULL),
+        '[]'::jsonb
+      )`.as("tags"),
     ])
     .groupBy([
       "musicalEntries.entryId",

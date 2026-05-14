@@ -23,6 +23,7 @@ import type { GeneralizedDateFormInputValue } from "@/app/components/Generalized
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryAltNameInfo, EntryByIdResult } from "@/types/entries";
 import type { ReleasesFormatListItem } from "@/types/formats";
+import type { TagId } from "@/types/tags";
 
 export type AddReleaseFormNameInput = Omit<EntryAltNameInfo, "nameId"> & {
   nameId: string | null;
@@ -193,7 +194,7 @@ export type AddReleaseFormDraft = {
     AddReleaseFormMatrixRunoutDraft,
     AddReleaseFormFieldError[]
   >;
-  selectedTags: FormField<Record<string, string>, undefined>;
+  selectedTags: FormField<Set<TagId>, undefined>;
   partOfQueenCollection: FormField<boolean, undefined>;
   relationToQueen: FormField<string, undefined>;
   comment: FormField<string, undefined>;
@@ -271,7 +272,7 @@ export const initialAddReleaseFormDraftValue = (
       notifications: [],
     },
     selectedTags: {
-      value: {},
+      value: new Set<string>(),
       valid: true,
       validationFn: validatePassThrough,
       errors: initialAddReleaseFormFieldErrors.selectedTags,

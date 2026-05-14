@@ -54,7 +54,7 @@ const Entry: FC<EntryProps> = ({ entry }) => {
             }
             onClick={() => setActiveTab("releases")}
           >
-            Entry releases
+            Releases in collection
           </button>
           <button
             type="button"
