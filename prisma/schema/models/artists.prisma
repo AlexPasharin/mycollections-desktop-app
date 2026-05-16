@@ -11,6 +11,7 @@ model Artist {
   entries                EntryArtist[]
   alternativeArtistNames AlternativeArtistName[]
 
+  @@unique(name)
   @@map("artists")
 }
 
