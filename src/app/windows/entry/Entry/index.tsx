@@ -25,9 +25,13 @@ const Entry: FC<EntryProps> = ({ entry }) => {
   const [activeTab, setActiveTab] = useState<EntryTab>("addRelease");
 
   const [latestAddedReleaseId, setLatestAddedReleaseId] = useState<string>();
+  const [latestCreateNotifications, setLatestCreateNotifications] = useState<
+    string[]
+  >([]);
 
-  const handleReleaseCreated = (releaseId: string) => {
+  const handleReleaseCreated = (releaseId: string, notifications: string[]) => {
     setLatestAddedReleaseId(releaseId);
+    setLatestCreateNotifications(notifications);
     setActiveTab("releases");
   };
 
@@ -84,6 +88,10 @@ const Entry: FC<EntryProps> = ({ entry }) => {
             entry={entry}
             isActive={activeTab === "releases"}
             latestAddedReleaseId={latestAddedReleaseId}
+            latestCreateNotifications={latestCreateNotifications}
+            onDismissCreateNotifications={() =>
+              setLatestCreateNotifications([])
+            }
           />
         </div>
 
