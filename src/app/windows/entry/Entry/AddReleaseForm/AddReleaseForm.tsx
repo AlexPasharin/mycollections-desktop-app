@@ -49,7 +49,7 @@ export type AddReleaseFormProps = {
   sortedTagEntries: [TagId, TagName][];
   allCountries: CountryListItem[];
   onCancel: () => void;
-  onReleaseCreated: (releaseId: string) => void;
+  onReleaseCreated: (releaseId: string, notifications: string[]) => void;
 };
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
@@ -492,10 +492,11 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     api
       .createMusicalRelease(createInput)
-      .then((releaseId) => {
-        console.info("Created musical release", { releaseId });
+      .then(({ releaseId, notifications }) => {
+        console.info("Created musical release", { releaseId, notifications });
+
         setIsConfirmOpen(false);
-        onReleaseCreated(releaseId);
+        onReleaseCreated(releaseId, notifications);
       })
       .catch((error: unknown) => {
         console.error("Failed to create musical release", error);

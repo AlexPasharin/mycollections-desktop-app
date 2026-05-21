@@ -5,6 +5,7 @@ import EntryReleasesList from "./EntryReleasesList";
 
 import api from "../../api";
 
+import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import type { EntryByIdResult } from "@/types/entries";
 import type { EntryRelease } from "@/types/releases";
 
@@ -12,12 +13,18 @@ type EntryReleasesProps = {
   entry: EntryByIdResult;
   isActive: boolean;
   latestAddedReleaseId: string | undefined;
+  latestCreateNotifications: string[];
+  onDismissCreateNotifications: () => void;
 };
+
+const CREATE_NOTIFICATIONS_ID = "entry-releases-create-notifications";
 
 const EntryReleases: FC<EntryReleasesProps> = ({
   entry,
   isActive,
   latestAddedReleaseId,
+  latestCreateNotifications,
+  onDismissCreateNotifications,
 }) => {
   const [releases, setReleases] = useState<EntryRelease[]>();
   const [loading, setLoading] = useState(true);
@@ -91,6 +98,27 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     return <p className={styles.emptyState}>Could not load releases.</p>;
   }
 
+  const createNotifications = latestCreateNotifications.map((notification) => ({
+    notification,
+  }));
+
+  const createNotificationBanner = createNotifications.length > 0 && (
+    <div className={styles.createNotification} role="status">
+      <FormFieldNotifications
+        id={CREATE_NOTIFICATIONS_ID}
+        messages={createNotifications}
+      />
+      <button
+        type="button"
+        className={styles.createNotificationDismiss}
+        onClick={onDismissCreateNotifications}
+        aria-label="Dismiss notifications"
+      >
+        Dismiss
+      </button>
+    </div>
+  );
+
   const deletedNotification = !!recentlyDeletedVersion && (
     <div className={styles.deletedNotification} role="status">
       <span className={styles.deletedNotificationText}>
@@ -113,6 +141,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
         <p className={styles.emptyState}>
           This entry has no releases in collection
         </p>
+        {createNotificationBanner}
         {deletedNotification}
       </>
     );
@@ -120,6 +149,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
 
   return (
     <div className={styles.panel}>
+      {createNotificationBanner}
       <h2 className={styles.sectionTitle}>Releases in collection: </h2>
       <div className={styles.field}>
         <EntryReleasesList

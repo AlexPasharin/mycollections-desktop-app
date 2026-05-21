@@ -59,7 +59,7 @@ export type CreateMusicalReleaseInput = {
 
 export type CreateMusicalRelease = (
   input: CreateMusicalReleaseInput,
-) => Promise<string>;
+) => Promise<{ releaseId: string; notifications: string[] }>;
 
 export type DeleteReleaseResult = {
   release: Selectable<MusicalRelease>;

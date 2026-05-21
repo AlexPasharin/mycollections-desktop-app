@@ -10,6 +10,8 @@ const EntryWindowWrapper: FC = () => {
   const params = new URLSearchParams(window.location.search);
   const entryId = params.get("entryId");
 
+  console.info({ entryId });
+
   const [entry, setEntry] = useState<EntryByIdResult>();
   const [isLoading, setIsLoading] = useState(true);
 
