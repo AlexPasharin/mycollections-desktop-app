@@ -1,10 +1,9 @@
 import { DbSource } from "@/db/db-source";
 
-const readDbUrl = (key: string) => process.env[key]?.trim() ?? "";
-
-const localDevDbUrl = readDbUrl("LOCAL_DEV_DB_URL");
-const localProdDbUrl = readDbUrl("LOCAL_PROD_DB_URL");
-const remoteProdDbUrl = readDbUrl("REMOTE_PROD_DB_URL");
+/** Literal env keys — required with {@link EnvironmentPlugin} in webpack.plugins.ts for packaged builds. */
+const localDevDbUrl = process.env["LOCAL_DEV_DB_URL"]?.trim() ?? "";
+const localProdDbUrl = process.env["LOCAL_PROD_DB_URL"]?.trim() ?? "";
+const remoteProdDbUrl = process.env["REMOTE_PROD_DB_URL"]?.trim() ?? "";
 
 const urlEntries = [
   ["LOCAL_DEV_DB_URL", localDevDbUrl],
