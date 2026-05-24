@@ -1,16 +1,17 @@
-import client from "../client/kysely";
+import { dbClient } from "../client/kysely";
 import { orderBySimilarityToTextDesc, hasSimilarityToText } from "../utils";
 
+import type { DbSource } from "@/db/db-source";
 import type { QueriedArtist, QueryArtist } from "@/types/artists";
 
-export const queryArtist: QueryArtist = async (query) => {
+export const queryArtist: QueryArtist = async (query, dbSource) => {
   if (!query) {
     return null;
   }
 
   const [artistsDirectlyByName, artistsByAltName] = await Promise.all([
-    getArtistsByMatchOnMainName(query, 10, 5),
-    getArtistsByMatchOnAltName(query, 10, 5),
+    getArtistsByMatchOnMainName(query, 10, 5, dbSource),
+    getArtistsByMatchOnAltName(query, 10, 5, dbSource),
   ]);
 
   return {
@@ -29,16 +30,19 @@ const getArtistsByMatchOnMainName = async (
   query: string,
   directMatchLimit: number,
   fuzzyMatchLimit: number,
+  dbSource?: DbSource,
 ) => {
   const artistsDirectlyByMainName = await getArtistsBySubstringMatchOnMainName(
     query,
     directMatchLimit,
+    dbSource,
   );
 
   const artistsByFuzzyMatchOnMainName = await getArtistsByFuzzyMatchOnMainName(
     query,
     artistsDirectlyByMainName,
     fuzzyMatchLimit,
+    dbSource,
   );
 
   return {
@@ -51,16 +55,19 @@ const getArtistsByMatchOnAltName = async (
   query: string,
   directMatchLimit: number,
   fuzzyMatchLimit: number,
+  dbSource?: DbSource,
 ) => {
   const artistsDirectlyByAltName = await getArtistsBySubstringMatchOnAltName(
     query,
     directMatchLimit,
+    dbSource,
   );
 
   const artistsByFuzzyMatchOnAltName = await getArtistsByFuzzyMatchOnAltName(
     query,
     artistsDirectlyByAltName,
     fuzzyMatchLimit,
+    dbSource,
   );
 
   return {
@@ -69,8 +76,13 @@ const getArtistsByMatchOnAltName = async (
   };
 };
 
-const getArtistsBySubstringMatchOnMainName = (query: string, limit: number) => {
+const getArtistsBySubstringMatchOnMainName = (
+  query: string,
+  limit: number,
+  dbSource?: DbSource,
+) => {
   const searchTerm = `%${query}%`;
+  const client = dbClient(dbSource);
 
   return orderBySimilarityToTextDesc(
     client
@@ -84,8 +96,13 @@ const getArtistsBySubstringMatchOnMainName = (query: string, limit: number) => {
     .execute();
 };
 
-const getArtistsBySubstringMatchOnAltName = (query: string, limit: number) => {
+const getArtistsBySubstringMatchOnAltName = (
+  query: string,
+  limit: number,
+  dbSource?: DbSource,
+) => {
   const searchTerm = `%${query}%`;
+  const client = dbClient(dbSource);
 
   return orderBySimilarityToTextDesc(
     client
@@ -103,7 +120,10 @@ const getArtistsByFuzzyMatchOnMainName = (
   query: string,
   excludeArtists: QueriedArtist[],
   limit: number,
+  dbSource?: DbSource,
 ) => {
+  const client = dbClient(dbSource);
+
   let artistsQuery = client
     .selectFrom("artists")
     .select(["artistId", "name"])
@@ -124,10 +144,13 @@ const getArtistsByFuzzyMatchOnAltName = async (
   query: string,
   excludeArtists: (QueriedArtist & { altNameId: string })[],
   limit: number,
+  dbSource?: DbSource,
 ) => {
   const altArtistNameIdsToExclude = excludeArtists.map(
     ({ altNameId }) => altNameId,
   );
+
+  const client = dbClient(dbSource);
 
   let altNameQuery = client
     .selectFrom("alternativeArtistNames")

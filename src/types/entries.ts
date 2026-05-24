@@ -1,3 +1,4 @@
+import type { DbSource } from "@/db/db-source";
 import type { GeneralizedDateFromDb } from "@/types/date";
 import type { TagListItem } from "@/types/tags";
 
@@ -41,6 +42,7 @@ export type EntryByIdResult = {
 
 export type GetEntryById = (
   entryId: string,
+  dbSource?: DbSource,
 ) => Promise<EntryByIdResult | undefined>;
 
 export type SearchArtistEntriesParams = {
@@ -64,4 +66,5 @@ export type SearchArtistEntriesResult = {
 
 export type SearchArtistEntries = (
   params: SearchArtistEntriesParams,
+  dbSource?: DbSource,
 ) => Promise<SearchArtistEntriesResult>;

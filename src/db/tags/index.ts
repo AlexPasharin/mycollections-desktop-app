@@ -1,6 +1,7 @@
-import client from "../client/kysely";
+import { dbClient } from "../client/kysely";
 
+import type { DbSource } from "@/db/db-source";
 import type { TagListItem } from "@/types/tags";
 
-export const fetchTags = (): Promise<TagListItem[]> =>
-  client.selectFrom("tags").select(["tagId", "tag"]).execute();
+export const fetchTags = (dbSource?: DbSource): Promise<TagListItem[]> =>
+  dbClient(dbSource).selectFrom("tags").select(["tagId", "tag"]).execute();

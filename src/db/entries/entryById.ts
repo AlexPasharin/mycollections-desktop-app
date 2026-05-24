@@ -12,8 +12,8 @@ import type {
 import type { TagListItem } from "@/types/tags";
 import { parseStringAsGeneralizedDate } from "@/utils/date";
 
-export const getEntryById: GetEntryById = async (entryId) => {
-  const entry = await selectFromExtendedMusicalEntryRows()
+export const getEntryById: GetEntryById = async (entryId, dbSource) => {
+  const entry = await selectFromExtendedMusicalEntryRows(dbSource)
     .leftJoin(
       "alternativeArtistNames",
       "musicalEntriesArtists.entryArtistNameId",

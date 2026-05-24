@@ -6,6 +6,8 @@ export const plugins = [
     logger: "webpack-infrastructure",
   }),
   new EnvironmentPlugin({
-    DATABASE_URL: process.env["DATABASE_URL"],
+    LOCAL_DEV_DB_URL: process.env["LOCAL_DEV_DB_URL"],
+    LOCAL_PROD_DB_URL: process.env["LOCAL_PROD_DB_URL"],
+    REMOTE_PROD_DB_URL: process.env["REMOTE_PROD_DB_URL"],
   }),
 ];

@@ -4,6 +4,7 @@ import type { ReleaseCatNumbers } from "../validation/releases/catNumbers";
 import type { ReleaseCountries } from "../validation/releases/countries";
 import type { ReleaseMatrixRunout } from "../validation/releases/matrixRunout";
 
+import type { DbSource } from "@/db/db-source";
 import type { GeneralizedDateFromDb } from "@/types/date";
 import type {
   FormatOfRelease,
@@ -26,7 +27,10 @@ export type EntryRelease = {
   formats: string[];
 };
 
-export type GetEntryReleases = (entryId: string) => Promise<EntryRelease[]>;
+export type GetEntryReleases = (
+  entryId: string,
+  dbSource?: DbSource,
+) => Promise<EntryRelease[]>;
 
 export type JsonParsingErrorData = { rawJson: unknown; error: string };
 
@@ -49,6 +53,7 @@ export type ReleaseByIdResult = Omit<
 
 export type GetReleaseById = (
   releaseId: string,
+  dbSource?: DbSource,
 ) => Promise<ReleaseByIdResult | undefined>;
 
 export type CreateMusicalReleaseInput = {
@@ -59,6 +64,7 @@ export type CreateMusicalReleaseInput = {
 
 export type CreateMusicalRelease = (
   input: CreateMusicalReleaseInput,
+  dbSource?: DbSource,
 ) => Promise<{ releaseId: string; notifications: string[] }>;
 
 export type DeleteReleaseResult = {
@@ -67,4 +73,7 @@ export type DeleteReleaseResult = {
   tags: Selectable<MusicalReleaseTag>[];
 };
 
-export type DeleteRelease = (releaseId: string) => Promise<DeleteReleaseResult>;
+export type DeleteRelease = (
+  releaseId: string,
+  dbSource?: DbSource,
+) => Promise<DeleteReleaseResult>;

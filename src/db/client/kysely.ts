@@ -4,13 +4,19 @@ import { v4 as uuidv4 } from "uuid";
 
 import { EventEmitter } from "node:events";
 
+import { dbUrlsByDbSource } from "@/config/database-urls";
+import { DbSource, DEFAULT_DB_SOURCE } from "@/db/db-source";
 import type { DB } from "@/types/db/database";
 
-type DBQuery<T> = (kyselyClient: Kysely<DB>) => Promise<T>;
+export type DbQueryExecutor<T = unknown> = (
+  kyselyClient: Kysely<DB>,
+) => Promise<T>;
 
-const createClient = (dbUrl: string) => {
+type ClientPack = ReturnType<typeof createClient>;
+
+const createClient = (dbSource: DbSource) => {
   const pool = new Pool({
-    connectionString: dbUrl,
+    connectionString: dbUrlsByDbSource[dbSource],
   });
 
   const DBMessenger = new EventEmitter();
@@ -41,7 +47,7 @@ const createClient = (dbUrl: string) => {
    * @returns result of query execution and array of caught notifications packed in an object
    */
   const applyWithNotifications = async <T>(
-    queryFn: DBQuery<T>,
+    queryFn: DbQueryExecutor<T>,
   ): Promise<{ results: T; notifications: string[] }> => {
     const queryId = uuidv4();
     const notifications: string[] = [];
@@ -72,10 +78,19 @@ const createClient = (dbUrl: string) => {
   return { client, applyWithNotifications };
 };
 
-const { client, applyWithNotifications } = createClient(
-  process.env["DATABASE_URL"] ?? "",
-);
+const clientPackByDbSource: Record<DbSource, ClientPack> = {
+  [DbSource.LocalDevDb]: createClient(DbSource.LocalDevDb),
+  [DbSource.LocalProdDb]: createClient(DbSource.LocalProdDb),
+  [DbSource.RemoteProdDb]: createClient(DbSource.RemoteProdDb),
+};
 
-export { applyWithNotifications };
+export const dbClient = (dbSource?: DbSource): Kysely<DB> =>
+  clientPackByDbSource[dbSource ?? DEFAULT_DB_SOURCE].client;
 
-export default client;
+export const applyWithNotificationsFor = <T>(
+  queryFn: DbQueryExecutor<T>,
+  dbSource?: DbSource,
+): Promise<{ results: T; notifications: string[] }> =>
+  clientPackByDbSource[dbSource ?? DEFAULT_DB_SOURCE].applyWithNotifications(
+    queryFn,
+  );

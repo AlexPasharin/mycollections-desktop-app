@@ -1,14 +1,13 @@
-import { applyWithNotifications } from "../client/kysely";
+import { applyWithNotificationsFor } from "../client/kysely";
 import { toJsonbParam } from "../utils";
 
 import type { CreateMusicalRelease } from "@/types/releases";
 
-export const createMusicalRelease: CreateMusicalRelease = async ({
-  release,
-  formats,
-  tagIds,
-}) => {
-  const { results, notifications } = await applyWithNotifications(
+export const createMusicalRelease: CreateMusicalRelease = async (
+  { release, formats, tagIds },
+  dbSource,
+) => {
+  const { results, notifications } = await applyWithNotificationsFor(
     async (trx) => {
       const { releaseId } = await trx
         .insertInto("musicalReleases")
@@ -40,6 +39,7 @@ export const createMusicalRelease: CreateMusicalRelease = async ({
 
       return { releaseId };
     },
+    dbSource,
   );
 
   return { releaseId: results.releaseId, notifications };
