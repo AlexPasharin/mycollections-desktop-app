@@ -27,6 +27,7 @@
     "paths": {
       "@/app/*": ["src/app/*"],
       "@/appConstants/*": ["appConstants/*"],
+      "@/config/*": ["src/config/*"],
       "@/constants": ["src/constants.ts"],
       "@/db/*": ["src/db/*"],
       "@/hooks/*": ["src/hooks/*"],

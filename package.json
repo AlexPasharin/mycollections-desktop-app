@@ -9,6 +9,8 @@
     "package": "electron-forge package",
     "make": "yarn; yarn clean; electron-forge make;rm -rf .webpack",
     "publish": "electron-forge publish",
+    "assert-database-env": "ts-node -r dotenv/config scripts/assert-database-env.cts",
+    "prestart": "yarn assert-database-env",
     "lint": "eslint --ext .ts,.tsx .",
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
     "lint-changed": "node scripts/eslint-changed.ts",
@@ -19,11 +21,12 @@
     "clean": "rm -rf .webpack && rm -rf out",
     "open-mac": "out/mycollections-desktop-app-darwin-x64/mycollections-desktop-app.app/Contents/MacOS/mycollections-desktop-app",
     "make-open-mac": "yarn make; yarn open-mac",
+    "premake": "yarn assert-database-env",
     "prettify": "exec prettier . --write --log-level=warn",
     "prettify-changed": "node scripts/prettify-changed.ts",
     "test": "jest",
     "test:watch": "jest --watch",
-    "which-db": "bash show-db-url.sh"
+    "which-prisma-db": "bash check-prisma-db-url.sh"
   },
   "author": {
     "name": "Aleksandr Pasharin",
@@ -69,6 +72,7 @@
     "ts-jest": "^29.4.9",
     "ts-loader": "^9.2.2",
     "ts-node": "^10.0.0",
+    "tsconfig-paths": "^3.15.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.35.1"
   },

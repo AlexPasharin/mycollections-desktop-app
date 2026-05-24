@@ -1,7 +1,14 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "allowImportingTsExtensions": true
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "verbatimModuleSyntax": false
   },
-  "include": ["./**/*.ts"]
+  "include": ["./**/*", "../src/config/**/*.ts", "../src/db/db-source.ts"],
+  "ts-node": {
+    "esm": false,
+    "transpileOnly": true,
+    "require": ["tsconfig-paths/register"]
+  }
 }

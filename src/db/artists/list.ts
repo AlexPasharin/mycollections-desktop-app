@@ -1,17 +1,17 @@
 import { type FunctionModule, type QueryCreator } from "kysely";
 
-import client from "../client/kysely";
+import { dbClient } from "../client/kysely";
 
+import type { DbSource } from "@/db/db-source";
 import type { ListArtist, FetchArtists } from "@/types/artists";
 import type { DB } from "@/types/db/database";
 
 const BATCH_SIZE = 100;
 
-export const fetchArtists: FetchArtists = async ({
-  artistForCompare,
-  batchSize = BATCH_SIZE,
-  direction,
-}) => {
+export const fetchArtists: FetchArtists = async (
+  { artistForCompare, batchSize = BATCH_SIZE, direction },
+  dbSource,
+) => {
   const artists = await fetchArtistsBatch({
     artistForCompare,
     batchSize,
@@ -19,16 +19,19 @@ export const fetchArtists: FetchArtists = async ({
       direction === "next"
         ? COMPARISON_OPERATORS.LARGER_OR_EQUAL_THAN
         : COMPARISON_OPERATORS.SMALLER_OR_EQUAL_THAN,
+    ...(dbSource === undefined ? {} : { dbSource }),
   });
 
   const prevArtist = await fetchNextOrPrevArtist({
     type: "prev",
     artist: artists.at(0),
+    ...(dbSource === undefined ? {} : { dbSource }),
   });
 
   const nextArtist = await fetchNextOrPrevArtist({
     type: "next",
     artist: artists.at(-1),
+    ...(dbSource === undefined ? {} : { dbSource }),
   });
 
   return {
@@ -52,11 +55,15 @@ const fetchArtistsBatch = ({
   artistForCompare,
   batchSize = BATCH_SIZE,
   comparisonOperator,
+  dbSource,
 }: {
   artistForCompare: ListArtist | null;
   comparisonOperator: ComparisonOperator;
   batchSize?: number;
+  dbSource?: DbSource;
 }): Promise<ListArtist[]> => {
+  const client = dbClient(dbSource);
+
   const sortingKey = (fn: FunctionModule<DB, "artists">) =>
     fn<string>("lower", [fn.coalesce("nameForSorting", "name")]);
 
@@ -103,9 +110,11 @@ const fetchArtistsBatch = ({
 const fetchNextOrPrevArtist = async ({
   type,
   artist,
+  dbSource,
 }: {
   type: "next" | "prev";
   artist?: ListArtist | undefined;
+  dbSource?: DbSource;
 }): Promise<ListArtist | undefined> => {
   if (!artist) {
     return undefined;
@@ -118,6 +127,7 @@ const fetchNextOrPrevArtist = async ({
         ? COMPARISON_OPERATORS.LARGER_THAN
         : COMPARISON_OPERATORS.SMALLER_THAN,
     batchSize: 1,
+    ...(dbSource === undefined ? {} : { dbSource }),
   });
 
   return artistsBatch.at(0);

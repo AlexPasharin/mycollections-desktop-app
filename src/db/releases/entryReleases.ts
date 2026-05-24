@@ -1,12 +1,16 @@
 import { sql } from "kysely";
 
-import client from "../client/kysely";
+import { dbClient } from "../client/kysely";
 import { aggregateDistinctValuesToArray } from "../utils";
 
+import type { DbSource } from "@/db/db-source";
 import type { EntryRelease } from "@/types/releases";
 
-export const getEntryReleases = (entryId: string): Promise<EntryRelease[]> =>
-  client
+export const getEntryReleases = (
+  entryId: string,
+  dbSource?: DbSource,
+): Promise<EntryRelease[]> =>
+  dbClient(dbSource)
     .selectFrom("musicalReleases")
     .leftJoin(
       "formatsOfReleases",

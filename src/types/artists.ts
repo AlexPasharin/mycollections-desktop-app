@@ -1,3 +1,4 @@
+import type { DbSource } from "@/db/db-source";
 import type { ArtistType } from "@/types/db/database";
 
 export type ListArtist = {
@@ -20,6 +21,7 @@ export type FetchArtistsResponse = {
 
 export type FetchArtists = (
   params: FetchArtistsParams,
+  dbSource?: DbSource,
 ) => Promise<FetchArtistsResponse>;
 
 export type QueriedArtist = {
@@ -33,7 +35,10 @@ export type ArtistQueryResult = {
   fuzzyMatches: QueriedArtist[];
 } | null;
 
-export type QueryArtist = (query: string) => Promise<ArtistQueryResult>;
+export type QueryArtist = (
+  query: string,
+  dbSource?: DbSource,
+) => Promise<ArtistQueryResult>;
 
 export type ArtistByIdResult = {
   artistId: string;
@@ -44,4 +49,5 @@ export type ArtistByIdResult = {
 
 export type GetArtistById = (
   artistId: string,
+  dbSource?: DbSource,
 ) => Promise<ArtistByIdResult | undefined>;

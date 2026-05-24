@@ -1,8 +1,9 @@
 import { sql } from "kysely";
 
-import client from "../client/kysely";
+import { dbClient } from "../client/kysely";
 import { aggregateDistinctValuesToArray } from "../utils";
 
+import type { DbSource } from "@/db/db-source";
 import type {
   GetReleaseById,
   ReleaseFormatOfReleaseItem,
@@ -31,8 +32,8 @@ const musicalReleaseColumns = [
   "musicalReleases.entryId",
 ] as const;
 
-export const getReleaseById: GetReleaseById = async (releaseId) => {
-  const release = await client
+export const getReleaseById: GetReleaseById = async (releaseId, dbSource) => {
+  const release = await dbClient(dbSource)
     .selectFrom("musicalReleases")
     .leftJoin(
       "alternativeMusicalEntryNames",
@@ -85,7 +86,7 @@ export const getReleaseById: GetReleaseById = async (releaseId) => {
   return {
     ...rest,
     releaseDate: parseStringAsGeneralizedDate(releaseDate),
-    countries: await getReleaseCountries(countries),
+    countries: await getReleaseCountries(countries, dbSource),
     catalogueNumbers: getReleaseCatNumbers(catalogueNumbers),
     matrixRunout: getReleaseMatrixRunout(matrixRunout),
   };
@@ -98,7 +99,7 @@ export const getReleaseById: GetReleaseById = async (releaseId) => {
  * @param countries - the release countries JSON
  * @returns the validated countries JSON with country codes replaced with their names or the raw JSON and the error message
  */
-const getReleaseCountries = async (countries: unknown) => {
+const getReleaseCountries = async (countries: unknown, dbSource?: DbSource) => {
   const countriesValidation = releaseCountriesSchema.safeParse(countries);
 
   if (!countriesValidation.success) {
@@ -115,7 +116,7 @@ const getReleaseCountries = async (countries: unknown) => {
   const dbCountries =
     countryCodes.length === 0
       ? []
-      : await client
+      : await dbClient(dbSource)
           .selectFrom("countries")
           .where("codeName", "in", countryCodes)
           .selectAll()

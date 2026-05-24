@@ -2,23 +2,22 @@ import { sql } from "kysely";
 
 import { selectFromExtendedMusicalEntryRows } from "./utils";
 
-import client from "../client/kysely";
+import { dbClient } from "../client/kysely";
 import { aggregateDistinctValuesToArray } from "../utils";
 
+import type { DbSource } from "@/db/db-source";
 import type { SearchArtistEntries } from "@/types/entries";
 
-export const searchArtistEntries: SearchArtistEntries = async ({
-  artistId,
-  query,
-  limit,
-  cursor,
-}) => {
-  const subquery = buildEntriesQueryByNameSubstringMatch(query);
+export const searchArtistEntries: SearchArtistEntries = async (
+  { artistId, query, limit, cursor },
+  dbSource,
+) => {
+  const subquery = buildEntriesQueryByNameSubstringMatch(query, dbSource);
 
   const cursorPayload = decodeCursor(cursor);
   const trimmedQuery = query.trim();
 
-  let grouped = client
+  let grouped = dbClient(dbSource)
     .selectFrom(subquery.as("entries"))
 
     .select([
@@ -81,10 +80,13 @@ export const searchArtistEntries: SearchArtistEntries = async ({
 // every "extended entry" record contains entry_id, main_name, but also possible type and alternative_name (both lifted from other tables)
 // entry must belong to the given artist and must have a name or alternative name that matches the query (in "case-insensitive substring match" sense)
 // "best" similarity score is also returned as one of the fields, to be used for ordering the results by users of this function
-const buildEntriesQueryByNameSubstringMatch = (query: string) => {
+const buildEntriesQueryByNameSubstringMatch = (
+  query: string,
+  dbSource?: DbSource,
+) => {
   const trimmedQuery = query.trim();
 
-  return selectFromExtendedMusicalEntryRows()
+  return selectFromExtendedMusicalEntryRows(dbSource)
     .select([
       "musicalEntries.entryId as entryId",
       "musicalEntriesArtists.artistId as artistId",
