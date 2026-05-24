@@ -4,6 +4,7 @@ import AllArtistsList from "./AllArtistsList";
 import ArtistQuery from "./ArtistQuery";
 import styles from "./MainWindowWrapper.module.css";
 
+import { DbSource, DEFAULT_DB_SOURCE } from "@/db/db-source";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 type MainTab = "query" | "list";
@@ -18,10 +19,34 @@ const MainWindowWrapper: FC = () => {
   useDocumentTitle("My Collections - Main Window");
 
   const [activeTab, setActiveTab] = useState<MainTab>("query");
+  const [dbSource, setDbSource] = useState<DbSource>(DEFAULT_DB_SOURCE);
 
   return (
     <>
-      <h1>My Collections</h1>
+      <header className={styles.header}>
+        <h1>My Collections</h1>
+
+        <div className={styles.dbSourceField}>
+          <label className={styles.dbSourceLabel} htmlFor="main-db-source">
+            Database
+          </label>
+          <select
+            id="main-db-source"
+            className={styles.dbSourceSelect}
+            value={dbSource}
+            onChange={(event) => {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- options are DbSource values only
+              setDbSource(event.target.value as DbSource);
+            }}
+          >
+            {DB_SOURCE_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </header>
 
       <section
         className={styles.tabs}
@@ -86,3 +111,9 @@ const MainWindowWrapper: FC = () => {
 };
 
 export default MainWindowWrapper;
+
+const DB_SOURCE_OPTIONS: ReadonlyArray<{ value: DbSource; label: string }> = [
+  { value: DbSource.LocalDevDb, label: "Local dev" },
+  { value: DbSource.LocalProdDb, label: "Local prod" },
+  { value: DbSource.RemoteProdDb, label: "Remote prod" },
+];
