@@ -6,11 +6,13 @@ import EntryReleasesList from "./EntryReleasesList";
 import api from "../../api";
 
 import FormFieldNotifications from "@/app/components/FormFieldNotifications";
+import type { DbSource } from "@/db/db-source";
 import type { EntryByIdResult } from "@/types/entries";
 import type { EntryRelease } from "@/types/releases";
 
 type EntryReleasesProps = {
   entry: EntryByIdResult;
+  dbSource: DbSource;
   isActive: boolean;
   latestAddedReleaseId: string | undefined;
   latestCreateNotifications: string[];
@@ -21,6 +23,7 @@ const CREATE_NOTIFICATIONS_ID = "entry-releases-create-notifications";
 
 const EntryReleases: FC<EntryReleasesProps> = ({
   entry,
+  dbSource,
   isActive,
   latestAddedReleaseId,
   latestCreateNotifications,
@@ -43,7 +46,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     setReleases(undefined);
 
     api
-      .getEntryReleases(entry.entryId)
+      .getEntryReleases(entry.entryId, dbSource)
       .then((data) => {
         if (token !== fetchTokenRef.current) {
           return;
@@ -63,7 +66,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
         setReleases([]);
         setLoading(false);
       });
-  }, [entry.entryId]);
+  }, [entry.entryId, dbSource]);
 
   // Re-fetch every time this tab becomes active, so the list is always fresh
   // after the user has been on the "Add release" tab (including right after a
@@ -154,6 +157,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
       <div className={styles.field}>
         <EntryReleasesList
           entry={entry}
+          dbSource={dbSource}
           releases={releases}
           latestAddedReleaseId={latestAddedReleaseId}
           onReleaseDeleted={handleReleaseDeleted}

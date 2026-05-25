@@ -49,5 +49,5 @@ export type ArtistByIdResult = {
 
 export type GetArtistById = (
   artistId: string,
-  dbSource?: DbSource,
+  dbSource: DbSource,
 ) => Promise<ArtistByIdResult | undefined>;

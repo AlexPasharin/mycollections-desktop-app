@@ -2,18 +2,27 @@ import { type FC, useEffect, useState } from "react";
 
 import api from "./api";
 import Entry from "./Entry";
+import styles from "./EntryWindowWrapper.module.css";
 
+import DbSourceSelect from "@/app/components/DbSourceSelect";
+import type { DbSource } from "@/db/db-source";
+import { parseDbSource } from "@/db/parse-db-source";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useSyncSearchParam } from "@/hooks/useSyncSearchParam";
 import type { EntryByIdResult } from "@/types/entries";
 
 const EntryWindowWrapper: FC = () => {
   const params = new URLSearchParams(window.location.search);
   const entryId = params.get("entryId");
+  const initialDbSource = parseDbSource(params.get("source"));
 
   console.info({ entryId });
 
+  const [dbSource, setDbSource] = useState<DbSource>(initialDbSource);
   const [entry, setEntry] = useState<EntryByIdResult>();
   const [isLoading, setIsLoading] = useState(true);
+
+  useSyncSearchParam("source", dbSource);
 
   const title = isLoading
     ? "Entry View - Loading...."
@@ -31,7 +40,7 @@ const EntryWindowWrapper: FC = () => {
     setIsLoading(true);
 
     api
-      .getEntryById(entryId)
+      .getEntryById(entryId, dbSource)
       .then((entryData) => {
         setEntry(entryData);
       })
@@ -40,7 +49,7 @@ const EntryWindowWrapper: FC = () => {
         setEntry(undefined);
       })
       .finally(() => setIsLoading(false));
-  }, [entryId]);
+  }, [entryId, dbSource]);
 
   if (!entryId) {
     const error = new Error("entryId is required");
@@ -52,10 +61,18 @@ const EntryWindowWrapper: FC = () => {
 
   return (
     <div>
+      <header className={styles.header}>
+        <DbSourceSelect
+          id="entry-db-source"
+          value={dbSource}
+          onChange={setDbSource}
+        />
+      </header>
+
       {isLoading ? (
         <p>Loading entry&apos;s details...</p>
       ) : entry ? (
-        <Entry entry={entry} />
+        <Entry entry={entry} dbSource={dbSource} />
       ) : (
         <p>Entry not found.</p>
       )}

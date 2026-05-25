@@ -19,8 +19,10 @@ const ArtistQuery: FC<ArtistQueryProps> = ({ dbSource }) => {
   const [inputValue, setInputValue] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
-  const debouncedQuery = useDebouncedValue(inputValue, SEARCH_DEBOUNCE_MS);
-  const isDebouncing = inputValue !== debouncedQuery;
+  const [debouncedQuery, isDebouncing] = useDebouncedValue(
+    inputValue,
+    SEARCH_DEBOUNCE_MS,
+  );
 
   /**
    * Monotonic id for artist search requests. Incremented when clearing the query,
@@ -81,7 +83,7 @@ const ArtistQuery: FC<ArtistQueryProps> = ({ dbSource }) => {
       {isDebouncing || isSearching ? (
         <div>Loading...</div>
       ) : (
-        <ArtistQueryResultView queryResults={artists} />
+        <ArtistQueryResultView queryResults={artists} dbSource={dbSource} />
       )}
     </>
   );
@@ -89,9 +91,10 @@ const ArtistQuery: FC<ArtistQueryProps> = ({ dbSource }) => {
 
 export default ArtistQuery;
 
-const ArtistQueryResultView: FC<{ queryResults: ArtistQueryResult | null }> = ({
-  queryResults,
-}) => {
+const ArtistQueryResultView: FC<{
+  queryResults: ArtistQueryResult | null;
+  dbSource: DbSource;
+}> = ({ queryResults, dbSource }) => {
   if (!queryResults) {
     return null;
   }
@@ -100,11 +103,11 @@ const ArtistQueryResultView: FC<{ queryResults: ArtistQueryResult | null }> = ({
 
   return (
     <>
-      <ArtistQueryList artists={directMatches} />
+      <ArtistQueryList artists={directMatches} dbSource={dbSource} />
       {fuzzyMatches.length > 0 && (
         <div className="mt-4">
           <div>{directMatches.length ? "Or did" : "Did"} you mean?</div>
-          <ArtistQueryList artists={fuzzyMatches} />
+          <ArtistQueryList artists={fuzzyMatches} dbSource={dbSource} />
         </div>
       )}
     </>

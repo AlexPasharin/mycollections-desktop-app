@@ -101,6 +101,7 @@ const AllArtistsList: FC<AllArtistsListProps> = ({ dbSource }) => {
               onArtistSelect={() =>
                 api.openNewArtistWindow({
                   artistId: artist.artistId,
+                  source: dbSource,
                 })
               }
             />

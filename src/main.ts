@@ -61,32 +61,41 @@ await app.whenReady().then(async () => {
   ipcMain.handle(QUERY_ARTIST, (_, query: string, dbSource: DbSource) =>
     queryArtist(query, dbSource),
   );
-  ipcMain.handle(GET_ARTIST_BY_ID, (_, artistId: string) =>
-    getArtistById(artistId),
+  ipcMain.handle(GET_ARTIST_BY_ID, (_, artistId: string, dbSource: DbSource) =>
+    getArtistById(artistId, dbSource),
   );
-  ipcMain.handle(GET_ENTRY_BY_ID, (_, entryId: string) =>
-    getEntryById(entryId),
+  ipcMain.handle(GET_ENTRY_BY_ID, (_, entryId: string, dbSource: DbSource) =>
+    getEntryById(entryId, dbSource),
   );
-  ipcMain.handle(GET_ENTRY_RELEASES, (_, entryId: string) =>
-    getEntryReleases(entryId),
+  ipcMain.handle(GET_ENTRY_RELEASES, (_, entryId: string, dbSource: DbSource) =>
+    getEntryReleases(entryId, dbSource),
   );
-  ipcMain.handle(GET_RELEASE_BY_ID, (_, releaseId: string) =>
-    getReleaseById(releaseId),
+  ipcMain.handle(
+    GET_RELEASE_BY_ID,
+    (_, releaseId: string, dbSource: DbSource) =>
+      getReleaseById(releaseId, dbSource),
   );
   ipcMain.handle(
     CREATE_MUSICAL_RELEASE,
     (_, input: CreateMusicalReleaseInput) => createMusicalRelease(input),
   );
-  ipcMain.handle(DELETE_RELEASE, (_, releaseId: string) =>
-    deleteRelease(releaseId),
+  ipcMain.handle(DELETE_RELEASE, (_, releaseId: string, dbSource: DbSource) =>
+    deleteRelease(releaseId, dbSource),
   );
-  ipcMain.handle(FETCH_RELEASE_FORMATS, () => fetchReleasesFormats());
-  ipcMain.handle(FETCH_LABELS, () => fetchLabels());
-  ipcMain.handle(FETCH_COUNTRIES, () => fetchCountries());
-  ipcMain.handle(FETCH_TAGS, () => fetchTags());
+  ipcMain.handle(FETCH_RELEASE_FORMATS, (_, dbSource: DbSource) =>
+    fetchReleasesFormats(dbSource),
+  );
+  ipcMain.handle(FETCH_LABELS, (_, dbSource: DbSource) =>
+    fetchLabels(dbSource),
+  );
+  ipcMain.handle(FETCH_COUNTRIES, (_, dbSource: DbSource) =>
+    fetchCountries(dbSource),
+  );
+  ipcMain.handle(FETCH_TAGS, (_, dbSource: DbSource) => fetchTags(dbSource));
   ipcMain.handle(
     SEARCH_ARTIST_ENTRIES,
-    (_, params: SearchArtistEntriesParams) => searchArtistEntries(params),
+    (_, params: SearchArtistEntriesParams, dbSource: DbSource) =>
+      searchArtistEntries(params, dbSource),
   );
 
   ipcMain.on(OPEN_ARTIST_WINDOW, (_event, params: CreateArtistWindowParams) => {

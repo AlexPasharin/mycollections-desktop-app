@@ -1,9 +1,8 @@
 import { dbClient } from "../client/kysely";
 
-import type { DbSource } from "@/db/db-source";
-import type { LabelListItem } from "@/types/labels";
+import type { FetchLabels } from "@/types/labels";
 
-export const fetchLabels = (dbSource?: DbSource): Promise<LabelListItem[]> =>
+export const fetchLabels: FetchLabels = (dbSource) =>
   dbClient(dbSource)
     .selectFrom("labels")
     .select(["labelId", "name"])

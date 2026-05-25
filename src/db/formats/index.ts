@@ -1,11 +1,8 @@
 import { dbClient } from "../client/kysely";
 
-import type { DbSource } from "@/db/db-source";
-import type { ReleasesFormatListItem } from "@/types/formats";
+import type { FetchReleasesFormats } from "@/types/formats";
 
-export const fetchReleasesFormats = (
-  dbSource?: DbSource,
-): Promise<ReleasesFormatListItem[]> =>
+export const fetchReleasesFormats: FetchReleasesFormats = (dbSource) =>
   dbClient(dbSource)
     .selectFrom("releasesFormats")
     .select(["formatId", "shortName"])

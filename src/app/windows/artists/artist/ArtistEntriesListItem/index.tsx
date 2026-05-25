@@ -4,13 +4,18 @@ import styles from "./ArtistEntriesListItem.module.css";
 
 import api from "../api";
 
+import type { DbSource } from "@/db/db-source";
 import type { EntrySearchResult } from "@/types/entries";
 
 type ArtistEntriesListItemProps = {
   entry: EntrySearchResult;
+  dbSource: DbSource;
 };
 
-const ArtistEntriesListItem: FC<ArtistEntriesListItemProps> = ({ entry }) => {
+const ArtistEntriesListItem: FC<ArtistEntriesListItemProps> = ({
+  entry,
+  dbSource,
+}) => {
   const { entryId, mainName, types, altNames } = entry;
   const typesJoined = types.length > 0 ? types.join(", ") : null;
   const altNamesJoined = altNames.length > 0 ? altNames.join(", ") : null;
@@ -21,7 +26,7 @@ const ArtistEntriesListItem: FC<ArtistEntriesListItemProps> = ({ entry }) => {
         className={styles.item}
         type="button"
         onClick={() => {
-          api.openNewEntryWindow({ entryId });
+          api.openNewEntryWindow({ entryId, source: dbSource });
         }}
       >
         <div>

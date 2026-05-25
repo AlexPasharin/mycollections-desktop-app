@@ -4,6 +4,7 @@ import AddReleaseForm, { type AddReleaseFormProps } from "./AddReleaseForm";
 import styles from "./AddReleaseForm.module.css";
 
 import api from "@/app/windows/entry/api";
+import type { DbSource } from "@/db/db-source";
 import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
@@ -12,10 +13,15 @@ import type { TagsById } from "@/types/tags";
 type AddReleaseFormWrapperProps = Omit<
   AddReleaseFormProps,
   "allFormats" | "labels" | "tags" | "sortedTagEntries" | "allCountries"
->;
+> & {
+  dbSource: DbSource;
+};
 
-const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
-  const { entry } = props;
+const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = ({
+  dbSource,
+  ...formProps
+}) => {
+  const { entry } = formProps;
 
   const [releasesFormats, setReleasesFormats] = useState<
     ReleasesFormatListItem[]
@@ -36,10 +42,10 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
 
   useEffect(() => {
     Promise.all([
-      api.fetchReleasesFormats(),
-      api.fetchLabels(),
-      api.fetchTags(),
-      api.fetchCountries(),
+      api.fetchReleasesFormats(dbSource),
+      api.fetchLabels(dbSource),
+      api.fetchTags(dbSource),
+      api.fetchCountries(dbSource),
     ])
       .then(([formatsData, labelsData, tagsData, countriesData]) => {
         setReleasesFormats(formatsData);
@@ -57,7 +63,7 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [dbSource]);
 
   if (loading) {
     return (
@@ -79,7 +85,7 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = (props) => {
 
   return (
     <AddReleaseForm
-      {...props}
+      {...formProps}
       allFormats={releasesFormats}
       labels={labels}
       tags={tags}

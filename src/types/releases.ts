@@ -29,7 +29,7 @@ export type EntryRelease = {
 
 export type GetEntryReleases = (
   entryId: string,
-  dbSource?: DbSource,
+  dbSource: DbSource,
 ) => Promise<EntryRelease[]>;
 
 export type JsonParsingErrorData = { rawJson: unknown; error: string };
@@ -53,7 +53,7 @@ export type ReleaseByIdResult = Omit<
 
 export type GetReleaseById = (
   releaseId: string,
-  dbSource?: DbSource,
+  dbSource: DbSource,
 ) => Promise<ReleaseByIdResult | undefined>;
 
 export type CreateMusicalReleaseInput = {
@@ -75,5 +75,5 @@ export type DeleteReleaseResult = {
 
 export type DeleteRelease = (
   releaseId: string,
-  dbSource?: DbSource,
+  dbSource: DbSource,
 ) => Promise<DeleteReleaseResult>;

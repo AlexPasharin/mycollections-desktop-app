@@ -10,25 +10,6 @@
   margin: 0;
 }
 
-.dbSourceField {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.dbSourceLabel {
-  font-size: 0.875rem;
-  color: #555;
-}
-
-.dbSourceSelect {
-  font: inherit;
-  padding: 0.35rem 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: #fff;
-}
-
 .tabs {
   margin-top: 0.75rem;
 }
