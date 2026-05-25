@@ -1,11 +1,8 @@
 import { dbClient } from "../client/kysely";
 
-import type { DbSource } from "@/db/db-source";
-import type { CountryListItem } from "@/types/countries";
+import type { FetchCountries } from "@/types/countries";
 
-export const fetchCountries = (
-  dbSource?: DbSource,
-): Promise<CountryListItem[]> =>
+export const fetchCountries: FetchCountries = (dbSource) =>
   dbClient(dbSource)
     .selectFrom("countries")
     .select(["codeName", "name"])

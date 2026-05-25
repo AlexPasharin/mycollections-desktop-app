@@ -5,6 +5,7 @@ import styles from "./EntryReleasesList.module.css";
 import api from "../../../api";
 import EntryRelease from "../EntryRelease";
 
+import type { DbSource } from "@/db/db-source";
 import type { EntryByIdResult } from "@/types/entries";
 import type {
   EntryRelease as EntryReleaseRow,
@@ -14,6 +15,7 @@ import { updateImmutableSet } from "@/utils/immutableSet";
 
 type EntryReleasesListProps = {
   entry: EntryByIdResult;
+  dbSource: DbSource;
   releases: EntryReleaseRow[];
   latestAddedReleaseId: string | undefined;
   onReleaseDeleted: (deletedReleaseVersion: string) => void;
@@ -21,6 +23,7 @@ type EntryReleasesListProps = {
 
 const EntryReleasesList: FC<EntryReleasesListProps> = ({
   entry,
+  dbSource,
   releases,
   latestAddedReleaseId,
   onReleaseDeleted,
@@ -66,7 +69,7 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
     setLoadingIds(updateImmutableSet(releaseId, "add"));
 
     api
-      .getReleaseById(releaseId)
+      .getReleaseById(releaseId, dbSource)
       .then((row) => {
         if (!expandedIdsRef.current.has(releaseId)) {
           return;
@@ -106,6 +109,7 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
         <EntryRelease
           key={r.releaseId}
           entry={entry}
+          dbSource={dbSource}
           release={r}
           isExpanded={expandedIds.has(r.releaseId)}
           onToggle={() => toggleRelease(r.releaseId)}

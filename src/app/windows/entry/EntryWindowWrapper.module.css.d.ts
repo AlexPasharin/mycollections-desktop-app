@@ -2,11 +2,6 @@
 // Please do not change this file!
 interface CssExports {
   'header': string;
-  'tab': string;
-  'tabActive': string;
-  'tabList': string;
-  'tabPanel': string;
-  'tabs': string;
 }
 export const cssExports: CssExports;
 export default cssExports;

@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 
+export type DebouncedValueResult<T extends string> = readonly [
+  debouncedValue: T,
+  isDebouncing: boolean,
+];
+
 export const useDebouncedValue = <T extends string>(
   value: T,
   delayMs: number,
-): T => {
+): DebouncedValueResult<T> => {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
@@ -22,5 +27,5 @@ export const useDebouncedValue = <T extends string>(
     };
   }, [value, delayMs]);
 
-  return debouncedValue;
+  return [debouncedValue, value !== debouncedValue];
 };

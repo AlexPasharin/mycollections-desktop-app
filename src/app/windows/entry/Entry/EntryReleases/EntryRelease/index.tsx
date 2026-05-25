@@ -6,6 +6,7 @@ import api from "../../../api";
 import ReleaseDetails from "../ReleaseDetails";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
+import type { DbSource } from "@/db/db-source";
 import type { EntryByIdResult } from "@/types/entries";
 import type {
   EntryRelease as EntryReleaseRow,
@@ -14,6 +15,7 @@ import type {
 
 type EntryReleaseProps = {
   entry: EntryByIdResult;
+  dbSource: DbSource;
   release: EntryReleaseRow;
   isExpanded: boolean;
   onToggle: () => void;
@@ -26,6 +28,7 @@ type EntryReleaseProps = {
 
 const EntryRelease: FC<EntryReleaseProps> = ({
   entry,
+  dbSource,
   release,
   isExpanded,
   onToggle,
@@ -58,7 +61,7 @@ const EntryRelease: FC<EntryReleaseProps> = ({
     setDeleteError(undefined);
 
     api
-      .deleteRelease(release.releaseId)
+      .deleteRelease(release.releaseId, dbSource)
       .then((deleted) => {
         console.info("Deleted release", deleted);
         setIsConfirmOpen(false);

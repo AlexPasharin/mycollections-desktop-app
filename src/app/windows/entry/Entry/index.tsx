@@ -6,11 +6,13 @@ import EntryArtists from "./EntryArtists";
 import EntryDetailsPanel from "./EntryDetailsPanel";
 import EntryReleases from "./EntryReleases";
 
+import type { DbSource } from "@/db/db-source";
 import type { EntryByIdResult } from "@/types/entries";
 import { sanitizeReleaseDate } from "@/utils/date";
 
 type EntryProps = {
   entry: EntryByIdResult;
+  dbSource: DbSource;
 };
 
 type EntryTab = "releases" | "addRelease";
@@ -21,7 +23,7 @@ const RELEASES_PANEL_ID = "releases-panel";
 const ADD_RELEASE_TAB_ID = "add-release-tab";
 const ADD_RELEASE_PANEL_ID = "add-release-panel";
 
-const Entry: FC<EntryProps> = ({ entry }) => {
+const Entry: FC<EntryProps> = ({ entry, dbSource }) => {
   const [activeTab, setActiveTab] = useState<EntryTab>("addRelease");
 
   const [latestAddedReleaseId, setLatestAddedReleaseId] = useState<string>();
@@ -86,6 +88,7 @@ const Entry: FC<EntryProps> = ({ entry }) => {
         >
           <EntryReleases
             entry={entry}
+            dbSource={dbSource}
             isActive={activeTab === "releases"}
             latestAddedReleaseId={latestAddedReleaseId}
             latestCreateNotifications={latestCreateNotifications}
@@ -109,6 +112,7 @@ const Entry: FC<EntryProps> = ({ entry }) => {
                 entry.originalReleaseDate,
               ),
             }}
+            dbSource={dbSource}
             onCancel={() => setActiveTab("releases")}
             onReleaseCreated={handleReleaseCreated}
           />

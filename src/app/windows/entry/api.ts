@@ -1,20 +1,20 @@
-import type { CountryListItem } from "@/types/countries";
+import type { FetchCountries } from "@/types/countries";
 import type { GetEntryById } from "@/types/entries";
-import type { ReleasesFormatListItem } from "@/types/formats";
-import type { LabelListItem } from "@/types/labels";
+import type { FetchReleasesFormats } from "@/types/formats";
+import type { FetchLabels } from "@/types/labels";
 import type {
   CreateMusicalRelease,
   DeleteRelease,
   GetEntryReleases,
   GetReleaseById,
 } from "@/types/releases";
-import type { TagListItem } from "@/types/tags";
+import type { FetchTags } from "@/types/tags";
 
 export type API = {
-  fetchCountries: () => Promise<CountryListItem[]>;
-  fetchLabels: () => Promise<LabelListItem[]>;
-  fetchReleasesFormats: () => Promise<ReleasesFormatListItem[]>;
-  fetchTags: () => Promise<TagListItem[]>;
+  fetchCountries: FetchCountries;
+  fetchLabels: FetchLabels;
+  fetchReleasesFormats: FetchReleasesFormats;
+  fetchTags: FetchTags;
   getEntryById: GetEntryById;
   getEntryReleases: GetEntryReleases;
   getReleaseById: GetReleaseById;

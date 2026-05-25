@@ -7,16 +7,19 @@ import {
   OPEN_ENTRY_WINDOW,
   SEARCH_ARTIST_ENTRIES,
 } from "@/appConstants/ipcEvents";
+import type { DbSource } from "@/db/db-source";
 import type {
   CreateEntryWindowParams,
   SearchArtistEntriesParams,
 } from "@/types/entries";
 
 const api = {
-  getArtistById: (artistId: string) =>
-    ipcRenderer.invoke(GET_ARTIST_BY_ID, artistId),
-  searchArtistEntries: (params: SearchArtistEntriesParams) =>
-    ipcRenderer.invoke(SEARCH_ARTIST_ENTRIES, params),
+  getArtistById: (artistId: string, dbSource: DbSource) =>
+    ipcRenderer.invoke(GET_ARTIST_BY_ID, artistId, dbSource),
+  searchArtistEntries: (
+    params: SearchArtistEntriesParams,
+    dbSource: DbSource,
+  ) => ipcRenderer.invoke(SEARCH_ARTIST_ENTRIES, params, dbSource),
   openNewEntryWindow: (params: CreateEntryWindowParams) =>
     ipcRenderer.send(OPEN_ENTRY_WINDOW, params),
 } as const satisfies API;

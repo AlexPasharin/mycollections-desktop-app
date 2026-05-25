@@ -13,23 +13,27 @@ import {
   CREATE_MUSICAL_RELEASE,
   DELETE_RELEASE,
 } from "@/appConstants/ipcEvents";
+import type { DbSource } from "@/db/db-source";
 import type { CreateMusicalReleaseInput } from "@/types/releases";
 
 const api = {
-  fetchCountries: () => ipcRenderer.invoke(FETCH_COUNTRIES),
-  fetchLabels: () => ipcRenderer.invoke(FETCH_LABELS),
-  fetchReleasesFormats: () => ipcRenderer.invoke(FETCH_RELEASE_FORMATS),
-  fetchTags: () => ipcRenderer.invoke(FETCH_TAGS),
-  getEntryById: (entryId: string) =>
-    ipcRenderer.invoke(GET_ENTRY_BY_ID, entryId),
-  getEntryReleases: (entryId: string) =>
-    ipcRenderer.invoke(GET_ENTRY_RELEASES, entryId),
-  getReleaseById: (releaseId: string) =>
-    ipcRenderer.invoke(GET_RELEASE_BY_ID, releaseId),
+  fetchCountries: (dbSource: DbSource) =>
+    ipcRenderer.invoke(FETCH_COUNTRIES, dbSource),
+  fetchLabels: (dbSource: DbSource) =>
+    ipcRenderer.invoke(FETCH_LABELS, dbSource),
+  fetchReleasesFormats: (dbSource: DbSource) =>
+    ipcRenderer.invoke(FETCH_RELEASE_FORMATS, dbSource),
+  fetchTags: (dbSource: DbSource) => ipcRenderer.invoke(FETCH_TAGS, dbSource),
+  getEntryById: (entryId: string, dbSource: DbSource) =>
+    ipcRenderer.invoke(GET_ENTRY_BY_ID, entryId, dbSource),
+  getEntryReleases: (entryId: string, dbSource: DbSource) =>
+    ipcRenderer.invoke(GET_ENTRY_RELEASES, entryId, dbSource),
+  getReleaseById: (releaseId: string, dbSource: DbSource) =>
+    ipcRenderer.invoke(GET_RELEASE_BY_ID, releaseId, dbSource),
   createMusicalRelease: (input: CreateMusicalReleaseInput) =>
     ipcRenderer.invoke(CREATE_MUSICAL_RELEASE, input),
-  deleteRelease: (releaseId: string) =>
-    ipcRenderer.invoke(DELETE_RELEASE, releaseId),
+  deleteRelease: (releaseId: string, dbSource: DbSource) =>
+    ipcRenderer.invoke(DELETE_RELEASE, releaseId, dbSource),
 } as const satisfies API;
 
 contextBridge.exposeInMainWorld("api", api);
