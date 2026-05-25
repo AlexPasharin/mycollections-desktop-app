@@ -85,26 +85,28 @@ const MainWindowWrapper: FC = () => {
           </button>
         </div>
 
-        <div
-          id={QUERY_PANEL_ID}
-          role="tabpanel"
-          aria-labelledby={QUERY_TAB_ID}
-          hidden={activeTab !== "query"}
-          className={styles.tabPanel}
-        >
-          <ArtistQuery dbSource={dbSource} />
-        </div>
+        {activeTab === "query" && (
+          <div
+            id={QUERY_PANEL_ID}
+            role="tabpanel"
+            aria-labelledby={QUERY_TAB_ID}
+            className={styles.tabPanel}
+          >
+            <ArtistQuery dbSource={dbSource} />
+          </div>
+        )}
 
-        <div
-          id={LIST_PANEL_ID}
-          role="tabpanel"
-          aria-labelledby={LIST_TAB_ID}
-          hidden={activeTab !== "list"}
-          className={styles.tabPanel}
-        >
-          <h2>All artists</h2>
-          <AllArtistsList dbSource={dbSource} />
-        </div>
+        {activeTab === "list" && (
+          <div
+            id={LIST_PANEL_ID}
+            role="tabpanel"
+            aria-labelledby={LIST_TAB_ID}
+            className={styles.tabPanel}
+          >
+            <h2>All artists</h2>
+            <AllArtistsList dbSource={dbSource} />
+          </div>
+        )}
       </section>
     </>
   );
