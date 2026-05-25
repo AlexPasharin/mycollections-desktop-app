@@ -21,7 +21,7 @@ export type FetchArtistsResponse = {
 
 export type FetchArtists = (
   params: FetchArtistsParams,
-  dbSource?: DbSource,
+  dbSource: DbSource,
 ) => Promise<FetchArtistsResponse>;
 
 export type QueriedArtist = {
@@ -37,7 +37,7 @@ export type ArtistQueryResult = {
 
 export type QueryArtist = (
   query: string,
-  dbSource?: DbSource,
+  dbSource: DbSource,
 ) => Promise<ArtistQueryResult>;
 
 export type ArtistByIdResult = {

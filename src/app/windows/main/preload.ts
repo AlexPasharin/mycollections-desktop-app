@@ -7,13 +7,13 @@ import {
   OPEN_ARTIST_WINDOW,
   QUERY_ARTIST,
 } from "@/appConstants/ipcEvents";
-import type { FetchArtistsParams } from "@/types/artists";
 import type { CreateArtistWindowParams } from "@/types/entries";
 
 const api = {
-  fetchArtists: (params: FetchArtistsParams) =>
-    ipcRenderer.invoke(FETCH_ARTISTS, params),
-  queryArtists: (query: string) => ipcRenderer.invoke(QUERY_ARTIST, query),
+  fetchArtists: (params, dbSource) =>
+    ipcRenderer.invoke(FETCH_ARTISTS, params, dbSource),
+  queryArtists: (query, dbSource) =>
+    ipcRenderer.invoke(QUERY_ARTIST, query, dbSource),
   openNewArtistWindow: (params: CreateArtistWindowParams) =>
     ipcRenderer.send(OPEN_ARTIST_WINDOW, params),
 } as const satisfies API;

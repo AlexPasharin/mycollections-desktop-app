@@ -3,6 +3,7 @@ import stylistic from "@stylistic/eslint-plugin";
 import importPlugin from "eslint-plugin-import";
 import jestPlugin from "eslint-plugin-jest";
 import reactPlugin from "eslint-plugin-react";
+import reactHooksPlugin from "eslint-plugin-react-hooks";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
@@ -30,6 +31,7 @@ export default tseslint.config(
       "@stylistic": stylistic,
       "@import": importPlugin,
       react: reactPlugin,
+      "react-hooks": reactHooksPlugin,
     },
     settings: {
       react: {
@@ -163,6 +165,8 @@ export default tseslint.config(
       ],
       "@stylistic/no-mixed-operators": ["error", { allowSamePrecedence: true }],
       "react/react-in-jsx-scope": "off",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "error",
     },
   },
   {

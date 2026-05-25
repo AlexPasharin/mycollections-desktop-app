@@ -30,7 +30,7 @@ const getArtistsByMatchOnMainName = async (
   query: string,
   directMatchLimit: number,
   fuzzyMatchLimit: number,
-  dbSource?: DbSource,
+  dbSource: DbSource,
 ) => {
   const artistsDirectlyByMainName = await getArtistsBySubstringMatchOnMainName(
     query,
@@ -55,7 +55,7 @@ const getArtistsByMatchOnAltName = async (
   query: string,
   directMatchLimit: number,
   fuzzyMatchLimit: number,
-  dbSource?: DbSource,
+  dbSource: DbSource,
 ) => {
   const artistsDirectlyByAltName = await getArtistsBySubstringMatchOnAltName(
     query,
@@ -79,7 +79,7 @@ const getArtistsByMatchOnAltName = async (
 const getArtistsBySubstringMatchOnMainName = (
   query: string,
   limit: number,
-  dbSource?: DbSource,
+  dbSource: DbSource,
 ) => {
   const searchTerm = `%${query}%`;
   const client = dbClient(dbSource);
@@ -99,7 +99,7 @@ const getArtistsBySubstringMatchOnMainName = (
 const getArtistsBySubstringMatchOnAltName = (
   query: string,
   limit: number,
-  dbSource?: DbSource,
+  dbSource: DbSource,
 ) => {
   const searchTerm = `%${query}%`;
   const client = dbClient(dbSource);
@@ -120,7 +120,7 @@ const getArtistsByFuzzyMatchOnMainName = (
   query: string,
   excludeArtists: QueriedArtist[],
   limit: number,
-  dbSource?: DbSource,
+  dbSource: DbSource,
 ) => {
   const client = dbClient(dbSource);
 
@@ -144,7 +144,7 @@ const getArtistsByFuzzyMatchOnAltName = async (
   query: string,
   excludeArtists: (QueriedArtist & { altNameId: string })[],
   limit: number,
-  dbSource?: DbSource,
+  dbSource: DbSource,
 ) => {
   const altArtistNameIdsToExclude = excludeArtists.map(
     ({ altNameId }) => altNameId,

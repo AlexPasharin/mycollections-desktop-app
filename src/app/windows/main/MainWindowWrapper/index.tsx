@@ -92,7 +92,7 @@ const MainWindowWrapper: FC = () => {
           hidden={activeTab !== "query"}
           className={styles.tabPanel}
         >
-          <ArtistQuery />
+          <ArtistQuery dbSource={dbSource} />
         </div>
 
         <div
@@ -103,7 +103,7 @@ const MainWindowWrapper: FC = () => {
           className={styles.tabPanel}
         >
           <h2>All artists</h2>
-          <AllArtistsList />
+          <AllArtistsList dbSource={dbSource} />
         </div>
       </section>
     </>

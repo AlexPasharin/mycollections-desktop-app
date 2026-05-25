@@ -3,26 +3,37 @@ import { useEffect, useState, type FC } from "react";
 import api from "../../api";
 
 import ArtistListElement from "@/app/components/Artist";
-import type { FetchArtistsResponse } from "@/types/artists";
+import type { DbSource } from "@/db/db-source";
+import type { FetchArtistsResponse, ListArtist } from "@/types/artists";
 
 type ArtistsState = FetchArtistsResponse & {
   startIndex: number;
 };
 
-const AllArtistsList: FC = () => {
+type AllArtistsListProps = {
+  dbSource: DbSource;
+};
+
+const AllArtistsList: FC<AllArtistsListProps> = ({ dbSource }) => {
   const [artistsState, setArtistsState] = useState<ArtistsState | null>(null);
   const [loadingArtists, setLoadingArtists] = useState(true);
   const [loadingError, setLoadingError] = useState<unknown>(null);
 
-  const fetchArtistsBatch = (direction: "next" | "prev") => {
+  const fetchArtistsBatch = (
+    direction: "next" | "prev",
+    artistForCompare?: ListArtist | null,
+  ) => {
     setLoadingArtists(true);
 
     api
-      .fetchArtists({
-        artistForCompare: artistsState?.[direction] ?? null,
-        batchSize: 50,
-        direction,
-      })
+      .fetchArtists(
+        {
+          artistForCompare: artistForCompare ?? null,
+          batchSize: 50,
+          direction,
+        },
+        dbSource,
+      )
       .then((result) =>
         setArtistsState((prevArtistsState) => ({
           ...result,
@@ -30,9 +41,9 @@ const AllArtistsList: FC = () => {
           startIndex: prevArtistsState
             ? direction === "next"
               ? prevArtistsState.startIndex +
-                prevArtistsState.artists.length -
-                1 +
-                1
+              prevArtistsState.artists.length -
+              1 +
+              1
               : prevArtistsState.startIndex - result.artists.length
             : 1,
         })),
@@ -47,7 +58,11 @@ const AllArtistsList: FC = () => {
       .finally(() => setLoadingArtists(false));
   };
 
-  useEffect(() => fetchArtistsBatch("next"), []);
+  useEffect(() => {
+    setArtistsState(null);
+    fetchArtistsBatch("next");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to dbSource; reset and fetch first page on DB switch
+  }, [dbSource]);
 
   if (loadingError) {
     return (
@@ -61,12 +76,18 @@ const AllArtistsList: FC = () => {
   return (
     <>
       {artistsState?.prev && (
-        <button type="button" onClick={() => fetchArtistsBatch("prev")}>
+        <button
+          type="button"
+          onClick={() => fetchArtistsBatch("prev", artistsState.prev)}
+        >
           Prev page &lt;-
         </button>
       )}
       {artistsState?.next && (
-        <button type="button" onClick={() => fetchArtistsBatch("next")}>
+        <button
+          type="button"
+          onClick={() => fetchArtistsBatch("next", artistsState.next)}
+        >
           Next page -&gt;
         </button>
       )}

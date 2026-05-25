@@ -19,19 +19,19 @@ export const fetchArtists: FetchArtists = async (
       direction === "next"
         ? COMPARISON_OPERATORS.LARGER_OR_EQUAL_THAN
         : COMPARISON_OPERATORS.SMALLER_OR_EQUAL_THAN,
-    ...(dbSource === undefined ? {} : { dbSource }),
+    dbSource,
   });
 
   const prevArtist = await fetchNextOrPrevArtist({
     type: "prev",
     artist: artists.at(0),
-    ...(dbSource === undefined ? {} : { dbSource }),
+    dbSource,
   });
 
   const nextArtist = await fetchNextOrPrevArtist({
     type: "next",
     artist: artists.at(-1),
-    ...(dbSource === undefined ? {} : { dbSource }),
+    dbSource,
   });
 
   return {
@@ -60,7 +60,7 @@ const fetchArtistsBatch = ({
   artistForCompare: ListArtist | null;
   comparisonOperator: ComparisonOperator;
   batchSize?: number;
-  dbSource?: DbSource;
+  dbSource: DbSource;
 }): Promise<ListArtist[]> => {
   const client = dbClient(dbSource);
 
@@ -114,7 +114,7 @@ const fetchNextOrPrevArtist = async ({
 }: {
   type: "next" | "prev";
   artist?: ListArtist | undefined;
-  dbSource?: DbSource;
+  dbSource: DbSource;
 }): Promise<ListArtist | undefined> => {
   if (!artist) {
     return undefined;
@@ -127,7 +127,7 @@ const fetchNextOrPrevArtist = async ({
         ? COMPARISON_OPERATORS.LARGER_THAN
         : COMPARISON_OPERATORS.SMALLER_THAN,
     batchSize: 1,
-    ...(dbSource === undefined ? {} : { dbSource }),
+    dbSource,
   });
 
   return artistsBatch.at(0);

@@ -28,6 +28,7 @@ import {
 } from "@/appConstants/ipcEvents";
 import { fetchArtists, getArtistById, queryArtist } from "@/db/artists";
 import { fetchCountries } from "@/db/countries";
+import type { DbSource } from "@/db/db-source";
 import { getEntryById, searchArtistEntries } from "@/db/entries";
 import { fetchReleasesFormats } from "@/db/formats";
 import { fetchLabels } from "@/db/labels";
@@ -51,11 +52,15 @@ if (electronSquirrelStartup) {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 await app.whenReady().then(async () => {
-  ipcMain.handle(FETCH_ARTISTS, (_, params: FetchArtistsParams) =>
-    fetchArtists(params),
+  ipcMain.handle(
+    FETCH_ARTISTS,
+    (_, params: FetchArtistsParams, dbSource: DbSource) =>
+      fetchArtists(params, dbSource),
   );
 
-  ipcMain.handle(QUERY_ARTIST, (_, query: string) => queryArtist(query));
+  ipcMain.handle(QUERY_ARTIST, (_, query: string, dbSource: DbSource) =>
+    queryArtist(query, dbSource),
+  );
   ipcMain.handle(GET_ARTIST_BY_ID, (_, artistId: string) =>
     getArtistById(artistId),
   );
