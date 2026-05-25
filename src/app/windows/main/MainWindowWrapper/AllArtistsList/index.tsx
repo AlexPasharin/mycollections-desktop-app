@@ -1,53 +1,67 @@
-import { useEffect, useState, type FC } from "react";
+import { useCallback, useEffect, useState, type FC } from "react";
 
 import api from "../../api";
 
 import ArtistListElement from "@/app/components/Artist";
-import type { FetchArtistsResponse } from "@/types/artists";
+import type { DbSource } from "@/db/db-source";
+import type { FetchArtistsResponse, ListArtist } from "@/types/artists";
 
 type ArtistsState = FetchArtistsResponse & {
   startIndex: number;
 };
 
-const AllArtistsList: FC = () => {
+type AllArtistsListProps = {
+  dbSource: DbSource;
+};
+
+const AllArtistsList: FC<AllArtistsListProps> = ({ dbSource }) => {
   const [artistsState, setArtistsState] = useState<ArtistsState | null>(null);
   const [loadingArtists, setLoadingArtists] = useState(true);
   const [loadingError, setLoadingError] = useState<unknown>(null);
 
-  const fetchArtistsBatch = (direction: "next" | "prev") => {
-    setLoadingArtists(true);
+  const fetchArtistsBatch = useCallback(
+    (direction: "next" | "prev", artistForCompare?: ListArtist | null) => {
+      setLoadingArtists(true);
 
-    api
-      .fetchArtists({
-        artistForCompare: artistsState?.[direction] ?? null,
-        batchSize: 50,
-        direction,
-      })
-      .then((result) =>
-        setArtistsState((prevArtistsState) => ({
-          ...result,
+      api
+        .fetchArtists(
+          {
+            artistForCompare: artistForCompare ?? null,
+            batchSize: 50,
+            direction,
+          },
+          dbSource,
+        )
+        .then((result) =>
+          setArtistsState((prevArtistsState) => ({
+            ...result,
 
-          startIndex: prevArtistsState
-            ? direction === "next"
-              ? prevArtistsState.startIndex +
-                prevArtistsState.artists.length -
-                1 +
-                1
-              : prevArtistsState.startIndex - result.artists.length
-            : 1,
-        })),
-      )
-      .catch((error: unknown) => {
-        const errorMessage = error instanceof Error ? error.message : error;
+            startIndex: prevArtistsState
+              ? direction === "next"
+                ? prevArtistsState.startIndex +
+                  prevArtistsState.artists.length -
+                  1 +
+                  1
+                : prevArtistsState.startIndex - result.artists.length
+              : 1,
+          })),
+        )
+        .catch((error: unknown) => {
+          const errorMessage = error instanceof Error ? error.message : error;
 
-        console.error(errorMessage);
+          console.error(errorMessage);
 
-        setLoadingError(errorMessage);
-      })
-      .finally(() => setLoadingArtists(false));
-  };
+          setLoadingError(errorMessage);
+        })
+        .finally(() => setLoadingArtists(false));
+    },
+    [dbSource],
+  );
 
-  useEffect(() => fetchArtistsBatch("next"), []);
+  useEffect(() => {
+    setArtistsState(null);
+    fetchArtistsBatch("next");
+  }, [fetchArtistsBatch]);
 
   if (loadingError) {
     return (
@@ -61,12 +75,18 @@ const AllArtistsList: FC = () => {
   return (
     <>
       {artistsState?.prev && (
-        <button type="button" onClick={() => fetchArtistsBatch("prev")}>
+        <button
+          type="button"
+          onClick={() => fetchArtistsBatch("prev", artistsState.prev)}
+        >
           Prev page &lt;-
         </button>
       )}
       {artistsState?.next && (
-        <button type="button" onClick={() => fetchArtistsBatch("next")}>
+        <button
+          type="button"
+          onClick={() => fetchArtistsBatch("next", artistsState.next)}
+        >
           Next page -&gt;
         </button>
       )}
