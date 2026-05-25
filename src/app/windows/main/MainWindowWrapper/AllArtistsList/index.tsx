@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from "react";
+import { useCallback, useEffect, useState, type FC } from "react";
 
 import api from "../../api";
 
@@ -19,50 +19,49 @@ const AllArtistsList: FC<AllArtistsListProps> = ({ dbSource }) => {
   const [loadingArtists, setLoadingArtists] = useState(true);
   const [loadingError, setLoadingError] = useState<unknown>(null);
 
-  const fetchArtistsBatch = (
-    direction: "next" | "prev",
-    artistForCompare?: ListArtist | null,
-  ) => {
-    setLoadingArtists(true);
+  const fetchArtistsBatch = useCallback(
+    (direction: "next" | "prev", artistForCompare?: ListArtist | null) => {
+      setLoadingArtists(true);
 
-    api
-      .fetchArtists(
-        {
-          artistForCompare: artistForCompare ?? null,
-          batchSize: 50,
-          direction,
-        },
-        dbSource,
-      )
-      .then((result) =>
-        setArtistsState((prevArtistsState) => ({
-          ...result,
+      api
+        .fetchArtists(
+          {
+            artistForCompare: artistForCompare ?? null,
+            batchSize: 50,
+            direction,
+          },
+          dbSource,
+        )
+        .then((result) =>
+          setArtistsState((prevArtistsState) => ({
+            ...result,
 
-          startIndex: prevArtistsState
-            ? direction === "next"
-              ? prevArtistsState.startIndex +
-              prevArtistsState.artists.length -
-              1 +
-              1
-              : prevArtistsState.startIndex - result.artists.length
-            : 1,
-        })),
-      )
-      .catch((error: unknown) => {
-        const errorMessage = error instanceof Error ? error.message : error;
+            startIndex: prevArtistsState
+              ? direction === "next"
+                ? prevArtistsState.startIndex +
+                  prevArtistsState.artists.length -
+                  1 +
+                  1
+                : prevArtistsState.startIndex - result.artists.length
+              : 1,
+          })),
+        )
+        .catch((error: unknown) => {
+          const errorMessage = error instanceof Error ? error.message : error;
 
-        console.error(errorMessage);
+          console.error(errorMessage);
 
-        setLoadingError(errorMessage);
-      })
-      .finally(() => setLoadingArtists(false));
-  };
+          setLoadingError(errorMessage);
+        })
+        .finally(() => setLoadingArtists(false));
+    },
+    [dbSource],
+  );
 
   useEffect(() => {
     setArtistsState(null);
     fetchArtistsBatch("next");
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to dbSource; reset and fetch first page on DB switch
-  }, [dbSource]);
+  }, [fetchArtistsBatch]);
 
   if (loadingError) {
     return (

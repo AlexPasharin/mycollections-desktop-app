@@ -95,8 +95,6 @@ const ArtistQuery: FC<ArtistQueryProps> = ({ dbSource }) => {
   }, []);
 
   useEffect(() => {
-    console.info("Fetching artists for dbSource", dbSource);
-
     // Only react to dbSource; inputValue is read as the current query at switch time.
     runSearch(inputValue, dbSource);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to dbSource; inputValue is read as current query at switch time
