@@ -4,6 +4,7 @@ import api from "../../api";
 import ArtistQueryList from "../ArtistQueryList";
 
 import type { DbSource } from "@/db/db-source";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import type { ArtistQueryResult } from "@/types/artists";
 
 /** Wait this long after the last keystroke before calling the API. */
@@ -16,9 +17,10 @@ type ArtistQueryProps = {
 const ArtistQuery: FC<ArtistQueryProps> = ({ dbSource }) => {
   const [artists, setArtists] = useState<ArtistQueryResult>(null);
   const [inputValue, setInputValue] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debouncedQuery = useDebouncedValue(inputValue, SEARCH_DEBOUNCE_MS);
+  const isDebouncing = inputValue !== debouncedQuery;
 
   /**
    * Monotonic id for artist search requests. Incremented when clearing the query,
@@ -26,31 +28,28 @@ const ArtistQuery: FC<ArtistQueryProps> = ({ dbSource }) => {
    */
   const searchRequestIdRef = useRef(0);
 
-  const clearPendingSearch = () => {
-    if (searchTimeoutRef.current !== null) {
-      clearTimeout(searchTimeoutRef.current);
-      searchTimeoutRef.current = null;
-    }
-  };
+  useEffect(() => {
+    return () => {
+      searchRequestIdRef.current += 1;
+    };
+  }, []);
 
-  const runSearch = (query: string, source: DbSource) => {
-    clearPendingSearch();
-
+  useEffect(() => {
     searchRequestIdRef.current += 1;
 
-    if (!query) {
+    if (!debouncedQuery) {
       setArtists(null);
-      setLoading(false);
+      setIsSearching(false);
 
       return;
     }
 
     const dispatchedRequestId = searchRequestIdRef.current;
 
-    setLoading(true);
+    setIsSearching(true);
 
     api
-      .queryArtists(query, source)
+      .queryArtists(debouncedQuery, dbSource)
       .then((result) => {
         if (dispatchedRequestId === searchRequestIdRef.current) {
           setArtists(result);
@@ -65,46 +64,13 @@ const ArtistQuery: FC<ArtistQueryProps> = ({ dbSource }) => {
       })
       .finally(() => {
         if (dispatchedRequestId === searchRequestIdRef.current) {
-          setLoading(false);
+          setIsSearching(false);
         }
       });
-  };
-
-  const scheduleSearch = (query: string, source: DbSource) => {
-    clearPendingSearch();
-
-    if (!query) {
-      runSearch(query, source);
-
-      return;
-    }
-
-    setLoading(true);
-
-    searchTimeoutRef.current = setTimeout(() => {
-      runSearch(query, source);
-    }, SEARCH_DEBOUNCE_MS);
-  };
-
-  useEffect(() => {
-    // Unmount-only cleanup
-    return () => {
-      clearPendingSearch();
-      searchRequestIdRef.current += 1;
-    };
-  }, []);
-
-  useEffect(() => {
-    // Only react to dbSource; inputValue is read as the current query at switch time.
-    runSearch(inputValue, dbSource);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to dbSource; inputValue is read as current query at switch time
-  }, [dbSource]);
+  }, [debouncedQuery, dbSource]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const trimmedValue = e.target.value.trim();
-
-    setInputValue(trimmedValue);
-    scheduleSearch(trimmedValue, dbSource);
+    setInputValue(e.target.value.trim());
   };
 
   return (
@@ -112,7 +78,7 @@ const ArtistQuery: FC<ArtistQueryProps> = ({ dbSource }) => {
       <h2>Find artist</h2>
       <input value={inputValue} onChange={onChange} />
 
-      {loading ? (
+      {isDebouncing || isSearching ? (
         <div>Loading...</div>
       ) : (
         <ArtistQueryResultView queryResults={artists} />
