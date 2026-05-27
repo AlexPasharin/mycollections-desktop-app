@@ -170,21 +170,22 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     </div>
   );
 
-  const deletedNotification = !!recentlyDeletedVersion && latestDeletedErrors.length === 0 && (
-    <div className={styles.deletedNotification} role="status">
-      <span className={styles.deletedNotificationText}>
-        Release &quot;{recentlyDeletedVersion}&quot; was deleted successfully.
-      </span>
-      <button
-        type="button"
-        className={styles.deletedNotificationDismiss}
-        onClick={dismissDeletedNotification}
-        aria-label="Dismiss notification"
-      >
-        Dismiss
-      </button>
-    </div>
-  );
+  const deletedNotification = !!recentlyDeletedVersion &&
+    latestDeletedErrors.length === 0 && (
+      <div className={styles.deletedNotification} role="status">
+        <span className={styles.deletedNotificationText}>
+          Release &quot;{recentlyDeletedVersion}&quot; was deleted successfully.
+        </span>
+        <button
+          type="button"
+          className={styles.deletedNotificationDismiss}
+          onClick={dismissDeletedNotification}
+          aria-label="Dismiss notification"
+        >
+          Dismiss
+        </button>
+      </div>
+    );
 
   if (!releases || releases.length === 0) {
     return (

@@ -64,10 +64,6 @@ const EntryRelease: FC<EntryReleaseProps> = ({
   };
 
   const handleToggleDbSource = (source: DbSource) => {
-    if (source === dbSource) {
-      return;
-    }
-
     setCheckedDbSources((prev) => {
       const next = new Set(prev);
 
@@ -87,14 +83,19 @@ const EntryRelease: FC<EntryReleaseProps> = ({
 
     deleteReleaseFromDbSources(release.releaseId, checkedDbSources)
       .then((outcomes: DeleteReleaseOutcome[]) => {
-        const errors = outcomes.filter(outcome => outcome.status === "rejected").map(outcome => outcome.reason);
+        const errors = outcomes
+          .filter((outcome) => outcome.status === "rejected")
+          .map((outcome) => outcome.reason);
 
         console.info("Deleted release", {
           outcomes,
           errors: errors.length > 0 ? errors : undefined,
         });
         setIsConfirmOpen(false);
-        onDeleted(release.releaseId, buildDeleteReleaseFeedback(outcomes).errors);
+        onDeleted(
+          release.releaseId,
+          buildDeleteReleaseFeedback(outcomes).errors,
+        );
       })
       .catch((error: unknown) => {
         console.error("Failed to delete release", error);
@@ -197,24 +198,30 @@ export default EntryRelease;
 
 type DeleteReleaseOutcome =
   | {
-    source: DbSource;
-    status: "fulfilled";
-    result: DeleteReleaseResult;
-  }
+      source: DbSource;
+      status: "fulfilled";
+      result: DeleteReleaseResult;
+    }
   | {
-    source: DbSource;
-    status: "rejected";
-    reason: unknown;
-  };
+      source: DbSource;
+      status: "rejected";
+      reason: unknown;
+    };
 
 const deleteReleaseFromDbSources = (
   releaseId: string,
   dbSources: Set<DbSource>,
 ): Promise<DeleteReleaseOutcome[]> =>
   Promise.all(
-    Array.from(dbSources).map(source =>
-      api.deleteRelease(releaseId, source).then(result => ({ status: "fulfilled" as const, result, source }))
-        .catch((reason: unknown) => ({ status: "rejected" as const, reason, source }) as const)),
+    Array.from(dbSources).map((source) =>
+      api
+        .deleteRelease(releaseId, source)
+        .then((result) => ({ status: "fulfilled" as const, result, source }))
+        .catch(
+          (reason: unknown) =>
+            ({ status: "rejected" as const, reason, source }) as const,
+        ),
+    ),
   );
 
 const formatDeleteReleaseError = (reason: unknown): string =>

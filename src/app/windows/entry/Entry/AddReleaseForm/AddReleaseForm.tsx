@@ -156,9 +156,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           ...prev.formats,
           errors: nextFormatRowErrors
             ? {
-              ...formatsErrors,
-              [formatRowId]: nextFormatRowErrors,
-            }
+                ...formatsErrors,
+                [formatRowId]: nextFormatRowErrors,
+              }
             : omitProperty(formatsErrors, formatRowId),
         };
       });
