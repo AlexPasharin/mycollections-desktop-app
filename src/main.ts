@@ -77,7 +77,8 @@ await app.whenReady().then(async () => {
   );
   ipcMain.handle(
     CREATE_MUSICAL_RELEASE,
-    (_, input: CreateMusicalReleaseInput) => createMusicalRelease(input),
+    (_, input: CreateMusicalReleaseInput, dbSource: DbSource) =>
+      createMusicalRelease(input, dbSource),
   );
   ipcMain.handle(DELETE_RELEASE, (_, releaseId: string, dbSource: DbSource) =>
     deleteRelease(releaseId, dbSource),

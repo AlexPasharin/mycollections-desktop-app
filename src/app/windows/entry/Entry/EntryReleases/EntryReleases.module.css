@@ -58,6 +58,47 @@
   outline-offset: 2px;
 }
 
+.createError {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+}
+
+.createErrorDismiss {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0.2rem 0.55rem;
+  font: inherit;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: #991b1b;
+  background: transparent;
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.createErrorDismiss:hover {
+  color: #ffffff;
+  background-color: #991b1b;
+  border-color: #991b1b;
+}
+
+.createErrorDismiss:focus-visible {
+  outline: 2px solid #991b1b;
+  outline-offset: 2px;
+}
+
 .deletedNotification {
   display: flex;
   align-items: center;

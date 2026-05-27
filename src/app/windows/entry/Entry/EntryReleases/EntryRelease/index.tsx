@@ -6,9 +6,12 @@ import api from "../../../api";
 import ReleaseDetails from "../ReleaseDetails";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
+import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
 import type { DbSource } from "@/db/db-source";
+import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
 import type { EntryByIdResult } from "@/types/entries";
 import type {
+  DeleteReleaseResult,
   EntryRelease as EntryReleaseRow,
   ReleaseByIdResult,
 } from "@/types/releases";
@@ -23,7 +26,7 @@ type EntryReleaseProps = {
   loadFailed: boolean;
   isLoading: boolean;
   isRecentlyAdded: boolean;
-  onDeleted: (deletedReleaseVersion: string) => void;
+  onDeleted: (deletedReleaseVersion: string, errors: string[]) => void;
 };
 
 const EntryRelease: FC<EntryReleaseProps> = ({
@@ -41,9 +44,13 @@ const EntryRelease: FC<EntryReleaseProps> = ({
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string>();
+  const [checkedDbSources, setCheckedDbSources] = useState<Set<DbSource>>(
+    () => new Set(ALL_DB_SOURCES),
+  );
 
   const openConfirm = () => {
     setDeleteError(undefined);
+    setCheckedDbSources(new Set(ALL_DB_SOURCES));
     setIsConfirmOpen(true);
   };
 
@@ -56,16 +63,39 @@ const EntryRelease: FC<EntryReleaseProps> = ({
     setDeleteError(undefined);
   };
 
+  const handleToggleDbSource = (source: DbSource) => {
+    setCheckedDbSources((prev) => {
+      const next = new Set(prev);
+
+      if (next.has(source)) {
+        next.delete(source);
+      } else {
+        next.add(source);
+      }
+
+      return next;
+    });
+  };
+
   const handleConfirmDelete = () => {
     setIsDeleting(true);
     setDeleteError(undefined);
 
-    api
-      .deleteRelease(release.releaseId, dbSource)
-      .then((deleted) => {
-        console.info("Deleted release", deleted);
+    deleteReleaseFromDbSources(release.releaseId, checkedDbSources)
+      .then((outcomes: DeleteReleaseOutcome[]) => {
+        const errors = outcomes
+          .filter((outcome) => outcome.status === "rejected")
+          .map((outcome) => outcome.reason);
+
+        console.info("Deleted release", {
+          outcomes,
+          errors: errors.length > 0 ? errors : undefined,
+        });
         setIsConfirmOpen(false);
-        onDeleted(deleted.release.releaseVersion);
+        onDeleted(
+          release.releaseId,
+          buildDeleteReleaseFeedback(outcomes).errors,
+        );
       })
       .catch((error: unknown) => {
         console.error("Failed to delete release", error);
@@ -139,8 +169,18 @@ const EntryRelease: FC<EntryReleaseProps> = ({
         title="Remove release?"
         description={
           <>
-            Remove release <strong>{release.version}</strong> from your
-            collection? This cannot be undone.
+            <p>
+              Remove release <strong>{release.version}</strong> from your
+              collection? This cannot be undone.
+            </p>
+            <DbSourcesCheckboxes
+              heading="Remove from databases"
+              headingId="delete-release-db-sources-heading"
+              idPrefix="delete-release-db-source"
+              activeDbSource={dbSource}
+              checkedSources={checkedDbSources}
+              onToggle={handleToggleDbSource}
+            />
           </>
         }
         confirmLabel="Remove"
@@ -155,3 +195,53 @@ const EntryRelease: FC<EntryReleaseProps> = ({
 };
 
 export default EntryRelease;
+
+type DeleteReleaseOutcome =
+  | {
+      source: DbSource;
+      status: "fulfilled";
+      result: DeleteReleaseResult;
+    }
+  | {
+      source: DbSource;
+      status: "rejected";
+      reason: unknown;
+    };
+
+const deleteReleaseFromDbSources = (
+  releaseId: string,
+  dbSources: Set<DbSource>,
+): Promise<DeleteReleaseOutcome[]> =>
+  Promise.all(
+    Array.from(dbSources).map((source) =>
+      api
+        .deleteRelease(releaseId, source)
+        .then((result) => ({ status: "fulfilled" as const, result, source }))
+        .catch(
+          (reason: unknown) =>
+            ({ status: "rejected" as const, reason, source }) as const,
+        ),
+    ),
+  );
+
+const formatDeleteReleaseError = (reason: unknown): string =>
+  reason instanceof Error ? reason.message : "Failed to delete release";
+
+const buildDeleteReleaseFeedback = (
+  outcomes: DeleteReleaseOutcome[],
+): { errors: string[] } => {
+  const errors: string[] = [];
+
+  for (const outcome of outcomes) {
+    if (outcome.status === "rejected") {
+      const { source, reason } = outcome;
+
+      const errorMessage = `Failed to delete release in ${dbSourceLabel(source)}`;
+      console.error(errorMessage, reason);
+
+      errors.push(`${errorMessage}: ${formatDeleteReleaseError(reason)}`);
+    }
+  }
+
+  return { errors };
+};

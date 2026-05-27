@@ -18,7 +18,7 @@ type EntryReleasesListProps = {
   dbSource: DbSource;
   releases: EntryReleaseRow[];
   latestAddedReleaseId: string | undefined;
-  onReleaseDeleted: (deletedReleaseVersion: string) => void;
+  onReleaseDeleted: (deletedReleaseVersion: string, errors: string[]) => void;
 };
 
 const EntryReleasesList: FC<EntryReleasesListProps> = ({

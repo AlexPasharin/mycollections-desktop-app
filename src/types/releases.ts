@@ -64,11 +64,11 @@ export type CreateMusicalReleaseInput = {
 
 export type CreateMusicalRelease = (
   input: CreateMusicalReleaseInput,
-  dbSource?: DbSource,
+  dbSource: DbSource,
 ) => Promise<{ releaseId: string; notifications: string[] }>;
 
 export type DeleteReleaseResult = {
-  release: Selectable<MusicalRelease>;
+  release: Selectable<MusicalRelease> | undefined;
   formats: Selectable<FormatOfRelease>[];
   tags: Selectable<MusicalReleaseTag>[];
 };

@@ -5,6 +5,7 @@ import EntryReleasesList from "./EntryReleasesList";
 
 import api from "../../api";
 
+import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import type { DbSource } from "@/db/db-source";
 import type { EntryByIdResult } from "@/types/entries";
@@ -16,10 +17,14 @@ type EntryReleasesProps = {
   isActive: boolean;
   latestAddedReleaseId: string | undefined;
   latestCreateNotifications: string[];
+  latestCreatedErrors: string[];
   onDismissCreateNotifications: () => void;
+  onDismissCreatedErrors: () => void;
 };
 
 const CREATE_NOTIFICATIONS_ID = "entry-releases-create-notifications";
+const CREATE_ERRORS_ID = "entry-releases-create-errors";
+const DELETE_ERRORS_ID = "entry-releases-delete-errors";
 
 const EntryReleases: FC<EntryReleasesProps> = ({
   entry,
@@ -27,13 +32,16 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   isActive,
   latestAddedReleaseId,
   latestCreateNotifications,
+  latestCreatedErrors,
   onDismissCreateNotifications,
+  onDismissCreatedErrors,
 }) => {
   const [releases, setReleases] = useState<EntryRelease[]>();
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
   const [recentlyDeletedVersion, setRecentlyDeletedVersion] =
     useState<string>();
+  const [latestDeletedErrors, setLatestDeletedErrors] = useState<string[]>([]);
 
   // Token bumped on every fetch / unmount; in-flight responses with a stale
   // token are discarded so we never setState on stale data or after unmount.
@@ -84,13 +92,21 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     };
   }, [isActive, fetchReleases]);
 
-  const handleReleaseDeleted = (deletedReleaseVersion: string) => {
+  const handleReleaseDeleted = (
+    deletedReleaseVersion: string,
+    errors: string[],
+  ) => {
     setRecentlyDeletedVersion(deletedReleaseVersion);
+    setLatestDeletedErrors(errors);
     fetchReleases();
   };
 
   const dismissDeletedNotification = () => {
     setRecentlyDeletedVersion(undefined);
+  };
+
+  const dismissDeletedErrors = () => {
+    setLatestDeletedErrors([]);
   };
 
   if (loading) {
@@ -122,21 +138,54 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     </div>
   );
 
-  const deletedNotification = !!recentlyDeletedVersion && (
-    <div className={styles.deletedNotification} role="status">
-      <span className={styles.deletedNotificationText}>
-        Release &quot;{recentlyDeletedVersion}&quot; was deleted successfully.
-      </span>
+  const createErrors = latestCreatedErrors.map((message) => ({ message }));
+
+  const createErrorBanner = createErrors.length > 0 && (
+    <div className={styles.createError}>
+      <FormFieldErrorMessages id={CREATE_ERRORS_ID} messages={createErrors} />
       <button
         type="button"
-        className={styles.deletedNotificationDismiss}
-        onClick={dismissDeletedNotification}
-        aria-label="Dismiss notification"
+        className={styles.createErrorDismiss}
+        onClick={onDismissCreatedErrors}
+        aria-label="Dismiss errors"
       >
         Dismiss
       </button>
     </div>
   );
+
+  const deleteErrors = latestDeletedErrors.map((message) => ({ message }));
+
+  const deleteErrorBanner = deleteErrors.length > 0 && (
+    <div className={styles.createError}>
+      <FormFieldErrorMessages id={DELETE_ERRORS_ID} messages={deleteErrors} />
+      <button
+        type="button"
+        className={styles.createErrorDismiss}
+        onClick={dismissDeletedErrors}
+        aria-label="Dismiss delete errors"
+      >
+        Dismiss
+      </button>
+    </div>
+  );
+
+  const deletedNotification = !!recentlyDeletedVersion &&
+    latestDeletedErrors.length === 0 && (
+      <div className={styles.deletedNotification} role="status">
+        <span className={styles.deletedNotificationText}>
+          Release &quot;{recentlyDeletedVersion}&quot; was deleted successfully.
+        </span>
+        <button
+          type="button"
+          className={styles.deletedNotificationDismiss}
+          onClick={dismissDeletedNotification}
+          aria-label="Dismiss notification"
+        >
+          Dismiss
+        </button>
+      </div>
+    );
 
   if (!releases || releases.length === 0) {
     return (
@@ -144,7 +193,9 @@ const EntryReleases: FC<EntryReleasesProps> = ({
         <p className={styles.emptyState}>
           This entry has no releases in collection
         </p>
+        {createErrorBanner}
         {createNotificationBanner}
+        {deleteErrorBanner}
         {deletedNotification}
       </>
     );
@@ -152,7 +203,9 @@ const EntryReleases: FC<EntryReleasesProps> = ({
 
   return (
     <div className={styles.panel}>
+      {createErrorBanner}
       {createNotificationBanner}
+      {deleteErrorBanner}
       <h2 className={styles.sectionTitle}>Releases in collection: </h2>
       <div className={styles.field}>
         <EntryReleasesList

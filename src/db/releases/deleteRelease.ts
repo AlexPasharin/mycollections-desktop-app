@@ -23,7 +23,7 @@ export const deleteRelease: DeleteRelease = (releaseId, dbSource) =>
         .deleteFrom("musicalReleases")
         .where("releaseId", "=", releaseId)
         .returningAll()
-        .executeTakeFirstOrThrow();
+        .executeTakeFirst();
 
       return { release, formats, tags };
     });

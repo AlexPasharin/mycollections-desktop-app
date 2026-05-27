@@ -30,8 +30,10 @@ const api = {
     ipcRenderer.invoke(GET_ENTRY_RELEASES, entryId, dbSource),
   getReleaseById: (releaseId: string, dbSource: DbSource) =>
     ipcRenderer.invoke(GET_RELEASE_BY_ID, releaseId, dbSource),
-  createMusicalRelease: (input: CreateMusicalReleaseInput) =>
-    ipcRenderer.invoke(CREATE_MUSICAL_RELEASE, input),
+  createMusicalRelease: (
+    input: CreateMusicalReleaseInput,
+    dbSource: DbSource,
+  ) => ipcRenderer.invoke(CREATE_MUSICAL_RELEASE, input, dbSource),
   deleteRelease: (releaseId: string, dbSource: DbSource) =>
     ipcRenderer.invoke(DELETE_RELEASE, releaseId, dbSource),
 } as const satisfies API;
