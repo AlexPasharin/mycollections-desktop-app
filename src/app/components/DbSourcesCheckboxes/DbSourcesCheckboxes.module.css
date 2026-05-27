@@ -1,0 +1,40 @@
+.section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.heading {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0 0 0.6rem;
+  color: #1f2937;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.checkboxLabel {
+  font-size: 0.95rem;
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.35;
+  color: #374151;
+}
+
+.checkboxLabelDisabled {
+  color: #6b7280;
+}

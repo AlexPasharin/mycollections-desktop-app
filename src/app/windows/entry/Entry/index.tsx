@@ -30,10 +30,16 @@ const Entry: FC<EntryProps> = ({ entry, dbSource }) => {
   const [latestCreateNotifications, setLatestCreateNotifications] = useState<
     string[]
   >([]);
+  const [latestCreatedErrors, setLatestCreatedErrors] = useState<string[]>([]);
 
-  const handleReleaseCreated = (releaseId: string, notifications: string[]) => {
+  const handleReleaseCreated = (
+    releaseId: string | undefined,
+    notifications: string[],
+    errors: string[],
+  ) => {
     setLatestAddedReleaseId(releaseId);
     setLatestCreateNotifications(notifications);
+    setLatestCreatedErrors(errors);
     setActiveTab("releases");
   };
 
@@ -92,9 +98,11 @@ const Entry: FC<EntryProps> = ({ entry, dbSource }) => {
             isActive={activeTab === "releases"}
             latestAddedReleaseId={latestAddedReleaseId}
             latestCreateNotifications={latestCreateNotifications}
+            latestCreatedErrors={latestCreatedErrors}
             onDismissCreateNotifications={() =>
               setLatestCreateNotifications([])
             }
+            onDismissCreatedErrors={() => setLatestCreatedErrors([])}
           />
         </div>
 

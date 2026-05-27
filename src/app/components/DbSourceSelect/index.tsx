@@ -2,7 +2,8 @@ import { type FC } from "react";
 
 import styles from "./DbSourceSelect.module.css";
 
-import { DbSource } from "@/db/db-source";
+import type { DbSource } from "@/db/db-source";
+import { DB_SOURCE_OPTIONS } from "@/db/db-source-options";
 
 type DbSourceSelectProps = {
   id: string;
@@ -34,9 +35,3 @@ const DbSourceSelect: FC<DbSourceSelectProps> = ({ id, value, onChange }) => (
 );
 
 export default DbSourceSelect;
-
-const DB_SOURCE_OPTIONS: ReadonlyArray<{ value: DbSource; label: string }> = [
-  { value: DbSource.LocalDevDb, label: "Local dev" },
-  { value: DbSource.LocalProdDb, label: "Local prod" },
-  { value: DbSource.RemoteProdDb, label: "Remote prod" },
-];

@@ -86,6 +86,7 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = ({
   return (
     <AddReleaseForm
       {...formProps}
+      dbSource={dbSource}
       allFormats={releasesFormats}
       labels={labels}
       tags={tags}
