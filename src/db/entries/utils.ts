@@ -1,11 +1,11 @@
-import { dbClient } from "../client/kysely";
+import type { Kysely } from "kysely";
 
-import type { DbSource } from "@/db/db-source";
+import type { DB } from "@/types/db/database";
 
 // Musical entries left-joined with their artists, alt names and types.
 // We use left joins because we also want to get entries that have no artists, types or alternative names
-export const selectFromExtendedMusicalEntryRows = (dbSource?: DbSource) =>
-  dbClient(dbSource)
+export const selectFromExtendedMusicalEntryRows = (db: Kysely<DB>) =>
+  db
     .selectFrom("musicalEntries")
     .leftJoin(
       "musicalEntriesArtists",

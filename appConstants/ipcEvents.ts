@@ -9,6 +9,8 @@ export const DELETE_RELEASE = "delete-release";
 export const FETCH_RELEASE_FORMATS = "fetch-release-formats";
 export const FETCH_LABELS = "fetch-labels";
 export const FETCH_TAGS = "fetch-tags";
+export const FETCH_ENTRY_TYPES = "fetch-entry-types";
+export const UPDATE_MUSICAL_ENTRY = "update-musical-entry";
 export const FETCH_COUNTRIES = "fetch-countries";
 export const SEARCH_ARTIST_ENTRIES = "search-artist-entries";
 

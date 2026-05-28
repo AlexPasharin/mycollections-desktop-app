@@ -1,19 +1,25 @@
-import { sql } from "kysely";
+import { sql, type Kysely } from "kysely";
 
 import { selectFromExtendedMusicalEntryRows } from "./utils";
 
+import { dbClient } from "../client/kysely";
 import { aggregateDistinctValuesToArray } from "../utils";
 
+import type { DB } from "@/types/db/database";
 import type {
   EntryAltNameInfo,
   EntryArtistInfo,
+  EntryByIdResult,
   GetEntryById,
 } from "@/types/entries";
 import type { TagListItem } from "@/types/tags";
 import { parseStringAsGeneralizedDate } from "@/utils/date";
 
-export const getEntryById: GetEntryById = async (entryId, dbSource) => {
-  const entry = await selectFromExtendedMusicalEntryRows(dbSource)
+export const fetchEntryByIdResult = async (
+  db: Kysely<DB>,
+  entryId: string,
+): Promise<EntryByIdResult | undefined> => {
+  const entry = await selectFromExtendedMusicalEntryRows(db)
     .leftJoin(
       "alternativeArtistNames",
       "musicalEntriesArtists.entryArtistNameId",
@@ -84,3 +90,6 @@ export const getEntryById: GetEntryById = async (entryId, dbSource) => {
     ),
   };
 };
+
+export const getEntryById: GetEntryById = (entryId, dbSource) =>
+  fetchEntryByIdResult(dbClient(dbSource), entryId);

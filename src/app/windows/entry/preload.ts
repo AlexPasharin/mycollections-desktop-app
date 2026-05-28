@@ -7,6 +7,8 @@ import {
   FETCH_LABELS,
   FETCH_RELEASE_FORMATS,
   FETCH_TAGS,
+  FETCH_ENTRY_TYPES,
+  UPDATE_MUSICAL_ENTRY,
   GET_ENTRY_BY_ID,
   GET_ENTRY_RELEASES,
   GET_RELEASE_BY_ID,
@@ -14,6 +16,7 @@ import {
   DELETE_RELEASE,
 } from "@/appConstants/ipcEvents";
 import type { DbSource } from "@/db/db-source";
+import type { UpdateMusicalEntryInput } from "@/types/entries";
 import type { CreateMusicalReleaseInput } from "@/types/releases";
 
 const api = {
@@ -24,6 +27,8 @@ const api = {
   fetchReleasesFormats: (dbSource: DbSource) =>
     ipcRenderer.invoke(FETCH_RELEASE_FORMATS, dbSource),
   fetchTags: (dbSource: DbSource) => ipcRenderer.invoke(FETCH_TAGS, dbSource),
+  fetchEntryTypes: (dbSource: DbSource) =>
+    ipcRenderer.invoke(FETCH_ENTRY_TYPES, dbSource),
   getEntryById: (entryId: string, dbSource: DbSource) =>
     ipcRenderer.invoke(GET_ENTRY_BY_ID, entryId, dbSource),
   getEntryReleases: (entryId: string, dbSource: DbSource) =>
@@ -36,6 +41,8 @@ const api = {
   ) => ipcRenderer.invoke(CREATE_MUSICAL_RELEASE, input, dbSource),
   deleteRelease: (releaseId: string, dbSource: DbSource) =>
     ipcRenderer.invoke(DELETE_RELEASE, releaseId, dbSource),
+  updateMusicalEntry: (input: UpdateMusicalEntryInput, dbSource: DbSource) =>
+    ipcRenderer.invoke(UPDATE_MUSICAL_ENTRY, input, dbSource),
 } as const satisfies API;
 
 contextBridge.exposeInMainWorld("api", api);

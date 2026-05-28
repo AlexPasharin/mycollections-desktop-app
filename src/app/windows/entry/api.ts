@@ -1,5 +1,6 @@
 import type { FetchCountries } from "@/types/countries";
-import type { GetEntryById } from "@/types/entries";
+import type { GetEntryById, UpdateMusicalEntry } from "@/types/entries";
+import type { FetchEntryTypes } from "@/types/entryTypes";
 import type { FetchReleasesFormats } from "@/types/formats";
 import type { FetchLabels } from "@/types/labels";
 import type {
@@ -15,11 +16,13 @@ export type API = {
   fetchLabels: FetchLabels;
   fetchReleasesFormats: FetchReleasesFormats;
   fetchTags: FetchTags;
+  fetchEntryTypes: FetchEntryTypes;
   getEntryById: GetEntryById;
   getEntryReleases: GetEntryReleases;
   getReleaseById: GetReleaseById;
   createMusicalRelease: CreateMusicalRelease;
   deleteRelease: DeleteRelease;
+  updateMusicalEntry: UpdateMusicalEntry;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
