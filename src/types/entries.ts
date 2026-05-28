@@ -78,9 +78,7 @@ export type SearchArtistEntries = (
   dbSource: DbSource,
 ) => Promise<SearchArtistEntriesResult>;
 
-export type UpdateMusicalEntryAltNameInput =
-  | { nameId: string; name: string }
-  | { name: string };
+export type UpdateMusicalEntryAltNameInput = { nameId?: string; name: string };
 
 export type UpdateMusicalEntryInput = {
   entryId: string;

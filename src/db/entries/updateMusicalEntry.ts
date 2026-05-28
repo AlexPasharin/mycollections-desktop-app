@@ -85,9 +85,9 @@ const syncEntryAltNames = async (
   entryId: string,
   altNames: UpdateMusicalEntryAltNameInput[],
 ) => {
-  const providedNameIds = altNames.flatMap((altName) =>
-    "nameId" in altName ? [altName.nameId] : [],
-  );
+  const providedNameIds = altNames
+    .map((altName) => altName.nameId)
+    .filter((nameId) => nameId !== undefined);
 
   let deleteQuery = trx
     .deleteFrom("alternativeMusicalEntryNames")
@@ -108,31 +108,40 @@ const syncEntryAltNames = async (
   const existingNameIds = new Set(existingAltNames.map(({ nameId }) => nameId));
 
   for (const altName of altNames) {
-    if ("nameId" in altName) {
-      if (existingNameIds.has(altName.nameId)) {
-        await trx
-          .updateTable("alternativeMusicalEntryNames")
-          .set({ name: altName.name })
-          .where("nameId", "=", altName.nameId)
-          .where("entryId", "=", entryId)
-          .execute();
-      } else {
-        await trx
-          .insertInto("alternativeMusicalEntryNames")
-          .values({
-            nameId: altName.nameId,
-            name: altName.name,
-            entryId,
-          })
-          .execute();
-      }
+    await upsertEntryAltName(trx, entryId, altName, existingNameIds);
+  }
+};
 
-      continue;
-    }
+const upsertEntryAltName = async (
+  trx: DbTransaction,
+  entryId: string,
+  altName: UpdateMusicalEntryAltNameInput,
+  existingNameIds: Set<string>,
+) => {
+  const { nameId, name } = altName;
 
+  if (nameId === undefined) {
     await trx
       .insertInto("alternativeMusicalEntryNames")
-      .values({ name: altName.name, entryId })
+      .values({ name, entryId })
       .execute();
+
+    return;
   }
+
+  if (existingNameIds.has(nameId)) {
+    await trx
+      .updateTable("alternativeMusicalEntryNames")
+      .set({ name })
+      .where("nameId", "=", nameId)
+      .where("entryId", "=", entryId)
+      .execute();
+
+    return;
+  }
+
+  await trx
+    .insertInto("alternativeMusicalEntryNames")
+    .values({ nameId, name, entryId })
+    .execute();
 };
