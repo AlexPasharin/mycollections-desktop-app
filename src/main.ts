@@ -19,6 +19,8 @@ import {
   FETCH_LABELS,
   FETCH_COUNTRIES,
   FETCH_TAGS,
+  FETCH_ENTRY_TYPES,
+  UPDATE_MUSICAL_ENTRY,
   CREATE_MUSICAL_RELEASE,
   DELETE_RELEASE,
   OPEN_ARTIST_WINDOW,
@@ -29,7 +31,12 @@ import {
 import { fetchArtists, getArtistById, queryArtist } from "@/db/artists";
 import { fetchCountries } from "@/db/countries";
 import type { DbSource } from "@/db/db-source";
-import { getEntryById, searchArtistEntries } from "@/db/entries";
+import {
+  fetchEntryTypes,
+  getEntryById,
+  searchArtistEntries,
+  updateMusicalEntry,
+} from "@/db/entries";
 import { fetchReleasesFormats } from "@/db/formats";
 import { fetchLabels } from "@/db/labels";
 import {
@@ -40,7 +47,10 @@ import {
 } from "@/db/releases";
 import { fetchTags } from "@/db/tags";
 import type { FetchArtistsParams } from "@/types/artists";
-import type { SearchArtistEntriesParams } from "@/types/entries";
+import type {
+  SearchArtistEntriesParams,
+  UpdateMusicalEntryInput,
+} from "@/types/entries";
 import type { CreateMusicalReleaseInput } from "@/types/releases";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -93,6 +103,14 @@ await app.whenReady().then(async () => {
     fetchCountries(dbSource),
   );
   ipcMain.handle(FETCH_TAGS, (_, dbSource: DbSource) => fetchTags(dbSource));
+  ipcMain.handle(FETCH_ENTRY_TYPES, (_, dbSource: DbSource) =>
+    fetchEntryTypes(dbSource),
+  );
+  ipcMain.handle(
+    UPDATE_MUSICAL_ENTRY,
+    (_, input: UpdateMusicalEntryInput, dbSource: DbSource) =>
+      updateMusicalEntry(input, dbSource),
+  );
   ipcMain.handle(
     SEARCH_ARTIST_ENTRIES,
     (_, params: SearchArtistEntriesParams, dbSource: DbSource) =>

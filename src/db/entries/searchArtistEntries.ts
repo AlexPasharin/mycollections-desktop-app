@@ -86,7 +86,7 @@ const buildEntriesQueryByNameSubstringMatch = (
 ) => {
   const trimmedQuery = query.trim();
 
-  return selectFromExtendedMusicalEntryRows(dbSource)
+  return selectFromExtendedMusicalEntryRows(dbClient(dbSource))
     .select([
       "musicalEntries.entryId as entryId",
       "musicalEntriesArtists.artistId as artistId",
