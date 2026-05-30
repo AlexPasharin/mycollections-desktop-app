@@ -16,12 +16,12 @@ import {
   validateReleaseFormats,
   validateReleaseCatNumbers,
   validateReleaseMatrixRunout,
-  type FormFieldValidationResult,
 } from "./validation";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryAltNameInfo, EntryByIdResult } from "@/types/entries";
+import type { FormFieldValidationResult } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { TagId } from "@/types/tags";
 

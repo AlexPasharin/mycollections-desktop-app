@@ -1,7 +1,7 @@
 import { parse as parseYaml } from "yaml";
 import { z } from "zod";
 
-import type { FormFieldValidationResult } from "./types";
+import type { FormFieldValidationResult } from "@/types/form";
 
 import type { AddReleaseFormFieldError } from "../errorMessages";
 import type { AddReleaseFormMatrixRunoutDraft } from "../formValues";

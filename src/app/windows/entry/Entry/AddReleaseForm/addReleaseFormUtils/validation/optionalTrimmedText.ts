@@ -1,4 +1,4 @@
-import type { FormFieldValidationResult } from "./types";
+import type { FormFieldValidationResult } from "@/types/form";
 
 export const validateOptionalTrimmedText = (
   value: string,

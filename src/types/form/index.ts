@@ -1,9 +1,7 @@
 type Notifications =
-  | [
-      {
-        notification: string;
-      },
-    ]
+  | {
+      notification: string;
+    }[]
   | undefined;
 
 export type FormFieldValidationResult<T, E> =

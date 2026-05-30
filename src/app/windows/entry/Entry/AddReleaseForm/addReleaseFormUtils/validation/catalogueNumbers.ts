@@ -1,6 +1,6 @@
 import z from "zod";
 
-import type { FormFieldValidationResult } from "./types";
+import type { FormFieldValidationResult } from "@/types/form";
 
 import type {
   AddReleaseFormCatalogueNumberRowErrors,
