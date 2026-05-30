@@ -21,7 +21,7 @@ import {
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryAltNameInfo, EntryByIdResult } from "@/types/entries";
-import type { FormFieldValidationResult } from "@/types/form";
+import type { FormField, FormFieldValidationResult } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { TagId } from "@/types/tags";
 
@@ -165,16 +165,6 @@ export type AddReleaseFormMatrixRunoutDraft = {
 
 export type AddReleaseFormFormatInputs = AddReleaseFormFormatInput[];
 export type AddReleaseFormCatNumbersInputs = CatalogueNumberRowState[];
-
-type FormField<T, U> = {
-  value: T;
-  valid: boolean;
-  validationFn: (value: T) => FormFieldValidationResult<T, U>;
-  errors: U;
-  notifications: {
-    notification: string;
-  }[];
-};
 
 export type AddReleaseFormDraft = {
   name: FormField<AddReleaseFormNameInput, undefined>;
