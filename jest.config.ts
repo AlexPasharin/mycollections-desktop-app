@@ -16,7 +16,7 @@ const config: JestConfigWithTsJest = {
     "^@/styles/(.*)$": "<rootDir>/src/styles/$1",
     "^@/types/(.*)$": "<rootDir>/src/types/$1",
     "^@/utils/(.*)$": "<rootDir>/src/utils/$1",
-    "^@/validation/(.*)$": "<rootDir>/src/validation/$1",
+    "^@/validation$": "<rootDir>/src/validation/index.ts",
   },
   transform: {
     "^.+\\.tsx?$": [

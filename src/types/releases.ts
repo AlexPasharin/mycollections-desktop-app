@@ -1,9 +1,10 @@
 import type { Insertable, Selectable } from "kysely";
 
-import type { ReleaseCatNumbers } from "../validation/releases/catNumbers";
-import type { ReleaseCountries } from "../validation/releases/countries";
-import type { ReleaseMatrixRunout } from "../validation/releases/matrixRunout";
-
+import type {
+  ReleaseCatNumbers,
+  ReleaseCountries,
+  ReleaseMatrixRunout,
+} from "@/validation";
 import type { DbSource } from "@/db/db-source";
 import type { GeneralizedDateFromDb } from "@/types/date";
 import type {
