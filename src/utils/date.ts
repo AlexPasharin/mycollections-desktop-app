@@ -1,6 +1,6 @@
 import { ENGLISH_MONTH_NAMES } from "@/constants";
 import type { GeneralizedDate, GeneralizedDateFromDb } from "@/types/date";
-import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
+import { createGeneralizedDateSchema } from "@/validation";
 
 /**
  * Formats generalized date for display, e.g. `2000`, `2000, January`, or `2000, January 14`.

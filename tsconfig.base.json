@@ -35,6 +35,7 @@
       "@/styles/*": ["src/styles/*"],
       "@/types/*": ["src/types/*"],
       "@/utils/*": ["src/utils/*"],
+      "@/validation": ["src/validation/index.ts"],
       "@/validation/*": ["src/validation/*"]
     }
   }

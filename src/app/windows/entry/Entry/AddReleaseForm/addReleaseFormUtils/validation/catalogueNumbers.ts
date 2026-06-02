@@ -1,7 +1,5 @@
 import z from "zod";
 
-import type { FormFieldValidationResult } from "@/types/form";
-
 import type {
   AddReleaseFormCatalogueNumberRowErrors,
   AddReleaseFormCatNumbersErrors,
@@ -9,8 +7,9 @@ import type {
 } from "../errorMessages";
 import type { AddReleaseFormCatNumbersInputs } from "../formValues";
 
+import type { FormFieldValidationResult } from "@/types/form";
 import type { ValidationResultErrorMessages } from "@/utils/validation";
-import { uniquePropertyArraySchema } from "@/validation/common";
+import { uniquePropertyArraySchema } from "@/validation";
 
 export const validateReleaseCatNumbers = (
   value: AddReleaseFormCatNumbersInputs,

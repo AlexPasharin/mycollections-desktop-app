@@ -11,7 +11,7 @@ import type {
   CatNumbersNested,
   CatNumbersProperty,
   ReleaseCatNumbersSingle,
-} from "@/validation/releases/catNumbers";
+} from "@/validation";
 
 type ReleaseCatNumbersProps = {
   catalogueNumbers: ReleaseByIdResult["catalogueNumbers"];

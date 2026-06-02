@@ -1,10 +1,7 @@
-import type { FormFieldValidationResult } from "@/types/form";
-
-import type { AddReleaseFormFieldError } from "../errorMessages";
-
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
-import { createGeneralizedDateSchema } from "@/validation/generalizedDate";
+import type { FormFieldValidationResult } from "@/types/form";
+import { createGeneralizedDateSchema } from "@/validation";
 
 export const validateReleaseDate = (
   releaseDateStart?: GeneralizedDate | null,
@@ -13,10 +10,7 @@ export const validateReleaseDate = (
 
   return (
     value: GeneralizedDateFormInputValue,
-  ): FormFieldValidationResult<
-    GeneralizedDateFormInputValue,
-    AddReleaseFormFieldError[]
-  > => {
+  ): FormFieldValidationResult<GeneralizedDateFormInputValue> => {
     const validationResult = validationSchema.safeParse(value);
 
     if (!validationResult.success) {

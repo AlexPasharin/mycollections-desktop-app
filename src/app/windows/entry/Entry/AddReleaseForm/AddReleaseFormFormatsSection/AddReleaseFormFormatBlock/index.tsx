@@ -4,13 +4,13 @@ import styles from "./AddReleaseFormFormatBlock.module.css";
 
 import type {
   FormatField,
-  AddReleaseFormFieldError,
   AddReleaseFormFormatInputFieldKey,
 } from "../../addReleaseFormUtils/errorMessages";
 import type { AddReleaseFormFormatInput } from "../../addReleaseFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
+import type { FormFieldError } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 
 export type AddReleaseFormFormatRowPatch = Partial<
@@ -21,7 +21,7 @@ type AddReleaseFormFormatBlockProps = {
   row: AddReleaseFormFormatInput;
   rowIndex: number;
   releasesFormats: ReleasesFormatListItem[];
-  formatRowErrors?: AddReleaseFormFieldError[] | undefined;
+  formatRowErrors?: FormFieldError[] | undefined;
   onFormatChange: (formatId: string) => void;
   patchFormat: (patch: AddReleaseFormFormatRowPatch) => void;
   onRemoveFormat?: (() => void) | undefined;

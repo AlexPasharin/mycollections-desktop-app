@@ -2,11 +2,9 @@ import z from "zod";
 
 import type { FormFieldValidationResult } from "@/types/form";
 
-import type { AddReleaseFormFieldError } from "../errorMessages";
-
 export const validateDiscogsUrl = (
   value: string,
-): FormFieldValidationResult<string, AddReleaseFormFieldError[]> => {
+): FormFieldValidationResult => {
   const validationResult = discogsUrlSchema.safeParse(value);
 
   if (!validationResult.success) {

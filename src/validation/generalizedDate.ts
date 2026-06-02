@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { coercedIntSchema } from "./common";
+
 import { MIN_CALENDAR_YEAR } from "@/constants";
 import type { GeneralizedDate } from "@/types/date";
 import {
@@ -8,7 +10,6 @@ import {
   toValidCalendarDate,
 } from "@/utils/date";
 import { addCustomValidationIssues } from "@/utils/validation";
-import { coercedIntSchema } from "@/validation/common";
 
 // Implements same validation logic as described in documentation/database/validation_functions/generalized_date_field_validation.md
 

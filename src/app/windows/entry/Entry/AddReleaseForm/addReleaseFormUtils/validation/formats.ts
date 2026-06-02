@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import type { FormFieldValidationResult } from "@/types/form";
-
 import type {
   AddReleaseFormFormatErrors,
   FormatFieldsRowId,
@@ -9,12 +7,13 @@ import type {
 import type { AddReleaseFormFormatInputs } from "../formValues";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
+import type { FormFieldValidationResult } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import {
   addCustomValidationIssues,
   type ValidationResultErrorMessages,
 } from "@/utils/validation";
-import { strictStringToIntSchema } from "@/validation/common";
+import { strictStringToIntSchema } from "@/validation";
 
 export const validateReleaseFormats = (formats: ReleasesFormatListItem[]) => {
   const validationSchema = formatsSchema(formats);

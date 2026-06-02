@@ -13,9 +13,11 @@ import {
   countryCodesToNamesInReleaseCountries,
 } from "@/utils/countries";
 import { parseStringAsGeneralizedDate } from "@/utils/date";
-import { releaseCatNumbersSchema } from "@/validation/releases/catNumbers";
-import { releaseCountriesSchema } from "@/validation/releases/countries";
-import { releaseMatrixRunoutSchema } from "@/validation/releases/matrixRunout";
+import {
+  releaseCatNumbersSchema,
+  releaseCountriesSchema,
+  releaseMatrixRunoutSchema,
+} from "@/validation";
 
 const musicalReleaseColumns = [
   "musicalReleases.releaseId",

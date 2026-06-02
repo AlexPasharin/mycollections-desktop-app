@@ -1,17 +1,12 @@
-import { v4 as uuidv4 } from "uuid";
-
 import {
   initialAddReleaseFormFieldErrors,
   type AddReleaseFormCatNumbersErrors,
   type AddReleaseFormCountriesErrors,
-  type AddReleaseFormFieldError,
   type AddReleaseFormFormatErrors,
 } from "./errorMessages";
 import {
   validateReleaseDate,
-  validateReleaseVersion,
   validateDiscogsUrl,
-  validateOptionalTrimmedText,
   validateReleaseCountries,
   validateReleaseFormats,
   validateReleaseCatNumbers,
@@ -24,6 +19,11 @@ import type { EntryAltNameInfo, EntryByIdResult } from "@/types/entries";
 import type { FormField, FormFieldValidationResult } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { TagId } from "@/types/tags";
+import { withNewId } from "@/utils/id";
+import {
+  validateOptionalTrimmedText,
+  validateRequiredTrimmedText,
+} from "@/validation";
 
 export type AddReleaseFormNameInput = Omit<EntryAltNameInfo, "nameId"> & {
   nameId: string | null;
@@ -49,19 +49,16 @@ export type AddReleaseFormFormatInput = {
   jukeboxHole: boolean;
 };
 
-export const defaultFormatInputRow = (): AddReleaseFormFormatInput => ({
-  id: uuidv4(),
-  formatId: "",
-  amount: "1",
-  pictureSleeve: true,
-  jukeboxHole: false,
-});
-
-export const emptyCatalogueNumberInputValue =
-  (): CatalogueNumberInputValue => ({
-    id: uuidv4(),
-    value: "",
+export const defaultFormatInputRow = (): AddReleaseFormFormatInput =>
+  withNewId({
+    formatId: "",
+    amount: "1",
+    pictureSleeve: true,
+    jukeboxHole: false,
   });
+
+export const emptyCatalogueNumberInputValue = (): CatalogueNumberInputValue =>
+  withNewId({ value: "" });
 
 export type CountrySelectionInput = {
   id: string;
@@ -73,10 +70,8 @@ export type AddReleaseFormCountries = {
   printedIn: CountrySelectionInput[];
 };
 
-export const emptyCountrySelection = () => ({
-  id: uuidv4(),
-  codeName: "",
-});
+export const emptyCountrySelection = (): CountrySelectionInput =>
+  withNewId({ codeName: "" });
 
 export type CatalogueNumberInputValue = { id: string; value: string };
 export type LabelInputValue = { id: string; name: string };
@@ -102,17 +97,15 @@ export type CatalogueNumberRowState =
   | CatalogueNumberRowStateFlat
   | CatalogueNumberRowStateEuropeUk;
 
-export const emptyLabelInputValue = (): LabelInputValue => ({
-  id: uuidv4(),
-  name: "",
-});
+export const emptyLabelInputValue = (): LabelInputValue =>
+  withNewId({ name: "" });
 
-export const defaultCatalogueNumberRow = (): CatalogueNumberRowStateFlat => ({
-  id: uuidv4(),
-  shape: "flat",
-  labelInputValues: [emptyLabelInputValue()],
-  catalogueNumberInputValues: [emptyCatalogueNumberInputValue()],
-});
+export const defaultCatalogueNumberRow = (): CatalogueNumberRowStateFlat =>
+  withNewId({
+    shape: "flat",
+    labelInputValues: [emptyLabelInputValue()],
+    catalogueNumberInputValues: [emptyCatalogueNumberInputValue()],
+  });
 
 // flat → europeUk: keep labels, move existing flat values into "in Europe",
 // seed "in UK" with one empty input so the user has somewhere to type. If the
@@ -168,22 +161,16 @@ export type AddReleaseFormCatNumbersInputs = CatalogueNumberRowState[];
 
 export type AddReleaseFormDraft = {
   name: FormField<AddReleaseFormNameInput, undefined>;
-  releaseVersion: FormField<string, AddReleaseFormFieldError[]>;
-  discogsUrl: FormField<string, AddReleaseFormFieldError[]>;
-  releaseDate: FormField<
-    GeneralizedDateFormInputValue,
-    AddReleaseFormFieldError[]
-  >;
+  releaseVersion: FormField;
+  discogsUrl: FormField;
+  releaseDate: FormField<GeneralizedDateFormInputValue>;
   countries: FormField<AddReleaseFormCountries, AddReleaseFormCountriesErrors>;
   formats: FormField<AddReleaseFormFormatInputs, AddReleaseFormFormatErrors>;
   catalogueNumbers: FormField<
     AddReleaseFormCatNumbersInputs,
     AddReleaseFormCatNumbersErrors
   >;
-  matrixRunout: FormField<
-    AddReleaseFormMatrixRunoutDraft,
-    AddReleaseFormFieldError[]
-  >;
+  matrixRunout: FormField<AddReleaseFormMatrixRunoutDraft>;
   selectedTags: FormField<Set<TagId>, undefined>;
   partOfQueenCollection: FormField<boolean, undefined>;
   relationToQueen: FormField<string, undefined>;
@@ -208,7 +195,7 @@ export const initialAddReleaseFormDraftValue = (
     releaseVersion: {
       value: "",
       valid: true,
-      validationFn: validateReleaseVersion,
+      validationFn: validateRequiredTrimmedText("Release version is required."),
       errors: initialAddReleaseFormFieldErrors.releaseVersion,
       notifications: [],
     },

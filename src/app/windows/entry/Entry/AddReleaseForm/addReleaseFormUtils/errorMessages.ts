@@ -1,4 +1,5 @@
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
+import type { FormFieldError } from "@/types/form";
 import { omitProperty } from "@/utils/common";
 
 export type FormatField =
@@ -8,11 +9,6 @@ export type FormatField =
   | "jukeboxHole";
 
 type ReleaseDateFieldErrorSource = keyof GeneralizedDateFormInputValue;
-
-export type AddReleaseFormFieldError = {
-  message: string;
-  sources?: PropertyKey[] | undefined;
-};
 
 export type FormatFieldsRowId = string;
 export type CatNumberFieldsRowId = string;
@@ -40,7 +36,7 @@ export type AddReleaseFormCountriesErrors = {
 
 export type AddReleaseFormFormatErrors = Record<
   FormatFieldsRowId,
-  AddReleaseFormFieldError[]
+  FormFieldError[]
 >;
 
 export type AddReleaseFormCatNumbersErrors = Record<

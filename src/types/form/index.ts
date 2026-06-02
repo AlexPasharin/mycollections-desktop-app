@@ -1,10 +1,15 @@
+export type FormFieldError = {
+  message: string;
+  sources?: PropertyKey[] | undefined;
+};
+
 type Notifications =
   | {
       notification: string;
     }[]
   | undefined;
 
-export type FormFieldValidationResult<T, E> =
+export type FormFieldValidationResult<T = string, E = FormFieldError[]> =
   | {
       valid: true;
       value: T;
@@ -17,7 +22,7 @@ export type FormFieldValidationResult<T, E> =
       notifications?: Notifications;
     };
 
-export type FormField<T, U> = {
+export type FormField<T = string, U = FormFieldError[]> = {
   value: T;
   valid: boolean;
   validationFn: (value: T) => FormFieldValidationResult<T, U>;
