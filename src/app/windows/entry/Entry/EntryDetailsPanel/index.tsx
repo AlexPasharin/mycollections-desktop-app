@@ -27,9 +27,9 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry }) => {
       <div className={styles.field}>
         {types.length > 0 ? (
           <ul className={styles.typesList}>
-            {types.map((typeName) => (
-              <li key={typeName} className={styles.typesListItem}>
-                {typeName}
+            {types.map(({ entryTypeId, name }) => (
+              <li key={entryTypeId} className={styles.typesListItem}>
+                {name}
               </li>
             ))}
           </ul>

@@ -3,13 +3,13 @@ import { sql, type Kysely } from "kysely";
 import { selectFromExtendedMusicalEntryRows } from "./utils";
 
 import { dbClient } from "../client/kysely";
-import { aggregateDistinctValuesToArray } from "../utils";
 
 import type { DB } from "@/types/db/database";
 import type {
   EntryAltNameInfo,
   EntryArtistInfo,
   EntryByIdResult,
+  EntryTypeInfo,
   GetEntryById,
 } from "@/types/entries";
 import type { TagListItem } from "@/types/tags";
@@ -50,7 +50,13 @@ export const fetchEntryByIdResult = async (
         '[]'::jsonb
       )`.as("artists"),
 
-      aggregateDistinctValuesToArray("musicalEntryTypes.name", "types"),
+      sql<EntryTypeInfo[]>`coalesce(
+        jsonb_agg(DISTINCT jsonb_build_object(
+          'entryTypeId', ${sql.ref("musicalEntryTypes.entryTypeId")},
+          'name', ${sql.ref("musicalEntryTypes.name")}
+        )) FILTER (WHERE ${sql.ref("musicalEntryTypes.entryTypeId")} IS NOT NULL),
+        '[]'::jsonb
+      )`.as("types"),
 
       sql<EntryAltNameInfo[]>`coalesce(
         jsonb_agg(DISTINCT jsonb_build_object(
