@@ -5,7 +5,6 @@ import {
   type AddReleaseFormFormatErrors,
 } from "./errorMessages";
 import {
-  validateReleaseDate,
   validateDiscogsUrl,
   validateReleaseCountries,
   validateReleaseFormats,
@@ -22,6 +21,7 @@ import type { TagId } from "@/types/tags";
 import { withNewId } from "@/utils/id";
 import {
   validateOptionalTrimmedText,
+  validateReleaseDate,
   validateRequiredTrimmedText,
 } from "@/validation";
 
