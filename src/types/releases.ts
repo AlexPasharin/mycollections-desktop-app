@@ -1,10 +1,7 @@
 import type { Insertable, Selectable } from "kysely";
 
-import type {
-  ReleaseCatNumbers,
-  ReleaseCountries,
-  ReleaseMatrixRunout,
-} from "@/validation";
+import type { TagId } from "./tags";
+
 import type { DbSource } from "@/db/db-source";
 import type { GeneralizedDateFromDb } from "@/types/date";
 import type {
@@ -12,6 +9,11 @@ import type {
   MusicalRelease,
   MusicalReleaseTag,
 } from "@/types/db/database";
+import type {
+  ReleaseCatNumbers,
+  ReleaseCountries,
+  ReleaseMatrixRunout,
+} from "@/validation";
 
 export type ReleaseFormatOfReleaseItem = {
   id: string;
@@ -32,6 +34,11 @@ export type GetEntryReleases = (
   entryId: string,
   dbSource: DbSource,
 ) => Promise<EntryRelease[]>;
+
+export type GetEntryReleaseTagIds = (
+  entryId: string,
+  dbSource: DbSource,
+) => Promise<TagId[]>;
 
 export type JsonParsingErrorData = { rawJson: unknown; error: string };
 

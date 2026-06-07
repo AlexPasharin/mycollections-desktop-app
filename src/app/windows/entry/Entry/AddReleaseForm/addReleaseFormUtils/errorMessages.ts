@@ -105,9 +105,6 @@ export type AddReleaseFormInputFieldKey =
   | AddReleaseFormCatalogueNumbersInputFieldKey
   | AddReleaseFormCountriesInputFieldKey;
 
-export const isReleaseDateInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
-  key === "year" || key === "month" || key === "day";
-
 export const isFormatInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
   typeof key === "object" && "formatRowId" in key;
 

@@ -11,6 +11,7 @@ import {
   UPDATE_MUSICAL_ENTRY,
   GET_ENTRY_BY_ID,
   GET_ENTRY_RELEASES,
+  GET_ENTRY_RELEASE_TAG_IDS,
   GET_RELEASE_BY_ID,
   CREATE_MUSICAL_RELEASE,
   DELETE_RELEASE,
@@ -33,6 +34,8 @@ const api = {
     ipcRenderer.invoke(GET_ENTRY_BY_ID, entryId, dbSource),
   getEntryReleases: (entryId: string, dbSource: DbSource) =>
     ipcRenderer.invoke(GET_ENTRY_RELEASES, entryId, dbSource),
+  getEntryReleaseTagIds: (entryId: string, dbSource: DbSource) =>
+    ipcRenderer.invoke(GET_ENTRY_RELEASE_TAG_IDS, entryId, dbSource),
   getReleaseById: (releaseId: string, dbSource: DbSource) =>
     ipcRenderer.invoke(GET_RELEASE_BY_ID, releaseId, dbSource),
   createMusicalRelease: (

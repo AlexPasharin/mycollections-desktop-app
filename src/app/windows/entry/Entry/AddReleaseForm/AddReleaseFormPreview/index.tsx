@@ -12,14 +12,14 @@ import {
 } from "../addReleaseFormUtils/toCreateMusicalReleaseInput";
 
 import type { ReleasesFormatListItem } from "@/types/formats";
-import type { TagsById } from "@/types/tags";
+import type { TagListItem } from "@/types/tags";
 
 const EMPTY_PLACEHOLDER = "(none)";
 
 type AddReleaseFormPreviewProps = {
   form: AddReleaseFormDraft;
   allFormats: ReleasesFormatListItem[];
-  tags: TagsById;
+  tags: TagListItem[];
 };
 
 const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
@@ -33,9 +33,9 @@ const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
 
   const releaseDate = toReleaseDateString(form.releaseDate.value);
   const discogsUrl = nullIfEmpty(form.discogsUrl.value);
-  const selectedTagNames = Array.from(form.selectedTags.value, (tagId) => {
-    return tags[tagId] ?? tagId;
-  });
+  const selectedTagNames = tags
+    .filter((t) => form.selectedTags.value.has(t.tagId))
+    .map((t) => t.tag);
   const comment = nullIfEmpty(form.comment.value);
   const conditionProblems = nullIfEmpty(form.conditionProblems.value);
   const relationToQueen = nullIfEmpty(form.relationToQueen.value);
