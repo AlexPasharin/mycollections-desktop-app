@@ -7,6 +7,7 @@ import type { CountrySelectionInput } from "../addReleaseFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import type { CountryListItem } from "@/types/countries";
+import { errorSetToMessages } from "@/validation";
 
 type AddReleaseCountriesSectionProps = {
   countries: CountryListItem[];
@@ -42,8 +43,6 @@ const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
   errors,
 }) => {
   const propertyErrorMessages = errors?.propertyErrorMessages;
-  const hasPropertyErrors =
-    propertyErrorMessages && propertyErrorMessages.size > 0;
 
   return (
     <div className={styles.section}>
@@ -62,14 +61,12 @@ const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
         </div>
       </div>
 
-      {hasPropertyErrors && (
-        <div className={styles.propertyErrors}>
-          <FormFieldErrorMessages
-            id={`${selectIdPrefix}-property-errors`}
-            messages={setToFormMessages(propertyErrorMessages)}
-          />
-        </div>
-      )}
+      <div className={styles.propertyErrors}>
+        <FormFieldErrorMessages
+          id={`${selectIdPrefix}-property-errors`}
+          messages={errorSetToMessages(propertyErrorMessages)}
+        />
+      </div>
 
       {countrySelections.map((row, rowIndex) => {
         const rowErrorSet = errors?.countrySelectErrorMessages[row.id];
@@ -125,14 +122,12 @@ const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
                   )}
                 </div>
               </div>
-              {rowErrorMessagesForDisplay !== undefined && (
-                <div className={styles.rowFieldErrors}>
-                  <FormFieldErrorMessages
-                    id={rowErrorId}
-                    messages={setToFormMessages(rowErrorMessagesForDisplay)}
-                  />
-                </div>
-              )}
+              <div className={styles.rowFieldErrors}>
+                <FormFieldErrorMessages
+                  id={rowErrorId}
+                  messages={errorSetToMessages(rowErrorMessagesForDisplay)}
+                />
+              </div>
             </div>
           </div>
         );
@@ -146,6 +141,3 @@ const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
 };
 
 export default AddReleaseCountriesSection;
-
-const setToFormMessages = (set: Set<string>) =>
-  [...set].map((message) => ({ message }));

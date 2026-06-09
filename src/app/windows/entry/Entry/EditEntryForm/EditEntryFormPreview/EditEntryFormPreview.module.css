@@ -1,0 +1,15 @@
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.92em;
+}
+
+.multiline {
+  white-space: pre-wrap;
+}
+
+.list {
+  margin: 0.2rem 0 0;
+  padding-left: 1.1rem;
+}

@@ -1,20 +1,23 @@
-import type { FC, ReactNode } from "react";
+import type { FC } from "react";
 
 import styles from "./AddReleaseFormPreview.module.css";
 
 import type { AddReleaseFormDraft } from "../addReleaseFormUtils/formValues";
 import {
-  nullIfEmpty,
   toReleaseCatNumbersJson,
   toReleaseCountriesJson,
-  toReleaseDateString,
   toReleaseMatrixRunoutJson,
 } from "../addReleaseFormUtils/toCreateMusicalReleaseInput";
 
+import FormPreviewField, {
+  FormPreviewBlockField,
+} from "@/app/components/FormPreviewField";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { TagListItem } from "@/types/tags";
+import { nullIfEmpty } from "@/utils/common";
+import { generalizedDateToString } from "@/utils/date";
+import { orPlaceholder } from "@/utils/form";
 
-const EMPTY_PLACEHOLDER = "(none)";
 
 type AddReleaseFormPreviewProps = {
   form: AddReleaseFormDraft;
@@ -31,7 +34,7 @@ const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
     allFormats.map((format) => [format.formatId, format.shortName] as const),
   );
 
-  const releaseDate = toReleaseDateString(form.releaseDate.value);
+  const releaseDate = generalizedDateToString(form.releaseDate.value);
   const discogsUrl = nullIfEmpty(form.discogsUrl.value);
   const selectedTagNames = tags
     .filter((t) => form.selectedTags.value.has(t.tagId))
@@ -46,10 +49,10 @@ const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
 
   return (
     <div className={styles.preview}>
-      <Field label="Version">{form.releaseVersion.value}</Field>
-      <Field label="Name">{form.name.value.name}</Field>
-      <Field label="Release date">{orPlaceholder(releaseDate)}</Field>
-      <Field label="Discogs URL">
+      <FormPreviewField label="Version">{form.releaseVersion.value}</FormPreviewField>
+      <FormPreviewField label="Name">{form.name.value.name}</FormPreviewField>
+      <FormPreviewField label="Release date">{orPlaceholder(releaseDate)}</FormPreviewField>
+      <FormPreviewField label="Discogs URL">
         {discogsUrl === null ? (
           orPlaceholder(discogsUrl)
         ) : (
@@ -57,8 +60,8 @@ const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
             {discogsUrl}
           </a>
         )}
-      </Field>
-      <BlockField label="Formats">
+      </FormPreviewField>
+      <FormPreviewBlockField label="Formats">
         <ul className={styles.list}>
           {form.formats.value.map((row) => {
             const shortName =
@@ -80,54 +83,32 @@ const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
             );
           })}
         </ul>
-      </BlockField>
+      </FormPreviewBlockField>
       <JsonField label="Countries" value={countriesJson} />
       <JsonField label="Catalogue numbers" value={catNumbersJson} />
       <JsonField label="Matrix / runout" value={matrixRunoutJson} />
-      <Field label="Tags">
+      <FormPreviewField label="Tags">
         {orPlaceholder(
           selectedTagNames.length === 0 ? null : selectedTagNames.join(", "),
         )}
-      </Field>
-      <Field label="Part of Queen collection">
+      </FormPreviewField>
+      <FormPreviewField label="Part of Queen collection">
         {form.partOfQueenCollection.value ? "Yes" : "No"}
-      </Field>
-      <BlockField label="Relation to Queen">
+      </FormPreviewField>
+      <FormPreviewBlockField label="Relation to Queen">
         <p className={styles.multiline}>{orPlaceholder(relationToQueen)}</p>
-      </BlockField>
-      <BlockField label="Comment">
+      </FormPreviewBlockField>
+      <FormPreviewBlockField label="Comment">
         <p className={styles.multiline}>{orPlaceholder(comment)}</p>
-      </BlockField>
-      <BlockField label="Condition problems">
+      </FormPreviewBlockField>
+      <FormPreviewBlockField label="Condition problems">
         <p className={styles.multiline}>{orPlaceholder(conditionProblems)}</p>
-      </BlockField>
+      </FormPreviewBlockField>
     </div>
   );
 };
 
 export default AddReleaseFormPreview;
-
-const orPlaceholder = (value: string | null): string =>
-  value ?? EMPTY_PLACEHOLDER;
-
-type FieldProps = {
-  label: string;
-  children: ReactNode;
-};
-
-const Field: FC<FieldProps> = ({ label, children }) => (
-  <p className={styles.field}>
-    <span className={styles.label}>{label}:</span>
-    {children}
-  </p>
-);
-
-const BlockField: FC<FieldProps> = ({ label, children }) => (
-  <div className={styles.field}>
-    <span className={styles.labelBlock}>{label}:</span>
-    {children}
-  </div>
-);
 
 type JsonFieldProps = {
   label: string;
@@ -135,8 +116,7 @@ type JsonFieldProps = {
 };
 
 const JsonField: FC<JsonFieldProps> = ({ label, value }) => (
-  <div className={styles.field}>
-    <span className={styles.labelBlock}>{label}:</span>
+  <FormPreviewBlockField label={label}>
     <pre className={styles.jsonBlock}>{JSON.stringify(value, null, 2)}</pre>
-  </div>
+  </FormPreviewBlockField>
 );

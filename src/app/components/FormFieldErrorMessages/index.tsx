@@ -4,14 +4,14 @@ import styles from "./FormFieldErrorMessages.module.css";
 
 export type FormFieldErrorMessagesProps = {
   id: string;
-  messages: { message: string }[];
+  messages: { message: string }[] | undefined;
 };
 
 const FormFieldErrorMessages: FC<FormFieldErrorMessagesProps> = ({
   id,
   messages,
 }) => {
-  if (messages.length === 0) {
+  if (!messages || messages.length === 0) {
     return null;
   }
 

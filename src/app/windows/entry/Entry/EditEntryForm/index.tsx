@@ -24,23 +24,29 @@ const EditEntryFormWrapper: FC<EditEntryFormWrapperProps> = ({
   ...formProps
 }) => {
   const [allEntryTypes, setAllEntryTypes] = useState<EntryTypeListItem[]>([]);
+  const [releaseTagIds, setReleaseTagIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [loading, setLoading] = useState(true);
   const [dataLoadingFailed, setDataLoadingFailed] = useState(false);
 
   useEffect(() => {
-    api
-      .fetchEntryTypes(dbSource)
-      .then((entryTypesData) => {
+    Promise.all([
+      api.fetchEntryTypes(dbSource),
+      api.getEntryReleaseTagIds(formProps.entry.entryId, dbSource),
+    ])
+      .then(([entryTypesData, entryReleaseTagIds]) => {
         setAllEntryTypes(entryTypesData);
+        setReleaseTagIds(new Set(entryReleaseTagIds));
       })
       .catch((error: unknown) => {
-        console.error("Error fetching entry types", error);
+        console.error("Error fetching entry types or release tags", error);
         setDataLoadingFailed(true);
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [dbSource, formProps.entry]); // even though effect's function does not use entry, we want to re-run it when entry changes to fetch the latest entry types data
+  }, [dbSource, formProps.entry.entryId]);
 
   if (loading || tagsLoading) {
     return (
@@ -64,7 +70,7 @@ const EditEntryFormWrapper: FC<EditEntryFormWrapperProps> = ({
     <EditEntryForm
       {...formProps}
       dbSource={dbSource}
-      tags={tags}
+      tags={tags.filter((t) => !releaseTagIds.has(t.tagId))}
       allEntryTypes={allEntryTypes}
     />
   );

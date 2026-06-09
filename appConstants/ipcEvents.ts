@@ -3,6 +3,7 @@ export const QUERY_ARTIST = "query-artist";
 export const GET_ARTIST_BY_ID = "get-artist-by-id";
 export const GET_ENTRY_BY_ID = "get-entry-by-id";
 export const GET_ENTRY_RELEASES = "get-entry-releases";
+export const GET_ENTRY_RELEASE_TAG_IDS = "get-entry-release-tag-ids";
 export const GET_RELEASE_BY_ID = "get-release-by-id";
 export const CREATE_MUSICAL_RELEASE = "create-musical-release";
 export const DELETE_RELEASE = "delete-release";

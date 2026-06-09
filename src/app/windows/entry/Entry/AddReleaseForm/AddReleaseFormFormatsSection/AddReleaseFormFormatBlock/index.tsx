@@ -164,12 +164,10 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
         )}
       </div>
 
-      {formatRowErrors && (
-        <FormFieldErrorMessages
-          id={rowErrorElementId}
-          messages={formatRowErrors}
-        />
-      )}
+      <FormFieldErrorMessages
+        id={rowErrorElementId}
+        messages={formatRowErrors}
+      />
 
       {onRemoveFormat && (
         <div className={styles.removeRow}>

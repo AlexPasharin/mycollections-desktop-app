@@ -15,7 +15,7 @@ import {
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryAltNameInfo, EntryByIdResult } from "@/types/entries";
-import type { FormField, FormFieldValidationResult } from "@/types/form";
+import type { FormField } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { TagId } from "@/types/tags";
 import { withNewId } from "@/utils/id";
@@ -23,6 +23,7 @@ import {
   validateOptionalTrimmedText,
   validateReleaseDate,
   validateRequiredTrimmedText,
+  validatePassThrough,
 } from "@/validation";
 
 export type AddReleaseFormNameInput = Omit<EntryAltNameInfo, "nameId"> & {
@@ -160,7 +161,7 @@ export type AddReleaseFormFormatInputs = AddReleaseFormFormatInput[];
 export type AddReleaseFormCatNumbersInputs = CatalogueNumberRowState[];
 
 export type AddReleaseFormDraft = {
-  name: FormField<AddReleaseFormNameInput, undefined>;
+  name: FormField<AddReleaseFormNameInput>;
   releaseVersion: FormField;
   discogsUrl: FormField;
   releaseDate: FormField<GeneralizedDateFormInputValue>;
@@ -171,11 +172,11 @@ export type AddReleaseFormDraft = {
     AddReleaseFormCatNumbersErrors
   >;
   matrixRunout: FormField<AddReleaseFormMatrixRunoutDraft>;
-  selectedTags: FormField<Set<TagId>, undefined>;
-  partOfQueenCollection: FormField<boolean, undefined>;
-  relationToQueen: FormField<string, undefined>;
-  comment: FormField<string, undefined>;
-  conditionProblems: FormField<string, undefined>;
+  selectedTags: FormField<Set<TagId>>;
+  partOfQueenCollection: FormField<boolean>;
+  relationToQueen: FormField<string>;
+  comment: FormField<string>;
+  conditionProblems: FormField<string>;
 };
 
 export const initialAddReleaseFormDraftValue = (
@@ -283,14 +284,5 @@ export const initialAddReleaseFormDraftValue = (
       errors: initialAddReleaseFormFieldErrors.conditionProblems,
       notifications: [],
     },
-  };
-};
-
-const validatePassThrough = <T>(
-  value: T,
-): FormFieldValidationResult<T, undefined> => {
-  return {
-    valid: true,
-    value,
   };
 };

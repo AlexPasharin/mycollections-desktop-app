@@ -51,11 +51,11 @@ export const emptyMutableCountriesSubsectionErrors =
   });
 
 export const initialAddReleaseFormFieldErrors = {
-  name: undefined,
+  name: [],
   releaseVersion: [],
   discogsUrl: [],
-  comment: undefined,
-  conditionProblems: undefined,
+  comment: [],
+  conditionProblems: [],
   releaseDate: [],
   countries: {
     madeIn: emptyMutableCountriesSubsectionErrors(),
@@ -64,9 +64,9 @@ export const initialAddReleaseFormFieldErrors = {
   formats: {},
   catalogueNumbers: {},
   matrixRunout: [],
-  selectedTags: undefined,
-  partOfQueenCollection: undefined,
-  relationToQueen: undefined,
+  selectedTags: [],
+  partOfQueenCollection: [],
+  relationToQueen: [],
 };
 
 export type CatalogueNumbersInputField =

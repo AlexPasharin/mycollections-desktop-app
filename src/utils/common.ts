@@ -86,3 +86,9 @@ export const formatJson = (value: unknown): string | null => {
 
 export const isDateInputFieldKey = (key: unknown) =>
   key === "year" || key === "month" || key === "day";
+
+export const nullIfEmpty = (value: string): string | null => {
+  const trimmed = value.trim();
+
+  return trimmed === "" ? null : trimmed;
+};

@@ -10,8 +10,6 @@ import type {
   UpdateMusicalEntryAltNameInput,
 } from "@/types/entries";
 
-type DbTransaction = Kysely<DB>;
-
 export const updateMusicalEntry: UpdateMusicalEntry = async (
   { entryId, entry, tagIds, typeIds, altNames },
   dbSource,
@@ -39,6 +37,8 @@ export const updateMusicalEntry: UpdateMusicalEntry = async (
 
   return { entry: updatedEntry, notifications };
 };
+
+type DbTransaction = Kysely<DB>;
 
 const syncEntryTags = async (
   trx: DbTransaction,
@@ -120,16 +120,7 @@ const upsertEntryAltName = async (
 ) => {
   const { nameId, name } = altName;
 
-  if (nameId === undefined) {
-    await trx
-      .insertInto("alternativeMusicalEntryNames")
-      .values({ name, entryId })
-      .execute();
-
-    return;
-  }
-
-  if (existingNameIds.has(nameId)) {
+  if (nameId !== undefined && existingNameIds.has(nameId)) {
     await trx
       .updateTable("alternativeMusicalEntryNames")
       .set({ name })

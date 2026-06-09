@@ -1,3 +1,4 @@
+import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import { ENGLISH_MONTH_NAMES } from "@/constants";
 import type { GeneralizedDate, GeneralizedDateFromDb } from "@/types/date";
 import { createGeneralizedDateSchema } from "@/validation";
@@ -153,3 +154,37 @@ export const toValidCalendarDate = (
 export const sanitizeReleaseDate = (
   date: GeneralizedDateFromDb,
 ): GeneralizedDate | null => (date !== null && "error" in date ? null : date);
+
+/**
+ * Joins the form's `{ year, month, day }` strings into the DB string shape:
+ * `YYYY`, `YYYY-MM`, or `YYYY-MM-DD` with month and day zero-padded to 2
+ * digits. Returns `null` when year is blank.
+ *
+ * Trusts the caller to have validated the input — empty month with a non-empty
+ * day, leading zeros, etc. would otherwise produce a malformed string.
+ */
+export const generalizedDateToString = ({
+  year,
+  month,
+  day,
+}: GeneralizedDateFormInputValue): string | null => {
+  const yearTrimmed = year.trim();
+
+  if (yearTrimmed === "") {
+    return null;
+  }
+
+  const segments = [yearTrimmed];
+  const monthTrimmed = month.trim();
+  const dayTrimmed = day.trim();
+
+  if (monthTrimmed !== "") {
+    segments.push(monthTrimmed.padStart(2, "0"));
+  }
+
+  if (dayTrimmed !== "") {
+    segments.push(dayTrimmed.padStart(2, "0"));
+  }
+
+  return segments.join("-");
+};

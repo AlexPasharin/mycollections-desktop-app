@@ -154,9 +154,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           ...prev.formats,
           errors: nextFormatRowErrors
             ? {
-                ...formatsErrors,
-                [formatRowId]: nextFormatRowErrors,
-              }
+              ...formatsErrors,
+              [formatRowId]: nextFormatRowErrors,
+            }
             : omitProperty(formatsErrors, formatRowId),
         };
       });
@@ -228,20 +228,18 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     const errorKey = isDateInputFieldKey(key) ? "releaseDate" : key;
 
-    setForm((prev) => {
-      const field = prev[errorKey];
+    setField(errorKey, (prev) => {
+      const errors = prev[errorKey].errors.filter(
+        (error) =>
+          error.sources &&
+          error.sources.length > 0 &&
+          !error.sources.includes(key),
+      );
 
       return {
-        ...prev,
-        [errorKey]: {
-          ...field,
-          errors: field.errors?.filter(
-            (error) =>
-              error.sources &&
-              error.sources.length > 0 &&
-              !error.sources.includes(key),
-          ),
-        },
+        ...prev[errorKey],
+        errors,
+        notifications: [],
       };
     });
   };
@@ -942,15 +940,15 @@ export default AddReleaseForm;
 
 type CreateReleaseOutcome =
   | {
-      source: DbSource;
-      status: "fulfilled";
-      notifications: string[];
-    }
+    source: DbSource;
+    status: "fulfilled";
+    notifications: string[];
+  }
   | {
-      source: DbSource;
-      status: "rejected";
-      reason: unknown;
-    };
+    source: DbSource;
+    status: "rejected";
+    reason: unknown;
+  };
 
 type CreateReleaseOutcomes = {
   releaseId: string | undefined;
