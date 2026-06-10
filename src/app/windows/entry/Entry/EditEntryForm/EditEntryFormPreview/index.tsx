@@ -13,8 +13,6 @@ import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
 import { orPlaceholder } from "@/utils/form";
 
-
-
 type EditEntryFormPreviewProps = {
   form: EditEntryFormDraft;
   tags: TagListItem[];
@@ -49,7 +47,9 @@ const EditEntryFormPreview: FC<EditEntryFormPreviewProps> = ({
 
   return (
     <div className={styles.preview}>
-      <FormPreviewField label="Main name">{form.mainName.value}</FormPreviewField>
+      <FormPreviewField label="Main name">
+        {form.mainName.value}
+      </FormPreviewField>
       <FormPreviewField label="Original release date">
         {orPlaceholder(originalReleaseDate)}
       </FormPreviewField>
@@ -97,4 +97,3 @@ const EditEntryFormPreview: FC<EditEntryFormPreviewProps> = ({
 };
 
 export default EditEntryFormPreview;
-

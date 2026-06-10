@@ -336,7 +336,7 @@ const EditEntryForm: FC<EditEntryFormProps> = ({
   const discogsUrlNotifications = form.discogsUrl.notifications;
   const commentNotifications = form.comment.notifications;
   const relationToQueenNotifications = form.relationToQueen.notifications;
-  const altNamesNotifications = form.altNames.notifications
+  const altNamesNotifications = form.altNames.notifications;
   const hasMainNameErrors = mainNameErrors.length > 0;
   const hasOriginalReleaseDateErrors = originalReleaseDateErrors.length > 0;
   const hasDiscogsUrlErrors = discogsUrlErrors.length > 0;
@@ -613,16 +613,16 @@ export default EditEntryForm;
 
 type UpdateEntryOutcome =
   | {
-    source: DbSource;
-    status: "fulfilled";
-    entry: EntryByIdResult;
-    notifications: string[];
-  }
+      source: DbSource;
+      status: "fulfilled";
+      entry: EntryByIdResult;
+      notifications: string[];
+    }
   | {
-    source: DbSource;
-    status: "rejected";
-    reason: unknown;
-  };
+      source: DbSource;
+      status: "rejected";
+      reason: unknown;
+    };
 
 type UpdateEntryOutcomes = {
   entry: EntryByIdResult | undefined;
@@ -669,7 +669,7 @@ const withSharedAltNameIds = (
   }),
 });
 
-type AltName = string
+type AltName = string;
 type AltNameId = string;
 type AltNameIdMap = Map<AltName, AltNameId>;
 

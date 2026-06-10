@@ -2,7 +2,7 @@ import type { FC } from "react";
 
 import styles from "./AddTagsFormSection.module.css";
 
-import type { TagId, TagListItem, } from "@/types/tags";
+import type { TagId, TagListItem } from "@/types/tags";
 
 type AddTagsFormSectionProps = {
   tags: TagListItem[];
@@ -17,12 +17,17 @@ const AddTagsFormSection: FC<AddTagsFormSectionProps> = ({
   onAddTag,
   onRemoveTag,
 }) => {
-  const [selectedTags, availableTags] = tags.reduce<[TagListItem[], TagListItem[]]>((acc, tag) => {
-    const idx = selectedTagIds.has(tag.tagId) ? 0 : 1;
-    acc[idx].push(tag);
+  const [selectedTags, availableTags] = tags.reduce<
+    [TagListItem[], TagListItem[]]
+  >(
+    (acc, tag) => {
+      const idx = selectedTagIds.has(tag.tagId) ? 0 : 1;
+      acc[idx].push(tag);
 
-    return acc;
-  }, [[], []]);
+      return acc;
+    },
+    [[], []],
+  );
 
   return (
     <div className={styles.section}>

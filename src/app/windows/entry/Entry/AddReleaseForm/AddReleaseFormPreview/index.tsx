@@ -18,7 +18,6 @@ import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
 import { orPlaceholder } from "@/utils/form";
 
-
 type AddReleaseFormPreviewProps = {
   form: AddReleaseFormDraft;
   allFormats: ReleasesFormatListItem[];
@@ -49,9 +48,13 @@ const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
 
   return (
     <div className={styles.preview}>
-      <FormPreviewField label="Version">{form.releaseVersion.value}</FormPreviewField>
+      <FormPreviewField label="Version">
+        {form.releaseVersion.value}
+      </FormPreviewField>
       <FormPreviewField label="Name">{form.name.value.name}</FormPreviewField>
-      <FormPreviewField label="Release date">{orPlaceholder(releaseDate)}</FormPreviewField>
+      <FormPreviewField label="Release date">
+        {orPlaceholder(releaseDate)}
+      </FormPreviewField>
       <FormPreviewField label="Discogs URL">
         {discogsUrl === null ? (
           orPlaceholder(discogsUrl)

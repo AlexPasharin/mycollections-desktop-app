@@ -73,7 +73,7 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
     row.shape === "flat"
       ? row.catalogueNumberInputValues.length
       : row.europeCatalogueNumberInputValues.length +
-      row.ukCatalogueNumberInputValues.length;
+        row.ukCatalogueNumberInputValues.length;
 
   const totalInputsInRow = row.labelInputValues.length + catNumberInputsCount;
 
@@ -315,4 +315,4 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
   );
 };
 
-export default AddReleaseCatalogueNumbersRow
+export default AddReleaseCatalogueNumbersRow;

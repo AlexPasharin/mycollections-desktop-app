@@ -154,9 +154,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           ...prev.formats,
           errors: nextFormatRowErrors
             ? {
-              ...formatsErrors,
-              [formatRowId]: nextFormatRowErrors,
-            }
+                ...formatsErrors,
+                [formatRowId]: nextFormatRowErrors,
+              }
             : omitProperty(formatsErrors, formatRowId),
         };
       });
@@ -940,15 +940,15 @@ export default AddReleaseForm;
 
 type CreateReleaseOutcome =
   | {
-    source: DbSource;
-    status: "fulfilled";
-    notifications: string[];
-  }
+      source: DbSource;
+      status: "fulfilled";
+      notifications: string[];
+    }
   | {
-    source: DbSource;
-    status: "rejected";
-    reason: unknown;
-  };
+      source: DbSource;
+      status: "rejected";
+      reason: unknown;
+    };
 
 type CreateReleaseOutcomes = {
   releaseId: string | undefined;

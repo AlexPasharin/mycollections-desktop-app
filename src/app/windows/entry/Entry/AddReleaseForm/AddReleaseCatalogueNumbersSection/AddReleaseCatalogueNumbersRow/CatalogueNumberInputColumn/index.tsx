@@ -96,7 +96,6 @@ const CatalogueNumberInputColumn: FC<CatalogueNumberInputColumnProps> = ({
           <div className={styles.fieldErrorSlot}>
             <FormFieldErrorMessages id={errorId} messages={errorMessages} />
           </div>
-
         </div>
       );
     })}
@@ -113,4 +112,3 @@ const CatalogueNumberInputColumn: FC<CatalogueNumberInputColumnProps> = ({
 );
 
 export default CatalogueNumberInputColumn;
-
