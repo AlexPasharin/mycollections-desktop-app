@@ -1,4 +1,4 @@
-import { useMemo, useState, type FC, type FormEvent } from "react";
+import { useState, type FC, type FormEvent } from "react";
 
 import AddReleaseCatalogueNumbersSection from "./AddReleaseCatalogueNumbersSection";
 import AddReleaseCountriesSection from "./AddReleaseCountriesSection";
@@ -12,7 +12,6 @@ import {
   isCatalogueNumbersInputFieldKey,
   isCountriesInputFieldKey,
   isFormatInputFieldKey,
-  isReleaseDateInputFieldKey,
   type AddReleaseFormInputFieldKey,
   emptyMutableCountriesSubsectionErrors,
   initialAddReleaseFormFieldErrors,
@@ -28,10 +27,10 @@ import {
 import { toCreateMusicalReleaseInput } from "./addReleaseFormUtils/toCreateMusicalReleaseInput";
 import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
 import AddReleaseNameField from "./AddReleaseNameField";
-import AddReleaseTagsSection from "./AddReleaseTagsSection";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
+import AddTagsFormSection from "@/app/components/Form/AddTagsFormSection";
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
@@ -42,16 +41,16 @@ import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
 import type { CreateMusicalReleaseInput } from "@/types/releases";
-import type { TagId, TagName, TagsById } from "@/types/tags";
-import { omitProperty } from "@/utils/common";
+import type { TagListItem } from "@/types/tags";
+import { isDateInputFieldKey, omitProperty } from "@/utils/common";
+import { updateImmutableSet } from "@/utils/immutableSet";
 
 export type AddReleaseFormProps = {
   entry: AddReleaseFormEntry;
   dbSource: DbSource;
   allFormats: ReleasesFormatListItem[];
   labels: LabelListItem[];
-  tags: TagsById;
-  sortedTagEntries: [TagId, TagName][];
+  tags: TagListItem[];
   allCountries: CountryListItem[];
   onCancel: () => void;
   onReleaseCreated: (
@@ -82,7 +81,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   allFormats,
   labels,
   tags,
-  sortedTagEntries,
   allCountries,
 }) => {
   const [form, setForm] = useState<AddReleaseFormDraft>(
@@ -96,11 +94,11 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  const [checkedDbSources, setCheckedDbSources] = useState<Set<DbSource>>(
-    () => new Set(ALL_DB_SOURCES),
-  );
+  const [checkedDbSources, setCheckedDbSources] = useState<
+    ReadonlySet<DbSource>
+  >(() => new Set(ALL_DB_SOURCES));
 
-  const [submitError, setSubmitError] = useState<string | undefined>();
+  const [submitError, setSubmitError] = useState<string>();
 
   const setFieldValue = <K extends keyof AddReleaseFormDraft>(
     key: K,
@@ -132,7 +130,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   const onFocus = (key: AddReleaseFormInputFieldKey) => {
     setShowSubmissionValidationError(false);
 
-    if (typeof key === "string" && !isReleaseDateInputFieldKey(key)) {
+    if (typeof key === "string" && !isDateInputFieldKey(key)) {
       setField(key, (prev) => ({
         ...prev[key],
         notifications: [],
@@ -228,20 +226,22 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       return;
     }
 
-    const errorKey = isReleaseDateInputFieldKey(key) ? "releaseDate" : key;
+    const errorKey = isDateInputFieldKey(key) ? "releaseDate" : key;
 
-    setForm((prev) => ({
-      ...prev,
-      [errorKey]: {
+    setField(errorKey, (prev) => {
+      const errors = prev[errorKey].errors.filter(
+        (error) =>
+          error.sources &&
+          error.sources.length > 0 &&
+          !error.sources.includes(key),
+      );
+
+      return {
         ...prev[errorKey],
-        errors: prev[errorKey].errors?.filter(
-          (error) =>
-            error.sources &&
-            error.sources.length > 0 &&
-            !error.sources.includes(key),
-        ),
-      },
-    }));
+        errors,
+        notifications: [],
+      };
+    });
   };
 
   const validateField = <K extends keyof AddReleaseFormDraft>(key: K) => {
@@ -317,17 +317,6 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       return next;
     });
   };
-
-  const selectedTagsById = useMemo<TagsById>(
-    () =>
-      Object.fromEntries(
-        Array.from(form.selectedTags.value, (tagId) => [
-          tagId,
-          tags[tagId] ?? tagId,
-        ]),
-      ),
-    [form.selectedTags.value, tags],
-  );
 
   const addCountrySelectionRow = () => {
     setFieldValue("countries", (prev) => ({
@@ -452,30 +441,19 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       formIsValid,
     });
 
-    if (!formIsValid) {
-      setShowSubmissionValidationError(true);
+    setShowSubmissionValidationError(!formIsValid);
 
-      return;
+    if (formIsValid) {
+      setSubmitError(undefined);
+      setCheckedDbSources(new Set(ALL_DB_SOURCES));
+      setIsConfirmOpen(true);
     }
-
-    setShowSubmissionValidationError(false);
-    setSubmitError(undefined);
-    setCheckedDbSources(new Set(ALL_DB_SOURCES));
-    setIsConfirmOpen(true);
   };
 
   const handleToggleDbSource = (source: DbSource) => {
-    setCheckedDbSources((prev) => {
-      const next = new Set(prev);
-
-      if (next.has(source)) {
-        next.delete(source);
-      } else {
-        next.add(source);
-      }
-
-      return next;
-    });
+    setCheckedDbSources((prev) =>
+      updateImmutableSet(source, prev.has(source) ? "remove" : "add")(prev),
+    );
   };
 
   const handleConfirmCreate = () => {
@@ -795,9 +773,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
         <hr className={styles.sectionDivider} aria-hidden />
 
-        <AddReleaseTagsSection
-          sortedTagEntries={sortedTagEntries}
-          selectedTagsById={selectedTagsById}
+        <AddTagsFormSection
+          tags={tags}
+          selectedTagIds={form.selectedTags.value}
           onAddTag={addSelectedTag}
           onRemoveTag={removeSelectedTag}
         />

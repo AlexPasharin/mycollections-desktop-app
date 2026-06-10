@@ -7,7 +7,7 @@ import { DetailField } from "../DetailField";
 import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
 import type { ReleaseByIdResult } from "@/types/releases";
 import { joinStringOrArray } from "@/utils/common";
-import type { CountriesBasic } from "@/validation/releases/countries";
+import type { CountriesBasic } from "@/validation";
 
 type ReleaseCountriesProps = {
   countries: ReleaseByIdResult["countries"];

@@ -15,6 +15,7 @@ import type {
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import type { LabelListItem } from "@/types/labels";
+import { errorSetToMessages } from "@/validation";
 
 export type AddReleaseCatalogueNumbersRowProps = {
   row: CatalogueNumberRowState;
@@ -163,14 +164,12 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
                         )}
                       </div>
                     </div>
-                    {hasLabelErrors && (
-                      <div className={styles.fieldErrorSlot}>
-                        <FormFieldErrorMessages
-                          id={labelErrorId}
-                          messages={labelErrorMessages}
-                        />
-                      </div>
-                    )}
+                    <div className={styles.fieldErrorSlot}>
+                      <FormFieldErrorMessages
+                        id={labelErrorId}
+                        messages={labelErrorMessages}
+                      />
+                    </div>
                   </div>
                 );
               })}
@@ -293,14 +292,12 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
             )}
           </div>
 
-          {rowCommonMessages && rowCommonMessages.length > 0 && (
-            <div className={styles.rowErrorSlot}>
-              <FormFieldErrorMessages
-                id={rowCommonErrorId}
-                messages={rowCommonMessages}
-              />
-            </div>
-          )}
+          <div className={styles.rowErrorSlot}>
+            <FormFieldErrorMessages
+              id={rowCommonErrorId}
+              messages={rowCommonMessages}
+            />
+          </div>
         </div>
 
         <div className={styles.removeRow}>
@@ -319,6 +316,3 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
 };
 
 export default AddReleaseCatalogueNumbersRow;
-
-const errorSetToMessages = (set?: Set<string>) =>
-  set && set.size > 0 ? Array.from(set, (message) => ({ message })) : null;

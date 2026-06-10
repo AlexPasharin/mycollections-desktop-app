@@ -1,15 +1,14 @@
 import { z } from "zod";
 
-import type { FormFieldValidationResult } from "./types";
-
 import {
   emptyMutableCountriesSubsectionErrors,
   type AddReleaseFormCountriesErrors,
 } from "../errorMessages";
 import type { AddReleaseFormCountries } from "../formValues";
 
+import type { FormFieldValidationResult } from "@/types/form";
 import type { ValidationResultErrorMessages } from "@/utils/validation";
-import { uniquePropertyArraySchema } from "@/validation/common";
+import { uniquePropertyArraySchema } from "@/validation";
 
 export const validateReleaseCountries = (
   value: AddReleaseFormCountries,

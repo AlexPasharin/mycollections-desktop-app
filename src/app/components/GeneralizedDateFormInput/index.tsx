@@ -12,7 +12,7 @@ import {
 import {
   generalizedDateMonthSchema,
   generalizedDateYearSchema,
-} from "@/validation/generalizedDate";
+} from "@/validation";
 
 const YEAR_INPUT_ID = "add-release-date-year";
 const MONTH_INPUT_ID = "add-release-date-month";

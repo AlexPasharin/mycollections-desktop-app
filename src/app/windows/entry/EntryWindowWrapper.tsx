@@ -41,9 +41,7 @@ const EntryWindowWrapper: FC = () => {
 
     api
       .getEntryById(entryId, dbSource)
-      .then((entryData) => {
-        setEntry(entryData);
-      })
+      .then(setEntry)
       .catch((error: unknown) => {
         console.error("Error getting entry by id", error);
         setEntry(undefined);
@@ -72,7 +70,7 @@ const EntryWindowWrapper: FC = () => {
       {isLoading ? (
         <p>Loading entry&apos;s details...</p>
       ) : entry ? (
-        <Entry entry={entry} dbSource={dbSource} />
+        <Entry entry={entry} dbSource={dbSource} onEntryUpdated={setEntry} />
       ) : (
         <p>Entry not found.</p>
       )}

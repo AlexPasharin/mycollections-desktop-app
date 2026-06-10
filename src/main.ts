@@ -14,6 +14,7 @@ import {
   GET_ARTIST_BY_ID,
   GET_ENTRY_BY_ID,
   GET_ENTRY_RELEASES,
+  GET_ENTRY_RELEASE_TAG_IDS,
   GET_RELEASE_BY_ID,
   FETCH_RELEASE_FORMATS,
   FETCH_LABELS,
@@ -43,6 +44,7 @@ import {
   createMusicalRelease,
   deleteRelease,
   getEntryReleases,
+  getEntryReleaseTagIds,
   getReleaseById,
 } from "@/db/releases";
 import { fetchTags } from "@/db/tags";
@@ -79,6 +81,11 @@ await app.whenReady().then(async () => {
   );
   ipcMain.handle(GET_ENTRY_RELEASES, (_, entryId: string, dbSource: DbSource) =>
     getEntryReleases(entryId, dbSource),
+  );
+  ipcMain.handle(
+    GET_ENTRY_RELEASE_TAG_IDS,
+    (_, entryId: string, dbSource: DbSource) =>
+      getEntryReleaseTagIds(entryId, dbSource),
   );
   ipcMain.handle(
     GET_RELEASE_BY_ID,

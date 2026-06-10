@@ -1,4 +1,5 @@
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
+import type { FormFieldError } from "@/types/form";
 import { omitProperty } from "@/utils/common";
 
 export type FormatField =
@@ -8,11 +9,6 @@ export type FormatField =
   | "jukeboxHole";
 
 type ReleaseDateFieldErrorSource = keyof GeneralizedDateFormInputValue;
-
-export type AddReleaseFormFieldError = {
-  message: string;
-  sources?: PropertyKey[] | undefined;
-};
 
 export type FormatFieldsRowId = string;
 export type CatNumberFieldsRowId = string;
@@ -40,7 +36,7 @@ export type AddReleaseFormCountriesErrors = {
 
 export type AddReleaseFormFormatErrors = Record<
   FormatFieldsRowId,
-  AddReleaseFormFieldError[]
+  FormFieldError[]
 >;
 
 export type AddReleaseFormCatNumbersErrors = Record<
@@ -55,11 +51,11 @@ export const emptyMutableCountriesSubsectionErrors =
   });
 
 export const initialAddReleaseFormFieldErrors = {
-  name: undefined,
+  name: [],
   releaseVersion: [],
   discogsUrl: [],
-  comment: undefined,
-  conditionProblems: undefined,
+  comment: [],
+  conditionProblems: [],
   releaseDate: [],
   countries: {
     madeIn: emptyMutableCountriesSubsectionErrors(),
@@ -68,9 +64,9 @@ export const initialAddReleaseFormFieldErrors = {
   formats: {},
   catalogueNumbers: {},
   matrixRunout: [],
-  selectedTags: undefined,
-  partOfQueenCollection: undefined,
-  relationToQueen: undefined,
+  selectedTags: [],
+  partOfQueenCollection: [],
+  relationToQueen: [],
 };
 
 export type CatalogueNumbersInputField =
@@ -108,9 +104,6 @@ export type AddReleaseFormInputFieldKey =
   | AddReleaseFormFormatInputFieldKey
   | AddReleaseFormCatalogueNumbersInputFieldKey
   | AddReleaseFormCountriesInputFieldKey;
-
-export const isReleaseDateInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
-  key === "year" || key === "month" || key === "day";
 
 export const isFormatInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
   typeof key === "object" && "formatRowId" in key;

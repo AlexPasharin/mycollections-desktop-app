@@ -1,36 +1,62 @@
-import { useState, type FC } from "react";
+import { useEffect, useMemo, useRef, useState, type FC } from "react";
 
 import AddReleaseForm from "./AddReleaseForm";
+import EditEntryForm from "./EditEntryForm";
 import styles from "./Entry.module.css";
 import EntryArtists from "./EntryArtists";
 import EntryDetailsPanel from "./EntryDetailsPanel";
 import EntryReleases from "./EntryReleases";
 
+import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
+import FormFieldNotifications from "@/app/components/FormFieldNotifications";
+import api from "@/app/windows/entry/api";
 import type { DbSource } from "@/db/db-source";
 import type { EntryByIdResult } from "@/types/entries";
+import type { TagListItem } from "@/types/tags";
 import { sanitizeReleaseDate } from "@/utils/date";
 
 type EntryProps = {
   entry: EntryByIdResult;
   dbSource: DbSource;
+  onEntryUpdated: (entry: EntryByIdResult) => void;
 };
 
-type EntryTab = "releases" | "addRelease";
+type EntryTab = "releases" | "addRelease" | "editEntry";
 
 /** Stable ids for this tablist (single Entry view per document). */
 const RELEASES_TAB_ID = "releases-tab";
 const RELEASES_PANEL_ID = "releases-panel";
 const ADD_RELEASE_TAB_ID = "add-release-tab";
 const ADD_RELEASE_PANEL_ID = "add-release-panel";
+const EDIT_ENTRY_TAB_ID = "edit-entry-tab";
+const EDIT_ENTRY_PANEL_ID = "edit-entry-panel";
+const EDIT_ENTRY_UPDATE_NOTIFICATIONS_ID = "edit-entry-update-notifications";
+const EDIT_ENTRY_UPDATE_ERRORS_ID = "edit-entry-update-errors";
 
-const Entry: FC<EntryProps> = ({ entry, dbSource }) => {
+const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
   const [activeTab, setActiveTab] = useState<EntryTab>("addRelease");
+  const tagsShouldBeFetched =
+    activeTab === "addRelease" || activeTab === "editEntry";
 
-  const [latestAddedReleaseId, setLatestAddedReleaseId] = useState<string>();
-  const [latestCreateNotifications, setLatestCreateNotifications] = useState<
+  const [tags, setTags] = useState<TagListItem[]>([]);
+  const [tagsLoading, setTagsLoading] = useState(false);
+  const [tagsLoadFailed, setTagsLoadFailed] = useState(false);
+  const fetchTagsTokenRef = useRef(0);
+
+  const [latestUpdateEntryNotifications, setLatestUpdateEntryNotifications] =
+    useState<string[]>([]);
+  const [latestUpdateEntryErrors, setLatestUpdateEntryErrors] = useState<
     string[]
   >([]);
-  const [latestCreatedErrors, setLatestCreatedErrors] = useState<string[]>([]);
+
+  const [latestAddedReleaseId, setLatestAddedReleaseId] = useState<string>();
+  const [
+    latestCreateReleaseNotifications,
+    setLatestCreateReleaseNotifications,
+  ] = useState<string[]>([]);
+  const [latestCreateReleaseErrors, setLatestCreateReleaseErrors] = useState<
+    string[]
+  >([]);
 
   const handleReleaseCreated = (
     releaseId: string | undefined,
@@ -38,10 +64,75 @@ const Entry: FC<EntryProps> = ({ entry, dbSource }) => {
     errors: string[],
   ) => {
     setLatestAddedReleaseId(releaseId);
-    setLatestCreateNotifications(notifications);
-    setLatestCreatedErrors(errors);
+    setLatestCreateReleaseNotifications(notifications);
+    setLatestCreateReleaseErrors(errors);
     setActiveTab("releases");
   };
+
+  const handleEntryUpdated = (
+    updatedEntry: EntryByIdResult,
+    notifications: string[],
+    errors: string[],
+  ) => {
+    onEntryUpdated(updatedEntry);
+    setLatestUpdateEntryNotifications(notifications);
+    setLatestUpdateEntryErrors(errors);
+  };
+
+  const updateEntryNotifications = latestUpdateEntryNotifications.map(
+    (notification) => ({
+      notification,
+    }),
+  );
+
+  const updateEntryErrors = latestUpdateEntryErrors.map((message) => ({
+    message,
+  }));
+
+  const sanitizedEntry = useMemo(
+    () => ({
+      ...entry,
+      originalReleaseDate: sanitizeReleaseDate(entry.originalReleaseDate),
+    }),
+    [entry],
+  );
+
+  useEffect(() => {
+    if (!tagsShouldBeFetched) {
+      return;
+    }
+
+    const token = ++fetchTagsTokenRef.current;
+    setTagsLoading(true);
+    setTagsLoadFailed(false);
+
+    api
+      .fetchTags(dbSource)
+      .then((tagsData) => {
+        if (token !== fetchTagsTokenRef.current) {
+          return;
+        }
+
+        setTags(tagsData);
+        setTagsLoading(false);
+      })
+      .catch((error: unknown) => {
+        console.error("Error fetching tags", error);
+
+        if (token !== fetchTagsTokenRef.current) {
+          return;
+        }
+
+        setTagsLoadFailed(true);
+        setTagsLoading(false);
+      });
+
+    return () => {
+      fetchTagsTokenRef.current += 1;
+    };
+
+    // Re-fetch when entry changes so tag pickers stay in sync after updates.
+  }, [tagsShouldBeFetched, dbSource, entry]);
 
   return (
     <div>
@@ -51,7 +142,10 @@ const Entry: FC<EntryProps> = ({ entry, dbSource }) => {
 
       <EntryDetailsPanel entry={entry} />
 
-      <section className={styles.tabs} aria-label="Releases and add release">
+      <section
+        className={styles.tabs}
+        aria-label="Releases, add release, and edit entry"
+      >
         <div className={styles.tabList} role="tablist">
           <button
             type="button"
@@ -83,6 +177,21 @@ const Entry: FC<EntryProps> = ({ entry, dbSource }) => {
           >
             Add new release
           </button>
+          <button
+            type="button"
+            id={EDIT_ENTRY_TAB_ID}
+            role="tab"
+            aria-selected={activeTab === "editEntry"}
+            aria-controls={EDIT_ENTRY_PANEL_ID}
+            className={
+              activeTab === "editEntry"
+                ? `${styles.tab} ${styles.tabActive}`
+                : styles.tab
+            }
+            onClick={() => setActiveTab("editEntry")}
+          >
+            Edit entry
+          </button>
         </div>
 
         <div
@@ -97,12 +206,12 @@ const Entry: FC<EntryProps> = ({ entry, dbSource }) => {
             dbSource={dbSource}
             isActive={activeTab === "releases"}
             latestAddedReleaseId={latestAddedReleaseId}
-            latestCreateNotifications={latestCreateNotifications}
-            latestCreatedErrors={latestCreatedErrors}
+            latestCreateNotifications={latestCreateReleaseNotifications}
+            latestCreatedErrors={latestCreateReleaseErrors}
             onDismissCreateNotifications={() =>
-              setLatestCreateNotifications([])
+              setLatestCreateReleaseNotifications([])
             }
-            onDismissCreatedErrors={() => setLatestCreatedErrors([])}
+            onDismissCreatedErrors={() => setLatestCreateReleaseErrors([])}
           />
         </div>
 
@@ -114,15 +223,39 @@ const Entry: FC<EntryProps> = ({ entry, dbSource }) => {
           className={styles.tabPanel}
         >
           <AddReleaseForm
-            entry={{
-              ...entry,
-              originalReleaseDate: sanitizeReleaseDate(
-                entry.originalReleaseDate,
-              ),
-            }}
+            entry={sanitizedEntry}
             dbSource={dbSource}
+            tags={tags}
+            tagsLoading={tagsLoading}
+            tagsLoadFailed={tagsLoadFailed}
             onCancel={() => setActiveTab("releases")}
             onReleaseCreated={handleReleaseCreated}
+          />
+        </div>
+
+        <div
+          id={EDIT_ENTRY_PANEL_ID}
+          role="tabpanel"
+          aria-labelledby={EDIT_ENTRY_TAB_ID}
+          hidden={activeTab !== "editEntry"}
+          className={styles.tabPanel}
+        >
+          <FormFieldNotifications
+            id={EDIT_ENTRY_UPDATE_NOTIFICATIONS_ID}
+            messages={updateEntryNotifications}
+          />
+          <FormFieldErrorMessages
+            id={EDIT_ENTRY_UPDATE_ERRORS_ID}
+            messages={updateEntryErrors}
+          />
+          <EditEntryForm
+            entry={sanitizedEntry}
+            dbSource={dbSource}
+            tags={tags}
+            tagsLoading={tagsLoading}
+            tagsLoadFailed={tagsLoadFailed}
+            onCancel={() => setActiveTab("releases")}
+            onEntryUpdated={handleEntryUpdated}
           />
         </div>
       </section>

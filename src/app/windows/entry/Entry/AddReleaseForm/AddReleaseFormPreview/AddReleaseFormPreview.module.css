@@ -5,21 +5,6 @@
   font-size: 0.92em;
 }
 
-.field {
-  margin: 0;
-}
-
-.label {
-  font-weight: 600;
-  margin-right: 0.4rem;
-}
-
-.labelBlock {
-  font-weight: 600;
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
 .multiline {
   white-space: pre-wrap;
 }

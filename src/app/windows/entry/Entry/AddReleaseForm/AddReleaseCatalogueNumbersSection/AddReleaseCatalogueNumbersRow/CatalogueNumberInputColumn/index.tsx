@@ -3,6 +3,7 @@ import type { FC } from "react";
 import styles from "../AddReleaseCatalogueNumbersRow.module.css";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
+import { errorSetToMessages } from "@/validation";
 
 export type CatalogueNumberInputColumnProps = {
   /** Visible heading shown once at the top of the column (e.g. "Catalogue
@@ -92,11 +93,9 @@ const CatalogueNumberInputColumn: FC<CatalogueNumberInputColumnProps> = ({
               )}
             </div>
           </div>
-          {hasErrors && (
-            <div className={styles.fieldErrorSlot}>
-              <FormFieldErrorMessages id={errorId} messages={errorMessages} />
-            </div>
-          )}
+          <div className={styles.fieldErrorSlot}>
+            <FormFieldErrorMessages id={errorId} messages={errorMessages} />
+          </div>
         </div>
       );
     })}
@@ -113,6 +112,3 @@ const CatalogueNumberInputColumn: FC<CatalogueNumberInputColumnProps> = ({
 );
 
 export default CatalogueNumberInputColumn;
-
-const errorSetToMessages = (set?: Set<string>) =>
-  set && set.size > 0 ? Array.from(set, (message) => ({ message })) : null;

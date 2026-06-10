@@ -1,33 +1,41 @@
 import type { FC } from "react";
 
-import styles from "./AddReleaseTagsSection.module.css";
+import styles from "./AddTagsFormSection.module.css";
 
-import type { TagId, TagName, TagsById } from "@/types/tags";
+import type { TagId, TagListItem } from "@/types/tags";
 
-type AddReleaseTagsSectionProps = {
-  sortedTagEntries: [TagId, TagName][];
-  selectedTagsById: TagsById;
+type AddTagsFormSectionProps = {
+  tags: TagListItem[];
+  selectedTagIds: Set<TagId>;
   onAddTag: (tagId: string) => void;
   onRemoveTag: (tagId: string) => void;
 };
 
-const AddReleaseTagsSection: FC<AddReleaseTagsSectionProps> = ({
-  sortedTagEntries,
-  selectedTagsById,
+const AddTagsFormSection: FC<AddTagsFormSectionProps> = ({
+  tags,
+  selectedTagIds,
   onAddTag,
   onRemoveTag,
 }) => {
-  const selectedTagEntries = Object.entries(selectedTagsById).sort(
-    ([_a, tagA], [_b, tagB]) => tagA.localeCompare(tagB),
+  const [selectedTags, availableTags] = tags.reduce<
+    [TagListItem[], TagListItem[]]
+  >(
+    (acc, tag) => {
+      const idx = selectedTagIds.has(tag.tagId) ? 0 : 1;
+      acc[idx].push(tag);
+
+      return acc;
+    },
+    [[], []],
   );
 
   return (
     <div className={styles.section}>
       <h2 className={styles.heading}>Tags</h2>
 
-      {selectedTagEntries.length > 0 && (
+      {selectedTags.length > 0 && (
         <ul className={styles.selectedList} aria-label="Selected tags">
-          {selectedTagEntries.map(([tagId, tag]) => (
+          {selectedTags.map(({ tagId, tag }) => (
             <li key={tagId} className={styles.selectedItem}>
               <span>{tag}</span>
               <button
@@ -50,7 +58,6 @@ const AddReleaseTagsSection: FC<AddReleaseTagsSectionProps> = ({
         </label>
         <select
           id="add-release-tag-select"
-          key={selectedTagEntries.map(([id]) => id).join("|")}
           className={styles.select}
           defaultValue=""
           onChange={(e) => {
@@ -62,18 +69,15 @@ const AddReleaseTagsSection: FC<AddReleaseTagsSectionProps> = ({
           }}
         >
           <option value="">Choose a tag…</option>
-          {sortedTagEntries.map(
-            ([tagId, tag]) =>
-              selectedTagsById[tagId] === undefined && (
-                <option key={tagId} value={tagId}>
-                  {tag}
-                </option>
-              ),
-          )}
+          {availableTags.map(({ tagId, tag }) => (
+            <option key={tagId} value={tagId}>
+              {tag}
+            </option>
+          ))}
         </select>
       </div>
     </div>
   );
 };
 
-export default AddReleaseTagsSection;
+export default AddTagsFormSection;

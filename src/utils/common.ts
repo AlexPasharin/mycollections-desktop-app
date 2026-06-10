@@ -30,6 +30,8 @@ export function omitProperty<
 
 /**
  * Indices of items whose value at `key` repeats an earlier item's value at that key (in terms of basic equality)
+ * If key is not given, uses basic equality comparison.
+ * If ignoreValues is given, items whose value at `key` (or just the item itself if key is not given) is in `ignoreValues` are ignored.
  */
 export const duplicateIndicesByKey = <T, K extends keyof T>(
   items: readonly T[],
@@ -80,4 +82,13 @@ export const formatJson = (value: unknown): string | null => {
     case "function":
       return value.toString();
   }
+};
+
+export const isDateInputFieldKey = (key: unknown) =>
+  key === "year" || key === "month" || key === "day";
+
+export const nullIfEmpty = (value: string): string | null => {
+  const trimmed = value.trim();
+
+  return trimmed === "" ? null : trimmed;
 };

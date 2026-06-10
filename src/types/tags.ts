@@ -8,6 +8,3 @@ export type TagListItem = {
 export type FetchTags = (dbSource: DbSource) => Promise<TagListItem[]>;
 
 export type TagId = string;
-export type TagName = string;
-
-export type TagsById = Record<TagId, TagName>;

@@ -12,6 +12,8 @@ import type {
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { CreateMusicalReleaseInput } from "@/types/releases";
 import type { TagId } from "@/types/tags";
+import { nullIfEmpty } from "@/utils/common";
+import { generalizedDateToString } from "@/utils/date";
 
 type ToCreateMusicalReleaseInputArgs = {
   name: AddReleaseFormNameInput;
@@ -60,7 +62,7 @@ export const toCreateMusicalReleaseInput = ({
 }: ToCreateMusicalReleaseInputArgs): CreateMusicalReleaseInput => ({
   release: {
     releaseVersion,
-    releaseDate: toReleaseDateString(releaseDate),
+    releaseDate: generalizedDateToString(releaseDate),
     discogsUrl: nullIfEmpty(discogsUrl),
     countries: toReleaseCountriesJson(countries),
     catalogueNumbers: toReleaseCatNumbersJson(catalogueNumbers),
@@ -82,46 +84,6 @@ export const toCreateMusicalReleaseInput = ({
   })),
   tagIds: Array.from(selectedTags),
 });
-
-export const nullIfEmpty = (value: string): string | null => {
-  const trimmed = value.trim();
-
-  return trimmed === "" ? null : trimmed;
-};
-
-/**
- * Joins the form's `{ year, month, day }` strings into the DB string shape:
- * `YYYY`, `YYYY-MM`, or `YYYY-MM-DD` with month and day zero-padded to 2
- * digits. Returns `null` when year is blank.
- *
- * Trusts the caller to have validated the input — empty month with a non-empty
- * day, leading zeros, etc. would otherwise produce a malformed string.
- */
-export const toReleaseDateString = ({
-  year,
-  month,
-  day,
-}: GeneralizedDateFormInputValue): string | null => {
-  const yearTrimmed = year.trim();
-
-  if (yearTrimmed === "") {
-    return null;
-  }
-
-  const segments = [yearTrimmed];
-  const monthTrimmed = month.trim();
-  const dayTrimmed = day.trim();
-
-  if (monthTrimmed !== "") {
-    segments.push(monthTrimmed.padStart(2, "0"));
-  }
-
-  if (dayTrimmed !== "") {
-    segments.push(dayTrimmed.padStart(2, "0"));
-  }
-
-  return segments.join("-");
-};
 
 /**
  * Maps the form's parallel made-in / printed-in arrays to the jsonb shape:

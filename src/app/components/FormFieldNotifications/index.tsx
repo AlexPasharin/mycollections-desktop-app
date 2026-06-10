@@ -4,14 +4,14 @@ import styles from "./FormFieldNotifications.module.css";
 
 export type FormFieldNotificationsProps = {
   id: string;
-  messages: { notification: string }[];
+  messages: { notification: string }[] | undefined;
 };
 
 const FormFieldNotifications: FC<FormFieldNotificationsProps> = ({
   id,
   messages,
 }) => {
-  if (messages.length === 0) {
+  if (!messages || messages.length === 0) {
     return null;
   }
 

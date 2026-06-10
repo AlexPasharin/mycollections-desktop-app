@@ -63,3 +63,6 @@ export const stringOrNonEmptyArraySchema = z.union([
   z.string(),
   z.array(z.string()).nonempty(),
 ]);
+
+export const errorSetToMessages = (set?: Set<string>) =>
+  set && set.size > 0 ? Array.from(set, (message) => ({ message })) : undefined;

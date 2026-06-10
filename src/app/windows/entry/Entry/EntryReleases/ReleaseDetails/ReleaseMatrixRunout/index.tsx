@@ -4,7 +4,7 @@ import styles from "./ReleaseMatrixRunout.module.css";
 
 import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
 import type { JsonParsingErrorData, ReleaseByIdResult } from "@/types/releases";
-import type { StringLeafJson } from "@/validation/releases/matrixRunout";
+import type { StringLeafJson } from "@/validation";
 
 type ReleaseMatrixRunoutProps = {
   matrixRunout: ReleaseByIdResult["matrixRunout"];
