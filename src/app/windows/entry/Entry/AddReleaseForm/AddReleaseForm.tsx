@@ -1,4 +1,4 @@
-import { useState, type FC, type FormEvent } from "react";
+import { useEffect, useState, type FC, type FormEvent } from "react";
 
 import AddReleaseCatalogueNumbersSection from "./AddReleaseCatalogueNumbersSection";
 import AddReleaseCountriesSection from "./AddReleaseCountriesSection";
@@ -23,6 +23,7 @@ import {
   initialAddReleaseFormDraftValue,
   type AddReleaseFormDraft,
   type AddReleaseFormEntry,
+  type AddReleaseFormPersistedState,
 } from "./addReleaseFormUtils/formValues";
 import { toCreateMusicalReleaseInput } from "./addReleaseFormUtils/toCreateMusicalReleaseInput";
 import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
@@ -52,6 +53,8 @@ export type AddReleaseFormProps = {
   labels: LabelListItem[];
   tags: TagListItem[];
   allCountries: CountryListItem[];
+  restoredState?: AddReleaseFormPersistedState | null;
+  onPersistState: (state: AddReleaseFormPersistedState) => void;
   onCancel: () => void;
   onReleaseCreated: (
     releaseId: string | undefined,
@@ -82,9 +85,12 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   labels,
   tags,
   allCountries,
+  restoredState,
+  onPersistState,
 }) => {
   const [form, setForm] = useState<AddReleaseFormDraft>(
-    initialAddReleaseFormDraftValue(entry, allFormats),
+    () =>
+      restoredState?.form ?? initialAddReleaseFormDraftValue(entry, allFormats),
   );
 
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
@@ -96,9 +102,15 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   const [checkedDbSources, setCheckedDbSources] = useState<
     ReadonlySet<DbSource>
-  >(() => new Set(ALL_DB_SOURCES));
+  >(() => restoredState?.checkedDbSources ?? new Set(ALL_DB_SOURCES));
 
   const [submitError, setSubmitError] = useState<string>();
+
+  useEffect(() => {
+    return () => {
+      onPersistState({ form, checkedDbSources });
+    };
+  }, [form, checkedDbSources, onPersistState]);
 
   const setFieldValue = <K extends keyof AddReleaseFormDraft>(
     key: K,

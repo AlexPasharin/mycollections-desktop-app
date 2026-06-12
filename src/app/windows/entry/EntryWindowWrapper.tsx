@@ -14,11 +14,12 @@ import type { EntryByIdResult } from "@/types/entries";
 const EntryWindowWrapper: FC = () => {
   const params = new URLSearchParams(window.location.search);
   const entryId = params.get("entryId");
-  const initialDbSource = parseDbSource(params.get("source"));
 
   console.info({ entryId });
 
-  const [dbSource, setDbSource] = useState<DbSource>(initialDbSource);
+  const [dbSource, setDbSource] = useState<DbSource>(
+    parseDbSource(params.get("source")),
+  );
   const [entry, setEntry] = useState<EntryByIdResult>();
   const [isLoading, setIsLoading] = useState(true);
 

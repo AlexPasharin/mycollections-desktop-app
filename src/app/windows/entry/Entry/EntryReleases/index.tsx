@@ -14,7 +14,6 @@ import type { EntryRelease } from "@/types/releases";
 type EntryReleasesProps = {
   entry: EntryByIdResult;
   dbSource: DbSource;
-  isActive: boolean;
   latestAddedReleaseId: string | undefined;
   latestCreateNotifications: string[];
   latestCreatedErrors: string[];
@@ -29,7 +28,6 @@ const DELETE_ERRORS_ID = "entry-releases-delete-errors";
 const EntryReleases: FC<EntryReleasesProps> = ({
   entry,
   dbSource,
-  isActive,
   latestAddedReleaseId,
   latestCreateNotifications,
   latestCreatedErrors,
@@ -42,6 +40,9 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   const [recentlyDeletedVersion, setRecentlyDeletedVersion] =
     useState<string>();
   const [latestDeletedErrors, setLatestDeletedErrors] = useState<string[]>([]);
+
+  console.info("mounting EntryReleases");
+  console.info("releases", releases);
 
   // Token bumped on every fetch / unmount; in-flight responses with a stale
   // token are discarded so we never setState on stale data or after unmount.
@@ -76,21 +77,15 @@ const EntryReleases: FC<EntryReleasesProps> = ({
       });
   }, [entry.entryId, dbSource]);
 
-  // Re-fetch every time this tab becomes active, so the list is always fresh
-  // after the user has been on the "Add release" tab (including right after a
-  // successful submission, which switches `activeTab` back to "releases").
+  // Fetches on mount; remounting (e.g. after visiting "Add release") loads a fresh list.
   useEffect(() => {
-    if (!isActive) {
-      return;
-    }
-
     fetchReleases();
 
     return () => {
       // Invalidate the in-flight fetch (if any) so its setState is skipped.
       fetchTokenRef.current += 1;
     };
-  }, [isActive, fetchReleases]);
+  }, [fetchReleases]);
 
   const handleReleaseDeleted = (
     deletedReleaseVersion: string,
@@ -110,6 +105,8 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   };
 
   if (loading) {
+    console.info("loading releases");
+
     return <p className={styles.emptyState}>Loading releases&hellip;</p>;
   }
 
