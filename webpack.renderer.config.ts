@@ -9,11 +9,20 @@ export const rendererConfig: Configuration = {
     rules: [
       ...rules,
       {
-        test: /\.css$/,
+        test: /\.module\.css$/,
         use: [
           { loader: "style-loader" },
           { loader: "css-modules-typescript-loader" },
           { loader: "css-loader", options: { modules: true } },
+        ],
+      },
+      {
+        test: /\.css$/,
+        exclude: /\.module\.css$/,
+        use: [
+          { loader: "style-loader" },
+          { loader: "css-loader" },
+          { loader: "postcss-loader" },
         ],
       },
     ],

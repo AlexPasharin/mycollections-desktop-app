@@ -16,6 +16,7 @@ export default tseslint.config(
       "src/types/db/database.ts",
       "localScripts/**",
       "**/*.css.d.ts",
+      "**/*.css",
     ],
   },
   eslint.configs.recommended,
