@@ -41,9 +41,6 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     useState<string>();
   const [latestDeletedErrors, setLatestDeletedErrors] = useState<string[]>([]);
 
-  console.info("mounting EntryReleases");
-  console.info("releases", releases);
-
   // Token bumped on every fetch / unmount; in-flight responses with a stale
   // token are discarded so we never setState on stale data or after unmount.
   const fetchTokenRef = useRef(0);
