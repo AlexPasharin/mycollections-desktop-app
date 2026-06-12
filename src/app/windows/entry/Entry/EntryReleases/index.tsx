@@ -102,8 +102,6 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   };
 
   if (loading) {
-    console.info("loading releases");
-
     return <p className={styles.emptyState}>Loading releases&hellip;</p>;
   }
 
