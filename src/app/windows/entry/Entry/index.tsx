@@ -1,14 +1,23 @@
-import { useEffect, useMemo, useRef, useState, type FC } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FC,
+} from "react";
 
 import AddReleaseForm from "./AddReleaseForm";
+import type { AddReleaseFormPersistedState } from "./AddReleaseForm/addReleaseFormUtils/formValues";
 import EditEntryForm from "./EditEntryForm";
-import styles from "./Entry.module.css";
+import type { EditEntryFormPersistedState } from "./EditEntryForm/editEntryFormUtils/formValues";
 import EntryArtists from "./EntryArtists";
 import EntryDetailsPanel from "./EntryDetailsPanel";
 import EntryReleases from "./EntryReleases";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import FormFieldNotifications from "@/app/components/FormFieldNotifications";
+import Tabs from "@/app/components/Tabs";
 import api from "@/app/windows/entry/api";
 import type { DbSource } from "@/db/db-source";
 import type { EntryByIdResult } from "@/types/entries";
@@ -42,6 +51,22 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
   const [tagsLoading, setTagsLoading] = useState(false);
   const [tagsLoadFailed, setTagsLoadFailed] = useState(false);
   const fetchTagsTokenRef = useRef(0);
+  const addReleaseDraftRef = useRef<AddReleaseFormPersistedState | null>(null);
+  const editEntryDraftRef = useRef<EditEntryFormPersistedState | null>(null);
+
+  const persistAddReleaseDraft = useCallback(
+    (state: AddReleaseFormPersistedState) => {
+      addReleaseDraftRef.current = state;
+    },
+    [],
+  );
+
+  const persistEditEntryDraft = useCallback(
+    (state: EditEntryFormPersistedState) => {
+      editEntryDraftRef.current = state;
+    },
+    [],
+  );
 
   const [latestUpdateEntryNotifications, setLatestUpdateEntryNotifications] =
     useState<string[]>([]);
@@ -98,6 +123,11 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
   );
 
   useEffect(() => {
+    addReleaseDraftRef.current = null;
+    editEntryDraftRef.current = null;
+  }, [entry.entryId]);
+
+  useEffect(() => {
     if (!tagsShouldBeFetched) {
       return;
     }
@@ -139,126 +169,82 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
       <h1>{entry.mainName}</h1>
 
       <EntryArtists artists={entry.artists} />
-
       <EntryDetailsPanel entry={entry} />
 
-      <section
-        className={styles.tabs}
-        aria-label="Releases, add release, and edit entry"
-      >
-        <div className={styles.tabList} role="tablist">
-          <button
-            type="button"
-            id={RELEASES_TAB_ID}
-            role="tab"
-            aria-selected={activeTab === "releases"}
-            aria-controls={RELEASES_PANEL_ID}
-            className={
-              activeTab === "releases"
-                ? `${styles.tab} ${styles.tabActive}`
-                : styles.tab
-            }
-            onClick={() => setActiveTab("releases")}
-          >
-            Releases in collection
-          </button>
-          <button
-            type="button"
-            id={ADD_RELEASE_TAB_ID}
-            role="tab"
-            aria-selected={activeTab === "addRelease"}
-            aria-controls={ADD_RELEASE_PANEL_ID}
-            className={
-              activeTab === "addRelease"
-                ? `${styles.tab} ${styles.tabActive}`
-                : styles.tab
-            }
-            onClick={() => setActiveTab("addRelease")}
-          >
-            Add new release
-          </button>
-          <button
-            type="button"
-            id={EDIT_ENTRY_TAB_ID}
-            role="tab"
-            aria-selected={activeTab === "editEntry"}
-            aria-controls={EDIT_ENTRY_PANEL_ID}
-            className={
-              activeTab === "editEntry"
-                ? `${styles.tab} ${styles.tabActive}`
-                : styles.tab
-            }
-            onClick={() => setActiveTab("editEntry")}
-          >
-            Edit entry
-          </button>
-        </div>
-
-        <div
-          id={RELEASES_PANEL_ID}
-          role="tabpanel"
-          aria-labelledby={RELEASES_TAB_ID}
-          hidden={activeTab !== "releases"}
-          className={styles.tabPanel}
-        >
-          <EntryReleases
-            entry={entry}
-            dbSource={dbSource}
-            isActive={activeTab === "releases"}
-            latestAddedReleaseId={latestAddedReleaseId}
-            latestCreateNotifications={latestCreateReleaseNotifications}
-            latestCreatedErrors={latestCreateReleaseErrors}
-            onDismissCreateNotifications={() =>
-              setLatestCreateReleaseNotifications([])
-            }
-            onDismissCreatedErrors={() => setLatestCreateReleaseErrors([])}
-          />
-        </div>
-
-        <div
-          id={ADD_RELEASE_PANEL_ID}
-          role="tabpanel"
-          aria-labelledby={ADD_RELEASE_TAB_ID}
-          hidden={activeTab !== "addRelease"}
-          className={styles.tabPanel}
-        >
-          <AddReleaseForm
-            entry={sanitizedEntry}
-            dbSource={dbSource}
-            tags={tags}
-            tagsLoading={tagsLoading}
-            tagsLoadFailed={tagsLoadFailed}
-            onCancel={() => setActiveTab("releases")}
-            onReleaseCreated={handleReleaseCreated}
-          />
-        </div>
-
-        <div
-          id={EDIT_ENTRY_PANEL_ID}
-          role="tabpanel"
-          aria-labelledby={EDIT_ENTRY_TAB_ID}
-          hidden={activeTab !== "editEntry"}
-          className={styles.tabPanel}
-        >
-          <FormFieldNotifications
-            id={EDIT_ENTRY_UPDATE_NOTIFICATIONS_ID}
-            messages={updateEntryNotifications}
-          />
-          <FormFieldErrorMessages
-            id={EDIT_ENTRY_UPDATE_ERRORS_ID}
-            messages={updateEntryErrors}
-          />
-          <EditEntryForm
-            entry={sanitizedEntry}
-            dbSource={dbSource}
-            tags={tags}
-            tagsLoading={tagsLoading}
-            tagsLoadFailed={tagsLoadFailed}
-            onCancel={() => setActiveTab("releases")}
-            onEntryUpdated={handleEntryUpdated}
-          />
-        </div>
-      </section>
+      <Tabs
+        ariaLabel="Releases, add release, and edit entry"
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        tabs={[
+          {
+            id: "releases",
+            tabId: RELEASES_TAB_ID,
+            panelId: RELEASES_PANEL_ID,
+            label: "Releases in collection",
+            children: (
+              <EntryReleases
+                entry={entry}
+                dbSource={dbSource}
+                latestAddedReleaseId={latestAddedReleaseId}
+                latestCreateNotifications={latestCreateReleaseNotifications}
+                latestCreatedErrors={latestCreateReleaseErrors}
+                onDismissCreateNotifications={() =>
+                  setLatestCreateReleaseNotifications([])
+                }
+                onDismissCreatedErrors={() => setLatestCreateReleaseErrors([])}
+              />
+            ),
+          },
+          {
+            id: "addRelease",
+            tabId: ADD_RELEASE_TAB_ID,
+            panelId: ADD_RELEASE_PANEL_ID,
+            label: "Add new release",
+            children: (
+              <AddReleaseForm
+                entry={sanitizedEntry}
+                dbSource={dbSource}
+                tags={tags}
+                tagsLoading={tagsLoading}
+                tagsLoadFailed={tagsLoadFailed}
+                restoredState={addReleaseDraftRef.current}
+                onPersistState={persistAddReleaseDraft}
+                onCancel={() => setActiveTab("releases")}
+                onReleaseCreated={handleReleaseCreated}
+              />
+            ),
+          },
+          {
+            id: "editEntry",
+            tabId: EDIT_ENTRY_TAB_ID,
+            panelId: EDIT_ENTRY_PANEL_ID,
+            label: "Edit entry",
+            children: (
+              <>
+                <FormFieldNotifications
+                  id={EDIT_ENTRY_UPDATE_NOTIFICATIONS_ID}
+                  messages={updateEntryNotifications}
+                />
+                <FormFieldErrorMessages
+                  id={EDIT_ENTRY_UPDATE_ERRORS_ID}
+                  messages={updateEntryErrors}
+                />
+                <EditEntryForm
+                  entry={sanitizedEntry}
+                  dbSource={dbSource}
+                  tags={tags}
+                  tagsLoading={tagsLoading}
+                  tagsLoadFailed={tagsLoadFailed}
+                  restoredState={editEntryDraftRef.current}
+                  onPersistState={persistEditEntryDraft}
+                  onCancel={() => setActiveTab("releases")}
+                  onEntryUpdated={handleEntryUpdated}
+                />
+              </>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 };

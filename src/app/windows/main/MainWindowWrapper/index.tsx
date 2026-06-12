@@ -5,6 +5,7 @@ import ArtistQuery from "./ArtistQuery";
 import styles from "./MainWindowWrapper.module.css";
 
 import DbSourceSelect from "@/app/components/DbSourceSelect";
+import Tabs from "@/app/components/Tabs";
 import { DEFAULT_DB_SOURCE, type DbSource } from "@/db/db-source";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
@@ -34,66 +35,32 @@ const MainWindowWrapper: FC = () => {
         />
       </header>
 
-      <section
-        className={styles.tabs}
-        aria-label="Find artist or show all artists"
-      >
-        <div className={styles.tabList} role="tablist">
-          <button
-            type="button"
-            id={QUERY_TAB_ID}
-            role="tab"
-            aria-selected={activeTab === "query"}
-            aria-controls={QUERY_PANEL_ID}
-            className={
-              activeTab === "query"
-                ? `${styles.tab} ${styles.tabActive}`
-                : styles.tab
-            }
-            onClick={() => setActiveTab("query")}
-          >
-            Find artist
-          </button>
-          <button
-            type="button"
-            id={LIST_TAB_ID}
-            role="tab"
-            aria-selected={activeTab === "list"}
-            aria-controls={LIST_PANEL_ID}
-            className={
-              activeTab === "list"
-                ? `${styles.tab} ${styles.tabActive}`
-                : styles.tab
-            }
-            onClick={() => setActiveTab("list")}
-          >
-            Show all artists
-          </button>
-        </div>
-
-        {activeTab === "query" && (
-          <div
-            id={QUERY_PANEL_ID}
-            role="tabpanel"
-            aria-labelledby={QUERY_TAB_ID}
-            className={styles.tabPanel}
-          >
-            <ArtistQuery dbSource={dbSource} />
-          </div>
-        )}
-
-        {activeTab === "list" && (
-          <div
-            id={LIST_PANEL_ID}
-            role="tabpanel"
-            aria-labelledby={LIST_TAB_ID}
-            className={styles.tabPanel}
-          >
-            <h2>All artists</h2>
-            <AllArtistsList dbSource={dbSource} />
-          </div>
-        )}
-      </section>
+      <Tabs
+        ariaLabel="Find artist or show all artists"
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        tabs={[
+          {
+            id: "query",
+            tabId: QUERY_TAB_ID,
+            panelId: QUERY_PANEL_ID,
+            label: "Find artist",
+            children: <ArtistQuery dbSource={dbSource} />,
+          },
+          {
+            id: "list",
+            tabId: LIST_TAB_ID,
+            panelId: LIST_PANEL_ID,
+            label: "Show all artists",
+            children: (
+              <>
+                <h2>All artists</h2>
+                <AllArtistsList dbSource={dbSource} />
+              </>
+            ),
+          },
+        ]}
+      />
     </>
   );
 };

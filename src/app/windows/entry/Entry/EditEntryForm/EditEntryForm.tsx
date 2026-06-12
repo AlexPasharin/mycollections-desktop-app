@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FC, type FormEvent } from "react";
 
 import EditEntryAltNamesSection from "./EditEntryAltNamesSection";
 import styles from "./EditEntryForm.module.css";
@@ -13,6 +13,7 @@ import {
   initialEditEntryFormDraftValue,
   type EditEntryFormDraft,
   type EditEntryFormEntry,
+  type EditEntryFormPersistedState,
 } from "./editEntryFormUtils/formValues";
 import { toUpdateMusicalEntryInput } from "./editEntryFormUtils/toUpdateMusicalEntryInput";
 import EditEntryTypesSection from "./EditEntryTypesSection";
@@ -37,6 +38,8 @@ export type EditEntryFormProps = {
   dbSource: DbSource;
   tags: TagListItem[];
   allEntryTypes: EntryTypeListItem[];
+  restoredState?: EditEntryFormPersistedState | null;
+  onPersistState: (state: EditEntryFormPersistedState) => void;
   onCancel: () => void;
   onEntryUpdated: (
     entry: EntryByIdResult,
@@ -62,9 +65,11 @@ const EditEntryForm: FC<EditEntryFormProps> = ({
   onEntryUpdated,
   tags,
   allEntryTypes,
+  restoredState,
+  onPersistState,
 }) => {
-  const [form, setForm] = useState<EditEntryFormDraft>(() =>
-    initialEditEntryFormDraftValue(entry),
+  const [form, setForm] = useState<EditEntryFormDraft>(
+    () => restoredState?.form ?? initialEditEntryFormDraftValue(entry),
   );
 
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
@@ -74,12 +79,25 @@ const EditEntryForm: FC<EditEntryFormProps> = ({
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [checkedDbSources, setCheckedDbSources] = useState<
     ReadonlySet<DbSource>
-  >(() => new Set(ALL_DB_SOURCES));
+  >(() => restoredState?.checkedDbSources ?? new Set(ALL_DB_SOURCES));
   const [submitError, setSubmitError] = useState<string>();
 
-  // will fire after successful entry update, since entry object will be substituted with it's latest version
-  // this will update form default value
   useEffect(() => {
+    return () => {
+      onPersistState({ form, checkedDbSources });
+    };
+  }, [form, checkedDbSources, onPersistState]);
+
+  // Reset when entry is updated while the form stays mounted (e.g. after a successful save).
+  // Skip on mount so a restored draft is not overwritten.
+  const prevEntryRef = useRef(entry);
+
+  useEffect(() => {
+    if (prevEntryRef.current === entry) {
+      return;
+    }
+
+    prevEntryRef.current = entry;
     setForm(initialEditEntryFormDraftValue(entry));
     setShowSubmissionValidationError(false);
     setIsConfirmOpen(false);

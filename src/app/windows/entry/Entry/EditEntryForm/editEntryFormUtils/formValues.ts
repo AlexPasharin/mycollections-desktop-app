@@ -5,6 +5,7 @@ import {
 import { validateAltNames, validateEntryDiscogsUrl } from "./validation";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
+import type { DbSource } from "@/db/db-source";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryByIdResult } from "@/types/entries";
 import type { FormField } from "@/types/form";
@@ -43,6 +44,11 @@ export type EditEntryFormDraft = {
   altNames: FormField<EditEntryAltNameRow[], EditEntryAltNamesErrors>;
   partOfQueenCollection: FormField<boolean>;
   relationToQueen: FormField<string>;
+};
+
+export type EditEntryFormPersistedState = {
+  form: EditEntryFormDraft;
+  checkedDbSources: ReadonlySet<DbSource>;
 };
 
 export const initialEditEntryFormDraftValue = (

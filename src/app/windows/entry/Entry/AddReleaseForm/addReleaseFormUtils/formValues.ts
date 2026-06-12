@@ -13,6 +13,7 @@ import {
 } from "./validation";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
+import type { DbSource } from "@/db/db-source";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryAltNameInfo, EntryByIdResult } from "@/types/entries";
 import type { FormField } from "@/types/form";
@@ -177,6 +178,11 @@ export type AddReleaseFormDraft = {
   relationToQueen: FormField<string>;
   comment: FormField<string>;
   conditionProblems: FormField<string>;
+};
+
+export type AddReleaseFormPersistedState = {
+  form: AddReleaseFormDraft;
+  checkedDbSources: ReadonlySet<DbSource>;
 };
 
 export const initialAddReleaseFormDraftValue = (
