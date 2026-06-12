@@ -1,7 +1,6 @@
-import sortTailwindClasses from "prettier-plugin-tailwindcss";
-
 const config = {
-  plugins: [sortTailwindClasses],
+  plugins: ["prettier-plugin-tailwindcss"],
+  tailwindStylesheet: "./src/styles/tailwind.css",
 };
 
 export default config;
