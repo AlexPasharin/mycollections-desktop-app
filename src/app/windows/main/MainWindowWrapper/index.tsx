@@ -2,7 +2,6 @@ import { useState, type FC } from "react";
 
 import AllArtistsList from "./AllArtistsList";
 import ArtistQuery from "./ArtistQuery";
-import styles from "./MainWindowWrapper.module.css";
 
 import DbSourceSelect from "@/app/components/DbSourceSelect";
 import Tabs from "@/app/components/Tabs";
@@ -25,8 +24,8 @@ const MainWindowWrapper: FC = () => {
 
   return (
     <>
-      <header className={styles.header}>
-        <h1>My Collections</h1>
+      <header className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3">
+        <h1 className="m-0">My Collections</h1>
 
         <DbSourceSelect
           id="main-db-source"
