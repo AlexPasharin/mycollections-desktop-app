@@ -137,7 +137,7 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value.trim())}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder="Filter by name…"
           disabled={loadingArtistData}
         />

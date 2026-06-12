@@ -72,7 +72,7 @@ const ArtistQuery: FC<ArtistQueryProps> = ({ dbSource }) => {
   }, [debouncedQuery, dbSource]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value.trim());
+    setInputValue(e.target.value);
   };
 
   return (

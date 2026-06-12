@@ -1,31 +1,39 @@
 import { useEffect, useState } from "react";
 
-export type DebouncedValueResult<T extends string> = readonly [
-  debouncedValue: T,
+export type DebouncedValueResult = readonly [
+  debouncedValue: string,
   isDebouncing: boolean,
 ];
 
-export const useDebouncedValue = <T extends string>(
-  value: T,
+export const useDebouncedValue = (
+  value: string,
   delayMs: number,
-): DebouncedValueResult<T> => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+): DebouncedValueResult => {
+  const [debouncedValue, setDebouncedValue] = useState(value.trim());
+  const [isDebouncing, setIsDebouncing] = useState(false);
 
   useEffect(() => {
-    if (value === "") {
-      setDebouncedValue(value);
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue) {
+      setDebouncedValue(trimmedValue);
+      setIsDebouncing(false);
 
       return;
     }
 
+    setIsDebouncing(true);
+
     const timeout = setTimeout(() => {
-      setDebouncedValue(value);
+      setDebouncedValue(trimmedValue);
+      setIsDebouncing(false);
     }, delayMs);
 
     return () => {
       clearTimeout(timeout);
+      setIsDebouncing(false);
     };
   }, [value, delayMs]);
 
-  return [debouncedValue, value !== debouncedValue];
+  return [debouncedValue, isDebouncing];
 };
