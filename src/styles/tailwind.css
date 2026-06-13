@@ -1,4 +1,15 @@
 @layer theme, base, components, utilities;
 
 @import "tailwindcss/theme.css" layer(theme);
+
+@theme {
+  --color-primary: #2a3439;
+}
+
+@layer base {
+  body {
+    color: var(--color-primary);
+  }
+}
+
 @import "tailwindcss/utilities.css" layer(utilities) source("../");

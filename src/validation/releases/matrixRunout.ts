@@ -13,6 +13,15 @@ const appendChildIssues = (
   }
 };
 
+const INVALID_OBJECT_KEYS_MESSAGE =
+  "Value is invalid — is a json object but has wrong keys. Check documentation for which keys are allowed.";
+
+const INVALID_VINYL_MATRIX_RUNOUT_KEYS_MESSAGE =
+  "Invalid vinyl matrix/runout keys (see documentation for allowed combinations).";
+
+const INVALID_DIGITAL_MATRIX_RUNOUT_VALUE_MESSAGE =
+  "Invalid digital matrix/runout value (see documentation for allowed values).";
+
 /** String, or arbitrarily nested string-keyed objects whose leaves are all strings. */
 export type StringLeafJson = string | { [key: string]: StringLeafJson };
 
@@ -34,7 +43,9 @@ const etchedObjectSchema = z.strictObject({
   comment: z.string().optional(),
 });
 
-const vinylKeyValueSchema = z.union([z.string(), etchedObjectSchema]);
+const vinylKeyValueSchema = z.union([z.string(), etchedObjectSchema], {
+  message: INVALID_OBJECT_KEYS_MESSAGE,
+});
 
 const classifyMatrixRunoutKey = (
   key: string,
@@ -182,13 +193,14 @@ const vinylCaseSchema = z
     if (!validateVinylMatrixRunoutKeys(keys)) {
       ctx.addIssue({
         code: "custom",
-        message:
-          "Invalid vinyl matrix/runout keys (see documentation for allowed combinations).",
+        message: INVALID_VINYL_MATRIX_RUNOUT_KEYS_MESSAGE,
       });
     }
   });
 
-const digitalNonLpValueSchema = z.union([z.string(), mirroredCaseSchema]);
+const digitalNonLpValueSchema = z.union([z.string(), mirroredCaseSchema], {
+  message: INVALID_DIGITAL_MATRIX_RUNOUT_VALUE_MESSAGE,
+});
 
 const digitalCaseSchema = z
   .record(z.string(), stringLeafJsonSchema)
@@ -232,8 +244,7 @@ const matrixRunoutObjectSchema = z
       if (category === null) {
         ctx.addIssue({
           code: "custom",
-          message:
-            "Value is invalid — object has disallowed keys. Check documentation for which keys are allowed.",
+          message: INVALID_OBJECT_KEYS_MESSAGE,
         });
 
         return;
@@ -272,8 +283,7 @@ const matrixRunoutObjectSchema = z
 
     ctx.addIssue({
       code: "custom",
-      message:
-        "Value is invalid — is a json object but has wrong keys. Check documentation for which keys are allowed.",
+      message: INVALID_OBJECT_KEYS_MESSAGE,
     });
   });
 

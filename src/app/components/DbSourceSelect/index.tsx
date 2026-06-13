@@ -1,7 +1,6 @@
 import { type FC } from "react";
 
-import styles from "./DbSourceSelect.module.css";
-
+import Select from "@/app/components/Select";
 import type { DbSource } from "@/db/db-source";
 import { DB_SOURCE_OPTIONS } from "@/db/db-source-options";
 
@@ -12,13 +11,12 @@ type DbSourceSelectProps = {
 };
 
 const DbSourceSelect: FC<DbSourceSelectProps> = ({ id, value, onChange }) => (
-  <div className={styles.field}>
-    <label className={styles.label} htmlFor={id}>
+  <div className="flex items-center gap-2">
+    <label className="text-sm text-[#555]" htmlFor={id}>
       Database
     </label>
-    <select
+    <Select
       id={id}
-      className={styles.select}
       value={value}
       onChange={(event) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- options are DbSource values only
@@ -30,7 +28,7 @@ const DbSourceSelect: FC<DbSourceSelectProps> = ({ id, value, onChange }) => (
           {label}
         </option>
       ))}
-    </select>
+    </Select>
   </div>
 );
 

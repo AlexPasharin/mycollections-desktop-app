@@ -1,7 +1,5 @@
 import type { FC } from "react";
 
-import styles from "./styles.module.css";
-
 type Artist = { name: string };
 
 type ArtistProps = {
@@ -14,7 +12,7 @@ const ArtistListElement: FC<ArtistProps> = ({ artist, onArtistSelect }) => {
 
   return (
     <li
-      className={styles.artist}
+      className="cursor-pointer font-semibold"
       onClick={onArtistSelect}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {

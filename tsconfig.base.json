@@ -26,6 +26,7 @@
     "typeRoots": ["./node_modules/@types"],
     "paths": {
       "@/app/*": ["src/app/*"],
+      "@/assets/*": ["src/assets/*"],
       "@/appConstants/*": ["appConstants/*"],
       "@/config/*": ["src/config/*"],
       "@/constants": ["src/constants.ts"],
