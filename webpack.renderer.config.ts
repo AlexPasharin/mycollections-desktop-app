@@ -25,6 +25,10 @@ export const rendererConfig: Configuration = {
           { loader: "postcss-loader" },
         ],
       },
+      {
+        test: /\.svg$/,
+        type: "asset/resource",
+      },
     ],
   },
   plugins,
