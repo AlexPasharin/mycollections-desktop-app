@@ -1,7 +1,5 @@
 import { useEffect, useId, useRef, type FC, type ReactNode } from "react";
 
-import styles from "./ConfirmDialog.module.css";
-
 type ConfirmDialogTone = "default" | "danger";
 type ConfirmDialogSize = "default" | "wide";
 
@@ -18,6 +16,12 @@ export type ConfirmDialogProps = {
   onConfirm: () => void;
   onCancel: () => void;
 };
+
+const cardBaseClassName =
+  "flex w-full flex-col gap-[0.85rem] rounded-[10px] border border-[#e0dcf5] bg-white px-[1.4rem] pb-[1.1rem] pt-5 shadow-[0_14px_40px_rgba(15,23,42,0.25),0_2px_6px_rgba(15,23,42,0.1)]";
+
+const buttonBaseClassName =
+  "cursor-pointer rounded-md border border-transparent px-[0.95rem] py-[0.45rem] font-[inherit] text-[0.9rem] font-medium transition-[background,color,border-color] duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-60";
 
 const ConfirmDialog: FC<ConfirmDialogProps> = ({
   isOpen,
@@ -68,19 +72,22 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
 
   const confirmClassName =
     tone === "danger"
-      ? `${styles.button} ${styles.confirmDanger}`
-      : `${styles.button} ${styles.confirmDefault}`;
+      ? `${buttonBaseClassName} border-red-600 bg-red-600 text-white hover:enabled:border-red-700 hover:enabled:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-800`
+      : `${buttonBaseClassName} border-indigo-600 bg-indigo-600 text-white hover:enabled:border-indigo-700 hover:enabled:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700`;
 
   const cardClassName =
-    size === "wide" ? `${styles.card} ${styles.cardWide}` : styles.card;
+    size === "wide"
+      ? `${cardBaseClassName} max-h-[85vh] max-w-[52rem]`
+      : `${cardBaseClassName} max-w-md`;
+
   const descriptionClassName =
     size === "wide"
-      ? `${styles.description} ${styles.descriptionScrollable}`
-      : styles.description;
+      ? "m-0 min-h-0 flex-1 overflow-y-auto pr-[0.4rem] text-[0.95rem] leading-[1.4] text-gray-700"
+      : "m-0 text-[0.95rem] leading-[1.4] text-gray-700";
 
   return (
     <div
-      className={styles.backdrop}
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/45 p-5"
       onMouseDown={handleBackdropMouseDown}
       role="presentation"
     >
@@ -91,7 +98,10 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
       >
-        <h2 id={titleId} className={styles.title}>
+        <h2
+          id={titleId}
+          className="m-0 text-[1.05rem] font-semibold text-gray-800"
+        >
           {title}
         </h2>
         {description && (
@@ -99,12 +109,14 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
             {description}
           </div>
         )}
-        {errorMessage && <p className={styles.error}>{errorMessage}</p>}
-        <div className={styles.actions}>
+        {errorMessage && (
+          <p className="m-0 text-[0.88rem] text-red-700">{errorMessage}</p>
+        )}
+        <div className="mt-1 flex justify-end gap-[0.55rem]">
           <button
             ref={cancelRef}
             type="button"
-            className={`${styles.button} ${styles.cancel}`}
+            className={`${buttonBaseClassName} border-gray-300 bg-gray-100 text-gray-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 hover:enabled:bg-gray-200`}
             onClick={onCancel}
             disabled={isBusy}
           >
