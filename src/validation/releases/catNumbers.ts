@@ -22,7 +22,7 @@ const catNumbersPropertySchema = z.union([
 ]);
 
 const labelField = { label: z.string() };
-const labelsField = { labels: stringOrNonEmptyArraySchema };
+const labelsField = { labels: z.array(z.string()) };
 const catNumberField = { cat_number: z.string() };
 const catNumbersField = { cat_numbers: catNumbersPropertySchema };
 

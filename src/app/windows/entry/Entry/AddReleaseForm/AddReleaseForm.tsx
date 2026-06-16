@@ -1,4 +1,10 @@
-import { useEffect, useState, type FC, type FormEvent } from "react";
+import {
+  useState,
+  type Dispatch,
+  type FC,
+  type FormEvent,
+  type SetStateAction,
+} from "react";
 
 import AddReleaseCatalogueNumbersSection from "./AddReleaseCatalogueNumbersSection";
 import AddReleaseCountriesSection from "./AddReleaseCountriesSection";
@@ -20,10 +26,8 @@ import {
   defaultCatalogueNumberRow,
   defaultFormatInputRow,
   emptyCountrySelection,
-  initialAddReleaseFormDraftValue,
   type AddReleaseFormDraft,
   type AddReleaseFormEntry,
-  type AddReleaseFormPersistedState,
 } from "./addReleaseFormUtils/formValues";
 import { toCreateMusicalReleaseInput } from "./addReleaseFormUtils/toCreateMusicalReleaseInput";
 import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
@@ -37,7 +41,7 @@ import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
 import api from "@/app/windows/entry/api";
 import type { DbSource } from "@/db/db-source";
-import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
+import { dbSourceLabel } from "@/db/db-source-options";
 import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
@@ -51,11 +55,11 @@ export type AddReleaseFormProps = {
   dbSource: DbSource;
   allFormats: ReleasesFormatListItem[];
   labels: LabelListItem[];
-  tags: TagListItem[];
+  tagsAvailableForReleases: TagListItem[];
   allCountries: CountryListItem[];
-  restoredState?: AddReleaseFormPersistedState | null;
-  onPersistState: (state: AddReleaseFormPersistedState) => void;
-  onCancel: () => void;
+  form: AddReleaseFormDraft;
+  setForm: Dispatch<SetStateAction<AddReleaseFormDraft>>;
+  onClearForm: () => void;
   onReleaseCreated: (
     releaseId: string | undefined,
     notifications: string[],
@@ -79,20 +83,15 @@ const RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID =
 const AddReleaseForm: FC<AddReleaseFormProps> = ({
   entry,
   dbSource,
-  onCancel,
+  onClearForm,
   onReleaseCreated,
   allFormats,
   labels,
-  tags,
+  tagsAvailableForReleases,
   allCountries,
-  restoredState,
-  onPersistState,
+  form,
+  setForm,
 }) => {
-  const [form, setForm] = useState<AddReleaseFormDraft>(
-    () =>
-      restoredState?.form ?? initialAddReleaseFormDraftValue(entry, allFormats),
-  );
-
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
     useState(false);
 
@@ -100,17 +99,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  const [checkedDbSources, setCheckedDbSources] = useState<
-    ReadonlySet<DbSource>
-  >(() => restoredState?.checkedDbSources ?? new Set(ALL_DB_SOURCES));
-
   const [submitError, setSubmitError] = useState<string>();
-
-  useEffect(() => {
-    return () => {
-      onPersistState({ form, checkedDbSources });
-    };
-  }, [form, checkedDbSources, onPersistState]);
 
   const setFieldValue = <K extends keyof AddReleaseFormDraft>(
     key: K,
@@ -457,14 +446,16 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
     if (formIsValid) {
       setSubmitError(undefined);
-      setCheckedDbSources(new Set(ALL_DB_SOURCES));
       setIsConfirmOpen(true);
     }
   };
 
   const handleToggleDbSource = (source: DbSource) => {
-    setCheckedDbSources((prev) =>
-      updateImmutableSet(source, prev.has(source) ? "remove" : "add")(prev),
+    setFieldValue("dbSources", (prev) =>
+      updateImmutableSet(
+        source,
+        prev.dbSources.value.has(source) ? "remove" : "add",
+      )(prev.dbSources.value),
     );
   };
 
@@ -487,6 +478,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       relationToQueen: { value: relationToQueen },
       comment: { value: comment },
       conditionProblems: { value: conditionProblems },
+      dbSources: { value: dbSources },
     } = form;
 
     const createInput = toCreateMusicalReleaseInput({
@@ -509,7 +501,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     setIsSubmitting(true);
     setSubmitError(undefined);
 
-    createReleasesAcrossDbSources(createInput, checkedDbSources, dbSource)
+    createReleasesAcrossDbSources(createInput, dbSources, dbSource)
       .then(({ releaseId, outcomes }) => {
         const { notifications, errors } = buildCreateReleaseFeedback(outcomes);
 
@@ -786,7 +778,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         <hr className={styles.sectionDivider} aria-hidden />
 
         <AddTagsFormSection
-          tags={tags}
+          tags={tagsAvailableForReleases}
           selectedTagIds={form.selectedTags.value}
           onAddTag={addSelectedTag}
           onRemoveTag={removeSelectedTag}
@@ -895,9 +887,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           <button
             type="button"
             className={styles.cancelButton}
-            onClick={onCancel}
+            onClick={onClearForm}
           >
-            Cancel
+            Clear Form
           </button>
           <button
             type="submit"
@@ -924,14 +916,14 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
               <AddReleaseFormPreview
                 form={form}
                 allFormats={allFormats}
-                tags={tags}
+                tagsAvailableForReleases={tagsAvailableForReleases}
               />
               <DbSourcesCheckboxes
                 heading="Save to databases"
                 headingId="create-release-db-sources-heading"
                 idPrefix="create-release-db-source"
                 activeDbSource={dbSource}
-                checkedSources={checkedDbSources}
+                checkedSources={form.dbSources.value}
                 onToggle={handleToggleDbSource}
               />
             </>

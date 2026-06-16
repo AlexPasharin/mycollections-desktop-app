@@ -9,6 +9,7 @@ import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
+import type { CountryListItem } from "@/types/countries";
 import type { EntryByIdResult } from "@/types/entries";
 import type {
   DeleteReleaseResult,
@@ -20,12 +21,14 @@ type EntryReleaseProps = {
   entry: EntryByIdResult;
   dbSource: DbSource;
   release: EntryReleaseRow;
+  allCountries: CountryListItem[];
   isExpanded: boolean;
   onToggle: () => void;
   releaseDetails: ReleaseByIdResult | undefined;
   loadFailed: boolean;
   isLoading: boolean;
   isRecentlyAdded: boolean;
+  onUseAsBlueprint: (releaseBlueprint: ReleaseByIdResult) => void;
   onDeleted: (deletedReleaseVersion: string, errors: string[]) => void;
 };
 
@@ -33,12 +36,14 @@ const EntryRelease: FC<EntryReleaseProps> = ({
   entry,
   dbSource,
   release,
+  allCountries,
   isExpanded,
   onToggle,
   releaseDetails,
   loadFailed,
   isLoading,
   isRecentlyAdded,
+  onUseAsBlueprint,
   onDeleted,
 }) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -158,7 +163,23 @@ const EntryRelease: FC<EntryReleaseProps> = ({
                 </p>
               )}
               {!isLoading && releaseDetails && (
-                <ReleaseDetails entry={entry} release={releaseDetails} />
+                <>
+                  <ReleaseDetails
+                    entry={entry}
+                    release={releaseDetails}
+                    allCountries={allCountries}
+                  />
+                  <div className="mt-4 border-t border-[#e0dcf5] pt-[0.85rem]">
+                    <button
+                      type="button"
+                      className="m-0 cursor-pointer rounded-md border border-indigo-200 bg-indigo-50 px-[0.85rem] py-[0.45rem] text-[0.92em] font-medium text-indigo-800 transition-colors duration-150 hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-wait disabled:opacity-70"
+                      onClick={() => onUseAsBlueprint(releaseDetails)}
+                      aria-label={`Use release ${release.version} as a blueprint to add a new release`}
+                    >
+                      use a blueprint to add a new release
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           )}

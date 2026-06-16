@@ -6,6 +6,7 @@ import api from "../../../api";
 import EntryRelease from "../EntryRelease";
 
 import type { DbSource } from "@/db/db-source";
+import type { CountryListItem } from "@/types/countries";
 import type { EntryByIdResult } from "@/types/entries";
 import type {
   EntryRelease as EntryReleaseRow,
@@ -17,7 +18,9 @@ type EntryReleasesListProps = {
   entry: EntryByIdResult;
   dbSource: DbSource;
   releases: EntryReleaseRow[];
+  allCountries: CountryListItem[];
   latestAddedReleaseId: string | undefined;
+  onUseReleaseAsBlueprint: (releaseBlueprint: ReleaseByIdResult) => void;
   onReleaseDeleted: (deletedReleaseVersion: string, errors: string[]) => void;
 };
 
@@ -25,7 +28,9 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
   entry,
   dbSource,
   releases,
+  allCountries,
   latestAddedReleaseId,
+  onUseReleaseAsBlueprint,
   onReleaseDeleted,
 }) => {
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(
@@ -111,12 +116,14 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
           entry={entry}
           dbSource={dbSource}
           release={r}
+          allCountries={allCountries}
           isExpanded={expandedIds.has(r.releaseId)}
           onToggle={() => toggleRelease(r.releaseId)}
           releaseDetails={releaseDetails.get(r.releaseId)}
           loadFailed={failedIds.has(r.releaseId)}
           isLoading={loadingIds.has(r.releaseId)}
           isRecentlyAdded={r.releaseId === latestAddedReleaseId}
+          onUseAsBlueprint={onUseReleaseAsBlueprint}
           onDeleted={onReleaseDeleted}
         />
       ))}

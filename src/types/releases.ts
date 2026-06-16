@@ -21,6 +21,7 @@ export type ReleaseFormatOfReleaseItem = {
   pictureSleeve: boolean;
   speed: unknown;
   amount: number;
+  formatId: string;
   shortName: string;
 };
 
