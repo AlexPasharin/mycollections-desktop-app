@@ -1,31 +1,31 @@
 import type { FC } from "react";
 
-import styles from "./AddReleaseFormFormatBlock.module.css";
+import styles from "./ReleaseFormFormatBlock.module.css";
 
 import type {
   FormatField,
-  AddReleaseFormFormatInputFieldKey,
-} from "../../addReleaseFormUtils/errorMessages";
-import type { AddReleaseFormFormatInput } from "../../addReleaseFormUtils/formValues";
+  ReleaseFormFormatInputFieldKey,
+} from "../../releaseFormUtils/errorMessages";
+import type { ReleaseFormFormatInput } from "../../releaseFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
 import type { FormFieldError } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 
-export type AddReleaseFormFormatRowPatch = Partial<
-  Omit<AddReleaseFormFormatInput, "id" | "shortName" | "formatId">
+export type ReleaseFormFormatRowPatch = Partial<
+  Omit<ReleaseFormFormatInput, "id" | "shortName" | "formatId">
 >;
 
-type AddReleaseFormFormatBlockProps = {
-  row: AddReleaseFormFormatInput;
+type ReleaseFormFormatBlockProps = {
+  row: ReleaseFormFormatInput;
   rowIndex: number;
   releasesFormats: ReleasesFormatListItem[];
   formatRowErrors?: FormFieldError[] | undefined;
   onFormatChange: (formatId: string) => void;
-  patchFormat: (patch: AddReleaseFormFormatRowPatch) => void;
+  patchFormat: (patch: ReleaseFormFormatRowPatch) => void;
   onRemoveFormat?: (() => void) | undefined;
-  onFieldFocus: (key: AddReleaseFormFormatInputFieldKey) => void;
+  onFieldFocus: (key: ReleaseFormFormatInputFieldKey) => void;
   onBlur: () => void;
 };
 
@@ -34,7 +34,7 @@ const formatFieldSource = (rowId: string, field: FormatField) => ({
   field,
 });
 
-const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
+const ReleaseFormFormatBlock: FC<ReleaseFormFormatBlockProps> = ({
   row,
   rowIndex,
   releasesFormats,
@@ -186,4 +186,4 @@ const AddReleaseFormFormatBlock: FC<AddReleaseFormFormatBlockProps> = ({
   );
 };
 
-export default AddReleaseFormFormatBlock;
+export default ReleaseFormFormatBlock;

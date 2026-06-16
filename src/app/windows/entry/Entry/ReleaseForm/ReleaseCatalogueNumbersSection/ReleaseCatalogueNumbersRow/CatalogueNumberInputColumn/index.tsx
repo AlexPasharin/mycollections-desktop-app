@@ -1,6 +1,6 @@
 import type { FC } from "react";
 
-import styles from "../AddReleaseCatalogueNumbersRow.module.css";
+import styles from "../ReleaseCatalogueNumbersRow.module.css";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import { errorSetToMessages } from "@/validation";

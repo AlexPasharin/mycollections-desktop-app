@@ -1,13 +1,13 @@
 import type { FC } from "react";
 
-import styles from "./AddReleaseFormPreview.module.css";
+import styles from "./ReleaseFormPreview.module.css";
 
-import type { AddReleaseFormDraft } from "../addReleaseFormUtils/formValues";
+import type { ReleaseFormState } from "../releaseFormUtils/formValues";
 import {
   toReleaseCatNumbersJson,
   toReleaseCountriesJson,
   toReleaseMatrixRunoutJson,
-} from "../addReleaseFormUtils/toCreateMusicalReleaseInput";
+} from "../releaseFormUtils/toCreateMusicalReleaseInput";
 
 import FormPreviewField, {
   FormPreviewBlockField,
@@ -18,14 +18,14 @@ import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
 import { orPlaceholder } from "@/utils/form";
 
-type AddReleaseFormPreviewProps = {
-  form: AddReleaseFormDraft;
+type ReleaseFormPreviewProps = {
+  formState: ReleaseFormState;
   allFormats: ReleasesFormatListItem[];
   tagsAvailableForReleases: TagListItem[];
 };
 
-const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
-  form,
+const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
+  formState,
   allFormats,
   tagsAvailableForReleases,
 }) => {
@@ -33,25 +33,31 @@ const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
     allFormats.map((format) => [format.formatId, format.shortName] as const),
   );
 
-  const releaseDate = generalizedDateToString(form.releaseDate.value);
-  const discogsUrl = nullIfEmpty(form.discogsUrl.value);
+  const releaseDate = generalizedDateToString(formState.releaseDate.value);
+  const discogsUrl = nullIfEmpty(formState.discogsUrl.value);
   const selectedTagNames = tagsAvailableForReleases
-    .filter((t) => form.selectedTags.value.has(t.tagId))
+    .filter((t) => formState.selectedTags.value.has(t.tagId))
     .map((t) => t.tag);
-  const comment = nullIfEmpty(form.comment.value);
-  const conditionProblems = nullIfEmpty(form.conditionProblems.value);
-  const relationToQueen = nullIfEmpty(form.relationToQueen.value);
+  const comment = nullIfEmpty(formState.comment.value);
+  const conditionProblems = nullIfEmpty(formState.conditionProblems.value);
+  const relationToQueen = nullIfEmpty(formState.relationToQueen.value);
 
-  const countriesJson = toReleaseCountriesJson(form.countries.value);
-  const catNumbersJson = toReleaseCatNumbersJson(form.catalogueNumbers.value);
-  const matrixRunoutJson = toReleaseMatrixRunoutJson(form.matrixRunout.value);
+  const countriesJson = toReleaseCountriesJson(formState.countries.value);
+  const catNumbersJson = toReleaseCatNumbersJson(
+    formState.catalogueNumbers.value,
+  );
+  const matrixRunoutJson = toReleaseMatrixRunoutJson(
+    formState.matrixRunout.value,
+  );
 
   return (
     <div className={styles.preview}>
       <FormPreviewField label="Version">
-        {form.releaseVersion.value}
+        {formState.releaseVersion.value}
       </FormPreviewField>
-      <FormPreviewField label="Name">{form.name.value.name}</FormPreviewField>
+      <FormPreviewField label="Name">
+        {formState.name.value.name}
+      </FormPreviewField>
       <FormPreviewField label="Release date">
         {orPlaceholder(releaseDate)}
       </FormPreviewField>
@@ -66,7 +72,7 @@ const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
       </FormPreviewField>
       <FormPreviewBlockField label="Formats">
         <ul className={styles.list}>
-          {form.formats.value.map((row) => {
+          {formState.formats.value.map((row) => {
             const shortName =
               formatShortNameById.get(row.formatId) ?? "(unknown format)";
             const flags = [
@@ -96,7 +102,7 @@ const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
         )}
       </FormPreviewField>
       <FormPreviewField label="Part of Queen collection">
-        {form.partOfQueenCollection.value ? "Yes" : "No"}
+        {formState.partOfQueenCollection.value ? "Yes" : "No"}
       </FormPreviewField>
       <FormPreviewBlockField label="Relation to Queen">
         <p className={styles.multiline}>{orPlaceholder(relationToQueen)}</p>
@@ -111,7 +117,7 @@ const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
   );
 };
 
-export default AddReleaseFormPreview;
+export default ReleaseFormPreview;
 
 type JsonFieldProps = {
   label: string;

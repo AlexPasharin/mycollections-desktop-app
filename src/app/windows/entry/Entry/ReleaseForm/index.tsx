@@ -6,39 +6,39 @@ import {
   type SetStateAction,
 } from "react";
 
-import AddReleaseForm, { type AddReleaseFormProps } from "./AddReleaseForm";
-import styles from "./AddReleaseForm.module.css";
+import ReleaseForm, { type ReleaseFormProps } from "./ReleaseForm";
+import styles from "./ReleaseForm.module.css";
 import {
-  initialAddReleaseFormDraftValue,
-  type AddReleaseFormDraft,
-  type AddReleaseFormTabData,
-} from "./addReleaseFormUtils/formValues";
+  initialReleaseFormStateValue,
+  type ReleaseFormState,
+  type ReleaseFormTabData,
+} from "./releaseFormUtils/formValues";
 
 import type { TagListItem } from "@/types/tags";
 
-type AddReleaseFormWrapperProps = Omit<
-  AddReleaseFormProps,
-  "form" | "setForm" | "tagsAvailableForReleases"
+type ReleaseFormWrapperProps = Omit<
+  ReleaseFormProps,
+  "formState" | "setFormState" | "tagsAvailableForReleases"
 > & {
-  form: AddReleaseFormDraft | null;
-  onFormChange: Dispatch<SetStateAction<AddReleaseFormDraft | null>>;
-  tabData?: AddReleaseFormTabData | undefined;
+  formState: ReleaseFormState | null;
+  onFormStateChange: Dispatch<SetStateAction<ReleaseFormState | null>>;
+  tabData?: ReleaseFormTabData | undefined;
   referenceDataLoading: boolean;
   referenceDataLoadFailed: boolean;
   tags: TagListItem[];
 };
 
-const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = ({
+const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = ({
   referenceDataLoading,
   referenceDataLoadFailed,
-  form,
-  onFormChange,
+  formState,
+  onFormStateChange,
   tabData,
   entry,
   tags,
   allFormats,
   allCountries,
-  ...formProps
+  ...sharedProps
 }) => {
   const tagsAvailableForReleases = useMemo(
     () =>
@@ -51,21 +51,29 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = ({
   const dataReady = !referenceDataLoading && !referenceDataLoadFailed;
 
   useEffect(() => {
-    if (!dataReady || form !== null) {
+    if (!dataReady || formState !== null) {
       return;
     }
 
-    onFormChange(
-      initialAddReleaseFormDraftValue({
+    onFormStateChange(
+      initialReleaseFormStateValue({
         entry,
         allFormats,
         allCountries,
         tabData,
       }),
     );
-  }, [dataReady, form, onFormChange, tabData, entry, allFormats, allCountries]);
+  }, [
+    dataReady,
+    formState,
+    onFormStateChange,
+    tabData,
+    entry,
+    allFormats,
+    allCountries,
+  ]);
 
-  if (referenceDataLoading || form === null) {
+  if (referenceDataLoading || formState === null) {
     return (
       <div className={styles.section}>
         <p className={styles.formatsLoadState}>Loading&hellip;</p>
@@ -84,12 +92,12 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = ({
   }
 
   return (
-    <AddReleaseForm
-      {...formProps}
+    <ReleaseForm
+      {...sharedProps}
       entry={entry}
-      form={form}
-      setForm={(update) => {
-        onFormChange((prev) => {
+      formState={formState}
+      setFormState={(update) => {
+        onFormStateChange((prev) => {
           if (prev === null) {
             return prev;
           }
@@ -104,4 +112,4 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = ({
   );
 };
 
-export default AddReleaseFormWrapper;
+export default ReleaseFormWrapper;

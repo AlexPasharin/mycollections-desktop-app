@@ -1,14 +1,14 @@
 import { parse as parseYaml } from "yaml";
 import { z } from "zod";
 
-import type { AddReleaseFormMatrixRunoutDraft } from "../formValues";
+import type { ReleaseFormMatrixRunoutDraft } from "../formValues";
 
 import type { FormFieldValidationResult } from "@/types/form";
 import { releaseMatrixRunoutSchema } from "@/validation";
 
 export const validateReleaseMatrixRunout = (
-  value: AddReleaseFormMatrixRunoutDraft,
-): FormFieldValidationResult<AddReleaseFormMatrixRunoutDraft> => {
+  value: ReleaseFormMatrixRunoutDraft,
+): FormFieldValidationResult<ReleaseFormMatrixRunoutDraft> => {
   // Step 1: parse the raw input (YAML → JS value, with required-object check).
   // We do this independently of the downstream structural validation so we can
   // pretty-print the JSON even when the structural rules ultimately reject it.

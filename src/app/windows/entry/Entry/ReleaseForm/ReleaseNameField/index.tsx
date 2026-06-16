@@ -1,22 +1,22 @@
 import type { FC } from "react";
 
-import styles from "./AddReleaseNameField.module.css";
+import styles from "./ReleaseNameField.module.css";
 
 import {
   defaultNameInput,
-  type AddReleaseFormNameInput,
-} from "../addReleaseFormUtils/formValues";
+  type ReleaseFormNameInput,
+} from "../releaseFormUtils/formValues";
 
 import type { EntryAltNameInfo } from "@/types/entries";
 
-type AddReleaseNameFieldProps = {
+type ReleaseNameFieldProps = {
   entryMainName: string;
   entryAltNames: EntryAltNameInfo[];
-  value: AddReleaseFormNameInput;
-  onChange: (value: AddReleaseFormNameInput) => void;
+  value: ReleaseFormNameInput;
+  onChange: (value: ReleaseFormNameInput) => void;
 };
 
-const AddReleaseNameField: FC<AddReleaseNameFieldProps> = ({
+const ReleaseNameField: FC<ReleaseNameFieldProps> = ({
   entryMainName,
   entryAltNames,
   value,
@@ -56,4 +56,4 @@ const AddReleaseNameField: FC<AddReleaseNameFieldProps> = ({
   </div>
 );
 
-export default AddReleaseNameField;
+export default ReleaseNameField;

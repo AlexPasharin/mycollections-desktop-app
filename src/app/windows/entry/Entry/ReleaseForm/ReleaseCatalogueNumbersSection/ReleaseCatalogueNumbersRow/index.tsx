@@ -1,28 +1,28 @@
 import type { FC } from "react";
 
-import styles from "./AddReleaseCatalogueNumbersRow.module.css";
 import CatalogueNumberInputColumn from "./CatalogueNumberInputColumn";
+import styles from "./ReleaseCatalogueNumbersRow.module.css";
 
 import type {
-  AddReleaseFormCatalogueNumberRowErrors,
-  AddReleaseFormCatalogueNumbersInputFieldKey,
+  ReleaseFormCatalogueNumberRowErrors,
+  ReleaseFormCatalogueNumbersInputFieldKey,
   CatalogueNumbersInputField,
-} from "../../addReleaseFormUtils/errorMessages";
+} from "../../releaseFormUtils/errorMessages";
 import type {
   CatalogueNumberRowShape,
   CatalogueNumberRowState,
-} from "../../addReleaseFormUtils/formValues";
+} from "../../releaseFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import type { LabelListItem } from "@/types/labels";
 import { errorSetToMessages } from "@/validation";
 
-export type AddReleaseCatalogueNumbersRowProps = {
+export type ReleaseCatalogueNumbersRowProps = {
   row: CatalogueNumberRowState;
   rowIndex: number;
   showDivider: boolean;
   labels: LabelListItem[];
-  rowErrors?: AddReleaseFormCatalogueNumberRowErrors | undefined;
+  rowErrors?: ReleaseFormCatalogueNumberRowErrors | undefined;
   onSetRowShape: (shape: CatalogueNumberRowShape) => void;
   onAddNewLabelInput: () => void;
   onRemoveLabelInput: (inputValueId: string) => void;
@@ -37,11 +37,11 @@ export type AddReleaseCatalogueNumbersRowProps = {
   onRemoveUkCatalogueNumberInput: (inputValueId: string) => void;
   onSetUkCatalogueNumber: (inputValueId: string, value: string) => void;
   onRemoveRow: () => void;
-  onFieldFocus: (key: AddReleaseFormCatalogueNumbersInputFieldKey) => void;
+  onFieldFocus: (key: ReleaseFormCatalogueNumbersInputFieldKey) => void;
   onBlurRowColumn: (fieldType: CatalogueNumbersInputField) => void;
 };
 
-const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
+const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
   row,
   rowIndex,
   showDivider,
@@ -315,4 +315,4 @@ const AddReleaseCatalogueNumbersRow: FC<AddReleaseCatalogueNumbersRowProps> = ({
   );
 };
 
-export default AddReleaseCatalogueNumbersRow;
+export default ReleaseCatalogueNumbersRow;

@@ -6,11 +6,11 @@ import {
   type SetStateAction,
 } from "react";
 
-import AddReleaseCatalogueNumbersSection from "./AddReleaseCatalogueNumbersSection";
-import AddReleaseCountriesSection from "./AddReleaseCountriesSection";
-import styles from "./AddReleaseForm.module.css";
-import AddReleaseFormFormatsSection from "./AddReleaseFormFormatsSection";
-import AddReleaseFormPreview from "./AddReleaseFormPreview";
+import ReleaseCatalogueNumbersSection from "./ReleaseCatalogueNumbersSection";
+import ReleaseCountriesSection from "./ReleaseCountriesSection";
+import styles from "./ReleaseForm.module.css";
+import ReleaseFormFormatsSection from "./ReleaseFormFormatsSection";
+import ReleaseFormPreview from "./ReleaseFormPreview";
 import {
   catalogueNumbersInputBucketKeyFor,
   removeMadeInCountrySelectionRowFromFieldErrors,
@@ -18,20 +18,20 @@ import {
   isCatalogueNumbersInputFieldKey,
   isCountriesInputFieldKey,
   isFormatInputFieldKey,
-  type AddReleaseFormInputFieldKey,
+  type ReleaseFormInputFieldKey,
   emptyMutableCountriesSubsectionErrors,
-  initialAddReleaseFormFieldErrors,
-} from "./addReleaseFormUtils/errorMessages";
+  initialReleaseFormFieldErrors,
+} from "./releaseFormUtils/errorMessages";
 import {
   defaultCatalogueNumberRow,
   defaultFormatInputRow,
   emptyCountrySelection,
-  type AddReleaseFormDraft,
-  type AddReleaseFormEntry,
-} from "./addReleaseFormUtils/formValues";
-import { toCreateMusicalReleaseInput } from "./addReleaseFormUtils/toCreateMusicalReleaseInput";
-import AddReleaseMatrixRunoutField from "./AddReleaseMatrixRunoutField";
-import AddReleaseNameField from "./AddReleaseNameField";
+  type ReleaseFormState,
+  type ReleaseFormEntry,
+} from "./releaseFormUtils/formValues";
+import { toCreateMusicalReleaseInput } from "./releaseFormUtils/toCreateMusicalReleaseInput";
+import ReleaseMatrixRunoutField from "./ReleaseMatrixRunoutField";
+import ReleaseNameField from "./ReleaseNameField";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
@@ -50,16 +50,16 @@ import type { TagListItem } from "@/types/tags";
 import { isDateInputFieldKey, omitProperty } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
 
-export type AddReleaseFormProps = {
-  entry: AddReleaseFormEntry;
+export type ReleaseFormProps = {
+  entry: ReleaseFormEntry;
   dbSource: DbSource;
   allFormats: ReleasesFormatListItem[];
   labels: LabelListItem[];
   tagsAvailableForReleases: TagListItem[];
   allCountries: CountryListItem[];
-  form: AddReleaseFormDraft;
-  setForm: Dispatch<SetStateAction<AddReleaseFormDraft>>;
-  onClearForm: () => void;
+  formState: ReleaseFormState;
+  setFormState: Dispatch<SetStateAction<ReleaseFormState>>;
+  onClearFormState: () => void;
   onReleaseCreated: (
     releaseId: string | undefined,
     notifications: string[],
@@ -80,17 +80,17 @@ const CONDITION_PROBLEMS_FIELD_NOTIFICATIONS_ID =
 const RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID =
   "add-release-relation-to-queen-notifications";
 
-const AddReleaseForm: FC<AddReleaseFormProps> = ({
+const ReleaseForm: FC<ReleaseFormProps> = ({
   entry,
   dbSource,
-  onClearForm,
+  onClearFormState,
   onReleaseCreated,
   allFormats,
   labels,
   tagsAvailableForReleases,
   allCountries,
-  form,
-  setForm,
+  formState,
+  setFormState,
 }) => {
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
     useState(false);
@@ -101,13 +101,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
   const [submitError, setSubmitError] = useState<string>();
 
-  const setFieldValue = <K extends keyof AddReleaseFormDraft>(
+  const setFieldValue = <K extends keyof ReleaseFormState>(
     key: K,
     value:
-      | AddReleaseFormDraft[K]["value"]
-      | ((prev: AddReleaseFormDraft) => AddReleaseFormDraft[K]["value"]),
+      | ReleaseFormState[K]["value"]
+      | ((prev: ReleaseFormState) => ReleaseFormState[K]["value"]),
   ) =>
-    setForm((prev) => ({
+    setFormState((prev) => ({
       ...prev,
       [key]: {
         ...prev[key],
@@ -115,20 +115,20 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       },
     }));
 
-  const setField = <K extends keyof AddReleaseFormDraft>(
+  const setField = <K extends keyof ReleaseFormState>(
     key: K,
     value:
-      | AddReleaseFormDraft[K]
-      | ((prev: AddReleaseFormDraft) => AddReleaseFormDraft[K]),
+      | ReleaseFormState[K]
+      | ((prev: ReleaseFormState) => ReleaseFormState[K]),
   ) => {
-    setForm((prev) => ({
+    setFormState((prev) => ({
       ...prev,
       [key]: typeof value === "function" ? value(prev) : value,
     }));
   };
 
   // on focus we attempt to remove errors related to the field that is being focused
-  const onFocus = (key: AddReleaseFormInputFieldKey) => {
+  const onFocus = (key: ReleaseFormInputFieldKey) => {
     setShowSubmissionValidationError(false);
 
     if (typeof key === "string" && !isDateInputFieldKey(key)) {
@@ -245,14 +245,14 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     });
   };
 
-  const validateField = <K extends keyof AddReleaseFormDraft>(key: K) => {
-    const formFieldData = form[key];
+  const validateField = <K extends keyof ReleaseFormState>(key: K) => {
+    const formFieldData = formState[key];
 
     // Correlated union: TS can't see that `value` and `validationFn`'s parameter
     // share the same K, so we narrow the call signature locally. Sound because
-    // both fields come from the same `form[key]` instance.
-    type ValueType = AddReleaseFormDraft[K]["value"];
-    type ResultType = ReturnType<AddReleaseFormDraft[K]["validationFn"]>;
+    // both fields come from the same `formState[key]` instance.
+    type ValueType = ReleaseFormState[K]["value"];
+    type ResultType = ReturnType<ReleaseFormState[K]["validationFn"]>;
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const validationFn = formFieldData.validationFn as (
@@ -267,14 +267,14 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       value,
       notifications,
       errors: validationResult.valid
-        ? initialAddReleaseFormFieldErrors[key]
+        ? initialReleaseFormFieldErrors[key]
         : validationResult.errorMessages,
     }));
 
     return validationResult;
   };
 
-  const onBlur = (key: keyof AddReleaseFormDraft) => validateField(key);
+  const onBlur = (key: keyof ReleaseFormState) => validateField(key);
 
   const addFormatRow = () => {
     setFieldValue("formats", (prev) => [
@@ -437,7 +437,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     );
 
     console.info({
-      form,
+      formState,
       validationResults,
       formIsValid,
     });
@@ -479,7 +479,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
       comment: { value: comment },
       conditionProblems: { value: conditionProblems },
       dbSources: { value: dbSources },
-    } = form;
+    } = formState;
 
     const createInput = toCreateMusicalReleaseInput({
       entry,
@@ -537,16 +537,17 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
     setSubmitError(undefined);
   };
 
-  const releaseVersionErrors = form.releaseVersion.errors;
-  const releaseVersionNotifications = form.releaseVersion.notifications;
-  const discogsUrlErrors = form.discogsUrl.errors;
-  const discogsUrlNotifications = form.discogsUrl.notifications;
-  const commentNotifications = form.comment.notifications;
-  const conditionProblemsNotifications = form.conditionProblems.notifications;
-  const relationToQueenNotifications = form.relationToQueen.notifications;
-  const matrixRunoutErrors = form.matrixRunout.errors;
-  const matrixRunoutNotifications = form.matrixRunout.notifications;
-  const releaseDateErrors = form.releaseDate.errors;
+  const releaseVersionErrors = formState.releaseVersion.errors;
+  const releaseVersionNotifications = formState.releaseVersion.notifications;
+  const discogsUrlErrors = formState.discogsUrl.errors;
+  const discogsUrlNotifications = formState.discogsUrl.notifications;
+  const commentNotifications = formState.comment.notifications;
+  const conditionProblemsNotifications =
+    formState.conditionProblems.notifications;
+  const relationToQueenNotifications = formState.relationToQueen.notifications;
+  const matrixRunoutErrors = formState.matrixRunout.errors;
+  const matrixRunoutNotifications = formState.matrixRunout.notifications;
+  const releaseDateErrors = formState.releaseDate.errors;
   const hasReleaseVersionErrors = releaseVersionErrors.length > 0;
   const hasReleaseVersionNotifications = releaseVersionNotifications.length > 0;
   const hasDiscogsUrlErrors = discogsUrlErrors.length > 0;
@@ -589,7 +590,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             className={styles.input}
             type="text"
             aria-required
-            value={form.releaseVersion.value}
+            value={formState.releaseVersion.value}
             onChange={(e) => setFieldValue("releaseVersion", e.target.value)}
             onFocus={() => onFocus("releaseVersion")}
             onBlur={() => onBlur("releaseVersion")}
@@ -608,10 +609,10 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           />
         </div>
 
-        <AddReleaseNameField
+        <ReleaseNameField
           entryMainName={entry.mainName}
           entryAltNames={entry.altNames}
-          value={form.name.value}
+          value={formState.name.value}
           onChange={(value) => setFieldValue("name", value)}
         />
 
@@ -623,7 +624,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         <div className={styles.field}>
           <h2 className={styles.heading}>Release date</h2>
           <GeneralizedDateFormInput
-            date={form.releaseDate.value}
+            date={formState.releaseDate.value}
             startDate={entry.originalReleaseDate}
             setDate={(releaseDate) => setFieldValue("releaseDate", releaseDate)}
             onFocus={onFocus}
@@ -650,7 +651,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             id="add-release-discogs-url"
             className={styles.input}
             type="url"
-            value={form.discogsUrl.value}
+            value={formState.discogsUrl.value}
             onChange={(e) => setFieldValue("discogsUrl", e.target.value)}
             onFocus={() => onFocus("discogsUrl")}
             onBlur={() => onBlur("discogsUrl")}
@@ -673,9 +674,9 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           aria-hidden
         />
 
-        <AddReleaseCountriesSection
+        <ReleaseCountriesSection
           countries={allCountries}
-          countrySelections={form.countries.value.madeIn}
+          countrySelections={formState.countries.value.madeIn}
           onSetCountryCodeName={setCountrySelectionCodeName}
           onAddRow={addCountrySelectionRow}
           onRemoveRow={removeCountrySelectionRow}
@@ -687,13 +688,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           removeRowAriaLabel="Remove country row"
           onRemove={clearAllCountries}
           removeAriaLabel="Remove all countries and printed-in countries"
-          errors={form.countries.errors.madeIn}
+          errors={formState.countries.errors.madeIn}
         />
 
-        {form.countries.value.printedIn.length > 0 ? (
-          <AddReleaseCountriesSection
+        {formState.countries.value.printedIn.length > 0 ? (
+          <ReleaseCountriesSection
             countries={allCountries}
-            countrySelections={form.countries.value.printedIn}
+            countrySelections={formState.countries.value.printedIn}
             onSetCountryCodeName={setPrintedInCountrySelectionCodeName}
             onAddRow={addPrintedInCountrySelectionRow}
             onRemoveRow={removePrintedInCountrySelectionRow}
@@ -707,7 +708,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             removeRowAriaLabel="Remove printed-in country row"
             onRemove={closePrintedInCountriesSection}
             removeAriaLabel='Remove "printed in" countries section'
-            errors={form.countries.errors.printedIn}
+            errors={formState.countries.errors.printedIn}
           />
         ) : (
           <button
@@ -721,13 +722,13 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
         <hr className={styles.sectionDivider} aria-hidden />
 
-        <AddReleaseFormFormatsSection
-          formatInputs={form.formats.value}
+        <ReleaseFormFormatsSection
+          formatInputs={formState.formats.value}
           releasesFormats={allFormats}
-          errors={form.formats.errors}
-          setFormats={(stateUpdateFn) =>
+          errors={formState.formats.errors}
+          setFormats={(formatsUpdateFn) =>
             setFieldValue("formats", (prev) =>
-              stateUpdateFn(prev.formats.value),
+              formatsUpdateFn(prev.formats.value),
             )
           }
           addFormatRow={addFormatRow}
@@ -738,15 +739,15 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
         <hr className={styles.sectionDivider} aria-hidden />
 
-        <AddReleaseCatalogueNumbersSection
+        <ReleaseCatalogueNumbersSection
           labels={labels}
-          catalogueNumbers={form.catalogueNumbers.value}
+          catalogueNumbers={formState.catalogueNumbers.value}
           setCatalogueNumbers={(update) =>
             setFieldValue("catalogueNumbers", (prev) =>
               update(prev.catalogueNumbers.value),
             )
           }
-          errors={form.catalogueNumbers.errors}
+          errors={formState.catalogueNumbers.errors}
           addCatalogueNumbersRow={addCatalogueNumbersRow}
           removeCatalogueNumbersRow={removeCatalogueNumbersRow}
           onFieldFocus={onFocus}
@@ -755,8 +756,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
         <hr className={styles.sectionDivider} aria-hidden />
 
-        <AddReleaseMatrixRunoutField
-          matrixRunout={form.matrixRunout.value}
+        <ReleaseMatrixRunoutField
+          matrixRunout={formState.matrixRunout.value}
           errorMessages={matrixRunoutErrors}
           notifications={matrixRunoutNotifications}
           onValueChange={(value) =>
@@ -779,7 +780,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
 
         <AddTagsFormSection
           tags={tagsAvailableForReleases}
-          selectedTagIds={form.selectedTags.value}
+          selectedTagIds={formState.selectedTags.value}
           onAddTag={addSelectedTag}
           onRemoveTag={removeSelectedTag}
         />
@@ -790,7 +791,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           <input
             id="add-release-part-of-queen-collection"
             type="checkbox"
-            checked={form.partOfQueenCollection.value}
+            checked={formState.partOfQueenCollection.value}
             disabled={entry.partOfQueenCollection}
             onChange={(e) =>
               setFieldValue("partOfQueenCollection", e.target.checked)
@@ -804,7 +805,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           </label>
         </div>
 
-        {form.partOfQueenCollection.value && (
+        {formState.partOfQueenCollection.value && (
           <div className={`${styles.field} ${styles.fieldMoreSpaceBefore}`}>
             <label
               className={styles.heading}
@@ -815,7 +816,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
             <textarea
               id="add-release-relation-to-queen"
               className={styles.textarea}
-              value={form.relationToQueen.value}
+              value={formState.relationToQueen.value}
               onChange={(e) => setFieldValue("relationToQueen", e.target.value)}
               onFocus={() => onFocus("relationToQueen")}
               onBlur={() => onBlur("relationToQueen")}
@@ -841,7 +842,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           <textarea
             id="add-release-comment"
             className={styles.textarea}
-            value={form.comment.value}
+            value={formState.comment.value}
             onChange={(e) => setFieldValue("comment", e.target.value)}
             onFocus={() => onFocus("comment")}
             onBlur={() => onBlur("comment")}
@@ -867,7 +868,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           <textarea
             id="add-release-condition-problems"
             className={styles.textarea}
-            value={form.conditionProblems.value}
+            value={formState.conditionProblems.value}
             onChange={(e) => setFieldValue("conditionProblems", e.target.value)}
             onFocus={() => onFocus("conditionProblems")}
             onBlur={() => onBlur("conditionProblems")}
@@ -887,7 +888,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
           <button
             type="button"
             className={styles.cancelButton}
-            onClick={onClearForm}
+            onClick={onClearFormState}
           >
             Clear Form
           </button>
@@ -913,8 +914,8 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
         description={
           isConfirmOpen && (
             <>
-              <AddReleaseFormPreview
-                form={form}
+              <ReleaseFormPreview
+                formState={formState}
                 allFormats={allFormats}
                 tagsAvailableForReleases={tagsAvailableForReleases}
               />
@@ -923,7 +924,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
                 headingId="create-release-db-sources-heading"
                 idPrefix="create-release-db-source"
                 activeDbSource={dbSource}
-                checkedSources={form.dbSources.value}
+                checkedSources={formState.dbSources.value}
                 onToggle={handleToggleDbSource}
               />
             </>
@@ -940,7 +941,7 @@ const AddReleaseForm: FC<AddReleaseFormProps> = ({
   );
 };
 
-export default AddReleaseForm;
+export default ReleaseForm;
 
 type CreateReleaseOutcome =
   | {
