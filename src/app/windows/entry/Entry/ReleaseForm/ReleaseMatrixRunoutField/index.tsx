@@ -1,8 +1,8 @@
 import { type FC, type FocusEvent } from "react";
 
-import styles from "./AddReleaseMatrixRunoutField.module.css";
+import styles from "./ReleaseMatrixRunoutField.module.css";
 
-import type { AddReleaseFormMatrixRunoutDraft } from "../addReleaseFormUtils/formValues";
+import type { ReleaseFormMatrixRunoutDraft } from "../releaseFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import FormFieldNotifications from "@/app/components/FormFieldNotifications";
@@ -12,8 +12,8 @@ const MATRIX_RUNOUT_FIELD_ERROR_ID = "add-release-matrix-runout-error";
 const MATRIX_RUNOUT_FIELD_NOTIFICATIONS_ID =
   "add-release-matrix-runout-notifications";
 
-type AddReleaseMatrixRunoutFieldProps = {
-  matrixRunout: AddReleaseFormMatrixRunoutDraft;
+type ReleaseMatrixRunoutFieldProps = {
+  matrixRunout: ReleaseFormMatrixRunoutDraft;
   errorMessages: FormFieldError[];
   notifications: { notification: string }[];
   onValueChange: (value: string) => void;
@@ -22,7 +22,7 @@ type AddReleaseMatrixRunoutFieldProps = {
   onBlur: () => void;
 };
 
-const AddReleaseMatrixRunoutField: FC<AddReleaseMatrixRunoutFieldProps> = ({
+const ReleaseMatrixRunoutField: FC<ReleaseMatrixRunoutFieldProps> = ({
   matrixRunout,
   errorMessages,
   notifications,
@@ -102,4 +102,4 @@ const AddReleaseMatrixRunoutField: FC<AddReleaseMatrixRunoutFieldProps> = ({
   );
 };
 
-export default AddReleaseMatrixRunoutField;
+export default ReleaseMatrixRunoutField;

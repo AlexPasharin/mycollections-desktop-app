@@ -1,15 +1,15 @@
 import type { FC } from "react";
 
-import styles from "./AddReleaseCountriesSection.module.css";
+import styles from "./ReleaseCountriesSection.module.css";
 
-import type { AddReleaseFormCountriesSubsectionErrors } from "../addReleaseFormUtils/errorMessages";
-import type { CountrySelectionInput } from "../addReleaseFormUtils/formValues";
+import type { ReleaseFormCountriesSubsectionErrors } from "../releaseFormUtils/errorMessages";
+import type { CountrySelectionInput } from "../releaseFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import type { CountryListItem } from "@/types/countries";
 import { errorSetToMessages } from "@/validation";
 
-type AddReleaseCountriesSectionProps = {
+type ReleaseCountriesSectionProps = {
   countries: CountryListItem[];
   countrySelections: CountrySelectionInput[];
   onSetCountryCodeName: (inputId: string, codeName: string) => void;
@@ -23,10 +23,10 @@ type AddReleaseCountriesSectionProps = {
   removeRowAriaLabel: string;
   onRemove: () => void;
   removeAriaLabel: string;
-  errors?: AddReleaseFormCountriesSubsectionErrors | undefined;
+  errors?: ReleaseFormCountriesSubsectionErrors | undefined;
 };
 
-const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
+const ReleaseCountriesSection: FC<ReleaseCountriesSectionProps> = ({
   countries,
   countrySelections,
   onSetCountryCodeName,
@@ -140,4 +140,4 @@ const AddReleaseCountriesSection: FC<AddReleaseCountriesSectionProps> = ({
   );
 };
 
-export default AddReleaseCountriesSection;
+export default ReleaseCountriesSection;

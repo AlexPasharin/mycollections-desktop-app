@@ -16,7 +16,7 @@ type LabelInputId = string;
 type CatNumberInputId = string;
 type CountrySelectionRowId = string;
 
-export type AddReleaseFormCatalogueNumberRowErrors = {
+export type ReleaseFormCatalogueNumberRowErrors = {
   labelInputErrorMessages: Record<LabelInputId, Set<string>>;
   catNumberInputErrorMessages: Record<CatNumberInputId, Set<string>>;
   europeCatNumberInputErrorMessages: Record<CatNumberInputId, Set<string>>;
@@ -24,33 +24,33 @@ export type AddReleaseFormCatalogueNumberRowErrors = {
   rowErrorMessages: Set<string>;
 };
 
-export type AddReleaseFormCountriesSubsectionErrors = {
+export type ReleaseFormCountriesSubsectionErrors = {
   countrySelectErrorMessages: Record<CountrySelectionRowId, Set<string>>;
   propertyErrorMessages: Set<string>;
 };
 
-export type AddReleaseFormCountriesErrors = {
-  madeIn: AddReleaseFormCountriesSubsectionErrors;
-  printedIn: AddReleaseFormCountriesSubsectionErrors;
+export type ReleaseFormCountriesErrors = {
+  madeIn: ReleaseFormCountriesSubsectionErrors;
+  printedIn: ReleaseFormCountriesSubsectionErrors;
 };
 
-export type AddReleaseFormFormatErrors = Record<
+export type ReleaseFormFormatErrors = Record<
   FormatFieldsRowId,
   FormFieldError[]
 >;
 
-export type AddReleaseFormCatNumbersErrors = Record<
+export type ReleaseFormCatNumbersErrors = Record<
   CatNumberFieldsRowId,
-  AddReleaseFormCatalogueNumberRowErrors
+  ReleaseFormCatalogueNumberRowErrors
 >;
 
 export const emptyMutableCountriesSubsectionErrors =
-  (): AddReleaseFormCountriesSubsectionErrors => ({
+  (): ReleaseFormCountriesSubsectionErrors => ({
     countrySelectErrorMessages: {},
     propertyErrorMessages: new Set(),
   });
 
-export const initialAddReleaseFormFieldErrors = {
+export const initialReleaseFormFieldErrors = {
   name: [],
   releaseVersion: [],
   discogsUrl: [],
@@ -76,12 +76,12 @@ export type CatalogueNumbersInputField =
   | "europeCatNumber"
   | "ukCatNumber";
 
-export type AddReleaseFormFormatInputFieldKey = {
+export type ReleaseFormFormatInputFieldKey = {
   formatRowId: string;
   field: FormatField;
 };
 
-export type AddReleaseFormCatalogueNumbersInputFieldKey = {
+export type ReleaseFormCatalogueNumbersInputFieldKey = {
   catNumberRowId: string;
   field: CatalogueNumbersInputField;
   inputValueId: string;
@@ -89,12 +89,12 @@ export type AddReleaseFormCatalogueNumbersInputFieldKey = {
 
 export type CountriesSubsection = "madeIn" | "printedIn";
 
-export type AddReleaseFormCountriesInputFieldKey = {
+export type ReleaseFormCountriesInputFieldKey = {
   countriesSubsection: CountriesSubsection;
   rowId: string;
 };
 
-export type AddReleaseFormInputFieldKey =
+export type ReleaseFormInputFieldKey =
   | "releaseVersion"
   | "discogsUrl"
   | "comment"
@@ -102,15 +102,15 @@ export type AddReleaseFormInputFieldKey =
   | "matrixRunout"
   | "relationToQueen"
   | ReleaseDateFieldErrorSource
-  | AddReleaseFormFormatInputFieldKey
-  | AddReleaseFormCatalogueNumbersInputFieldKey
-  | AddReleaseFormCountriesInputFieldKey;
+  | ReleaseFormFormatInputFieldKey
+  | ReleaseFormCatalogueNumbersInputFieldKey
+  | ReleaseFormCountriesInputFieldKey;
 
-export const isFormatInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
+export const isFormatInputFieldKey = (key: ReleaseFormInputFieldKey) =>
   typeof key === "object" && "formatRowId" in key;
 
 export const isCatalogueNumbersInputFieldKey = (
-  key: AddReleaseFormInputFieldKey,
+  key: ReleaseFormInputFieldKey,
 ) => typeof key === "object" && "catNumberRowId" in key;
 
 // Maps a per-input field key to the matching errors bucket on the row-errors
@@ -119,7 +119,7 @@ export const isCatalogueNumbersInputFieldKey = (
 export const catalogueNumbersInputBucketKeyFor = (
   field: CatalogueNumbersInputField,
 ): keyof Pick<
-  AddReleaseFormCatalogueNumberRowErrors,
+  ReleaseFormCatalogueNumberRowErrors,
   | "labelInputErrorMessages"
   | "catNumberInputErrorMessages"
   | "europeCatNumberInputErrorMessages"
@@ -137,13 +137,13 @@ export const catalogueNumbersInputBucketKeyFor = (
   }
 };
 
-export const isCountriesInputFieldKey = (key: AddReleaseFormInputFieldKey) =>
+export const isCountriesInputFieldKey = (key: ReleaseFormInputFieldKey) =>
   typeof key === "object" && "countriesSubsection" in key;
 
 export const removeMadeInCountrySelectionRowFromFieldErrors = (
-  countries: AddReleaseFormCountriesErrors,
+  countries: ReleaseFormCountriesErrors,
   rowId: CountrySelectionRowId,
-): AddReleaseFormCountriesErrors => {
+): ReleaseFormCountriesErrors => {
   const madeIn = countries.madeIn;
 
   const selectMap = madeIn.countrySelectErrorMessages;
@@ -161,8 +161,8 @@ export const removeMadeInCountrySelectionRowFromFieldErrors = (
 };
 
 export const stripPrintedInFromCountriesFieldErrors = (
-  countries: AddReleaseFormCountriesErrors,
-): AddReleaseFormCountriesErrors => ({
+  countries: ReleaseFormCountriesErrors,
+): ReleaseFormCountriesErrors => ({
   ...countries,
   printedIn: emptyMutableCountriesSubsectionErrors(),
 });

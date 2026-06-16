@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useRef, useState, type FC } from "react";
 
-import AddReleaseForm from "./AddReleaseForm";
-import {
-  type AddReleaseFormDraft,
-  type AddReleaseFormTabData,
-} from "./AddReleaseForm/addReleaseFormUtils/formValues";
 import EditEntryForm from "./EditEntryForm";
 import type { EditEntryFormPersistedState } from "./EditEntryForm/editEntryFormUtils/formValues";
 import EntryArtists from "./EntryArtists";
 import EntryDetailsPanel from "./EntryDetailsPanel";
 import EntryReleases from "./EntryReleases";
+import ReleaseForm from "./ReleaseForm";
+import {
+  type ReleaseFormState,
+  type ReleaseFormTabData,
+} from "./ReleaseForm/releaseFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import FormFieldNotifications from "@/app/components/FormFieldNotifications";
@@ -34,7 +34,7 @@ type EntryTab =
   | { id: "releases" | "editEntry"; data?: never }
   | {
       id: "addRelease";
-      data?: AddReleaseFormTabData;
+      data?: ReleaseFormTabData;
     };
 
 type EntryTabId = EntryTab["id"];
@@ -58,8 +58,8 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
   const [tagsLoading, setTagsLoading] = useState(false);
   const [tagsLoadFailed, setTagsLoadFailed] = useState(false);
 
-  const [addReleaseDraft, setAddReleaseDraft] =
-    useState<AddReleaseFormDraft | null>(null);
+  const [releaseFormState, setReleaseFormState] =
+    useState<ReleaseFormState | null>(null);
   const editEntryDraftRef = useRef<EditEntryFormPersistedState | null>(null);
 
   const [allFormats, setAllFormats] = useState<ReleasesFormatListItem[]>([]);
@@ -138,9 +138,9 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
   );
 
   const handleUseReleaseAsBlueprint = (releaseBlueprint: ReleaseByIdResult) => {
-    const dbSources = addReleaseDraft?.dbSources.value;
+    const dbSources = releaseFormState?.dbSources.value;
 
-    setAddReleaseDraft(null);
+    setReleaseFormState(null);
     setActiveTab({
       id: "addRelease",
       data: {
@@ -151,7 +151,7 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
   };
 
   useEffect(() => {
-    setAddReleaseDraft(null);
+    setReleaseFormState(null);
     setActiveTab((tab) => entryTabWithoutData(tab.id));
     setTags([]);
     setTagsLoadFailed(false);
@@ -334,7 +334,7 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
             panelId: ADD_RELEASE_PANEL_ID,
             label: "Add new release",
             children: (
-              <AddReleaseForm
+              <ReleaseForm
                 entry={sanitizedEntry}
                 dbSource={dbSource}
                 tags={tags}
@@ -351,13 +351,13 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
                   tagsLoadFailed ||
                   countriesLoadFailed
                 }
-                form={addReleaseDraft}
-                onFormChange={setAddReleaseDraft}
+                formState={releaseFormState}
+                onFormStateChange={setReleaseFormState}
                 tabData={
                   activeTabId === "addRelease" ? activeTab.data : undefined
                 }
-                onClearForm={() => {
-                  setAddReleaseDraft(null);
+                onClearFormState={() => {
+                  setReleaseFormState(null);
                 }}
                 onReleaseCreated={handleReleaseCreated}
               />

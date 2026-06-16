@@ -1,10 +1,10 @@
 import type {
-  AddReleaseFormCatNumbersInputs,
-  AddReleaseFormCountries,
-  AddReleaseFormEntry,
-  AddReleaseFormFormatInputs,
-  AddReleaseFormMatrixRunoutDraft,
-  AddReleaseFormNameInput,
+  ReleaseFormCatNumbersInputs,
+  ReleaseFormCountries,
+  ReleaseFormEntry,
+  ReleaseFormFormatInputs,
+  ReleaseFormMatrixRunoutDraft,
+  ReleaseFormNameInput,
   CatalogueNumberRowState,
   CountrySelectionInput,
 } from "./formValues";
@@ -16,20 +16,20 @@ import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
 
 type ToCreateMusicalReleaseInputArgs = {
-  name: AddReleaseFormNameInput;
+  name: ReleaseFormNameInput;
   releaseVersion: string;
   releaseDate: GeneralizedDateFormInputValue;
   discogsUrl: string;
-  countries: AddReleaseFormCountries;
-  formats: AddReleaseFormFormatInputs;
-  catalogueNumbers: AddReleaseFormCatNumbersInputs;
-  matrixRunout: AddReleaseFormMatrixRunoutDraft;
+  countries: ReleaseFormCountries;
+  formats: ReleaseFormFormatInputs;
+  catalogueNumbers: ReleaseFormCatNumbersInputs;
+  matrixRunout: ReleaseFormMatrixRunoutDraft;
   selectedTags: Set<TagId>;
   partOfQueenCollection: boolean;
   relationToQueen: string;
   comment: string;
   conditionProblems: string;
-  entry: AddReleaseFormEntry;
+  entry: ReleaseFormEntry;
 };
 
 /**
@@ -91,7 +91,7 @@ export const toCreateMusicalReleaseInput = ({
  * array for many, or `{ "made in": ..., "printed in": ... }` when printed-in
  * is also set. The form does not produce the CD/slipcase variant.
  */
-export const toReleaseCountriesJson = (countries: AddReleaseFormCountries) => {
+export const toReleaseCountriesJson = (countries: ReleaseFormCountries) => {
   const madeIn = toCodeNamesJson(countries.madeIn);
   const printedIn = toCodeNamesJson(countries.printedIn);
 
@@ -127,7 +127,7 @@ const toCodeNamesJson = (
  * Rows that would produce `{}` are dropped. The form does not produce the
  * CD/slipcase nested variant.
  */
-export const toReleaseCatNumbersJson = (rows: AddReleaseFormCatNumbersInputs) =>
+export const toReleaseCatNumbersJson = (rows: ReleaseFormCatNumbersInputs) =>
   singleOrArrayOrNull(
     rows.map(catNumberRowToJson).filter((row) => Object.keys(row).length > 0),
   );
@@ -214,7 +214,7 @@ const singleOrArrayEntry = (
  * is safe here.
  */
 export const toReleaseMatrixRunoutJson = (
-  draft: AddReleaseFormMatrixRunoutDraft,
+  draft: ReleaseFormMatrixRunoutDraft,
 ): unknown => {
   const trimmed = draft.value.trim();
 

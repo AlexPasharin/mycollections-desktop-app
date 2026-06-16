@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 import type {
-  AddReleaseFormFormatErrors,
+  ReleaseFormFormatErrors,
   FormatFieldsRowId,
 } from "../errorMessages";
-import type { AddReleaseFormFormatInputs } from "../formValues";
+import type { ReleaseFormFormatInputs } from "../formValues";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
 import type { FormFieldValidationResult } from "@/types/form";
@@ -19,10 +19,10 @@ export const validateReleaseFormats = (formats: ReleasesFormatListItem[]) => {
   const validationSchema = formatsSchema(formats);
 
   return (
-    value: AddReleaseFormFormatInputs,
+    value: ReleaseFormFormatInputs,
   ): FormFieldValidationResult<
-    AddReleaseFormFormatInputs,
-    AddReleaseFormFormatErrors
+    ReleaseFormFormatInputs,
+    ReleaseFormFormatErrors
   > => {
     const validationResult = validationSchema.safeParse(value);
 
@@ -46,11 +46,9 @@ export const validateReleaseFormats = (formats: ReleasesFormatListItem[]) => {
   };
 };
 
-const addReleaseFormFormatInputArraySchema = (
-  formats: ReleasesFormatListItem[],
-) =>
+const releaseFormFormatInputArraySchema = (formats: ReleasesFormatListItem[]) =>
   z
-    .array(addReleaseFormFormatInputSchema(formats))
+    .array(releaseFormFormatInputSchema(formats))
     .nonempty()
     .superRefine((filterRows, ctx) => {
       const seenKeys = new Set<string>();
@@ -82,11 +80,11 @@ const addReleaseFormFormatInputArraySchema = (
 const AMOUNT_MIN_MESSAGE = "Amount must be at least 1.";
 
 /** Integer ≥ 1, either as `z.int()` or as a string that parses to a base-10 integer. */
-const addReleaseFormFormatAmountSchema = z
+const releaseFormFormatAmountSchema = z
   .union([z.int(), z.string().trim().pipe(strictStringToIntSchema)])
   .pipe(z.int().min(1, { error: AMOUNT_MIN_MESSAGE }));
 
-const addReleaseFormFormatInputSchema = (formats: ReleasesFormatListItem[]) => {
+const releaseFormFormatInputSchema = (formats: ReleasesFormatListItem[]) => {
   const sevenInchFormat = formats.find(
     (f) => f.shortName === SEVEN_INCH_FORMAT_SHORT_NAME,
   );
@@ -98,7 +96,7 @@ const addReleaseFormFormatInputSchema = (formats: ReleasesFormatListItem[]) => {
         .string()
         .trim()
         .min(1, { message: "Format is required", abort: true }),
-      amount: addReleaseFormFormatAmountSchema,
+      amount: releaseFormFormatAmountSchema,
       pictureSleeve: z.boolean(),
       jukeboxHole: z.boolean(),
     })
@@ -112,12 +110,12 @@ const addReleaseFormFormatInputSchema = (formats: ReleasesFormatListItem[]) => {
 };
 
 const formatsSchema = (formats: ReleasesFormatListItem[]) =>
-  addReleaseFormFormatInputArraySchema(formats);
+  releaseFormFormatInputArraySchema(formats);
 
 const getFormatsFormFieldErrors = (
   errorMessages: ValidationResultErrorMessages,
-  currentFormatInputValues: AddReleaseFormFormatInputs,
-): AddReleaseFormFormatErrors => {
+  currentFormatInputValues: ReleaseFormFormatInputs,
+): ReleaseFormFormatErrors => {
   type FormatErrorMessage = string;
   const errorMessagesMap: Record<
     FormatFieldsRowId,
@@ -148,7 +146,7 @@ const getFormatsFormFieldErrors = (
     errorMessagesMap[filterRowById.id] = mapEntry;
   }
 
-  const formatsErrorMessages: AddReleaseFormFormatErrors = {};
+  const formatsErrorMessages: ReleaseFormFormatErrors = {};
 
   for (const [rowId, messages] of Object.entries(errorMessagesMap)) {
     formatsErrorMessages[rowId] = Object.entries(messages).map(

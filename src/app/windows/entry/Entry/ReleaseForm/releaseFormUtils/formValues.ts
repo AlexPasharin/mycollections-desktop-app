@@ -1,8 +1,8 @@
 import {
-  initialAddReleaseFormFieldErrors,
-  type AddReleaseFormCatNumbersErrors,
-  type AddReleaseFormCountriesErrors,
-  type AddReleaseFormFormatErrors,
+  initialReleaseFormFieldErrors,
+  type ReleaseFormCatNumbersErrors,
+  type ReleaseFormCountriesErrors,
+  type ReleaseFormFormatErrors,
 } from "./errorMessages";
 import {
   validateDiscogsUrl,
@@ -37,23 +37,20 @@ import {
   type ReleaseCatNumbersSingle,
 } from "@/validation";
 
-export type AddReleaseFormNameInput = Omit<EntryAltNameInfo, "nameId"> & {
+export type ReleaseFormNameInput = Omit<EntryAltNameInfo, "nameId"> & {
   nameId: string | null;
 };
 
-export const defaultNameInput = (name: string): AddReleaseFormNameInput => ({
+export const defaultNameInput = (name: string): ReleaseFormNameInput => ({
   nameId: null,
   name,
 });
 
-export type AddReleaseFormEntry = Omit<
-  EntryByIdResult,
-  "originalReleaseDate"
-> & {
+export type ReleaseFormEntry = Omit<EntryByIdResult, "originalReleaseDate"> & {
   originalReleaseDate: GeneralizedDate | null;
 };
 
-export type AddReleaseFormFormatInput = {
+export type ReleaseFormFormatInput = {
   id: string;
   formatId: string;
   amount: string;
@@ -61,7 +58,7 @@ export type AddReleaseFormFormatInput = {
   jukeboxHole: boolean;
 };
 
-export const defaultFormatInputRow = (): AddReleaseFormFormatInput =>
+export const defaultFormatInputRow = (): ReleaseFormFormatInput =>
   withNewId({
     formatId: "",
     amount: "1",
@@ -77,7 +74,7 @@ export type CountrySelectionInput = {
   codeName: string;
 };
 
-export type AddReleaseFormCountries = {
+export type ReleaseFormCountries = {
   madeIn: CountrySelectionInput[];
   printedIn: CountrySelectionInput[];
 };
@@ -163,26 +160,26 @@ export const toFlatRow = (
   };
 };
 
-export type AddReleaseFormMatrixRunoutDraft = {
+export type ReleaseFormMatrixRunoutDraft = {
   value: string;
   treatAsText: boolean;
 };
 
-export type AddReleaseFormFormatInputs = AddReleaseFormFormatInput[];
-export type AddReleaseFormCatNumbersInputs = CatalogueNumberRowState[];
+export type ReleaseFormFormatInputs = ReleaseFormFormatInput[];
+export type ReleaseFormCatNumbersInputs = CatalogueNumberRowState[];
 
-export type AddReleaseFormDraft = {
-  name: FormField<AddReleaseFormNameInput>;
+export type ReleaseFormState = {
+  name: FormField<ReleaseFormNameInput>;
   releaseVersion: FormField;
   discogsUrl: FormField;
   releaseDate: FormField<GeneralizedDateFormInputValue>;
-  countries: FormField<AddReleaseFormCountries, AddReleaseFormCountriesErrors>;
-  formats: FormField<AddReleaseFormFormatInputs, AddReleaseFormFormatErrors>;
+  countries: FormField<ReleaseFormCountries, ReleaseFormCountriesErrors>;
+  formats: FormField<ReleaseFormFormatInputs, ReleaseFormFormatErrors>;
   catalogueNumbers: FormField<
-    AddReleaseFormCatNumbersInputs,
-    AddReleaseFormCatNumbersErrors
+    ReleaseFormCatNumbersInputs,
+    ReleaseFormCatNumbersErrors
   >;
-  matrixRunout: FormField<AddReleaseFormMatrixRunoutDraft>;
+  matrixRunout: FormField<ReleaseFormMatrixRunoutDraft>;
   selectedTags: FormField<Set<TagId>>;
   partOfQueenCollection: FormField<boolean>;
   relationToQueen: FormField<string>;
@@ -191,22 +188,22 @@ export type AddReleaseFormDraft = {
   dbSources: FormField<ReadonlySet<DbSource>>;
 };
 
-export type AddReleaseFormTabData = {
+export type ReleaseFormTabData = {
   releaseBlueprint: ReleaseByIdResult;
   dbSources?: ReadonlySet<DbSource> | undefined;
 };
 
-export const initialAddReleaseFormDraftValue = ({
+export const initialReleaseFormStateValue = ({
   entry,
   allFormats,
   allCountries,
   tabData,
 }: {
-  entry: AddReleaseFormEntry;
+  entry: ReleaseFormEntry;
   allFormats: ReleasesFormatListItem[];
   allCountries: CountryListItem[];
-  tabData?: AddReleaseFormTabData | undefined;
-}): AddReleaseFormDraft => {
+  tabData?: ReleaseFormTabData | undefined;
+}): ReleaseFormState => {
   const { releaseBlueprint, dbSources } = tabData ?? {};
 
   return {
@@ -214,14 +211,14 @@ export const initialAddReleaseFormDraftValue = ({
       value: releaseBlueprint?.releaseVersion ?? "",
       valid: true,
       validationFn: validateRequiredTrimmedText("Release version is required."),
-      errors: initialAddReleaseFormFieldErrors.releaseVersion,
+      errors: initialReleaseFormFieldErrors.releaseVersion,
       notifications: [],
     },
     name: {
       value: resolveNameInput(entry, releaseBlueprint),
       valid: true,
       validationFn: validatePassThrough,
-      errors: initialAddReleaseFormFieldErrors.name,
+      errors: initialReleaseFormFieldErrors.name,
       notifications: [],
     },
     discogsUrl: {
@@ -230,7 +227,7 @@ export const initialAddReleaseFormDraftValue = ({
         "https://www.discogs.com/release/<id>-...",
       valid: true,
       validationFn: validateDiscogsUrl,
-      errors: initialAddReleaseFormFieldErrors.discogsUrl,
+      errors: initialReleaseFormFieldErrors.discogsUrl,
       notifications: [],
     },
     releaseDate: {
@@ -239,35 +236,35 @@ export const initialAddReleaseFormDraftValue = ({
       ),
       valid: true,
       validationFn: validateReleaseDate(entry.originalReleaseDate),
-      errors: initialAddReleaseFormFieldErrors.releaseDate,
+      errors: initialReleaseFormFieldErrors.releaseDate,
       notifications: [],
     },
     countries: {
       value: countriesToFormValue(releaseBlueprint?.countries, allCountries),
       valid: true,
       validationFn: validateReleaseCountries,
-      errors: initialAddReleaseFormFieldErrors.countries,
+      errors: initialReleaseFormFieldErrors.countries,
       notifications: [],
     },
     formats: {
       value: formatsToFormValue(releaseBlueprint?.formats, allFormats),
       valid: true,
       validationFn: validateReleaseFormats(allFormats),
-      errors: initialAddReleaseFormFieldErrors.formats,
+      errors: initialReleaseFormFieldErrors.formats,
       notifications: [],
     },
     catalogueNumbers: {
       value: catNumbersToFormValue(releaseBlueprint?.catalogueNumbers),
       valid: true,
       validationFn: validateReleaseCatNumbers,
-      errors: initialAddReleaseFormFieldErrors.catalogueNumbers,
+      errors: initialReleaseFormFieldErrors.catalogueNumbers,
       notifications: [],
     },
     matrixRunout: {
       value: matrixRunoutToFormValue(releaseBlueprint?.matrixRunout),
       valid: true,
       validationFn: validateReleaseMatrixRunout,
-      errors: initialAddReleaseFormFieldErrors.matrixRunout,
+      errors: initialReleaseFormFieldErrors.matrixRunout,
       notifications: [],
     },
     selectedTags: {
@@ -276,7 +273,7 @@ export const initialAddReleaseFormDraftValue = ({
       ),
       valid: true,
       validationFn: validatePassThrough,
-      errors: initialAddReleaseFormFieldErrors.selectedTags,
+      errors: initialReleaseFormFieldErrors.selectedTags,
       notifications: [],
     },
     partOfQueenCollection: {
@@ -284,35 +281,35 @@ export const initialAddReleaseFormDraftValue = ({
         releaseBlueprint?.partOfQueenCollection ?? entry.partOfQueenCollection,
       valid: true,
       validationFn: validatePassThrough,
-      errors: initialAddReleaseFormFieldErrors.partOfQueenCollection,
+      errors: initialReleaseFormFieldErrors.partOfQueenCollection,
       notifications: [],
     },
     relationToQueen: {
       value: releaseBlueprint?.relationToQueen ?? "",
       valid: true,
       validationFn: validateOptionalTrimmedText,
-      errors: initialAddReleaseFormFieldErrors.relationToQueen,
+      errors: initialReleaseFormFieldErrors.relationToQueen,
       notifications: [],
     },
     comment: {
       value: releaseBlueprint?.comment ?? "",
       valid: true,
       validationFn: validateOptionalTrimmedText,
-      errors: initialAddReleaseFormFieldErrors.comment,
+      errors: initialReleaseFormFieldErrors.comment,
       notifications: [],
     },
     conditionProblems: {
       value: releaseBlueprint?.conditionProblems ?? "",
       valid: true,
       validationFn: validateOptionalTrimmedText,
-      errors: initialAddReleaseFormFieldErrors.conditionProblems,
+      errors: initialReleaseFormFieldErrors.conditionProblems,
       notifications: [],
     },
     dbSources: {
       value: dbSources ?? (new Set(ALL_DB_SOURCES) as ReadonlySet<DbSource>),
       valid: true,
       validationFn: validatePassThrough,
-      errors: initialAddReleaseFormFieldErrors.dbSources,
+      errors: initialReleaseFormFieldErrors.dbSources,
       notifications: [],
     },
   };
@@ -328,9 +325,9 @@ const buildCountryLookup = (allCountries: CountryListItem[]) => {
 };
 
 const resolveNameInput = (
-  entry: AddReleaseFormEntry,
+  entry: ReleaseFormEntry,
   release: ReleaseByIdResult | undefined,
-): AddReleaseFormNameInput => {
+): ReleaseFormNameInput => {
   const alternativeName = release?.alternativeName;
 
   const matchedAltName = alternativeName
@@ -359,7 +356,7 @@ const releaseDateToFormValue = (
 const countriesToFormValue = (
   countries: ReleaseByIdResult["countries"] | undefined,
   allCountries: CountryListItem[],
-): AddReleaseFormCountries => {
+): ReleaseFormCountries => {
   if (countries == null || isCountriesJsonParsingError(countries)) {
     return { madeIn: [emptyCountrySelection()], printedIn: [] };
   }
@@ -392,7 +389,7 @@ const countriesToFormValue = (
 const formatsToFormValue = (
   releaseFormats: ReleaseFormatOfReleaseItem[] | undefined,
   allFormats: ReleasesFormatListItem[],
-): AddReleaseFormFormatInputs => {
+): ReleaseFormFormatInputs => {
   if (releaseFormats == null || releaseFormats.length === 0) {
     return [defaultFormatInputRow()];
   }
@@ -421,7 +418,7 @@ const formatsToFormValue = (
 
 const catNumbersToFormValue = (
   catalogueNumbers: ReleaseByIdResult["catalogueNumbers"] | undefined,
-): AddReleaseFormCatNumbersInputs => {
+): ReleaseFormCatNumbersInputs => {
   if (
     catalogueNumbers == null ||
     isCatNumbersJsonParsingError(catalogueNumbers)
@@ -516,7 +513,7 @@ const europeUkPropertyToRow = (
 
 const matrixRunoutToFormValue = (
   matrixRunout: ReleaseByIdResult["matrixRunout"] | undefined,
-): AddReleaseFormMatrixRunoutDraft => {
+): ReleaseFormMatrixRunoutDraft => {
   if (matrixRunout == null || isMatrixRunoutJsonParsingError(matrixRunout)) {
     return { value: "", treatAsText: false };
   }

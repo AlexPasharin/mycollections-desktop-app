@@ -2,19 +2,19 @@ import { z } from "zod";
 
 import {
   emptyMutableCountriesSubsectionErrors,
-  type AddReleaseFormCountriesErrors,
+  type ReleaseFormCountriesErrors,
 } from "../errorMessages";
-import type { AddReleaseFormCountries } from "../formValues";
+import type { ReleaseFormCountries } from "../formValues";
 
 import type { FormFieldValidationResult } from "@/types/form";
 import type { ValidationResultErrorMessages } from "@/utils/validation";
 import { uniquePropertyArraySchema } from "@/validation";
 
 export const validateReleaseCountries = (
-  value: AddReleaseFormCountries,
+  value: ReleaseFormCountries,
 ): FormFieldValidationResult<
-  AddReleaseFormCountries,
-  AddReleaseFormCountriesErrors
+  ReleaseFormCountries,
+  ReleaseFormCountriesErrors
 > => {
   const validationResult = countriesSchema.safeParse(value);
 
@@ -86,8 +86,8 @@ const countriesSchema = z
 
 const getCountriesFormFieldErrors = (
   errorMessages: ValidationResultErrorMessages,
-  countries: AddReleaseFormCountries,
-): AddReleaseFormCountriesErrors => {
+  countries: ReleaseFormCountries,
+): ReleaseFormCountriesErrors => {
   const madeIn = emptyMutableCountriesSubsectionErrors();
   const printedIn = emptyMutableCountriesSubsectionErrors();
 

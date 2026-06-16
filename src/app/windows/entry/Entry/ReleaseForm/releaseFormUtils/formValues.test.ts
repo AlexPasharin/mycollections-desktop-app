@@ -1,12 +1,12 @@
 import {
-  initialAddReleaseFormDraftValue,
-  type AddReleaseFormEntry,
+  initialReleaseFormStateValue,
+  type ReleaseFormEntry,
 } from "./formValues";
 import { toReleaseCountriesJson } from "./toCreateMusicalReleaseInput";
 
 import type { ReleaseByIdResult } from "@/types/releases";
 
-const entry: AddReleaseFormEntry = {
+const entry: ReleaseFormEntry = {
   entryId: "entry-1",
   mainName: "Album",
   originalReleaseDate: { year: 1980, month: 1, day: 15 },
@@ -60,9 +60,9 @@ const release: ReleaseByIdResult = {
   entryId: "entry-1",
 };
 
-describe("initialAddReleaseFormDraftValue", () => {
+describe("initialReleaseFormStateValue", () => {
   it("maps release fields into a validated add-release draft when release is given", () => {
-    const draft = initialAddReleaseFormDraftValue({
+    const draft = initialReleaseFormStateValue({
       entry,
       allFormats,
       allCountries,

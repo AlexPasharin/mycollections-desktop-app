@@ -1,13 +1,13 @@
 import type { FC } from "react";
 
-import AddReleaseCatalogueNumbersRow from "./AddReleaseCatalogueNumbersRow";
-import styles from "./AddReleaseCatalogueNumbersSection.module.css";
+import ReleaseCatalogueNumbersRow from "./ReleaseCatalogueNumbersRow";
+import styles from "./ReleaseCatalogueNumbersSection.module.css";
 
 import {
-  type AddReleaseFormCatalogueNumbersInputFieldKey,
-  type AddReleaseFormCatNumbersErrors,
+  type ReleaseFormCatalogueNumbersInputFieldKey,
+  type ReleaseFormCatNumbersErrors,
   type CatalogueNumbersInputField,
-} from "../addReleaseFormUtils/errorMessages";
+} from "../releaseFormUtils/errorMessages";
 import {
   emptyCatalogueNumberInputValue,
   emptyLabelInputValue,
@@ -19,30 +19,30 @@ import {
   type CatalogueNumberRowStateEuropeUk,
   type CatalogueNumberRowStateFlat,
   type LabelInputValue,
-} from "../addReleaseFormUtils/formValues";
+} from "../releaseFormUtils/formValues";
 
 import type { LabelListItem } from "@/types/labels";
 
-export type SetAddReleaseCatalogueNumbers = (
+export type SetReleaseCatalogueNumbers = (
   update: (prev: CatalogueNumberRowState[]) => CatalogueNumberRowState[],
 ) => void;
 
-export type AddReleaseCatalogueNumbersSectionProps = {
+export type ReleaseCatalogueNumbersSectionProps = {
   labels: LabelListItem[];
   catalogueNumbers: CatalogueNumberRowState[];
-  setCatalogueNumbers: SetAddReleaseCatalogueNumbers;
-  errors?: AddReleaseFormCatNumbersErrors;
+  setCatalogueNumbers: SetReleaseCatalogueNumbers;
+  errors?: ReleaseFormCatNumbersErrors;
   addCatalogueNumbersRow: () => void;
   removeCatalogueNumbersRow: (rowId: string) => void;
-  onFieldFocus: (key: AddReleaseFormCatalogueNumbersInputFieldKey) => void;
+  onFieldFocus: (key: ReleaseFormCatalogueNumbersInputFieldKey) => void;
   onBlurRowColumn: (
     rowId: string,
     fieldType: CatalogueNumbersInputField,
   ) => void;
 };
 
-const AddReleaseCatalogueNumbersSection: FC<
-  AddReleaseCatalogueNumbersSectionProps
+const ReleaseCatalogueNumbersSection: FC<
+  ReleaseCatalogueNumbersSectionProps
 > = ({
   labels,
   catalogueNumbers,
@@ -237,7 +237,7 @@ const AddReleaseCatalogueNumbersSection: FC<
 
       {catalogueNumbers.map((row, rowIndex) => (
         <div key={row.id}>
-          <AddReleaseCatalogueNumbersRow
+          <ReleaseCatalogueNumbersRow
             row={row}
             rowIndex={rowIndex}
             showDivider={rowIndex > 0}
@@ -296,4 +296,4 @@ const AddReleaseCatalogueNumbersSection: FC<
   );
 };
 
-export default AddReleaseCatalogueNumbersSection;
+export default ReleaseCatalogueNumbersSection;

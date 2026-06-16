@@ -1,37 +1,37 @@
 import { useMemo, type FC } from "react";
 
-import AddReleaseFormFormatBlock, {
-  type AddReleaseFormFormatRowPatch,
-} from "./AddReleaseFormFormatBlock";
-import styles from "./AddReleaseFormFormatsSection.module.css";
+import ReleaseFormFormatBlock, {
+  type ReleaseFormFormatRowPatch,
+} from "./ReleaseFormFormatBlock";
+import styles from "./ReleaseFormFormatsSection.module.css";
 
 import type {
-  AddReleaseFormFormatErrors,
-  AddReleaseFormFormatInputFieldKey,
-} from "../addReleaseFormUtils/errorMessages";
-import type { AddReleaseFormFormatInput } from "../addReleaseFormUtils/formValues";
+  ReleaseFormFormatErrors,
+  ReleaseFormFormatInputFieldKey,
+} from "../releaseFormUtils/errorMessages";
+import type { ReleaseFormFormatInput } from "../releaseFormUtils/formValues";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
 import type { ReleasesFormatListItem } from "@/types/formats";
 
-type SetAddReleaseFormFormats = (
+type SetReleaseFormFormats = (
   stateUpdateFn: (
-    prevFormatRows: AddReleaseFormFormatInput[],
-  ) => AddReleaseFormFormatInput[],
+    prevFormatRows: ReleaseFormFormatInput[],
+  ) => ReleaseFormFormatInput[],
 ) => void;
 
-type AddReleaseFormFormatsSectionProps = {
-  formatInputs: AddReleaseFormFormatInput[];
+type ReleaseFormFormatsSectionProps = {
+  formatInputs: ReleaseFormFormatInput[];
   releasesFormats: ReleasesFormatListItem[];
-  errors: AddReleaseFormFormatErrors;
-  setFormats: SetAddReleaseFormFormats;
+  errors: ReleaseFormFormatErrors;
+  setFormats: SetReleaseFormFormats;
   addFormatRow: () => void;
   removeFormatRow: (rowId: string) => void;
-  onFieldFocus: (key: AddReleaseFormFormatInputFieldKey) => void;
+  onFieldFocus: (key: ReleaseFormFormatInputFieldKey) => void;
   onBlur: () => void;
 };
 
-const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
+const ReleaseFormFormatsSection: FC<ReleaseFormFormatsSectionProps> = ({
   formatInputs: formats,
   releasesFormats,
   errors,
@@ -48,7 +48,7 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
     [releasesFormats],
   );
 
-  const patchFormat = (rowId: string, patch: AddReleaseFormFormatRowPatch) => {
+  const patchFormat = (rowId: string, patch: ReleaseFormFormatRowPatch) => {
     setFormats((prevFormatRows) =>
       prevFormatRows.map((formatRow) =>
         formatRow.id === rowId ? { ...formatRow, ...patch } : formatRow,
@@ -107,7 +107,7 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
                 : styles.formatBlock
             }
           >
-            <AddReleaseFormFormatBlock
+            <ReleaseFormFormatBlock
               row={formatRow}
               rowIndex={rowIndex}
               releasesFormats={releasesFormats}
@@ -140,4 +140,4 @@ const AddReleaseFormFormatsSection: FC<AddReleaseFormFormatsSectionProps> = ({
   );
 };
 
-export default AddReleaseFormFormatsSection;
+export default ReleaseFormFormatsSection;

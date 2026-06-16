@@ -1,21 +1,21 @@
 import z from "zod";
 
 import type {
-  AddReleaseFormCatalogueNumberRowErrors,
-  AddReleaseFormCatNumbersErrors,
+  ReleaseFormCatalogueNumberRowErrors,
+  ReleaseFormCatNumbersErrors,
   CatNumberFieldsRowId,
 } from "../errorMessages";
-import type { AddReleaseFormCatNumbersInputs } from "../formValues";
+import type { ReleaseFormCatNumbersInputs } from "../formValues";
 
 import type { FormFieldValidationResult } from "@/types/form";
 import type { ValidationResultErrorMessages } from "@/utils/validation";
 import { uniquePropertyArraySchema } from "@/validation";
 
 export const validateReleaseCatNumbers = (
-  value: AddReleaseFormCatNumbersInputs,
+  value: ReleaseFormCatNumbersInputs,
 ): FormFieldValidationResult<
-  AddReleaseFormCatNumbersInputs,
-  AddReleaseFormCatNumbersErrors
+  ReleaseFormCatNumbersInputs,
+  ReleaseFormCatNumbersErrors
 > => {
   const validationResult = catNumbersSchema.safeParse(value);
 
@@ -124,15 +124,15 @@ const catNumbersSchema = z.array(catalogueNumberRowSchema).optional();
 
 const getCatNumbersFormFieldErrors = (
   errorMessages: ValidationResultErrorMessages,
-  currentCatalogueNumberInputValues: AddReleaseFormCatNumbersInputs,
-): AddReleaseFormCatNumbersErrors => {
+  currentCatalogueNumberInputValues: ReleaseFormCatNumbersInputs,
+): ReleaseFormCatNumbersErrors => {
   if (errorMessages.length === 0) {
     return {};
   }
 
   const errorMessagesMap: Record<
     CatNumberFieldsRowId,
-    AddReleaseFormCatalogueNumberRowErrors
+    ReleaseFormCatalogueNumberRowErrors
   > = {};
 
   for (const { message, path } of errorMessages) {
@@ -152,8 +152,8 @@ const getCatNumbersFormFieldErrors = (
 
     const inputValueBucket = catNumberInputValueBucketFor(fieldKey);
 
-    const addReleaseFormCatalogueNumberRowErrorsKey:
-      | keyof AddReleaseFormCatalogueNumberRowErrors
+    const releaseFormCatalogueNumberRowErrorsKey:
+      | keyof ReleaseFormCatalogueNumberRowErrors
       | undefined =
       fieldKey === "labelInputValues"
         ? "labelInputErrorMessages"
@@ -163,12 +163,12 @@ const getCatNumbersFormFieldErrors = (
             ? "rowErrorMessages"
             : undefined;
 
-    if (!addReleaseFormCatalogueNumberRowErrorsKey) {
+    if (!releaseFormCatalogueNumberRowErrorsKey) {
       continue;
     }
 
     // entry for the catalogue number row that the error belongs to
-    const rowErrorMessages: AddReleaseFormCatalogueNumberRowErrors =
+    const rowErrorMessages: ReleaseFormCatalogueNumberRowErrors =
       errorMessagesMap[catNumbersRowById.id] ?? {
         labelInputErrorMessages: {},
         catNumberInputErrorMessages: {},
@@ -243,7 +243,7 @@ const getCatNumbersFormFieldErrors = (
 // Maps the zod path head for the cat-number side of a row to the row-state
 // array it points at and the matching row-errors bucket.
 type CatNumberInputErrorMessagesKey = keyof Pick<
-  AddReleaseFormCatalogueNumberRowErrors,
+  ReleaseFormCatalogueNumberRowErrors,
   | "catNumberInputErrorMessages"
   | "europeCatNumberInputErrorMessages"
   | "ukCatNumberInputErrorMessages"
@@ -252,12 +252,12 @@ type CatNumberInputErrorMessagesKey = keyof Pick<
 type CatNumberInputValueBucket = {
   errorMessagesKey: CatNumberInputErrorMessagesKey;
   readInputs: (
-    row: AddReleaseFormCatNumbersInputs[number],
+    row: ReleaseFormCatNumbersInputs[number],
   ) => { id: string; value: string }[] | undefined;
 };
 
 const addInputErrorToBucket = (
-  rowErrors: AddReleaseFormCatalogueNumberRowErrors,
+  rowErrors: ReleaseFormCatalogueNumberRowErrors,
   bucketKey: CatNumberInputErrorMessagesKey,
   inputId: string,
   message: string,
