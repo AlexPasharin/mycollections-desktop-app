@@ -9,6 +9,7 @@ import type {
   GetEntryReleases,
   GetEntryReleaseTagIds,
   GetReleaseById,
+  UpdateMusicalRelease,
 } from "@/types/releases";
 import type { FetchTags } from "@/types/tags";
 
@@ -23,6 +24,7 @@ export type API = {
   getEntryReleaseTagIds: GetEntryReleaseTagIds;
   getReleaseById: GetReleaseById;
   createMusicalRelease: CreateMusicalRelease;
+  updateMusicalRelease: UpdateMusicalRelease;
   deleteRelease: DeleteRelease;
   updateMusicalEntry: UpdateMusicalEntry;
 };

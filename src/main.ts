@@ -23,6 +23,7 @@ import {
   FETCH_ENTRY_TYPES,
   UPDATE_MUSICAL_ENTRY,
   CREATE_MUSICAL_RELEASE,
+  UPDATE_MUSICAL_RELEASE,
   DELETE_RELEASE,
   OPEN_ARTIST_WINDOW,
   OPEN_ENTRY_WINDOW,
@@ -46,6 +47,7 @@ import {
   getEntryReleases,
   getEntryReleaseTagIds,
   getReleaseById,
+  updateMusicalRelease,
 } from "@/db/releases";
 import { fetchTags } from "@/db/tags";
 import type { FetchArtistsParams } from "@/types/artists";
@@ -53,7 +55,10 @@ import type {
   SearchArtistEntriesParams,
   UpdateMusicalEntryInput,
 } from "@/types/entries";
-import type { CreateMusicalReleaseInput } from "@/types/releases";
+import type {
+  CreateMusicalReleaseInput,
+  UpdateMusicalReleaseInput,
+} from "@/types/releases";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (electronSquirrelStartup) {
@@ -96,6 +101,11 @@ await app.whenReady().then(async () => {
     CREATE_MUSICAL_RELEASE,
     (_, input: CreateMusicalReleaseInput, dbSource: DbSource) =>
       createMusicalRelease(input, dbSource),
+  );
+  ipcMain.handle(
+    UPDATE_MUSICAL_RELEASE,
+    (_, input: UpdateMusicalReleaseInput, dbSource: DbSource) =>
+      updateMusicalRelease(input, dbSource),
   );
   ipcMain.handle(DELETE_RELEASE, (_, releaseId: string, dbSource: DbSource) =>
     deleteRelease(releaseId, dbSource),
