@@ -271,7 +271,9 @@ export const initialAddReleaseFormDraftValue = ({
       notifications: [],
     },
     selectedTags: {
-      value: new Set<string>(releaseBlueprint?.tags ?? []),
+      value: new Set<string>(
+        releaseBlueprint?.tags.map((tag) => tag.tagId) ?? [],
+      ),
       valid: true,
       validationFn: validatePassThrough,
       errors: initialAddReleaseFormFieldErrors.selectedTags,

@@ -82,8 +82,8 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
         <div className={styles.detailBlock}>
           <span className={styles.detailLabel}>Tags:</span>
           <ul className={styles.tagsList}>
-            {tags.map((tag) => (
-              <li key={tag} className={styles.tagsListItem}>
+            {tags.map(({ tagId, tag }) => (
+              <li key={tagId} className={styles.tagsListItem}>
                 {tag}
               </li>
             ))}

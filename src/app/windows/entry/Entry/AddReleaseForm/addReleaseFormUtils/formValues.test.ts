@@ -43,7 +43,7 @@ const release: ReleaseByIdResult = {
       speed: null,
     },
   ],
-  tags: ["Promo"],
+  tags: [{ tagId: "tag-promo", tag: "Promo" }],
   countries: {
     "made in": "UK",
     "printed in": "DE",
@@ -87,7 +87,7 @@ describe("initialAddReleaseFormDraftValue", () => {
         jukeboxHole: true,
       }),
     ]);
-    expect(draft.selectedTags.value).toEqual(new Set(["Promo"]));
+    expect(draft.selectedTags.value).toEqual(new Set(["tag-promo"]));
     expect(toReleaseCountriesJson(draft.countries.value)).toEqual({
       "made in": "UK",
       "printed in": "DE",

@@ -1,13 +1,13 @@
 import { sql } from "kysely";
 
 import { dbClient } from "../client/kysely";
-import { aggregateDistinctValuesToArray } from "../utils";
 
 import type {
   GetReleaseById,
   ReleaseByIdResult,
   ReleaseFormatOfReleaseItem,
 } from "@/types/releases";
+import type { TagListItem } from "@/types/tags";
 import { parseStringAsGeneralizedDate } from "@/utils/date";
 import {
   releaseCatNumbersSchema,
@@ -58,7 +58,13 @@ export const getReleaseById: GetReleaseById = async (releaseId, dbSource) => {
     .select([
       ...musicalReleaseColumns,
       "alternativeMusicalEntryNames.name as alternativeName",
-      aggregateDistinctValuesToArray("tags.tag", "tags"),
+      sql<TagListItem[]>`coalesce(
+        jsonb_agg(DISTINCT jsonb_build_object(
+          'tagId', ${sql.ref("tags.tagId")},
+          'tag', ${sql.ref("tags.tag")}
+        )) FILTER (WHERE ${sql.ref("tags.tagId")} IS NOT NULL),
+        '[]'::jsonb
+      )`.as("tags"),
       sql<ReleaseFormatOfReleaseItem[]>`coalesce(
         jsonb_agg(DISTINCT jsonb_build_object(
           'id', ${sql.ref("formatsOfReleases.id")},
