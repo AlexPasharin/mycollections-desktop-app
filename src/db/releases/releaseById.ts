@@ -1,17 +1,13 @@
 import { sql } from "kysely";
 
 import { dbClient } from "../client/kysely";
-import { aggregateDistinctValuesToArray } from "../utils";
 
-import type { DbSource } from "@/db/db-source";
 import type {
   GetReleaseById,
+  ReleaseByIdResult,
   ReleaseFormatOfReleaseItem,
 } from "@/types/releases";
-import {
-  collectReleaseCountryCodes,
-  countryCodesToNamesInReleaseCountries,
-} from "@/utils/countries";
+import type { TagListItem } from "@/types/tags";
 import { parseStringAsGeneralizedDate } from "@/utils/date";
 import {
   releaseCatNumbersSchema,
@@ -62,7 +58,13 @@ export const getReleaseById: GetReleaseById = async (releaseId, dbSource) => {
     .select([
       ...musicalReleaseColumns,
       "alternativeMusicalEntryNames.name as alternativeName",
-      aggregateDistinctValuesToArray("tags.tag", "tags"),
+      sql<TagListItem[]>`coalesce(
+        jsonb_agg(DISTINCT jsonb_build_object(
+          'tagId', ${sql.ref("tags.tagId")},
+          'tag', ${sql.ref("tags.tag")}
+        )) FILTER (WHERE ${sql.ref("tags.tagId")} IS NOT NULL),
+        '[]'::jsonb
+      )`.as("tags"),
       sql<ReleaseFormatOfReleaseItem[]>`coalesce(
         jsonb_agg(DISTINCT jsonb_build_object(
           'id', ${sql.ref("formatsOfReleases.id")},
@@ -70,6 +72,7 @@ export const getReleaseById: GetReleaseById = async (releaseId, dbSource) => {
           'pictureSleeve', ${sql.ref("formatsOfReleases.pictureSleeve")},
           'speed', ${sql.ref("formatsOfReleases.speed")},
           'amount', ${sql.ref("formatsOfReleases.amount")},
+          'formatId', ${sql.ref("releasesFormats.formatId")},
           'shortName', ${sql.ref("releasesFormats.shortName")}
         )) FILTER (WHERE ${sql.ref("formatsOfReleases.id")} IS NOT NULL),
         '[]'::jsonb
@@ -88,20 +91,18 @@ export const getReleaseById: GetReleaseById = async (releaseId, dbSource) => {
   return {
     ...rest,
     releaseDate: parseStringAsGeneralizedDate(releaseDate),
-    countries: await getReleaseCountries(countries, dbSource),
+    countries: getReleaseCountries(countries),
     catalogueNumbers: getReleaseCatNumbers(catalogueNumbers),
     matrixRunout: getReleaseMatrixRunout(matrixRunout),
   };
 };
 
-/** Parses and validates release countries JSON
- * In case validation is successful, returns the validated countries JSON with country codes replaced with their names
- * In case validation is not successful, returns the raw original JSON and the error message
- *
- * @param countries - the release countries JSON
- * @returns the validated countries JSON with country codes replaced with their names or the raw JSON and the error message
+/** Parses and validates release countries JSON.
+ * On success returns the validated value (country codes); on failure returns the raw JSON and an error message.
  */
-const getReleaseCountries = async (countries: unknown, dbSource?: DbSource) => {
+const getReleaseCountries = (
+  countries: unknown,
+): ReleaseByIdResult["countries"] => {
   const countriesValidation = releaseCountriesSchema.safeParse(countries);
 
   if (!countriesValidation.success) {
@@ -112,33 +113,7 @@ const getReleaseCountries = async (countries: unknown, dbSource?: DbSource) => {
     };
   }
 
-  const validated = countriesValidation.data;
-  const countryCodes = collectReleaseCountryCodes(validated);
-
-  const dbCountries =
-    countryCodes.length === 0
-      ? []
-      : await dbClient(dbSource)
-          .selectFrom("countries")
-          .where("codeName", "in", countryCodes)
-          .selectAll()
-          .execute();
-
-  const codeToNameMap = new Map(
-    dbCountries.map((c) => [c.codeName, c.name] as const),
-  );
-
-  try {
-    return countryCodesToNamesInReleaseCountries(validated, codeToNameMap);
-  } catch (caught) {
-    const errorMessage =
-      caught instanceof Error ? caught.message : String(caught);
-
-    return {
-      rawJson: countries,
-      error: errorMessage,
-    };
-  }
+  return countriesValidation.data;
 };
 
 /** Parses and validates release catalogue numbers JSON

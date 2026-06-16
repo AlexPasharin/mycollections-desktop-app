@@ -1,14 +1,10 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type FC,
-} from "react";
+import { useEffect, useMemo, useRef, useState, type FC } from "react";
 
 import AddReleaseForm from "./AddReleaseForm";
-import type { AddReleaseFormPersistedState } from "./AddReleaseForm/addReleaseFormUtils/formValues";
+import {
+  type AddReleaseFormDraft,
+  type AddReleaseFormTabData,
+} from "./AddReleaseForm/addReleaseFormUtils/formValues";
 import EditEntryForm from "./EditEntryForm";
 import type { EditEntryFormPersistedState } from "./EditEntryForm/editEntryFormUtils/formValues";
 import EntryArtists from "./EntryArtists";
@@ -20,7 +16,11 @@ import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import Tabs from "@/app/components/Tabs";
 import api from "@/app/windows/entry/api";
 import type { DbSource } from "@/db/db-source";
+import type { CountryListItem } from "@/types/countries";
 import type { EntryByIdResult } from "@/types/entries";
+import type { ReleasesFormatListItem } from "@/types/formats";
+import type { LabelListItem } from "@/types/labels";
+import type { ReleaseByIdResult } from "@/types/releases";
 import type { TagListItem } from "@/types/tags";
 import { sanitizeReleaseDate } from "@/utils/date";
 
@@ -30,7 +30,16 @@ type EntryProps = {
   onEntryUpdated: (entry: EntryByIdResult) => void;
 };
 
-type EntryTab = "releases" | "addRelease" | "editEntry";
+type EntryTab =
+  | { id: "releases" | "editEntry"; data?: never }
+  | {
+      id: "addRelease";
+      data?: AddReleaseFormTabData;
+    };
+
+type EntryTabId = EntryTab["id"];
+
+const entryTabWithoutData = (id: EntryTabId): EntryTab => ({ id });
 
 /** Stable ids for this tablist (single Entry view per document). */
 const RELEASES_TAB_ID = "releases-tab";
@@ -43,30 +52,32 @@ const EDIT_ENTRY_UPDATE_NOTIFICATIONS_ID = "edit-entry-update-notifications";
 const EDIT_ENTRY_UPDATE_ERRORS_ID = "edit-entry-update-errors";
 
 const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
-  const [activeTab, setActiveTab] = useState<EntryTab>("addRelease");
-  const tagsShouldBeFetched =
-    activeTab === "addRelease" || activeTab === "editEntry";
+  const [activeTab, setActiveTab] = useState<EntryTab>({ id: "addRelease" });
 
   const [tags, setTags] = useState<TagListItem[]>([]);
   const [tagsLoading, setTagsLoading] = useState(false);
   const [tagsLoadFailed, setTagsLoadFailed] = useState(false);
-  const fetchTagsTokenRef = useRef(0);
-  const addReleaseDraftRef = useRef<AddReleaseFormPersistedState | null>(null);
+
+  const [addReleaseDraft, setAddReleaseDraft] =
+    useState<AddReleaseFormDraft | null>(null);
   const editEntryDraftRef = useRef<EditEntryFormPersistedState | null>(null);
 
-  const persistAddReleaseDraft = useCallback(
-    (state: AddReleaseFormPersistedState) => {
-      addReleaseDraftRef.current = state;
-    },
-    [],
-  );
+  const [allFormats, setAllFormats] = useState<ReleasesFormatListItem[]>([]);
+  const [labels, setLabels] = useState<LabelListItem[]>([]);
+  const [addReleaseReferenceDataLoading, setAddReleaseReferenceDataLoading] =
+    useState(false);
+  const [
+    addReleaseReferenceDataLoadFailed,
+    setAddReleaseReferenceDataLoadFailed,
+  ] = useState(false);
+  const addReleaseReferenceDataDbSourceRef = useRef<DbSource | null>(null);
+  const fetchAddReleaseReferenceDataTokenRef = useRef(0);
 
-  const persistEditEntryDraft = useCallback(
-    (state: EditEntryFormPersistedState) => {
-      editEntryDraftRef.current = state;
-    },
-    [],
-  );
+  const [allCountries, setAllCountries] = useState<CountryListItem[]>([]);
+  const [countriesLoading, setCountriesLoading] = useState(false);
+  const [countriesLoadFailed, setCountriesLoadFailed] = useState(false);
+  const countriesDbSourceRef = useRef<DbSource | null>(null);
+  const fetchCountriesTokenRef = useRef(0);
 
   const [latestUpdateEntryNotifications, setLatestUpdateEntryNotifications] =
     useState<string[]>([]);
@@ -83,6 +94,10 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
     string[]
   >([]);
 
+  const handleTabChange = (tabId: EntryTabId) => {
+    setActiveTab(entryTabWithoutData(tabId));
+  };
+
   const handleReleaseCreated = (
     releaseId: string | undefined,
     notifications: string[],
@@ -91,7 +106,7 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
     setLatestAddedReleaseId(releaseId);
     setLatestCreateReleaseNotifications(notifications);
     setLatestCreateReleaseErrors(errors);
-    setActiveTab("releases");
+    handleTabChange("releases");
   };
 
   const handleEntryUpdated = (
@@ -122,13 +137,45 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
     [entry],
   );
 
+  const handleUseReleaseAsBlueprint = (releaseBlueprint: ReleaseByIdResult) => {
+    const dbSources = addReleaseDraft?.dbSources.value;
+
+    setAddReleaseDraft(null);
+    setActiveTab({
+      id: "addRelease",
+      data: {
+        releaseBlueprint,
+        dbSources,
+      },
+    });
+  };
+
   useEffect(() => {
-    addReleaseDraftRef.current = null;
+    setAddReleaseDraft(null);
+    setActiveTab((tab) => entryTabWithoutData(tab.id));
+    setTags([]);
+    setTagsLoadFailed(false);
+    tagsDbSourceRef.current = null;
+    setAllFormats([]);
+    setLabels([]);
+    setAllCountries([]);
+    setCountriesLoadFailed(false);
+    countriesDbSourceRef.current = null;
+    setAddReleaseReferenceDataLoadFailed(false);
+    addReleaseReferenceDataDbSourceRef.current = null;
     editEntryDraftRef.current = null;
   }, [entry.entryId]);
 
+  const fetchTagsTokenRef = useRef(0);
+  const tagsDbSourceRef = useRef<DbSource | null>(null);
+
+  const activeTabId = activeTab.id;
+
   useEffect(() => {
-    if (!tagsShouldBeFetched) {
+    if (
+      (activeTabId !== "addRelease" && activeTabId !== "editEntry") ||
+      tagsDbSourceRef.current === dbSource
+    ) {
       return;
     }
 
@@ -144,6 +191,7 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
         }
 
         setTags(tagsData);
+        tagsDbSourceRef.current = dbSource;
         setTagsLoading(false);
       })
       .catch((error: unknown) => {
@@ -160,9 +208,90 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
     return () => {
       fetchTagsTokenRef.current += 1;
     };
+  }, [activeTabId, dbSource]);
 
-    // Re-fetch when entry changes so tag pickers stay in sync after updates.
-  }, [tagsShouldBeFetched, dbSource, entry]);
+  useEffect(() => {
+    if (
+      (activeTabId !== "addRelease" && activeTabId !== "releases") ||
+      countriesDbSourceRef.current === dbSource
+    ) {
+      return;
+    }
+
+    const token = ++fetchCountriesTokenRef.current;
+    setCountriesLoading(true);
+    setCountriesLoadFailed(false);
+
+    api
+      .fetchCountries(dbSource)
+      .then((countriesData) => {
+        if (token !== fetchCountriesTokenRef.current) {
+          return;
+        }
+
+        setAllCountries(countriesData);
+        countriesDbSourceRef.current = dbSource;
+        setCountriesLoading(false);
+      })
+      .catch((error: unknown) => {
+        console.error("Error fetching countries", error);
+
+        if (token !== fetchCountriesTokenRef.current) {
+          return;
+        }
+
+        setCountriesLoadFailed(true);
+        setCountriesLoading(false);
+      });
+
+    return () => {
+      fetchCountriesTokenRef.current += 1;
+    };
+  }, [activeTabId, dbSource]);
+
+  useEffect(() => {
+    if (
+      activeTabId !== "addRelease" ||
+      addReleaseReferenceDataDbSourceRef.current === dbSource
+    ) {
+      return;
+    }
+
+    const token = ++fetchAddReleaseReferenceDataTokenRef.current;
+    setAddReleaseReferenceDataLoading(true);
+    setAddReleaseReferenceDataLoadFailed(false);
+
+    Promise.all([api.fetchReleasesFormats(dbSource), api.fetchLabels(dbSource)])
+      .then(([formatsData, labelsData]) => {
+        if (token !== fetchAddReleaseReferenceDataTokenRef.current) {
+          return;
+        }
+
+        setAllFormats(formatsData);
+        setLabels(labelsData);
+        addReleaseReferenceDataDbSourceRef.current = dbSource;
+      })
+      .catch((error: unknown) => {
+        console.error("Error fetching release formats or labels", error);
+
+        if (token !== fetchAddReleaseReferenceDataTokenRef.current) {
+          return;
+        }
+
+        setAddReleaseReferenceDataLoadFailed(true);
+      })
+      .finally(() => {
+        if (token !== fetchAddReleaseReferenceDataTokenRef.current) {
+          return;
+        }
+
+        setAddReleaseReferenceDataLoading(false);
+      });
+
+    return () => {
+      fetchAddReleaseReferenceDataTokenRef.current += 1;
+    };
+  }, [activeTabId, dbSource]);
 
   return (
     <div>
@@ -173,8 +302,8 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
 
       <Tabs
         ariaLabel="Releases, add release, and edit entry"
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
+        activeTab={activeTabId}
+        onTabChange={handleTabChange}
         tabs={[
           {
             id: "releases",
@@ -185,9 +314,13 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
               <EntryReleases
                 entry={entry}
                 dbSource={dbSource}
+                allCountries={allCountries}
+                countriesLoading={countriesLoading}
+                countriesLoadFailed={countriesLoadFailed}
                 latestAddedReleaseId={latestAddedReleaseId}
                 latestCreateNotifications={latestCreateReleaseNotifications}
                 latestCreatedErrors={latestCreateReleaseErrors}
+                onUseReleaseAsBlueprint={handleUseReleaseAsBlueprint}
                 onDismissCreateNotifications={() =>
                   setLatestCreateReleaseNotifications([])
                 }
@@ -205,11 +338,27 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
                 entry={sanitizedEntry}
                 dbSource={dbSource}
                 tags={tags}
-                tagsLoading={tagsLoading}
-                tagsLoadFailed={tagsLoadFailed}
-                restoredState={addReleaseDraftRef.current}
-                onPersistState={persistAddReleaseDraft}
-                onCancel={() => setActiveTab("releases")}
+                allFormats={allFormats}
+                labels={labels}
+                allCountries={allCountries}
+                referenceDataLoading={
+                  addReleaseReferenceDataLoading ||
+                  tagsLoading ||
+                  countriesLoading
+                }
+                referenceDataLoadFailed={
+                  addReleaseReferenceDataLoadFailed ||
+                  tagsLoadFailed ||
+                  countriesLoadFailed
+                }
+                form={addReleaseDraft}
+                onFormChange={setAddReleaseDraft}
+                tabData={
+                  activeTabId === "addRelease" ? activeTab.data : undefined
+                }
+                onClearForm={() => {
+                  setAddReleaseDraft(null);
+                }}
                 onReleaseCreated={handleReleaseCreated}
               />
             ),
@@ -236,8 +385,10 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
                   tagsLoading={tagsLoading}
                   tagsLoadFailed={tagsLoadFailed}
                   restoredState={editEntryDraftRef.current}
-                  onPersistState={persistEditEntryDraft}
-                  onCancel={() => setActiveTab("releases")}
+                  onPersistState={(state) => {
+                    editEntryDraftRef.current = state;
+                  }}
+                  onCancel={() => handleTabChange("releases")}
                   onEntryUpdated={handleEntryUpdated}
                 />
               </>

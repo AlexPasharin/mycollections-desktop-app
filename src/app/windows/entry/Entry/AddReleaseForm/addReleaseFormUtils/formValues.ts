@@ -14,17 +14,27 @@ import {
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { DbSource } from "@/db/db-source";
-import type { GeneralizedDate } from "@/types/date";
+import { ALL_DB_SOURCES } from "@/db/db-source-options";
+import type { CountryListItem } from "@/types/countries";
+import type { GeneralizedDate, GeneralizedDateFromDb } from "@/types/date";
 import type { EntryAltNameInfo, EntryByIdResult } from "@/types/entries";
 import type { FormField } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
+import type {
+  JsonParsingErrorData,
+  ReleaseByIdResult,
+  ReleaseFormatOfReleaseItem,
+} from "@/types/releases";
 import type { TagId } from "@/types/tags";
+import { flattenStringOrArray } from "@/utils/common";
 import { withNewId } from "@/utils/id";
 import {
   validateOptionalTrimmedText,
+  validatePassThrough,
   validateReleaseDate,
   validateRequiredTrimmedText,
-  validatePassThrough,
+  type CatNumbersProperty,
+  type ReleaseCatNumbersSingle,
 } from "@/validation";
 
 export type AddReleaseFormNameInput = Omit<EntryAltNameInfo, "nameId"> & {
@@ -178,117 +188,375 @@ export type AddReleaseFormDraft = {
   relationToQueen: FormField<string>;
   comment: FormField<string>;
   conditionProblems: FormField<string>;
+  dbSources: FormField<ReadonlySet<DbSource>>;
 };
 
-export type AddReleaseFormPersistedState = {
-  form: AddReleaseFormDraft;
-  checkedDbSources: ReadonlySet<DbSource>;
+export type AddReleaseFormTabData = {
+  releaseBlueprint: ReleaseByIdResult;
+  dbSources?: ReadonlySet<DbSource> | undefined;
 };
 
-export const initialAddReleaseFormDraftValue = (
-  entry: AddReleaseFormEntry,
-  allFormats: ReleasesFormatListItem[],
-): AddReleaseFormDraft => {
-  const { mainName, originalReleaseDate, partOfQueenCollection } = entry;
+export const initialAddReleaseFormDraftValue = ({
+  entry,
+  allFormats,
+  allCountries,
+  tabData,
+}: {
+  entry: AddReleaseFormEntry;
+  allFormats: ReleasesFormatListItem[];
+  allCountries: CountryListItem[];
+  tabData?: AddReleaseFormTabData | undefined;
+}): AddReleaseFormDraft => {
+  const { releaseBlueprint, dbSources } = tabData ?? {};
 
   return {
-    name: {
-      value: defaultNameInput(mainName),
-      valid: true,
-      validationFn: validatePassThrough,
-      errors: initialAddReleaseFormFieldErrors.name,
-      notifications: [],
-    },
     releaseVersion: {
-      value: "",
+      value: releaseBlueprint?.releaseVersion ?? "",
       valid: true,
       validationFn: validateRequiredTrimmedText("Release version is required."),
       errors: initialAddReleaseFormFieldErrors.releaseVersion,
       notifications: [],
     },
+    name: {
+      value: resolveNameInput(entry, releaseBlueprint),
+      valid: true,
+      validationFn: validatePassThrough,
+      errors: initialAddReleaseFormFieldErrors.name,
+      notifications: [],
+    },
     discogsUrl: {
-      value: "https://www.discogs.com/release/<id>-...",
+      value:
+        releaseBlueprint?.discogsUrl ??
+        "https://www.discogs.com/release/<id>-...",
       valid: true,
       validationFn: validateDiscogsUrl,
       errors: initialAddReleaseFormFieldErrors.discogsUrl,
       notifications: [],
     },
     releaseDate: {
-      value: {
-        year: String(originalReleaseDate?.year ?? ""),
-        month: String(originalReleaseDate?.month ?? ""),
-        day: String(originalReleaseDate?.day ?? ""),
-      },
+      value: releaseDateToFormValue(
+        releaseBlueprint?.releaseDate ?? entry.originalReleaseDate,
+      ),
       valid: true,
-      validationFn: validateReleaseDate(originalReleaseDate),
+      validationFn: validateReleaseDate(entry.originalReleaseDate),
       errors: initialAddReleaseFormFieldErrors.releaseDate,
       notifications: [],
     },
     countries: {
-      value: {
-        madeIn: [emptyCountrySelection()],
-        printedIn: [],
-      },
+      value: countriesToFormValue(releaseBlueprint?.countries, allCountries),
       valid: true,
       validationFn: validateReleaseCountries,
       errors: initialAddReleaseFormFieldErrors.countries,
       notifications: [],
     },
     formats: {
-      value: [defaultFormatInputRow()],
+      value: formatsToFormValue(releaseBlueprint?.formats, allFormats),
       valid: true,
       validationFn: validateReleaseFormats(allFormats),
       errors: initialAddReleaseFormFieldErrors.formats,
       notifications: [],
     },
     catalogueNumbers: {
-      value: [defaultCatalogueNumberRow()],
+      value: catNumbersToFormValue(releaseBlueprint?.catalogueNumbers),
       valid: true,
       validationFn: validateReleaseCatNumbers,
       errors: initialAddReleaseFormFieldErrors.catalogueNumbers,
       notifications: [],
     },
     matrixRunout: {
-      value: { value: "", treatAsText: false },
+      value: matrixRunoutToFormValue(releaseBlueprint?.matrixRunout),
       valid: true,
       validationFn: validateReleaseMatrixRunout,
       errors: initialAddReleaseFormFieldErrors.matrixRunout,
       notifications: [],
     },
     selectedTags: {
-      value: new Set<string>(),
+      value: new Set<string>(
+        releaseBlueprint?.tags.map((tag) => tag.tagId) ?? [],
+      ),
       valid: true,
       validationFn: validatePassThrough,
       errors: initialAddReleaseFormFieldErrors.selectedTags,
       notifications: [],
     },
     partOfQueenCollection: {
-      value: partOfQueenCollection,
+      value:
+        releaseBlueprint?.partOfQueenCollection ?? entry.partOfQueenCollection,
       valid: true,
       validationFn: validatePassThrough,
       errors: initialAddReleaseFormFieldErrors.partOfQueenCollection,
       notifications: [],
     },
     relationToQueen: {
-      value: "",
+      value: releaseBlueprint?.relationToQueen ?? "",
       valid: true,
       validationFn: validateOptionalTrimmedText,
       errors: initialAddReleaseFormFieldErrors.relationToQueen,
       notifications: [],
     },
     comment: {
-      value: "",
+      value: releaseBlueprint?.comment ?? "",
       valid: true,
       validationFn: validateOptionalTrimmedText,
       errors: initialAddReleaseFormFieldErrors.comment,
       notifications: [],
     },
     conditionProblems: {
-      value: "",
+      value: releaseBlueprint?.conditionProblems ?? "",
       valid: true,
       validationFn: validateOptionalTrimmedText,
       errors: initialAddReleaseFormFieldErrors.conditionProblems,
       notifications: [],
     },
+    dbSources: {
+      value: dbSources ?? (new Set(ALL_DB_SOURCES) as ReadonlySet<DbSource>),
+      valid: true,
+      validationFn: validatePassThrough,
+      errors: initialAddReleaseFormFieldErrors.dbSources,
+      notifications: [],
+    },
   };
 };
+
+const buildCountryLookup = (allCountries: CountryListItem[]) => {
+  const codeNames = new Set(allCountries.map((country) => country.codeName));
+
+  return (values: string[]): CountrySelectionInput[] =>
+    values
+      .filter((value) => codeNames.has(value))
+      .map((codeName) => withNewId({ codeName }));
+};
+
+const resolveNameInput = (
+  entry: AddReleaseFormEntry,
+  release: ReleaseByIdResult | undefined,
+): AddReleaseFormNameInput => {
+  const alternativeName = release?.alternativeName;
+
+  const matchedAltName = alternativeName
+    ? entry.altNames.find((altName) => altName.name === alternativeName)
+    : null;
+
+  return matchedAltName
+    ? { nameId: matchedAltName.nameId, name: matchedAltName.name }
+    : defaultNameInput(entry.mainName);
+};
+
+const releaseDateToFormValue = (
+  releaseDate: GeneralizedDateFromDb,
+): GeneralizedDateFormInputValue => {
+  if (releaseDate === null || "error" in releaseDate) {
+    return { year: "", month: "", day: "" };
+  }
+
+  return {
+    year: String(releaseDate.year ?? ""),
+    month: String(releaseDate.month ?? ""),
+    day: String(releaseDate.day ?? ""),
+  };
+};
+
+const countriesToFormValue = (
+  countries: ReleaseByIdResult["countries"] | undefined,
+  allCountries: CountryListItem[],
+): AddReleaseFormCountries => {
+  if (countries == null || isCountriesJsonParsingError(countries)) {
+    return { madeIn: [emptyCountrySelection()], printedIn: [] };
+  }
+
+  const basic =
+    typeof countries === "object" && "CD" in countries
+      ? countries.CD
+      : countries;
+
+  const countryLookup = buildCountryLookup(allCountries);
+
+  if (typeof basic === "string" || Array.isArray(basic)) {
+    const madeIn = countryLookup(flattenStringOrArray(basic));
+
+    return {
+      madeIn: madeIn.length > 0 ? madeIn : [emptyCountrySelection()],
+      printedIn: [],
+    };
+  }
+
+  const madeIn = countryLookup(flattenStringOrArray(basic["made in"]));
+  const printedIn = countryLookup(flattenStringOrArray(basic["printed in"]));
+
+  return {
+    madeIn: madeIn.length > 0 ? madeIn : [emptyCountrySelection()],
+    printedIn,
+  };
+};
+
+const formatsToFormValue = (
+  releaseFormats: ReleaseFormatOfReleaseItem[] | undefined,
+  allFormats: ReleasesFormatListItem[],
+): AddReleaseFormFormatInputs => {
+  if (releaseFormats == null || releaseFormats.length === 0) {
+    return [defaultFormatInputRow()];
+  }
+
+  const formatIds = new Set(allFormats.map((format) => format.formatId));
+
+  const rows = releaseFormats
+    .map((format) => {
+      const { formatId, amount, pictureSleeve, jukeboxHole } = format;
+
+      if (!formatIds.has(formatId)) {
+        return undefined;
+      }
+
+      return withNewId({
+        formatId,
+        amount: String(amount),
+        pictureSleeve,
+        jukeboxHole,
+      });
+    })
+    .filter((row) => row !== undefined);
+
+  return rows.length > 0 ? rows : [defaultFormatInputRow()];
+};
+
+const catNumbersToFormValue = (
+  catalogueNumbers: ReleaseByIdResult["catalogueNumbers"] | undefined,
+): AddReleaseFormCatNumbersInputs => {
+  if (
+    catalogueNumbers == null ||
+    isCatNumbersJsonParsingError(catalogueNumbers)
+  ) {
+    return [defaultCatalogueNumberRow()];
+  }
+
+  const singles = Array.isArray(catalogueNumbers)
+    ? catalogueNumbers
+    : [catalogueNumbers];
+
+  const rows = singles
+    .map(catNumberSingleToRow)
+    .filter((row) => row !== undefined);
+
+  return rows.length > 0 ? rows : [defaultCatalogueNumberRow()];
+};
+
+const catNumberSingleToRow = (
+  single: ReleaseCatNumbersSingle,
+): CatalogueNumberRowState | undefined => {
+  const labelNames = [
+    ...("label" in single ? [single.label] : []),
+    ...("labels" in single ? single.labels : []),
+  ];
+  const labelInputValues =
+    labelNames.length > 0
+      ? labelNames.map((name) => withNewId({ name }))
+      : [emptyLabelInputValue()];
+
+  if ("cat_number" in single) {
+    return withNewId({
+      shape: "flat" as const,
+      labelInputValues,
+      catalogueNumberInputValues: [withNewId({ value: single.cat_number })],
+    });
+  }
+
+  if ("cat_numbers" in single) {
+    return catNumbersPropertyToRow(labelInputValues, single.cat_numbers);
+  }
+
+  if (labelNames.length === 0) {
+    return undefined;
+  }
+
+  return withNewId({
+    shape: "flat" as const,
+    labelInputValues,
+    catalogueNumberInputValues: [emptyCatalogueNumberInputValue()],
+  });
+};
+
+const catNumbersPropertyToRow = (
+  labelInputValues: CatalogueNumberRowState["labelInputValues"],
+  property: CatNumbersProperty,
+): CatalogueNumberRowState | undefined => {
+  if (typeof property === "string" || Array.isArray(property)) {
+    const values = flattenStringOrArray(property).map((value) =>
+      withNewId({ value }),
+    );
+
+    return withNewId({
+      shape: "flat" as const,
+      labelInputValues,
+      catalogueNumberInputValues:
+        values.length > 0 ? values : [emptyCatalogueNumberInputValue()],
+    });
+  }
+
+  if ("in UK" in property) {
+    return europeUkPropertyToRow(labelInputValues, property);
+  }
+
+  return undefined;
+};
+
+const europeUkPropertyToRow = (
+  labelInputValues: CatalogueNumberRowState["labelInputValues"],
+  property: Extract<CatNumbersProperty, { "in UK": string | string[] }>,
+): CatalogueNumberRowState =>
+  withNewId({
+    shape: "europeUk" as const,
+    labelInputValues,
+    europeCatalogueNumberInputValues: flattenStringOrArray(
+      property["in Europe"],
+    ).map((value) => withNewId({ value })),
+    ukCatalogueNumberInputValues: flattenStringOrArray(property["in UK"]).map(
+      (value) => withNewId({ value }),
+    ),
+  });
+
+const matrixRunoutToFormValue = (
+  matrixRunout: ReleaseByIdResult["matrixRunout"] | undefined,
+): AddReleaseFormMatrixRunoutDraft => {
+  if (matrixRunout == null || isMatrixRunoutJsonParsingError(matrixRunout)) {
+    return { value: "", treatAsText: false };
+  }
+
+  if (typeof matrixRunout === "string") {
+    return { value: matrixRunout, treatAsText: true };
+  }
+
+  return {
+    value: JSON.stringify(matrixRunout, null, 4),
+    treatAsText: false,
+  };
+};
+
+const isCountriesJsonParsingError = (
+  countries: ReleaseByIdResult["countries"],
+): countries is JsonParsingErrorData =>
+  typeof countries === "object" &&
+  countries !== null &&
+  !Array.isArray(countries) &&
+  "rawJson" in countries &&
+  "error" in countries &&
+  typeof countries.error === "string";
+
+const isCatNumbersJsonParsingError = (
+  catalogueNumbers: ReleaseByIdResult["catalogueNumbers"],
+): catalogueNumbers is JsonParsingErrorData =>
+  typeof catalogueNumbers === "object" &&
+  catalogueNumbers !== null &&
+  !Array.isArray(catalogueNumbers) &&
+  "rawJson" in catalogueNumbers &&
+  "error" in catalogueNumbers &&
+  typeof catalogueNumbers.error === "string";
+
+const isMatrixRunoutJsonParsingError = (
+  matrixRunout: ReleaseByIdResult["matrixRunout"],
+): matrixRunout is JsonParsingErrorData =>
+  matrixRunout !== null &&
+  typeof matrixRunout === "object" &&
+  !Array.isArray(matrixRunout) &&
+  "rawJson" in matrixRunout &&
+  "error" in matrixRunout &&
+  typeof matrixRunout.error === "string";

@@ -1,27 +1,42 @@
-import type { FC } from "react";
+import { type FC } from "react";
 
 import styles from "./ReleaseCountries.module.css";
 
 import { DetailField } from "../DetailField";
 
 import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
+import type { CountryListItem } from "@/types/countries";
 import type { ReleaseByIdResult } from "@/types/releases";
 import { joinStringOrArray } from "@/utils/common";
+import { countryCodesToNamesInReleaseCountries } from "@/utils/countries";
 import type { CountriesBasic } from "@/validation";
 
 type ReleaseCountriesProps = {
-  countries: ReleaseByIdResult["countries"];
+  releaseCountries: ReleaseByIdResult["countries"];
+  allCountries: CountryListItem[];
 };
 
-const ReleaseCountries: FC<ReleaseCountriesProps> = ({ countries }) => (
-  <DetailField label={calcLabel(countries)}>
-    <ReleaseCountriesInner countries={countries} />
-  </DetailField>
-);
+const ReleaseCountries: FC<ReleaseCountriesProps> = ({
+  releaseCountries,
+  allCountries,
+}) => {
+  const displayCountries = resolveReleaseCountriesForDisplay(
+    releaseCountries,
+    allCountries,
+  );
+
+  return (
+    <DetailField label={calcLabel(displayCountries)}>
+      <ReleaseCountriesInner countries={displayCountries} />
+    </DetailField>
+  );
+};
 
 export default ReleaseCountries;
 
-const ReleaseCountriesInner: FC<ReleaseCountriesProps> = ({ countries }) => {
+const ReleaseCountriesInner: FC<{
+  countries: ReleaseByIdResult["countries"];
+}> = ({ countries }) => {
   if (countries === null) {
     return "(Unknown)";
   }
@@ -81,6 +96,29 @@ const CountriesBasicBlock: FC<CountriesBasicBlockProps> = ({
       </DetailField>
     </div>
   );
+};
+
+const resolveReleaseCountriesForDisplay = (
+  releaseCountries: ReleaseByIdResult["countries"],
+  allCountries: CountryListItem[],
+): ReleaseByIdResult["countries"] => {
+  if (releaseCountries === null) {
+    return null;
+  }
+
+  if (typeof releaseCountries === "object" && "rawJson" in releaseCountries) {
+    return releaseCountries;
+  }
+
+  const codeToName = new Map(
+    allCountries.map((country) => [country.codeName, country.name]),
+  );
+
+  try {
+    return countryCodesToNamesInReleaseCountries(releaseCountries, codeToName);
+  } catch {
+    return releaseCountries;
+  }
 };
 
 const calcLabel = (value: unknown) =>

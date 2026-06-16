@@ -7,6 +7,7 @@ import ReleaseFormatItem from "./ReleaseFormatItem";
 import ReleaseMatrixRunout from "./ReleaseMatrixRunout";
 
 import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
+import type { CountryListItem } from "@/types/countries";
 import type { EntryByIdResult } from "@/types/entries";
 import type { ReleaseByIdResult } from "@/types/releases";
 import { formatGeneralizedDate } from "@/utils/date";
@@ -14,9 +15,14 @@ import { formatGeneralizedDate } from "@/utils/date";
 type ReleaseDetailsProps = {
   entry: EntryByIdResult;
   release: ReleaseByIdResult;
+  allCountries: CountryListItem[];
 };
 
-const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => {
+const ReleaseDetails: FC<ReleaseDetailsProps> = ({
+  entry,
+  release,
+  allCountries,
+}) => {
   const {
     releaseVersion,
     releaseDate,
@@ -76,15 +82,18 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({ entry, release }) => {
         <div className={styles.detailBlock}>
           <span className={styles.detailLabel}>Tags:</span>
           <ul className={styles.tagsList}>
-            {tags.map((tag) => (
-              <li key={tag} className={styles.tagsListItem}>
+            {tags.map(({ tagId, tag }) => (
+              <li key={tagId} className={styles.tagsListItem}>
                 {tag}
               </li>
             ))}
           </ul>
         </div>
       )}
-      <ReleaseCountries countries={countries} />
+      <ReleaseCountries
+        releaseCountries={countries}
+        allCountries={allCountries}
+      />
       {partOfQueenCollection && !entry.partOfQueenCollection && (
         <p className={styles.detailField}>
           <span className={styles.detailLabelItalic}>

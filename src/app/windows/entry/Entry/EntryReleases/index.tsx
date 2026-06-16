@@ -8,15 +8,20 @@ import api from "../../api";
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import type { DbSource } from "@/db/db-source";
+import type { CountryListItem } from "@/types/countries";
 import type { EntryByIdResult } from "@/types/entries";
-import type { EntryRelease } from "@/types/releases";
+import type { EntryRelease, ReleaseByIdResult } from "@/types/releases";
 
 type EntryReleasesProps = {
   entry: EntryByIdResult;
   dbSource: DbSource;
+  allCountries: CountryListItem[];
+  countriesLoading: boolean;
+  countriesLoadFailed: boolean;
   latestAddedReleaseId: string | undefined;
   latestCreateNotifications: string[];
   latestCreatedErrors: string[];
+  onUseReleaseAsBlueprint: (releaseBlueprint: ReleaseByIdResult) => void;
   onDismissCreateNotifications: () => void;
   onDismissCreatedErrors: () => void;
 };
@@ -28,9 +33,13 @@ const DELETE_ERRORS_ID = "entry-releases-delete-errors";
 const EntryReleases: FC<EntryReleasesProps> = ({
   entry,
   dbSource,
+  allCountries,
+  countriesLoading,
+  countriesLoadFailed,
   latestAddedReleaseId,
   latestCreateNotifications,
   latestCreatedErrors,
+  onUseReleaseAsBlueprint,
   onDismissCreateNotifications,
   onDismissCreatedErrors,
 }) => {
@@ -101,12 +110,16 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     setLatestDeletedErrors([]);
   };
 
-  if (loading) {
+  if (loading || countriesLoading) {
     return <p className={styles.emptyState}>Loading releases&hellip;</p>;
   }
 
-  if (loadFailed) {
-    return <p className={styles.emptyState}>Could not load releases.</p>;
+  if (loadFailed || countriesLoadFailed) {
+    return (
+      <p className={styles.emptyState}>
+        Could not load releases or related data.
+      </p>
+    );
   }
 
   const createNotifications = latestCreateNotifications.map((notification) => ({
@@ -204,7 +217,9 @@ const EntryReleases: FC<EntryReleasesProps> = ({
           entry={entry}
           dbSource={dbSource}
           releases={releases}
+          allCountries={allCountries}
           latestAddedReleaseId={latestAddedReleaseId}
+          onUseReleaseAsBlueprint={onUseReleaseAsBlueprint}
           onReleaseDeleted={handleReleaseDeleted}
         />
       </div>

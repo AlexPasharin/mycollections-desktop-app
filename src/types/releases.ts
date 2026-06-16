@@ -1,6 +1,6 @@
 import type { Insertable, Selectable } from "kysely";
 
-import type { TagId } from "./tags";
+import type { TagId, TagListItem } from "./tags";
 
 import type { DbSource } from "@/db/db-source";
 import type { GeneralizedDateFromDb } from "@/types/date";
@@ -21,6 +21,7 @@ export type ReleaseFormatOfReleaseItem = {
   pictureSleeve: boolean;
   speed: unknown;
   amount: number;
+  formatId: string;
   shortName: string;
 };
 
@@ -51,7 +52,7 @@ export type ReleaseByIdResult = Omit<
   | "releaseDate"
 > & {
   releaseDate: GeneralizedDateFromDb;
-  tags: string[];
+  tags: TagListItem[];
   formats: ReleaseFormatOfReleaseItem[];
   alternativeName: string | null;
   countries: ReleaseCountries | JsonParsingErrorData;

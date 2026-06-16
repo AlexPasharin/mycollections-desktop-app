@@ -21,13 +21,13 @@ import { orPlaceholder } from "@/utils/form";
 type AddReleaseFormPreviewProps = {
   form: AddReleaseFormDraft;
   allFormats: ReleasesFormatListItem[];
-  tags: TagListItem[];
+  tagsAvailableForReleases: TagListItem[];
 };
 
 const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
   form,
   allFormats,
-  tags,
+  tagsAvailableForReleases,
 }) => {
   const formatShortNameById = new Map(
     allFormats.map((format) => [format.formatId, format.shortName] as const),
@@ -35,7 +35,7 @@ const AddReleaseFormPreview: FC<AddReleaseFormPreviewProps> = ({
 
   const releaseDate = generalizedDateToString(form.releaseDate.value);
   const discogsUrl = nullIfEmpty(form.discogsUrl.value);
-  const selectedTagNames = tags
+  const selectedTagNames = tagsAvailableForReleases
     .filter((t) => form.selectedTags.value.has(t.tagId))
     .map((t) => t.tag);
   const comment = nullIfEmpty(form.comment.value);

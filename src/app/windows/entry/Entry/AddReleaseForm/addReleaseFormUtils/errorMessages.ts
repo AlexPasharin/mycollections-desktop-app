@@ -67,6 +67,7 @@ export const initialAddReleaseFormFieldErrors = {
   selectedTags: [],
   partOfQueenCollection: [],
   relationToQueen: [],
+  dbSources: [],
 };
 
 export type CatalogueNumbersInputField =

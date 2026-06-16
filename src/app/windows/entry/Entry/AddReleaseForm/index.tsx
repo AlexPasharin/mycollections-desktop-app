@@ -1,62 +1,71 @@
-import { useEffect, useState, type FC } from "react";
+import {
+  useEffect,
+  useMemo,
+  type Dispatch,
+  type FC,
+  type SetStateAction,
+} from "react";
 
 import AddReleaseForm, { type AddReleaseFormProps } from "./AddReleaseForm";
 import styles from "./AddReleaseForm.module.css";
+import {
+  initialAddReleaseFormDraftValue,
+  type AddReleaseFormDraft,
+  type AddReleaseFormTabData,
+} from "./addReleaseFormUtils/formValues";
 
-import api from "@/app/windows/entry/api";
-import type { DbSource } from "@/db/db-source";
-import type { CountryListItem } from "@/types/countries";
-import type { ReleasesFormatListItem } from "@/types/formats";
-import type { LabelListItem } from "@/types/labels";
+import type { TagListItem } from "@/types/tags";
 
 type AddReleaseFormWrapperProps = Omit<
   AddReleaseFormProps,
-  "allFormats" | "labels" | "sortedTagEntries" | "allCountries"
+  "form" | "setForm" | "tagsAvailableForReleases"
 > & {
-  dbSource: DbSource;
-  tagsLoading: boolean;
-  tagsLoadFailed: boolean;
+  form: AddReleaseFormDraft | null;
+  onFormChange: Dispatch<SetStateAction<AddReleaseFormDraft | null>>;
+  tabData?: AddReleaseFormTabData | undefined;
+  referenceDataLoading: boolean;
+  referenceDataLoadFailed: boolean;
+  tags: TagListItem[];
 };
 
 const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = ({
-  dbSource,
+  referenceDataLoading,
+  referenceDataLoadFailed,
+  form,
+  onFormChange,
+  tabData,
+  entry,
   tags,
-  tagsLoading,
-  tagsLoadFailed,
+  allFormats,
+  allCountries,
   ...formProps
 }) => {
-  const [releasesFormats, setReleasesFormats] = useState<
-    ReleasesFormatListItem[]
-  >([]);
-  const [labels, setLabels] = useState<LabelListItem[]>([]);
-  const [countries, setCountries] = useState<CountryListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [dataLoadingFailed, setDataLoadingFailed] = useState(false);
+  const tagsAvailableForReleases = useMemo(
+    () =>
+      tags.filter(
+        (tag) => !entry.tags.some((entryTag) => entryTag.tagId === tag.tagId),
+      ),
+    [tags, entry.tags],
+  );
+
+  const dataReady = !referenceDataLoading && !referenceDataLoadFailed;
 
   useEffect(() => {
-    Promise.all([
-      api.fetchReleasesFormats(dbSource),
-      api.fetchLabels(dbSource),
-      api.fetchCountries(dbSource),
-    ])
-      .then(([formatsData, labelsData, countriesData]) => {
-        setReleasesFormats(formatsData);
-        setLabels(labelsData);
-        setCountries(countriesData);
-      })
-      .catch((error: unknown) => {
-        console.error(
-          "Error fetching release formats, labels, or countries",
-          error,
-        );
-        setDataLoadingFailed(true);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [dbSource]);
+    if (!dataReady || form !== null) {
+      return;
+    }
 
-  if (loading || tagsLoading) {
+    onFormChange(
+      initialAddReleaseFormDraftValue({
+        entry,
+        allFormats,
+        allCountries,
+        tabData,
+      }),
+    );
+  }, [dataReady, form, onFormChange, tabData, entry, allFormats, allCountries]);
+
+  if (referenceDataLoading || form === null) {
     return (
       <div className={styles.section}>
         <p className={styles.formatsLoadState}>Loading&hellip;</p>
@@ -64,7 +73,7 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = ({
     );
   }
 
-  if (dataLoadingFailed || tagsLoadFailed) {
+  if (referenceDataLoadFailed) {
     return (
       <div className={styles.section}>
         <p className={styles.formatsLoadState} role="alert">
@@ -77,13 +86,20 @@ const AddReleaseFormWrapper: FC<AddReleaseFormWrapperProps> = ({
   return (
     <AddReleaseForm
       {...formProps}
-      dbSource={dbSource}
-      allFormats={releasesFormats}
-      labels={labels}
-      tags={tags.filter(
-        (t) => !formProps.entry.tags.some((t2) => t2.tagId === t.tagId),
-      )}
-      allCountries={countries}
+      entry={entry}
+      form={form}
+      setForm={(update) => {
+        onFormChange((prev) => {
+          if (prev === null) {
+            return prev;
+          }
+
+          return typeof update === "function" ? update(prev) : update;
+        });
+      }}
+      allFormats={allFormats}
+      allCountries={allCountries}
+      tagsAvailableForReleases={tagsAvailableForReleases}
     />
   );
 };
