@@ -19,7 +19,7 @@ import type {
 
 type EntryReleaseProps = {
   entry: EntryByIdResult;
-  dbSource: DbSource;
+  primaryDbSource: DbSource;
   release: EntryReleaseRow;
   allCountries: CountryListItem[];
   isExpanded: boolean;
@@ -36,7 +36,7 @@ type EntryReleaseProps = {
 
 const EntryRelease: FC<EntryReleaseProps> = ({
   entry,
-  dbSource,
+  primaryDbSource,
   release,
   allCountries,
   isExpanded,
@@ -215,7 +215,7 @@ const EntryRelease: FC<EntryReleaseProps> = ({
               heading="Remove from databases"
               headingId="delete-release-db-sources-heading"
               idPrefix="delete-release-db-source"
-              activeDbSource={dbSource}
+              activeDbSource={primaryDbSource}
               checkedSources={checkedDbSources}
               onToggle={handleToggleDbSource}
             />

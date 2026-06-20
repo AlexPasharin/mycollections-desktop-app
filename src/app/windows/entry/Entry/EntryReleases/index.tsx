@@ -14,7 +14,7 @@ import type { EntryRelease, ReleaseByIdResult } from "@/types/releases";
 
 type EntryReleasesProps = {
   entry: EntryByIdResult;
-  dbSource: DbSource;
+  primaryDbSource: DbSource;
   allCountries: CountryListItem[];
   countriesLoading: boolean;
   countriesLoadFailed: boolean;
@@ -40,7 +40,7 @@ const DELETE_ERRORS_ID = "entry-releases-delete-errors";
 
 const EntryReleases: FC<EntryReleasesProps> = ({
   entry,
-  dbSource,
+  primaryDbSource,
   allCountries,
   countriesLoading,
   countriesLoadFailed,
@@ -75,7 +75,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     setReleases(undefined);
 
     api
-      .getEntryReleases(entry.entryId, dbSource)
+      .getEntryReleases(entry.entryId, primaryDbSource)
       .then((data) => {
         if (token !== fetchTokenRef.current) {
           return;
@@ -95,7 +95,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
         setReleases([]);
         setLoading(false);
       });
-  }, [entry.entryId, dbSource]);
+  }, [entry.entryId, primaryDbSource]);
 
   // Fetches on mount; remounting (e.g. after visiting "Add release") loads a fresh list.
   useEffect(() => {
@@ -270,7 +270,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
       <div className={styles.field}>
         <EntryReleasesList
           entry={entry}
-          dbSource={dbSource}
+          primaryDbSource={primaryDbSource}
           releases={releases}
           allCountries={allCountries}
           latestAddedReleaseId={latestAddedReleaseId}

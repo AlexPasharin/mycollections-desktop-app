@@ -16,7 +16,7 @@ import { updateImmutableSet } from "@/utils/immutableSet";
 
 type EntryReleasesListProps = {
   entry: EntryByIdResult;
-  dbSource: DbSource;
+  primaryDbSource: DbSource;
   releases: EntryReleaseRow[];
   allCountries: CountryListItem[];
   latestAddedReleaseId: string | undefined;
@@ -28,7 +28,7 @@ type EntryReleasesListProps = {
 
 const EntryReleasesList: FC<EntryReleasesListProps> = ({
   entry,
-  dbSource,
+  primaryDbSource,
   releases,
   allCountries,
   latestAddedReleaseId,
@@ -88,7 +88,7 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
     }
 
     api
-      .getReleaseById(releaseId, dbSource)
+      .getReleaseById(releaseId, primaryDbSource)
       .then((row) => {
         if (tokens.get(releaseId) !== token) {
           return;
@@ -128,7 +128,7 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
         <EntryRelease
           key={r.releaseId}
           entry={entry}
-          dbSource={dbSource}
+          primaryDbSource={primaryDbSource}
           release={r}
           allCountries={allCountries}
           isExpanded={expandedIds.has(r.releaseId)}

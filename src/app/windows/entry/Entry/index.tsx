@@ -27,7 +27,7 @@ import { sanitizeReleaseDate } from "@/utils/date";
 
 type EntryProps = {
   entry: EntryByIdResult;
-  dbSource: DbSource;
+  primaryDbSource: DbSource;
   onEntryUpdated: (entry: EntryByIdResult) => void;
 };
 
@@ -66,7 +66,7 @@ const EDIT_ENTRY_PANEL_ID = "edit-entry-panel";
 const EDIT_ENTRY_UPDATE_NOTIFICATIONS_ID = "edit-entry-update-notifications";
 const EDIT_ENTRY_UPDATE_ERRORS_ID = "edit-entry-update-errors";
 
-const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
+const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
   const [activeTab, setActiveTab] = useState<EntryTab>(
     entryTabInitialState("releaseUpsertForm"),
   );
@@ -228,7 +228,7 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
   useEffect(() => {
     if (
       (activeTabId !== "releaseUpsertForm" && activeTabId !== "editEntry") ||
-      tagsDbSourceRef.current === dbSource
+      tagsDbSourceRef.current === primaryDbSource
     ) {
       return;
     }
@@ -238,14 +238,14 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
     setTagsLoadFailed(false);
 
     api
-      .fetchTags(dbSource)
+      .fetchTags(primaryDbSource)
       .then((tagsData) => {
         if (token !== fetchTagsTokenRef.current) {
           return;
         }
 
         setTags(tagsData);
-        tagsDbSourceRef.current = dbSource;
+        tagsDbSourceRef.current = primaryDbSource;
         setTagsLoading(false);
       })
       .catch((error: unknown) => {
@@ -262,12 +262,12 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
     return () => {
       fetchTagsTokenRef.current += 1;
     };
-  }, [activeTabId, dbSource]);
+  }, [activeTabId, primaryDbSource]);
 
   useEffect(() => {
     if (
       (activeTabId !== "releaseUpsertForm" && activeTabId !== "releases") ||
-      countriesDbSourceRef.current === dbSource
+      countriesDbSourceRef.current === primaryDbSource
     ) {
       return;
     }
@@ -277,14 +277,14 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
     setCountriesLoadFailed(false);
 
     api
-      .fetchCountries(dbSource)
+      .fetchCountries(primaryDbSource)
       .then((countriesData) => {
         if (token !== fetchCountriesTokenRef.current) {
           return;
         }
 
         setAllCountries(countriesData);
-        countriesDbSourceRef.current = dbSource;
+        countriesDbSourceRef.current = primaryDbSource;
         setCountriesLoading(false);
       })
       .catch((error: unknown) => {
@@ -301,12 +301,12 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
     return () => {
       fetchCountriesTokenRef.current += 1;
     };
-  }, [activeTabId, dbSource]);
+  }, [activeTabId, primaryDbSource]);
 
   useEffect(() => {
     if (
       activeTabId !== "releaseUpsertForm" ||
-      addReleaseReferenceDataDbSourceRef.current === dbSource
+      addReleaseReferenceDataDbSourceRef.current === primaryDbSource
     ) {
       return;
     }
@@ -315,7 +315,10 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
     setAddReleaseReferenceDataLoading(true);
     setAddReleaseReferenceDataLoadFailed(false);
 
-    Promise.all([api.fetchReleasesFormats(dbSource), api.fetchLabels(dbSource)])
+    Promise.all([
+      api.fetchReleasesFormats(primaryDbSource),
+      api.fetchLabels(primaryDbSource),
+    ])
       .then(([formatsData, labelsData]) => {
         if (token !== fetchAddReleaseReferenceDataTokenRef.current) {
           return;
@@ -323,7 +326,7 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
 
         setAllFormats(formatsData);
         setLabels(labelsData);
-        addReleaseReferenceDataDbSourceRef.current = dbSource;
+        addReleaseReferenceDataDbSourceRef.current = primaryDbSource;
       })
       .catch((error: unknown) => {
         console.error("Error fetching release formats or labels", error);
@@ -345,7 +348,7 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
     return () => {
       fetchAddReleaseReferenceDataTokenRef.current += 1;
     };
-  }, [activeTabId, dbSource]);
+  }, [activeTabId, primaryDbSource]);
 
   return (
     <div>
@@ -367,7 +370,7 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
             children: (
               <EntryReleases
                 entry={entry}
-                dbSource={dbSource}
+                primaryDbSource={primaryDbSource}
                 allCountries={allCountries}
                 countriesLoading={countriesLoading}
                 countriesLoadFailed={countriesLoadFailed}
@@ -398,7 +401,7 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
             children: (
               <ReleaseForm
                 entry={sanitizedEntry}
-                dbSource={dbSource}
+                primaryDbSource={primaryDbSource}
                 tags={tags}
                 allFormats={allFormats}
                 labels={labels}
@@ -447,7 +450,7 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
                 />
                 <EditEntryForm
                   entry={sanitizedEntry}
-                  dbSource={dbSource}
+                  primaryDbSource={primaryDbSource}
                   tags={tags}
                   tagsLoading={tagsLoading}
                   tagsLoadFailed={tagsLoadFailed}

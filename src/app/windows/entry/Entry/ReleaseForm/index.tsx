@@ -37,7 +37,7 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
     tags,
     allFormats,
     allCountries,
-    dbSource,
+    primaryDbSource,
     labels,
   } = props;
 
@@ -117,7 +117,7 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
   return (
     <ReleaseForm
       entry={entry}
-      dbSource={dbSource}
+      primaryDbSource={primaryDbSource}
       labels={labels}
       allFormats={allFormats}
       allCountries={allCountries}

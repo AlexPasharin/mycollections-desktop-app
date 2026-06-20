@@ -70,7 +70,7 @@ export type ReleaseFormTabData =
 
 export type ReleaseFormProps = {
   entry: ReleaseFormEntry;
-  dbSource: DbSource;
+  primaryDbSource: DbSource;
   allFormats: ReleasesFormatListItem[];
   labels: LabelListItem[];
   tagsAvailableForReleases: TagListItem[];
@@ -96,7 +96,7 @@ const RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID =
 
 const ReleaseForm: FC<ReleaseFormProps> = ({
   entry,
-  dbSource,
+  primaryDbSource,
   onClearFormState,
   allFormats,
   labels,
@@ -521,8 +521,8 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
 
     // re-order targets to ensure the primary source comes first
     const orderedTargets = [
-      dbSource,
-      ...Array.from(dbSources).filter((source) => source !== dbSource),
+      primaryDbSource,
+      ...Array.from(dbSources).filter((source) => source !== primaryDbSource),
     ];
     const savePromise = isUpdateMode
       ? updateReleasesAcrossDbSources(
@@ -984,7 +984,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
                     ? "update-release-db-source"
                     : "create-release-db-source"
                 }
-                activeDbSource={dbSource}
+                activeDbSource={primaryDbSource}
                 checkedSources={formState.dbSources.value}
                 onToggle={handleToggleDbSource}
               />
