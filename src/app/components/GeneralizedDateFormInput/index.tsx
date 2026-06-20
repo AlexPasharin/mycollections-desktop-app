@@ -1,7 +1,5 @@
 import { type FC } from "react";
 
-import styles from "./GeneralizedDateFormInput.module.css";
-
 import { ENGLISH_MONTH_NAMES, MIN_CALENDAR_YEAR } from "@/constants";
 import type { GeneralizedDate } from "@/types/date";
 import {
@@ -75,14 +73,14 @@ const GeneralizedDateFormInput: FC<GeneralizedDateFormInputProps> = ({
       : undefined;
 
   return (
-    <div className={styles.row}>
-      <div className={styles.segment}>
-        <label className={styles.label} htmlFor={YEAR_INPUT_ID}>
+    <div className="flex w-full min-w-0 flex-row flex-nowrap items-end gap-[0.65rem]">
+      <div className="flex min-w-0 flex-1 basis-0 flex-col gap-[0.35rem]">
+        <label className="text-[0.92em] font-semibold" htmlFor={YEAR_INPUT_ID}>
           Year
         </label>
         <input
           id={YEAR_INPUT_ID}
-          className={styles.input}
+          className="box-border w-full min-w-0 px-2 py-[0.35rem] text-[1em]"
           type="number"
           value={year}
           min={minYear}
@@ -103,13 +101,13 @@ const GeneralizedDateFormInput: FC<GeneralizedDateFormInputProps> = ({
           autoComplete="off"
         />
       </div>
-      <div className={styles.segment}>
-        <label className={styles.label} htmlFor={MONTH_INPUT_ID}>
+      <div className="flex min-w-0 flex-1 basis-0 flex-col gap-[0.35rem]">
+        <label className="text-[0.92em] font-semibold" htmlFor={MONTH_INPUT_ID}>
           Month
         </label>
         <select
           id={MONTH_INPUT_ID}
-          className={styles.input}
+          className="box-border w-full min-w-0 px-2 py-[0.35rem] text-[1em]"
           value={monthSelectValue}
           onChange={(e) => {
             const nextMonth = e.target.value;
@@ -138,13 +136,13 @@ const GeneralizedDateFormInput: FC<GeneralizedDateFormInputProps> = ({
           ))}
         </select>
       </div>
-      <div className={styles.segment}>
-        <label className={styles.label} htmlFor={DAY_INPUT_ID}>
+      <div className="flex min-w-0 flex-1 basis-0 flex-col gap-[0.35rem]">
+        <label className="text-[0.92em] font-semibold" htmlFor={DAY_INPUT_ID}>
           Day
         </label>
         <input
           id={DAY_INPUT_ID}
-          className={styles.input}
+          className="box-border w-full min-w-0 px-2 py-[0.35rem] text-[1em]"
           type="number"
           min={minDay}
           max={maxDay}

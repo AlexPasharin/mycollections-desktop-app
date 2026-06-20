@@ -1,15 +1,13 @@
 import type { FC, ReactNode } from "react";
 
-import styles from "./FormPreviewField.module.css";
-
 export type FormPreviewFieldProps = {
   label: string;
   children: ReactNode;
 };
 
 const FormPreviewField: FC<FormPreviewFieldProps> = ({ label, children }) => (
-  <p className={styles.field}>
-    <span className={styles.label}>{label}:</span>
+  <p className="m-0">
+    <span className="mr-[0.4rem] font-semibold">{label}:</span>
     {children}
   </p>
 );
@@ -20,8 +18,8 @@ export const FormPreviewBlockField: FC<FormPreviewFieldProps> = ({
   label,
   children,
 }) => (
-  <div className={styles.field}>
-    <span className={styles.labelBlock}>{label}:</span>
+  <div className="m-0">
+    <span className="mb-1 block font-semibold">{label}:</span>
     {children}
   </div>
 );

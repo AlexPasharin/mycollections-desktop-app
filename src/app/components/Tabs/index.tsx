@@ -1,7 +1,5 @@
 import type { ReactNode } from "react";
 
-import styles from "./Tabs.module.css";
-
 export type TabItem<T extends string> = {
   id: T;
   tabId: string;
@@ -17,14 +15,17 @@ export type TabsProps<T extends string> = {
   tabs: TabItem<T>[];
 };
 
+const tabBaseClassName =
+  "m-0 mb-[-1px] cursor-pointer appearance-none border-0 border-b-2 bg-transparent px-3 py-2 [font-family:inherit] [font-size:inherit] [line-height:inherit] text-[#555] hover:text-[#111]";
+
 const Tabs = <T extends string>({
   ariaLabel,
   activeTab,
   onTabChange,
   tabs,
 }: TabsProps<T>) => (
-  <section className={styles.tabs} aria-label={ariaLabel}>
-    <div className={styles.tabList} role="tablist">
+  <section className="mt-3" aria-label={ariaLabel}>
+    <div className="flex flex-wrap gap-0 border-b border-[#ccc]" role="tablist">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
 
@@ -37,7 +38,9 @@ const Tabs = <T extends string>({
             aria-selected={isActive}
             aria-controls={tab.panelId}
             className={
-              isActive ? `${styles.tab} ${styles.tabActive}` : styles.tab
+              isActive
+                ? `${tabBaseClassName} border-b-[currentColor] font-semibold text-[#111]`
+                : `${tabBaseClassName} border-b-transparent [font-weight:inherit]`
             }
             onClick={() => onTabChange(tab.id)}
           >
@@ -58,7 +61,7 @@ const Tabs = <T extends string>({
           id={tab.panelId}
           role="tabpanel"
           aria-labelledby={tab.tabId}
-          className={styles.tabPanel}
+          className="mt-4"
         >
           {tab.children}
         </div>
