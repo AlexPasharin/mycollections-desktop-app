@@ -1,7 +1,5 @@
 import type { FC } from "react";
 
-import styles from "./FormFieldNotifications.module.css";
-
 export type FormFieldNotificationsProps = {
   id: string;
   messages: { notification: string }[] | undefined;
@@ -16,11 +14,11 @@ const FormFieldNotifications: FC<FormFieldNotificationsProps> = ({
   }
 
   return (
-    <div id={id} className={styles.root} role="status">
+    <div id={id} className="flex flex-col gap-[0.2rem]" role="status">
       {messages.map((item, index) => (
         <p
           key={`${item.notification}-${String(index)}`}
-          className={styles.line}
+          className="m-0 text-[0.85em] text-[#2f7d32]"
         >
           {item.notification}
         </p>

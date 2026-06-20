@@ -1,7 +1,5 @@
 import type { FC } from "react";
 
-import styles from "./AddTagsFormSection.module.css";
-
 import type { TagId, TagListItem } from "@/types/tags";
 
 type AddTagsFormSectionProps = {
@@ -30,17 +28,23 @@ const AddTagsFormSection: FC<AddTagsFormSectionProps> = ({
   );
 
   return (
-    <div className={styles.section}>
-      <h2 className={styles.heading}>Tags</h2>
+    <div className="mt-0 mb-[0.65rem]">
+      <h2 className="mb-3 text-[1em] leading-[1.35] font-semibold">Tags</h2>
 
       {selectedTags.length > 0 && (
-        <ul className={styles.selectedList} aria-label="Selected tags">
+        <ul
+          className="mb-3 flex list-none flex-wrap gap-[0.4rem] p-0"
+          aria-label="Selected tags"
+        >
           {selectedTags.map(({ tagId, tag }) => (
-            <li key={tagId} className={styles.selectedItem}>
+            <li
+              key={tagId}
+              className="inline-flex items-center gap-[0.35rem] rounded bg-black/6 px-2 py-1 text-[0.92em]"
+            >
               <span>{tag}</span>
               <button
                 type="button"
-                className={styles.removeTag}
+                className="cursor-pointer border-none bg-transparent px-[0.35rem] py-[0.1rem] text-[0.85em] text-[#1a5fb4] underline hover:text-[#0d3d82]"
                 onClick={() => {
                   onRemoveTag(tagId);
                 }}
@@ -52,13 +56,16 @@ const AddTagsFormSection: FC<AddTagsFormSectionProps> = ({
         </ul>
       )}
 
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="add-release-tag-select">
+      <div className="mb-[0.65rem] flex flex-col gap-[0.35rem]">
+        <label
+          className="text-[0.92em] font-semibold"
+          htmlFor="add-release-tag-select"
+        >
           Add tag
         </label>
         <select
           id="add-release-tag-select"
-          className={styles.select}
+          className="box-border w-full max-w-96 px-2 py-[0.35rem] text-[1em]"
           defaultValue=""
           onChange={(e) => {
             const { value } = e.target;
