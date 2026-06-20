@@ -193,7 +193,7 @@ const EntryRelease: FC<EntryReleaseProps> = ({
                       onClick={() => onUseAsBlueprint(releaseDetails)}
                       aria-label={`Use release ${release.version} as a blueprint to add a new release`}
                     >
-                      use a blueprint to add a new release
+                      Use as a blueprint to add a new release
                     </button>
                   </div>
                 </>
