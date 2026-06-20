@@ -66,7 +66,7 @@ describe("initialReleaseFormStateValue", () => {
       entry,
       allFormats,
       allCountries,
-      tabData: { mode: "create", releaseBlueprint: release },
+      releaseBlueprint: release,
     });
 
     expect(draft.releaseVersion.value).toBe("UK first press");
