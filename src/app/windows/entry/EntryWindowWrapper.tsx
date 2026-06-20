@@ -2,7 +2,6 @@ import { type FC, useEffect, useState } from "react";
 
 import api from "./api";
 import Entry from "./Entry";
-import styles from "./EntryWindowWrapper.module.css";
 
 import DbSourceSelect from "@/app/components/DbSourceSelect";
 import type { DbSource } from "@/db/db-source";
@@ -60,7 +59,7 @@ const EntryWindowWrapper: FC = () => {
 
   return (
     <div>
-      <header className={styles.header}>
+      <header className="mb-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3">
         <DbSourceSelect
           id="entry-db-source"
           value={dbSource}
