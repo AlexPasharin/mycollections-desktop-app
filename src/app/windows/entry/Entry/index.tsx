@@ -8,7 +8,7 @@ import EntryReleases from "./EntryReleases";
 import ReleaseForm from "./ReleaseForm";
 import {
   type ReleaseFormState,
-  type ReleaseFormTabData,
+  type ReleaseFormTabSharedData,
 } from "./ReleaseForm/releaseFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
@@ -16,6 +16,7 @@ import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import Tabs from "@/app/components/Tabs";
 import api from "@/app/windows/entry/api";
 import type { DbSource } from "@/db/db-source";
+import { ALL_DB_SOURCES } from "@/db/db-source-options";
 import type { CountryListItem } from "@/types/countries";
 import type { EntryByIdResult } from "@/types/entries";
 import type { ReleasesFormatListItem } from "@/types/formats";
@@ -33,13 +34,27 @@ type EntryProps = {
 type EntryTab =
   | { id: "releases" | "editEntry"; data?: never }
   | {
-      id: "addRelease";
-      data?: ReleaseFormTabData;
+      id: "releaseUpsertForm";
+      data: ReleaseFormTabSharedData;
     };
 
 type EntryTabId = EntryTab["id"];
 
-const entryTabWithoutData = (id: EntryTabId): EntryTab => ({ id });
+const upsertReleaseFormTabInitialStateDate = {
+  mode: "create" as const,
+  dbSources: new Set(ALL_DB_SOURCES) as ReadonlySet<DbSource>,
+};
+
+const entryTabInitialState = (id: EntryTabId): EntryTab => {
+  if (id === "releaseUpsertForm") {
+    return {
+      id,
+      data: upsertReleaseFormTabInitialStateDate,
+    };
+  }
+
+  return { id };
+};
 
 /** Stable ids for this tablist (single Entry view per document). */
 const RELEASES_TAB_ID = "releases-tab";
@@ -52,7 +67,9 @@ const EDIT_ENTRY_UPDATE_NOTIFICATIONS_ID = "edit-entry-update-notifications";
 const EDIT_ENTRY_UPDATE_ERRORS_ID = "edit-entry-update-errors";
 
 const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
-  const [activeTab, setActiveTab] = useState<EntryTab>({ id: "addRelease" });
+  const [activeTab, setActiveTab] = useState<EntryTab>(
+    entryTabInitialState("releaseUpsertForm"),
+  );
 
   const [tags, setTags] = useState<TagListItem[]>([]);
   const [tagsLoading, setTagsLoading] = useState(false);
@@ -93,9 +110,22 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
   const [latestCreateReleaseErrors, setLatestCreateReleaseErrors] = useState<
     string[]
   >([]);
+  const [latestUpdatedReleaseId, setLatestUpdatedReleaseId] =
+    useState<string>();
+  const [
+    latestUpdateReleaseNotifications,
+    setLatestUpdateReleaseNotifications,
+  ] = useState<string[]>([]);
+  const [latestUpdateReleaseErrors, setLatestUpdateReleaseErrors] = useState<
+    string[]
+  >([]);
+
+  const activeTabId = activeTab.id;
+  const releaseFormTabData = activeTab.data;
+  const isReleaseFormUpdateMode = releaseFormTabData?.mode === "update";
 
   const handleTabChange = (tabId: EntryTabId) => {
-    setActiveTab(entryTabWithoutData(tabId));
+    setActiveTab(entryTabInitialState(tabId));
   };
 
   const handleReleaseCreated = (
@@ -137,13 +167,39 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
     [entry],
   );
 
+  const handleReleaseUpdated = (
+    releaseId: string,
+    notifications: string[],
+    errors: string[],
+  ) => {
+    setLatestUpdatedReleaseId(releaseId);
+    setLatestUpdateReleaseNotifications(notifications);
+    setLatestUpdateReleaseErrors(errors);
+    handleTabChange("releases");
+  };
+
+  const handleEditRelease = (release: ReleaseByIdResult) => {
+    const dbSources = releaseFormState?.dbSources.value;
+
+    setReleaseFormState(null);
+    setActiveTab({
+      id: "releaseUpsertForm",
+      data: {
+        mode: "update",
+        releaseBlueprint: release,
+        dbSources,
+      },
+    });
+  };
+
   const handleUseReleaseAsBlueprint = (releaseBlueprint: ReleaseByIdResult) => {
     const dbSources = releaseFormState?.dbSources.value;
 
     setReleaseFormState(null);
     setActiveTab({
-      id: "addRelease",
+      id: "releaseUpsertForm",
       data: {
+        mode: "create",
         releaseBlueprint,
         dbSources,
       },
@@ -152,7 +208,7 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
 
   useEffect(() => {
     setReleaseFormState(null);
-    setActiveTab((tab) => entryTabWithoutData(tab.id));
+    setActiveTab((tab) => entryTabInitialState(tab.id));
     setTags([]);
     setTagsLoadFailed(false);
     tagsDbSourceRef.current = null;
@@ -169,11 +225,9 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
   const fetchTagsTokenRef = useRef(0);
   const tagsDbSourceRef = useRef<DbSource | null>(null);
 
-  const activeTabId = activeTab.id;
-
   useEffect(() => {
     if (
-      (activeTabId !== "addRelease" && activeTabId !== "editEntry") ||
+      (activeTabId !== "releaseUpsertForm" && activeTabId !== "editEntry") ||
       tagsDbSourceRef.current === dbSource
     ) {
       return;
@@ -212,7 +266,7 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
 
   useEffect(() => {
     if (
-      (activeTabId !== "addRelease" && activeTabId !== "releases") ||
+      (activeTabId !== "releaseUpsertForm" && activeTabId !== "releases") ||
       countriesDbSourceRef.current === dbSource
     ) {
       return;
@@ -251,7 +305,7 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
 
   useEffect(() => {
     if (
-      activeTabId !== "addRelease" ||
+      activeTabId !== "releaseUpsertForm" ||
       addReleaseReferenceDataDbSourceRef.current === dbSource
     ) {
       return;
@@ -318,21 +372,29 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
                 countriesLoading={countriesLoading}
                 countriesLoadFailed={countriesLoadFailed}
                 latestAddedReleaseId={latestAddedReleaseId}
+                latestUpdatedReleaseId={latestUpdatedReleaseId}
                 latestCreateNotifications={latestCreateReleaseNotifications}
                 latestCreatedErrors={latestCreateReleaseErrors}
+                latestUpdateNotifications={latestUpdateReleaseNotifications}
+                latestUpdatedErrors={latestUpdateReleaseErrors}
                 onUseReleaseAsBlueprint={handleUseReleaseAsBlueprint}
+                onEditRelease={handleEditRelease}
                 onDismissCreateNotifications={() =>
                   setLatestCreateReleaseNotifications([])
                 }
                 onDismissCreatedErrors={() => setLatestCreateReleaseErrors([])}
+                onDismissUpdateNotifications={() =>
+                  setLatestUpdateReleaseNotifications([])
+                }
+                onDismissUpdatedErrors={() => setLatestUpdateReleaseErrors([])}
               />
             ),
           },
           {
-            id: "addRelease",
+            id: "releaseUpsertForm",
             tabId: ADD_RELEASE_TAB_ID,
             panelId: ADD_RELEASE_PANEL_ID,
-            label: "Add new release",
+            label: isReleaseFormUpdateMode ? "Edit release" : "Add new release",
             children: (
               <ReleaseForm
                 entry={sanitizedEntry}
@@ -354,12 +416,17 @@ const Entry: FC<EntryProps> = ({ entry, dbSource, onEntryUpdated }) => {
                 formState={releaseFormState}
                 onFormStateChange={setReleaseFormState}
                 tabData={
-                  activeTabId === "addRelease" ? activeTab.data : undefined
+                  isReleaseFormUpdateMode
+                    ? {
+                        ...releaseFormTabData,
+                        onReleaseUpdated: handleReleaseUpdated,
+                      }
+                    : {
+                        ...(releaseFormTabData ??
+                          upsertReleaseFormTabInitialStateDate),
+                        onReleaseCreated: handleReleaseCreated,
+                      }
                 }
-                onClearFormState={() => {
-                  setReleaseFormState(null);
-                }}
-                onReleaseCreated={handleReleaseCreated}
               />
             ),
           },

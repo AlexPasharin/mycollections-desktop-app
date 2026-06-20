@@ -5,7 +5,7 @@ import type {
 import {
   toReleaseCatNumbersJson,
   toReleaseCountriesJson,
-} from "./toCreateMusicalReleaseInput";
+} from "./toUpsertMusicalReleaseInput";
 
 const country = (codeName: string): CountrySelectionInput => ({
   id: codeName || "empty",

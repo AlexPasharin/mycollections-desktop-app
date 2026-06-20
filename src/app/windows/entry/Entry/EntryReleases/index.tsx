@@ -19,15 +19,23 @@ type EntryReleasesProps = {
   countriesLoading: boolean;
   countriesLoadFailed: boolean;
   latestAddedReleaseId: string | undefined;
+  latestUpdatedReleaseId: string | undefined;
   latestCreateNotifications: string[];
   latestCreatedErrors: string[];
+  latestUpdateNotifications: string[];
+  latestUpdatedErrors: string[];
   onUseReleaseAsBlueprint: (releaseBlueprint: ReleaseByIdResult) => void;
+  onEditRelease: (release: ReleaseByIdResult) => void;
   onDismissCreateNotifications: () => void;
   onDismissCreatedErrors: () => void;
+  onDismissUpdateNotifications: () => void;
+  onDismissUpdatedErrors: () => void;
 };
 
 const CREATE_NOTIFICATIONS_ID = "entry-releases-create-notifications";
 const CREATE_ERRORS_ID = "entry-releases-create-errors";
+const UPDATE_NOTIFICATIONS_ID = "entry-releases-update-notifications";
+const UPDATE_ERRORS_ID = "entry-releases-update-errors";
 const DELETE_ERRORS_ID = "entry-releases-delete-errors";
 
 const EntryReleases: FC<EntryReleasesProps> = ({
@@ -37,11 +45,17 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   countriesLoading,
   countriesLoadFailed,
   latestAddedReleaseId,
+  latestUpdatedReleaseId,
   latestCreateNotifications,
   latestCreatedErrors,
+  latestUpdateNotifications,
+  latestUpdatedErrors,
   onUseReleaseAsBlueprint,
+  onEditRelease,
   onDismissCreateNotifications,
   onDismissCreatedErrors,
+  onDismissUpdateNotifications,
+  onDismissUpdatedErrors,
 }) => {
   const [releases, setReleases] = useState<EntryRelease[]>();
   const [loading, setLoading] = useState(true);
@@ -159,6 +173,43 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     </div>
   );
 
+  const updateNotifications = latestUpdateNotifications.map((notification) => ({
+    notification,
+  }));
+
+  const updateNotificationBanner = updateNotifications.length > 0 && (
+    <div className={styles.createNotification} role="status">
+      <FormFieldNotifications
+        id={UPDATE_NOTIFICATIONS_ID}
+        messages={updateNotifications}
+      />
+      <button
+        type="button"
+        className={styles.createNotificationDismiss}
+        onClick={onDismissUpdateNotifications}
+        aria-label="Dismiss update notifications"
+      >
+        Dismiss
+      </button>
+    </div>
+  );
+
+  const updateErrors = latestUpdatedErrors.map((message) => ({ message }));
+
+  const updateErrorBanner = updateErrors.length > 0 && (
+    <div className={styles.createError}>
+      <FormFieldErrorMessages id={UPDATE_ERRORS_ID} messages={updateErrors} />
+      <button
+        type="button"
+        className={styles.createErrorDismiss}
+        onClick={onDismissUpdatedErrors}
+        aria-label="Dismiss update errors"
+      >
+        Dismiss
+      </button>
+    </div>
+  );
+
   const deleteErrors = latestDeletedErrors.map((message) => ({ message }));
 
   const deleteErrorBanner = deleteErrors.length > 0 && (
@@ -200,6 +251,8 @@ const EntryReleases: FC<EntryReleasesProps> = ({
         </p>
         {createErrorBanner}
         {createNotificationBanner}
+        {updateErrorBanner}
+        {updateNotificationBanner}
         {deleteErrorBanner}
         {deletedNotification}
       </>
@@ -210,6 +263,8 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     <div className={styles.panel}>
       {createErrorBanner}
       {createNotificationBanner}
+      {updateErrorBanner}
+      {updateNotificationBanner}
       {deleteErrorBanner}
       <h2 className={styles.sectionTitle}>Releases in collection: </h2>
       <div className={styles.field}>
@@ -219,7 +274,9 @@ const EntryReleases: FC<EntryReleasesProps> = ({
           releases={releases}
           allCountries={allCountries}
           latestAddedReleaseId={latestAddedReleaseId}
+          latestUpdatedReleaseId={latestUpdatedReleaseId}
           onUseReleaseAsBlueprint={onUseReleaseAsBlueprint}
+          onEditRelease={onEditRelease}
           onReleaseDeleted={handleReleaseDeleted}
         />
       </div>

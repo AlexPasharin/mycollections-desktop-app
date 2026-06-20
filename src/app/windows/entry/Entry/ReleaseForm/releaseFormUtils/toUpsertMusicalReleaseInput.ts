@@ -10,12 +10,11 @@ import type {
 } from "./formValues";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
-import type { CreateMusicalReleaseInput } from "@/types/releases";
 import type { TagId } from "@/types/tags";
 import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
 
-type ToCreateMusicalReleaseInputArgs = {
+type ToUpsertMusicalReleaseInputArgs = {
   name: ReleaseFormNameInput;
   releaseVersion: string;
   releaseDate: GeneralizedDateFormInputValue;
@@ -44,46 +43,52 @@ type ToCreateMusicalReleaseInputArgs = {
  *
  * Alt artists and freshly-typed alt names are not handled here.
  */
-export const toCreateMusicalReleaseInput = ({
+export const toUpsertMusicalReleaseInput = (
+  args: ToUpsertMusicalReleaseInputArgs,
+) => ({
+  release: toMusicalReleaseRowFromForm(args),
+  formats: toReleaseFormatsFromForm(args.formats),
+  tagIds: toReleaseTagIdsFromForm(args.selectedTags),
+});
+
+const toMusicalReleaseRowFromForm = ({
   entry,
   name,
   releaseVersion,
   releaseDate,
   discogsUrl,
   countries,
-  formats,
   catalogueNumbers,
   matrixRunout,
-  selectedTags,
   partOfQueenCollection,
   relationToQueen,
   comment,
   conditionProblems,
-}: ToCreateMusicalReleaseInputArgs): CreateMusicalReleaseInput => ({
-  release: {
-    releaseVersion,
-    releaseDate: generalizedDateToString(releaseDate),
-    discogsUrl: nullIfEmpty(discogsUrl),
-    countries: toReleaseCountriesJson(countries),
-    catalogueNumbers: toReleaseCatNumbersJson(catalogueNumbers),
-    matrixRunout: toReleaseMatrixRunoutJson(matrixRunout),
-    comment: nullIfEmpty(comment),
-    conditionProblems: nullIfEmpty(conditionProblems),
-    partOfQueenCollection,
-    relationToQueen: partOfQueenCollection
-      ? nullIfEmpty(relationToQueen)
-      : null,
-    entryId: entry.entryId,
-    releaseAlternativeNameId: name.nameId,
-  },
-  formats: formats.map((format) => ({
+}: ToUpsertMusicalReleaseInputArgs) => ({
+  releaseVersion,
+  releaseDate: generalizedDateToString(releaseDate),
+  discogsUrl: nullIfEmpty(discogsUrl),
+  countries: toReleaseCountriesJson(countries),
+  catalogueNumbers: toReleaseCatNumbersJson(catalogueNumbers),
+  matrixRunout: toReleaseMatrixRunoutJson(matrixRunout),
+  comment: nullIfEmpty(comment),
+  conditionProblems: nullIfEmpty(conditionProblems),
+  partOfQueenCollection,
+  relationToQueen: partOfQueenCollection ? nullIfEmpty(relationToQueen) : null,
+  entryId: entry.entryId,
+  releaseAlternativeNameId: name.nameId,
+});
+
+const toReleaseFormatsFromForm = (formats: ReleaseFormFormatInputs) =>
+  formats.map((format) => ({
     formatId: format.formatId,
     amount: parseInt(format.amount, 10),
     pictureSleeve: format.pictureSleeve,
     jukeboxHole: format.jukeboxHole,
-  })),
-  tagIds: Array.from(selectedTags),
-});
+  }));
+
+const toReleaseTagIdsFromForm = (selectedTags: Set<TagId>) =>
+  Array.from(selectedTags);
 
 /**
  * Maps the form's parallel made-in / printed-in arrays to the jsonb shape:

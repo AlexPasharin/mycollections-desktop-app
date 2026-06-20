@@ -28,7 +28,9 @@ type EntryReleaseProps = {
   loadFailed: boolean;
   isLoading: boolean;
   isRecentlyAdded: boolean;
+  isRecentlyEdited: boolean;
   onUseAsBlueprint: (releaseBlueprint: ReleaseByIdResult) => void;
+  onEdit: (release: ReleaseByIdResult) => void;
   onDeleted: (deletedReleaseVersion: string, errors: string[]) => void;
 };
 
@@ -43,7 +45,9 @@ const EntryRelease: FC<EntryReleaseProps> = ({
   loadFailed,
   isLoading,
   isRecentlyAdded,
+  isRecentlyEdited,
   onUseAsBlueprint,
+  onEdit,
   onDeleted,
 }) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -128,6 +132,11 @@ const EntryRelease: FC<EntryReleaseProps> = ({
             {isRecentlyAdded && (
               <span className={styles.recentlyAddedBadge}>Recently added</span>
             )}
+            {isRecentlyEdited && (
+              <span className={styles.recentlyEditedBadge}>
+                Recently edited
+              </span>
+            )}
           </span>
           <span
             className={isExpanded ? styles.chevronExpanded : styles.chevron}
@@ -169,10 +178,18 @@ const EntryRelease: FC<EntryReleaseProps> = ({
                     release={releaseDetails}
                     allCountries={allCountries}
                   />
-                  <div className="mt-4 border-t border-[#e0dcf5] pt-[0.85rem]">
+                  <div className={styles.detailsActions}>
                     <button
                       type="button"
-                      className="m-0 cursor-pointer rounded-md border border-indigo-200 bg-indigo-50 px-[0.85rem] py-[0.45rem] text-[0.92em] font-medium text-indigo-800 transition-colors duration-150 hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-wait disabled:opacity-70"
+                      className={styles.detailsActionButton}
+                      onClick={() => onEdit(releaseDetails)}
+                      aria-label={`Edit release ${release.version}`}
+                    >
+                      Edit release
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.detailsActionButtonSecondary}
                       onClick={() => onUseAsBlueprint(releaseDetails)}
                       aria-label={`Use release ${release.version} as a blueprint to add a new release`}
                     >

@@ -2,7 +2,7 @@ import {
   initialReleaseFormStateValue,
   type ReleaseFormEntry,
 } from "./formValues";
-import { toReleaseCountriesJson } from "./toCreateMusicalReleaseInput";
+import { toReleaseCountriesJson } from "./toUpsertMusicalReleaseInput";
 
 import type { ReleaseByIdResult } from "@/types/releases";
 
@@ -66,7 +66,7 @@ describe("initialReleaseFormStateValue", () => {
       entry,
       allFormats,
       allCountries,
-      tabData: { releaseBlueprint: release },
+      tabData: { mode: "create", releaseBlueprint: release },
     });
 
     expect(draft.releaseVersion.value).toBe("UK first press");

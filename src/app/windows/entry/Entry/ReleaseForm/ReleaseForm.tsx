@@ -28,8 +28,10 @@ import {
   emptyCountrySelection,
   type ReleaseFormState,
   type ReleaseFormEntry,
+  type ReleaseFormTabUpdateModeSharedData,
+  type ReleaseFormTabCreateModeSharedData,
 } from "./releaseFormUtils/formValues";
-import { toCreateMusicalReleaseInput } from "./releaseFormUtils/toCreateMusicalReleaseInput";
+import { toUpsertMusicalReleaseInput } from "./releaseFormUtils/toUpsertMusicalReleaseInput";
 import ReleaseMatrixRunoutField from "./ReleaseMatrixRunoutField";
 import ReleaseNameField from "./ReleaseNameField";
 
@@ -50,6 +52,22 @@ import type { TagListItem } from "@/types/tags";
 import { isDateInputFieldKey, omitProperty } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
 
+export type ReleaseFormTabData =
+  | (ReleaseFormTabCreateModeSharedData & {
+      onReleaseCreated: (
+        releaseId: string | undefined,
+        notifications: string[],
+        errors: string[],
+      ) => void;
+    })
+  | (ReleaseFormTabUpdateModeSharedData & {
+      onReleaseUpdated: (
+        releaseId: string,
+        notifications: string[],
+        errors: string[],
+      ) => void;
+    });
+
 export type ReleaseFormProps = {
   entry: ReleaseFormEntry;
   dbSource: DbSource;
@@ -60,11 +78,7 @@ export type ReleaseFormProps = {
   formState: ReleaseFormState;
   setFormState: Dispatch<SetStateAction<ReleaseFormState>>;
   onClearFormState: () => void;
-  onReleaseCreated: (
-    releaseId: string | undefined,
-    notifications: string[],
-    errors: string[],
-  ) => void;
+  tabData: ReleaseFormTabData;
 };
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
@@ -84,14 +98,16 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   entry,
   dbSource,
   onClearFormState,
-  onReleaseCreated,
   allFormats,
   labels,
   tagsAvailableForReleases,
   allCountries,
   formState,
   setFormState,
+  tabData,
 }) => {
+  const isUpdateMode = tabData.mode === "update";
+
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
     useState(false);
 
@@ -459,7 +475,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
     );
   };
 
-  const handleConfirmCreate = () => {
+  const handleConfirmSave = () => {
     if (isSubmitting) {
       return;
     }
@@ -481,7 +497,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       dbSources: { value: dbSources },
     } = formState;
 
-    const createInput = toCreateMusicalReleaseInput({
+    const formInputArgs = {
       entry,
       name,
       releaseVersion,
@@ -496,31 +512,66 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       relationToQueen,
       comment,
       conditionProblems,
-    });
+    };
 
     setIsSubmitting(true);
     setSubmitError(undefined);
 
-    createReleasesAcrossDbSources(createInput, dbSources, dbSource)
-      .then(({ releaseId, outcomes }) => {
-        const { notifications, errors } = buildCreateReleaseFeedback(outcomes);
+    const upsertInput = toUpsertMusicalReleaseInput(formInputArgs);
 
-        console.info("Created musical release", {
-          releaseId,
-          notifications,
-          errors,
+    // re-order targets to ensure the primary source comes first
+    const orderedTargets = [
+      dbSource,
+      ...Array.from(dbSources).filter((source) => source !== dbSource),
+    ];
+    const savePromise = isUpdateMode
+      ? updateReleasesAcrossDbSources(
+          tabData.releaseBlueprint.releaseId,
+          upsertInput,
+          orderedTargets,
+        )
+      : createReleasesAcrossDbSources(upsertInput, orderedTargets);
+
+    savePromise
+      .then(({ releaseId, outcomes }) => {
+        const { notifications, errors } = buildSaveReleaseFeedback(
           outcomes,
-        });
+          false,
+        );
+
+        console.info(
+          isUpdateMode ? "Updated musical release" : "Created musical release",
+          {
+            releaseId,
+            notifications,
+            errors,
+            outcomes,
+          },
+        );
 
         setIsConfirmOpen(false);
-        onReleaseCreated(releaseId, notifications, errors);
+
+        if (isUpdateMode) {
+          if (releaseId) {
+            tabData.onReleaseUpdated(releaseId, notifications, errors);
+          }
+        } else {
+          tabData.onReleaseCreated(releaseId, notifications, errors);
+        }
       })
       .catch((error: unknown) => {
-        console.error("Failed to create musical release", error);
+        console.error(
+          isUpdateMode
+            ? "Failed to update musical release"
+            : "Failed to create musical release",
+          error,
+        );
         setSubmitError(
           error instanceof Error
             ? error.message
-            : "Failed to create musical release",
+            : isUpdateMode
+              ? "Failed to update musical release"
+              : "Failed to create musical release",
         );
       })
       .finally(() => {
@@ -890,7 +941,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             className={styles.cancelButton}
             onClick={onClearFormState}
           >
-            Clear Form
+            {isUpdateMode ? "Discard changes" : "Clear Form"}
           </button>
           <button
             type="submit"
@@ -910,7 +961,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       <ConfirmDialog
         isOpen={isConfirmOpen}
         size="wide"
-        title="Confirm new release"
+        title={isUpdateMode ? "Confirm release update" : "Confirm new release"}
         description={
           isConfirmOpen && (
             <>
@@ -920,9 +971,19 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
                 tagsAvailableForReleases={tagsAvailableForReleases}
               />
               <DbSourcesCheckboxes
-                heading="Save to databases"
-                headingId="create-release-db-sources-heading"
-                idPrefix="create-release-db-source"
+                heading={
+                  isUpdateMode ? "Update in databases" : "Save to databases"
+                }
+                headingId={
+                  isUpdateMode
+                    ? "update-release-db-sources-heading"
+                    : "create-release-db-sources-heading"
+                }
+                idPrefix={
+                  isUpdateMode
+                    ? "update-release-db-source"
+                    : "create-release-db-source"
+                }
                 activeDbSource={dbSource}
                 checkedSources={formState.dbSources.value}
                 onToggle={handleToggleDbSource}
@@ -930,11 +991,11 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             </>
           )
         }
-        confirmLabel="Create release"
+        confirmLabel={isUpdateMode ? "Update release" : "Create release"}
         cancelLabel="Back to edit"
         isBusy={isSubmitting}
         errorMessage={submitError}
-        onConfirm={handleConfirmCreate}
+        onConfirm={handleConfirmSave}
         onCancel={handleCancelConfirm}
       />
     </div>
@@ -943,7 +1004,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
 
 export default ReleaseForm;
 
-type CreateReleaseOutcome =
+type SaveReleaseOutcome =
   | {
       source: DbSource;
       status: "fulfilled";
@@ -954,11 +1015,6 @@ type CreateReleaseOutcome =
       status: "rejected";
       reason: unknown;
     };
-
-type CreateReleaseOutcomes = {
-  releaseId: string | undefined;
-  outcomes: CreateReleaseOutcome[];
-};
 
 const withReleaseId = (
   input: CreateMusicalReleaseInput,
@@ -973,19 +1029,12 @@ const withReleaseId = (
 
 const createReleasesAcrossDbSources = async (
   createInput: CreateMusicalReleaseInput,
-  targets: ReadonlySet<DbSource>,
-  primaryDbSource: DbSource,
-): Promise<CreateReleaseOutcomes> => {
-  // re-order targets to ensure the primary source comes first
-  const orderedTargets = [
-    primaryDbSource,
-    ...Array.from(targets).filter((source) => source !== primaryDbSource),
-  ];
-
-  const outcomes: CreateReleaseOutcome[] = [];
+  targets: DbSource[],
+) => {
+  const outcomes: SaveReleaseOutcome[] = [];
   let sharedReleaseId: string | undefined;
 
-  for (const source of orderedTargets) {
+  for (const source of targets) {
     const input = withReleaseId(createInput, sharedReleaseId);
 
     try {
@@ -1016,24 +1065,74 @@ const createReleasesAcrossDbSources = async (
   };
 };
 
-const formatCreateReleaseError = (reason: unknown): string =>
-  reason instanceof Error ? reason.message : "Failed to create musical release";
+const updateReleasesAcrossDbSources = async (
+  releaseId: string,
+  updateInput: ReturnType<typeof toUpsertMusicalReleaseInput>,
+  targets: DbSource[],
+) => {
+  const { release, formats, tagIds } = updateInput;
 
-const buildCreateReleaseFeedback = (
-  outcomes: CreateReleaseOutcome[],
+  const outcomes = await Promise.all(
+    targets.map(async (source): Promise<SaveReleaseOutcome> => {
+      try {
+        const result = await api.updateMusicalRelease(
+          {
+            releaseId,
+            release,
+            formats,
+            tagIds,
+          },
+          source,
+        );
+
+        return {
+          source,
+          status: "fulfilled",
+          notifications: result.notifications,
+        };
+      } catch (reason: unknown) {
+        return {
+          source,
+          status: "rejected",
+          reason,
+        };
+      }
+    }),
+  );
+
+  return {
+    releaseId,
+    outcomes,
+  };
+};
+
+const formatSaveReleaseError = (
+  reason: unknown,
+  isUpdateMode: boolean,
+): string =>
+  reason instanceof Error
+    ? reason.message
+    : isUpdateMode
+      ? "Failed to update musical release"
+      : "Failed to create musical release";
+
+const buildSaveReleaseFeedback = (
+  outcomes: SaveReleaseOutcome[],
+  isUpdateMode: boolean,
 ): { notifications: string[]; errors: string[] } => {
   const notifications: string[] = [];
   const errors: string[] = [];
+  const actionLabel = isUpdateMode ? "update" : "create";
 
   for (const outcome of outcomes) {
     if (outcome.status === "fulfilled") {
       notifications.push(...outcome.notifications);
     } else {
-      const errorMessage = `Failed to create musical release in ${dbSourceLabel(outcome.source)}`;
+      const errorMessage = `Failed to ${actionLabel} musical release in ${dbSourceLabel(outcome.source)}`;
       console.error(errorMessage, outcome.reason);
 
       errors.push(
-        `${errorMessage}: ${formatCreateReleaseError(outcome.reason)}`,
+        `${errorMessage}: ${formatSaveReleaseError(outcome.reason, isUpdateMode)}`,
       );
     }
   }

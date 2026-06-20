@@ -7,7 +7,7 @@ import {
   toReleaseCatNumbersJson,
   toReleaseCountriesJson,
   toReleaseMatrixRunoutJson,
-} from "../releaseFormUtils/toCreateMusicalReleaseInput";
+} from "../releaseFormUtils/toUpsertMusicalReleaseInput";
 
 import FormPreviewField, {
   FormPreviewBlockField,
