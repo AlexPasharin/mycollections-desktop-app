@@ -16,7 +16,7 @@ export type TabsProps<T extends string> = {
 };
 
 const tabBaseClassName =
-  "m-0 mb-[-1px] cursor-pointer appearance-none border-0 border-b-2 bg-transparent px-3 py-2 [font:inherit] text-[#555] hover:text-[#111]";
+  "m-0 mb-[-1px] cursor-pointer appearance-none border-0 border-b-2 bg-transparent px-3 py-2 [font-family:inherit] [font-size:inherit] [line-height:inherit] text-[#555] hover:text-[#111]";
 
 const Tabs = <T extends string>({
   ariaLabel,
@@ -40,7 +40,7 @@ const Tabs = <T extends string>({
             className={
               isActive
                 ? `${tabBaseClassName} border-b-[currentColor] font-semibold text-[#111]`
-                : `${tabBaseClassName} border-b-transparent`
+                : `${tabBaseClassName} border-b-transparent [font-weight:inherit]`
             }
             onClick={() => onTabChange(tab.id)}
           >
