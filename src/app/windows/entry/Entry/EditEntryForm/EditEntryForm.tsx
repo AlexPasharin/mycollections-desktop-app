@@ -35,7 +35,7 @@ import { updateImmutableSet } from "@/utils/immutableSet";
 
 export type EditEntryFormProps = {
   entry: EditEntryFormEntry;
-  dbSource: DbSource;
+  primaryDbSource: DbSource;
   tags: TagListItem[];
   allEntryTypes: EntryTypeListItem[];
   restoredState?: EditEntryFormPersistedState | null;
@@ -60,7 +60,7 @@ const RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID =
 
 const EditEntryForm: FC<EditEntryFormProps> = ({
   entry,
-  dbSource,
+  primaryDbSource,
   onCancel,
   onEntryUpdated,
   tags,
@@ -314,7 +314,7 @@ const EditEntryForm: FC<EditEntryFormProps> = ({
     setIsSubmitting(true);
     setSubmitError(undefined);
 
-    updateEntryAcrossDbSources(updateInput, checkedDbSources, dbSource)
+    updateEntryAcrossDbSources(updateInput, checkedDbSources, primaryDbSource)
       .then(({ entry: updatedEntry, outcomes }) => {
         const { notifications, errors } = buildUpdateEntryFeedback(outcomes);
 
@@ -609,7 +609,7 @@ const EditEntryForm: FC<EditEntryFormProps> = ({
                 heading="Save to databases"
                 headingId="update-entry-db-sources-heading"
                 idPrefix="update-entry-db-source"
-                activeDbSource={dbSource}
+                activeDbSource={primaryDbSource}
                 checkedSources={checkedDbSources}
                 onToggle={handleToggleDbSource}
               />

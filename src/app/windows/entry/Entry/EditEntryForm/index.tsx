@@ -11,13 +11,13 @@ type EditEntryFormWrapperProps = Omit<
   EditEntryFormProps,
   "sortedTagEntries" | "allEntryTypes"
 > & {
-  dbSource: DbSource;
+  primaryDbSource: DbSource;
   tagsLoading: boolean;
   tagsLoadFailed: boolean;
 };
 
 const EditEntryFormWrapper: FC<EditEntryFormWrapperProps> = ({
-  dbSource,
+  primaryDbSource,
   tags,
   tagsLoading,
   tagsLoadFailed,
@@ -32,8 +32,8 @@ const EditEntryFormWrapper: FC<EditEntryFormWrapperProps> = ({
 
   useEffect(() => {
     Promise.all([
-      api.fetchEntryTypes(dbSource),
-      api.getEntryReleaseTagIds(formProps.entry.entryId, dbSource),
+      api.fetchEntryTypes(primaryDbSource),
+      api.getEntryReleaseTagIds(formProps.entry.entryId, primaryDbSource),
     ])
       .then(([entryTypesData, entryReleaseTagIds]) => {
         setAllEntryTypes(entryTypesData);
@@ -46,7 +46,7 @@ const EditEntryFormWrapper: FC<EditEntryFormWrapperProps> = ({
       .finally(() => {
         setLoading(false);
       });
-  }, [dbSource, formProps.entry.entryId]);
+  }, [primaryDbSource, formProps.entry.entryId]);
 
   if (loading || tagsLoading) {
     return (
@@ -69,7 +69,7 @@ const EditEntryFormWrapper: FC<EditEntryFormWrapperProps> = ({
   return (
     <EditEntryForm
       {...formProps}
-      dbSource={dbSource}
+      primaryDbSource={primaryDbSource}
       tags={tags.filter((t) => !releaseTagIds.has(t.tagId))}
       allEntryTypes={allEntryTypes}
     />

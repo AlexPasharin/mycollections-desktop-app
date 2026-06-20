@@ -11,35 +11,36 @@ import styles from "./ReleaseForm.module.css";
 import {
   initialReleaseFormStateValue,
   type ReleaseFormState,
-  type ReleaseFormTabData,
 } from "./releaseFormUtils/formValues";
 
 import type { TagListItem } from "@/types/tags";
 
 type ReleaseFormWrapperProps = Omit<
   ReleaseFormProps,
-  "formState" | "setFormState" | "tagsAvailableForReleases"
+  "formState" | "setFormState" | "tagsAvailableForReleases" | "onClearFormState"
 > & {
   formState: ReleaseFormState | null;
   onFormStateChange: Dispatch<SetStateAction<ReleaseFormState | null>>;
-  tabData?: ReleaseFormTabData | undefined;
   referenceDataLoading: boolean;
   referenceDataLoadFailed: boolean;
   tags: TagListItem[];
 };
 
-const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = ({
-  referenceDataLoading,
-  referenceDataLoadFailed,
-  formState,
-  onFormStateChange,
-  tabData,
-  entry,
-  tags,
-  allFormats,
-  allCountries,
-  ...sharedProps
-}) => {
+const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
+  const {
+    referenceDataLoading,
+    referenceDataLoadFailed,
+    formState,
+    onFormStateChange,
+    tabData,
+    entry,
+    tags,
+    allFormats,
+    allCountries,
+    primaryDbSource,
+    labels,
+  } = props;
+
   const tagsAvailableForReleases = useMemo(
     () =>
       tags.filter(
@@ -60,7 +61,8 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = ({
         entry,
         allFormats,
         allCountries,
-        tabData,
+        releaseBlueprint: tabData.releaseBlueprint,
+        dbSources: tabData.dbSources,
       }),
     );
   }, [
@@ -91,23 +93,39 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = ({
     );
   }
 
+  const setFormState = (update: SetStateAction<ReleaseFormState>) => {
+    onFormStateChange((prev) => {
+      if (prev === null) {
+        return prev;
+      }
+
+      return typeof update === "function" ? update(prev) : update;
+    });
+  };
+
+  const onClearFormState = () => {
+    setFormState(
+      initialReleaseFormStateValue({
+        entry,
+        allFormats,
+        allCountries,
+        dbSources: tabData.dbSources,
+      }),
+    );
+  };
+
   return (
     <ReleaseForm
-      {...sharedProps}
       entry={entry}
-      formState={formState}
-      setFormState={(update) => {
-        onFormStateChange((prev) => {
-          if (prev === null) {
-            return prev;
-          }
-
-          return typeof update === "function" ? update(prev) : update;
-        });
-      }}
+      primaryDbSource={primaryDbSource}
+      labels={labels}
       allFormats={allFormats}
       allCountries={allCountries}
+      onClearFormState={onClearFormState}
+      formState={formState}
+      setFormState={setFormState}
       tagsAvailableForReleases={tagsAvailableForReleases}
+      tabData={tabData}
     />
   );
 };

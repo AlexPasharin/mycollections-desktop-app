@@ -1,4 +1,4 @@
-import { type FC, useRef, useState } from "react";
+import { type FC, useEffect, useRef, useState } from "react";
 
 import styles from "./EntryReleasesList.module.css";
 
@@ -16,21 +16,25 @@ import { updateImmutableSet } from "@/utils/immutableSet";
 
 type EntryReleasesListProps = {
   entry: EntryByIdResult;
-  dbSource: DbSource;
+  primaryDbSource: DbSource;
   releases: EntryReleaseRow[];
   allCountries: CountryListItem[];
   latestAddedReleaseId: string | undefined;
+  latestUpdatedReleaseId: string | undefined;
   onUseReleaseAsBlueprint: (releaseBlueprint: ReleaseByIdResult) => void;
+  onEditRelease: (release: ReleaseByIdResult) => void;
   onReleaseDeleted: (deletedReleaseVersion: string, errors: string[]) => void;
 };
 
 const EntryReleasesList: FC<EntryReleasesListProps> = ({
   entry,
-  dbSource,
+  primaryDbSource,
   releases,
   allCountries,
   latestAddedReleaseId,
+  latestUpdatedReleaseId,
   onUseReleaseAsBlueprint,
+  onEditRelease,
   onReleaseDeleted,
 }) => {
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(
@@ -39,8 +43,10 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
   const [releaseDetails, setReleaseDetails] = useState<
     Map<string, ReleaseByIdResult>
   >(() => new Map());
-  const expandedIdsRef = useRef(expandedIds);
-  expandedIdsRef.current = expandedIds;
+
+  // Per-release token bumped on collapse / remount; stale in-flight responses
+  // are discarded so we never setState on outdated expand cycles.
+  const fetchDetailsTokenRef = useRef(new Map<string, number>());
   const [failedIds, setFailedIds] = useState<ReadonlySet<string>>(
     () => new Set(),
   );
@@ -48,35 +54,43 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
     () => new Set(),
   );
 
+  useEffect(
+    () => () => {
+      fetchDetailsTokenRef.current.clear();
+    },
+    [],
+  );
+
   const toggleRelease = (releaseId: string) => {
-    const dropReleaseDetails = () => {
-      setReleaseDetails((prev) => {
-        const next = new Map(prev);
-        next.delete(releaseId);
+    const isCurrentlyOpen = expandedIds.has(releaseId);
+    const tokens = fetchDetailsTokenRef.current;
 
-        return next;
-      });
-    };
+    const token = (tokens.get(releaseId) ?? 0) + 1;
+    tokens.set(releaseId, token);
 
-    if (expandedIds.has(releaseId)) {
-      dropReleaseDetails();
+    setExpandedIds(
+      updateImmutableSet(releaseId, isCurrentlyOpen ? "remove" : "add"),
+    );
+    setLoadingIds(
+      updateImmutableSet(releaseId, isCurrentlyOpen ? "remove" : "add"),
+    );
+    setFailedIds(updateImmutableSet(releaseId, "remove"));
 
-      setExpandedIds(updateImmutableSet(releaseId, "remove"));
-      setFailedIds(updateImmutableSet(releaseId, "remove"));
-      setLoadingIds(updateImmutableSet(releaseId, "remove"));
+    setReleaseDetails((prev) => {
+      const next = new Map(prev);
+      next.delete(releaseId);
 
+      return next;
+    });
+
+    if (isCurrentlyOpen) {
       return;
     }
 
-    dropReleaseDetails();
-    setExpandedIds(updateImmutableSet(releaseId, "add"));
-    setFailedIds(updateImmutableSet(releaseId, "remove"));
-    setLoadingIds(updateImmutableSet(releaseId, "add"));
-
     api
-      .getReleaseById(releaseId, dbSource)
+      .getReleaseById(releaseId, primaryDbSource)
       .then((row) => {
-        if (!expandedIdsRef.current.has(releaseId)) {
+        if (tokens.get(releaseId) !== token) {
           return;
         }
 
@@ -92,7 +106,7 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
         });
       })
       .catch((error: unknown) => {
-        if (!expandedIdsRef.current.has(releaseId)) {
+        if (tokens.get(releaseId) !== token) {
           return;
         }
 
@@ -100,7 +114,7 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
         setFailedIds(updateImmutableSet(releaseId, "add"));
       })
       .finally(() => {
-        if (!expandedIdsRef.current.has(releaseId)) {
+        if (tokens.get(releaseId) !== token) {
           return;
         }
 
@@ -114,7 +128,7 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
         <EntryRelease
           key={r.releaseId}
           entry={entry}
-          dbSource={dbSource}
+          primaryDbSource={primaryDbSource}
           release={r}
           allCountries={allCountries}
           isExpanded={expandedIds.has(r.releaseId)}
@@ -123,7 +137,9 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
           loadFailed={failedIds.has(r.releaseId)}
           isLoading={loadingIds.has(r.releaseId)}
           isRecentlyAdded={r.releaseId === latestAddedReleaseId}
+          isRecentlyEdited={r.releaseId === latestUpdatedReleaseId}
           onUseAsBlueprint={onUseReleaseAsBlueprint}
+          onEdit={onEditRelease}
           onDeleted={onReleaseDeleted}
         />
       ))}

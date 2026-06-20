@@ -71,7 +71,11 @@ const EntryWindowWrapper: FC = () => {
       {isLoading ? (
         <p>Loading entry&apos;s details...</p>
       ) : entry ? (
-        <Entry entry={entry} dbSource={dbSource} onEntryUpdated={setEntry} />
+        <Entry
+          entry={entry}
+          primaryDbSource={dbSource}
+          onEntryUpdated={setEntry}
+        />
       ) : (
         <p>Entry not found.</p>
       )}
