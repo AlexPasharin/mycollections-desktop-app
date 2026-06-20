@@ -6,6 +6,7 @@ export const GET_ENTRY_RELEASES = "get-entry-releases";
 export const GET_ENTRY_RELEASE_TAG_IDS = "get-entry-release-tag-ids";
 export const GET_RELEASE_BY_ID = "get-release-by-id";
 export const CREATE_MUSICAL_RELEASE = "create-musical-release";
+export const UPDATE_MUSICAL_RELEASE = "update-musical-release";
 export const DELETE_RELEASE = "delete-release";
 export const FETCH_RELEASE_FORMATS = "fetch-release-formats";
 export const FETCH_LABELS = "fetch-labels";

@@ -1,4 +1,4 @@
-import type { Insertable, Selectable } from "kysely";
+import type { Insertable, Selectable, Updateable } from "kysely";
 
 import type { TagId, TagListItem } from "./tags";
 
@@ -75,6 +75,18 @@ export type CreateMusicalRelease = (
   input: CreateMusicalReleaseInput,
   dbSource: DbSource,
 ) => Promise<{ releaseId: string; notifications: string[] }>;
+
+export type UpdateMusicalReleaseInput = {
+  releaseId: string;
+  release: Omit<Updateable<MusicalRelease>, "releaseId">;
+  formats: Omit<Insertable<FormatOfRelease>, "releaseId">[];
+  tagIds: string[];
+};
+
+export type UpdateMusicalRelease = (
+  input: UpdateMusicalReleaseInput,
+  dbSource: DbSource,
+) => Promise<{ release: ReleaseByIdResult; notifications: string[] }>;
 
 export type DeleteReleaseResult = {
   release: Selectable<MusicalRelease> | undefined;

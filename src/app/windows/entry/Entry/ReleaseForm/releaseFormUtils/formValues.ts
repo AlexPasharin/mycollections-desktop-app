@@ -188,24 +188,35 @@ export type ReleaseFormState = {
   dbSources: FormField<ReadonlySet<DbSource>>;
 };
 
-export type ReleaseFormTabData = {
+export type ReleaseFormTabCreateModeSharedData = {
+  mode: "create";
+  releaseBlueprint?: ReleaseByIdResult;
+  dbSources?: ReadonlySet<DbSource> | undefined;
+};
+
+export type ReleaseFormTabUpdateModeSharedData = {
+  mode: "update";
   releaseBlueprint: ReleaseByIdResult;
   dbSources?: ReadonlySet<DbSource> | undefined;
 };
+
+export type ReleaseFormTabSharedData =
+  | ReleaseFormTabCreateModeSharedData
+  | ReleaseFormTabUpdateModeSharedData;
 
 export const initialReleaseFormStateValue = ({
   entry,
   allFormats,
   allCountries,
-  tabData,
+  releaseBlueprint,
+  dbSources,
 }: {
   entry: ReleaseFormEntry;
   allFormats: ReleasesFormatListItem[];
   allCountries: CountryListItem[];
-  tabData?: ReleaseFormTabData | undefined;
+  releaseBlueprint?: ReleaseByIdResult | undefined;
+  dbSources?: ReadonlySet<DbSource> | undefined;
 }): ReleaseFormState => {
-  const { releaseBlueprint, dbSources } = tabData ?? {};
-
   return {
     releaseVersion: {
       value: releaseBlueprint?.releaseVersion ?? "",
@@ -306,7 +317,7 @@ export const initialReleaseFormStateValue = ({
       notifications: [],
     },
     dbSources: {
-      value: dbSources ?? (new Set(ALL_DB_SOURCES) as ReadonlySet<DbSource>),
+      value: dbSources ?? new Set(ALL_DB_SOURCES),
       valid: true,
       validationFn: validatePassThrough,
       errors: initialReleaseFormFieldErrors.dbSources,

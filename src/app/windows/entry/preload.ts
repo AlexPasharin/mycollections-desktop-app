@@ -14,11 +14,15 @@ import {
   GET_ENTRY_RELEASE_TAG_IDS,
   GET_RELEASE_BY_ID,
   CREATE_MUSICAL_RELEASE,
+  UPDATE_MUSICAL_RELEASE,
   DELETE_RELEASE,
 } from "@/appConstants/ipcEvents";
 import type { DbSource } from "@/db/db-source";
 import type { UpdateMusicalEntryInput } from "@/types/entries";
-import type { CreateMusicalReleaseInput } from "@/types/releases";
+import type {
+  CreateMusicalReleaseInput,
+  UpdateMusicalReleaseInput,
+} from "@/types/releases";
 
 const api = {
   fetchCountries: (dbSource: DbSource) =>
@@ -42,6 +46,10 @@ const api = {
     input: CreateMusicalReleaseInput,
     dbSource: DbSource,
   ) => ipcRenderer.invoke(CREATE_MUSICAL_RELEASE, input, dbSource),
+  updateMusicalRelease: (
+    input: UpdateMusicalReleaseInput,
+    dbSource: DbSource,
+  ) => ipcRenderer.invoke(UPDATE_MUSICAL_RELEASE, input, dbSource),
   deleteRelease: (releaseId: string, dbSource: DbSource) =>
     ipcRenderer.invoke(DELETE_RELEASE, releaseId, dbSource),
   updateMusicalEntry: (input: UpdateMusicalEntryInput, dbSource: DbSource) =>
