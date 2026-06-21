@@ -1,12 +1,14 @@
 import type { GetArtistById } from "@/types/artists";
 import type {
   CreateEntryWindowParams,
+  CreateMusicalEntry,
   SearchArtistEntries,
 } from "@/types/entries";
 
 export type API = {
   getArtistById: GetArtistById;
   searchArtistEntries: SearchArtistEntries;
+  createMusicalEntry: CreateMusicalEntry;
   openNewEntryWindow: (params: CreateEntryWindowParams) => void;
 };
 

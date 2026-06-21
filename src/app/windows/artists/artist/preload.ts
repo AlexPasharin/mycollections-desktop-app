@@ -3,6 +3,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { API } from "./api";
 
 import {
+  CREATE_MUSICAL_ENTRY,
   GET_ARTIST_BY_ID,
   OPEN_ENTRY_WINDOW,
   SEARCH_ARTIST_ENTRIES,
@@ -10,6 +11,7 @@ import {
 import type { DbSource } from "@/db/db-source";
 import type {
   CreateEntryWindowParams,
+  CreateMusicalEntryInput,
   SearchArtistEntriesParams,
 } from "@/types/entries";
 
@@ -20,6 +22,8 @@ const api = {
     params: SearchArtistEntriesParams,
     dbSource: DbSource,
   ) => ipcRenderer.invoke(SEARCH_ARTIST_ENTRIES, params, dbSource),
+  createMusicalEntry: (input: CreateMusicalEntryInput, dbSource: DbSource) =>
+    ipcRenderer.invoke(CREATE_MUSICAL_ENTRY, input, dbSource),
   openNewEntryWindow: (params: CreateEntryWindowParams) =>
     ipcRenderer.send(OPEN_ENTRY_WINDOW, params),
 } as const satisfies API;
