@@ -103,6 +103,7 @@ export type CreateMusicalEntryInput = {
   tagIds: string[];
   typeIds: string[];
   altNames: string[];
+  artistId: string;
 };
 
 export type CreateMusicalEntry = (

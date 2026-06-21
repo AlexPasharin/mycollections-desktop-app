@@ -5,7 +5,7 @@ import { applyWithNotificationsFor } from "../client/kysely";
 import type { CreateMusicalEntry } from "@/types/entries";
 
 export const createMusicalEntry: CreateMusicalEntry = async (
-  { entry, tagIds, typeIds, altNames },
+  { entry, tagIds, typeIds, altNames, artistId },
   dbSource,
 ) => {
   const { results: createdEntry, notifications } =
@@ -15,6 +15,11 @@ export const createMusicalEntry: CreateMusicalEntry = async (
         .values(entry)
         .returning("entryId")
         .executeTakeFirstOrThrow();
+
+      await trx
+        .insertInto("musicalEntriesArtists")
+        .values({ entryId, artistId, isEntriesMainArtist: true })
+        .execute();
 
       if (tagIds.length > 0) {
         await trx
