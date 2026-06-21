@@ -1,6 +1,6 @@
-import { dbClient } from "../client/kysely";
+import { applyWithNotificationsFor, dbClient } from "../client/kysely";
 
-import type { FetchTags } from "@/types/tags";
+import type { CreateTag, FetchTags } from "@/types/tags";
 
 export const fetchTags: FetchTags = (dbSource) =>
   dbClient(dbSource)
@@ -8,3 +8,17 @@ export const fetchTags: FetchTags = (dbSource) =>
     .select(["tagId", "tag"])
     .orderBy("tag")
     .execute();
+
+export const createTag: CreateTag = ({ tag, tagId }, dbSource) =>
+  applyWithNotificationsFor(
+    (trx) =>
+      trx
+        .insertInto("tags")
+        .values(tagId === undefined ? { tag } : { tag, tagId })
+        .returning(["tagId", "tag"])
+        .executeTakeFirstOrThrow(),
+    dbSource,
+  ).then(({ results, notifications }) => ({
+    tag: results,
+    notifications,
+  }));

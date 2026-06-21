@@ -4,6 +4,7 @@ import electronSquirrelStartup from "electron-squirrel-startup";
 import createArtistWindow from "./app/windows/artists/artist/createWindow";
 import createEntryWindow from "./app/windows/entry/createWindow";
 import createMainWindow from "./app/windows/main/create";
+import createTagsWindow from "./app/windows/tags/createWindow";
 import type {
   CreateArtistWindowParams,
   CreateEntryWindowParams,
@@ -20,6 +21,7 @@ import {
   FETCH_LABELS,
   FETCH_COUNTRIES,
   FETCH_TAGS,
+  CREATE_TAG,
   FETCH_ENTRY_TYPES,
   UPDATE_MUSICAL_ENTRY,
   CREATE_MUSICAL_RELEASE,
@@ -27,6 +29,7 @@ import {
   DELETE_RELEASE,
   OPEN_ARTIST_WINDOW,
   OPEN_ENTRY_WINDOW,
+  OPEN_TAGS_WINDOW,
   QUERY_ARTIST,
   SEARCH_ARTIST_ENTRIES,
 } from "@/appConstants/ipcEvents";
@@ -49,7 +52,7 @@ import {
   getReleaseById,
   updateMusicalRelease,
 } from "@/db/releases";
-import { fetchTags } from "@/db/tags";
+import { fetchTags, createTag } from "@/db/tags";
 import type { FetchArtistsParams } from "@/types/artists";
 import type {
   SearchArtistEntriesParams,
@@ -59,6 +62,7 @@ import type {
   CreateMusicalReleaseInput,
   UpdateMusicalReleaseInput,
 } from "@/types/releases";
+import type { CreateTagInput, CreateTagsWindowParams } from "@/types/tags";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (electronSquirrelStartup) {
@@ -120,6 +124,9 @@ await app.whenReady().then(async () => {
     fetchCountries(dbSource),
   );
   ipcMain.handle(FETCH_TAGS, (_, dbSource: DbSource) => fetchTags(dbSource));
+  ipcMain.handle(CREATE_TAG, (_, input: CreateTagInput, dbSource: DbSource) =>
+    createTag(input, dbSource),
+  );
   ipcMain.handle(FETCH_ENTRY_TYPES, (_, dbSource: DbSource) =>
     fetchEntryTypes(dbSource),
   );
@@ -140,6 +147,10 @@ await app.whenReady().then(async () => {
 
   ipcMain.on(OPEN_ENTRY_WINDOW, (_event, params: CreateEntryWindowParams) => {
     void createEntryWindow(params);
+  });
+
+  ipcMain.on(OPEN_TAGS_WINDOW, (_event, params: CreateTagsWindowParams) => {
+    void createTagsWindow(params);
   });
 
   await createMainWindow();
