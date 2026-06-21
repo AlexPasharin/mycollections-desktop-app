@@ -10,6 +10,9 @@ const appWindows = {
   entry_window: {
     folder: "windows/entry",
   },
+  tags_window: {
+    folder: "windows/tags",
+  },
 } as const satisfies Record<
   AppWindowName,
   {
