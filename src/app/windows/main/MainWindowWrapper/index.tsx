@@ -3,6 +3,8 @@ import { useState, type FC } from "react";
 import AllArtistsList from "./AllArtistsList";
 import ArtistQuery from "./ArtistQuery";
 
+import api from "../api";
+
 import DbSourceSelect from "@/app/components/DbSourceSelect";
 import Tabs from "@/app/components/Tabs";
 import { DEFAULT_DB_SOURCE, type DbSource } from "@/db/db-source";
@@ -27,11 +29,20 @@ const MainWindowWrapper: FC = () => {
       <header className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3">
         <h1 className="m-0">My Collections</h1>
 
-        <DbSourceSelect
-          id="main-db-source"
-          value={dbSource}
-          onChange={setDbSource}
-        />
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+          <button
+            type="button"
+            className="cursor-pointer rounded-md border border-indigo-600 bg-indigo-600 px-[0.95rem] py-[0.45rem] font-[inherit] text-[0.9rem] font-medium text-white transition-[background,border-color] duration-150 ease-in-out hover:border-indigo-700 hover:bg-indigo-700"
+            onClick={() => api.openNewTagsWindow({ source: dbSource })}
+          >
+            Manage tags
+          </button>
+          <DbSourceSelect
+            id="main-db-source"
+            value={dbSource}
+            onChange={setDbSource}
+          />
+        </div>
       </header>
 
       <Tabs

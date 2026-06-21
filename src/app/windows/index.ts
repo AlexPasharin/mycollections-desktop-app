@@ -16,6 +16,9 @@ declare const ARTIST_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 declare const ENTRY_WINDOW_WEBPACK_ENTRY: string;
 declare const ENTRY_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
+declare const TAGS_WINDOW_WEBPACK_ENTRY: string;
+declare const TAGS_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
+
 const appWindows = {
   main_window: {
     preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
@@ -28,6 +31,10 @@ const appWindows = {
   entry_window: {
     preload: ENTRY_WINDOW_PRELOAD_WEBPACK_ENTRY,
     html: ENTRY_WINDOW_WEBPACK_ENTRY,
+  },
+  tags_window: {
+    preload: TAGS_WINDOW_PRELOAD_WEBPACK_ENTRY,
+    html: TAGS_WINDOW_WEBPACK_ENTRY,
   },
 } as const satisfies Record<
   AppWindowName,
