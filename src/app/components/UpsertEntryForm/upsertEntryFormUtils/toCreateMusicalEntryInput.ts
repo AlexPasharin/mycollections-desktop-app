@@ -1,26 +1,28 @@
-import type { EditEntryAltNameRow, EditEntryFormEntry } from "./formValues";
+import type { UpsertEntryAltNameRow } from "./formValues";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
-import type { UpdateMusicalEntryInput } from "@/types/entries";
+import type { CreateMusicalEntryInput } from "@/types/entries";
 import type { TagId } from "@/types/tags";
 import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
 
-type ToUpdateMusicalEntryInputArgs = {
-  entry: EditEntryFormEntry;
+type ToCreateMusicalEntryInputArgs = {
+  artistId: string;
+  entryId?: string;
   mainName: string;
   originalReleaseDate: GeneralizedDateFormInputValue;
   discogsUrl: string;
   comment: string;
   selectedTags: Set<TagId>;
   selectedTypes: Set<string>;
-  altNames: EditEntryAltNameRow[];
+  altNames: UpsertEntryAltNameRow[];
   partOfQueenCollection: boolean;
   relationToQueen: string;
 };
 
-export const toUpdateMusicalEntryInput = ({
-  entry,
+export const toCreateMusicalEntryInput = ({
+  artistId,
+  entryId,
   mainName,
   originalReleaseDate,
   discogsUrl,
@@ -30,9 +32,10 @@ export const toUpdateMusicalEntryInput = ({
   altNames,
   partOfQueenCollection,
   relationToQueen,
-}: ToUpdateMusicalEntryInputArgs): UpdateMusicalEntryInput => ({
-  entryId: entry.entryId,
+}: ToCreateMusicalEntryInputArgs): CreateMusicalEntryInput => ({
+  artistId,
   entry: {
+    ...(entryId === undefined ? {} : { entryId }),
     mainName,
     originalReleaseDate: generalizedDateToString(originalReleaseDate),
     discogsUrl: nullIfEmpty(discogsUrl),
@@ -44,5 +47,7 @@ export const toUpdateMusicalEntryInput = ({
   },
   tagIds: Array.from(selectedTags),
   typeIds: Array.from(selectedTypes),
-  altNames,
+  altNames: altNames
+    .map((altName) => altName.name.trim())
+    .filter((name) => name.length > 0),
 });

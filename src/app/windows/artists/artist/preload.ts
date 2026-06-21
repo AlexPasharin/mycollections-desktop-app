@@ -4,6 +4,8 @@ import type { API } from "./api";
 
 import {
   CREATE_MUSICAL_ENTRY,
+  FETCH_ENTRY_TYPES,
+  FETCH_TAGS,
   GET_ARTIST_BY_ID,
   OPEN_ENTRY_WINDOW,
   SEARCH_ARTIST_ENTRIES,
@@ -22,6 +24,9 @@ const api = {
     params: SearchArtistEntriesParams,
     dbSource: DbSource,
   ) => ipcRenderer.invoke(SEARCH_ARTIST_ENTRIES, params, dbSource),
+  fetchTags: (dbSource: DbSource) => ipcRenderer.invoke(FETCH_TAGS, dbSource),
+  fetchEntryTypes: (dbSource: DbSource) =>
+    ipcRenderer.invoke(FETCH_ENTRY_TYPES, dbSource),
   createMusicalEntry: (input: CreateMusicalEntryInput, dbSource: DbSource) =>
     ipcRenderer.invoke(CREATE_MUSICAL_ENTRY, input, dbSource),
   openNewEntryWindow: (params: CreateEntryWindowParams) =>

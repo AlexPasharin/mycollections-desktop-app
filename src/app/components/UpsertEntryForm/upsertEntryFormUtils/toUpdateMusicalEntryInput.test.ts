@@ -1,14 +1,14 @@
-import type { EditEntryAltNameRow, EditEntryFormEntry } from "./formValues";
+import type { UpsertEntryAltNameRow, UpsertEntryFormEntry } from "./formValues";
 import { toUpdateMusicalEntryInput } from "./toUpdateMusicalEntryInput";
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-const entry = { entryId: "entry-abc" } as EditEntryFormEntry;
+const entry = { entryId: "entry-abc" } as UpsertEntryFormEntry;
 
 const altNameRow = (
   id: string,
   name: string,
   nameId?: string,
-): EditEntryAltNameRow => ({
+): UpsertEntryAltNameRow => ({
   id,
   name,
   ...(nameId === undefined ? {} : { nameId }),

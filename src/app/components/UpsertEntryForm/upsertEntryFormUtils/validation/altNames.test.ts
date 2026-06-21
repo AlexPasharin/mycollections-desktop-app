@@ -1,12 +1,12 @@
 import { validateAltNames } from "./altNames";
 
-import type { EditEntryAltNameRow } from "../formValues";
+import type { UpsertEntryAltNameRow } from "../formValues";
 
 const altNameRow = (
   id: string,
   name: string,
   nameId?: string,
-): EditEntryAltNameRow => ({
+): UpsertEntryAltNameRow => ({
   id,
   name,
   ...(nameId === undefined ? {} : { nameId }),

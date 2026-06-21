@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FC } from "react";
 
-import EditEntryForm from "./EditEntryForm";
-import type { EditEntryFormPersistedState } from "./EditEntryForm/editEntryFormUtils/formValues";
 import EntryArtists from "./EntryArtists";
 import EntryDetailsPanel from "./EntryDetailsPanel";
 import EntryReleases from "./EntryReleases";
@@ -14,6 +12,8 @@ import {
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import Tabs from "@/app/components/Tabs";
+import UpsertEntryForm from "@/app/components/UpsertEntryForm";
+import type { UpsertEntryFormPersistedState } from "@/app/components/UpsertEntryForm/upsertEntryFormUtils/formValues";
 import api from "@/app/windows/entry/api";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES } from "@/db/db-source-options";
@@ -77,7 +77,7 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
 
   const [releaseFormState, setReleaseFormState] =
     useState<ReleaseFormState | null>(null);
-  const editEntryDraftRef = useRef<EditEntryFormPersistedState | null>(null);
+  const editEntryDraftRef = useRef<UpsertEntryFormPersistedState | null>(null);
 
   const [allFormats, setAllFormats] = useState<ReleasesFormatListItem[]>([]);
   const [labels, setLabels] = useState<LabelListItem[]>([]);
@@ -448,10 +448,16 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
                   id={EDIT_ENTRY_UPDATE_ERRORS_ID}
                   messages={updateEntryErrors}
                 />
-                <EditEntryForm
+                <UpsertEntryForm
+                  mode="update"
                   entry={sanitizedEntry}
                   primaryDbSource={primaryDbSource}
                   tags={tags}
+                  api={{
+                    fetchEntryTypes: api.fetchEntryTypes,
+                    getEntryReleaseTagIds: api.getEntryReleaseTagIds,
+                    updateMusicalEntry: api.updateMusicalEntry,
+                  }}
                   tagsLoading={tagsLoading}
                   tagsLoadFailed={tagsLoadFailed}
                   restoredState={editEntryDraftRef.current}
@@ -459,7 +465,7 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
                     editEntryDraftRef.current = state;
                   }}
                   onCancel={() => handleTabChange("releases")}
-                  onEntryUpdated={handleEntryUpdated}
+                  onEntrySaved={handleEntryUpdated}
                 />
               </>
             ),
