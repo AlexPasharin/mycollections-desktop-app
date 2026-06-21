@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type FC } from "react";
 
+import ArtistAddEntrySuccess from "./ArtistAddEntrySuccess";
+
 import api from "../api";
 
 import UpsertEntryForm from "@/app/components/UpsertEntryForm";
@@ -24,6 +26,8 @@ const ArtistAddEntryForm: FC<ArtistAddEntryFormProps> = ({
   const [tags, setTags] = useState<TagListItem[]>([]);
   const [tagsLoading, setTagsLoading] = useState(false);
   const [tagsLoadFailed, setTagsLoadFailed] = useState(false);
+  const [savedEntry, setSavedEntry] = useState<EntryByIdResult | null>(null);
+
   const createEntryDraftRef = useRef<UpsertEntryFormPersistedState | null>(
     null,
   );
@@ -66,12 +70,17 @@ const ArtistAddEntryForm: FC<ArtistAddEntryFormProps> = ({
     };
   }, [primaryDbSource]);
 
+  useEffect(() => {
+    setSavedEntry(null);
+  }, [primaryDbSource]);
+
   const handleEntrySaved = (
-    _entry: EntryByIdResult,
+    entry: EntryByIdResult,
     notifications: string[],
     errors: string[],
   ) => {
     createEntryDraftRef.current = null;
+    setSavedEntry(entry);
     onEntrySaved(notifications, errors);
   };
 
@@ -79,6 +88,15 @@ const ArtistAddEntryForm: FC<ArtistAddEntryFormProps> = ({
     createEntryDraftRef.current = null;
     onCancel();
   };
+
+  if (savedEntry) {
+    return (
+      <ArtistAddEntrySuccess
+        entry={savedEntry}
+        primaryDbSource={primaryDbSource}
+      />
+    );
+  }
 
   return (
     <UpsertEntryForm

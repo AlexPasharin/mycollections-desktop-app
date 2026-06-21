@@ -29,9 +29,10 @@ const CREATE_ENTRY_ERRORS_ID = "artist-create-entry-errors";
 const ArtistWindowWrapper: FC = () => {
   const params = new URLSearchParams(window.location.search);
   const artistId = params.get("artistId");
-  const initialDbSource = parseDbSource(params.get("source"));
 
-  const [dbSource, setDbSource] = useState<DbSource>(initialDbSource);
+  const [primaryDbSource, setPrimaryDbSource] = useState<DbSource>(
+    parseDbSource(params.get("source")),
+  );
   const [artist, setArtist] = useState<ArtistByIdResult>();
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ArtistEntriesTab>("searchEntries");
@@ -40,7 +41,7 @@ const ArtistWindowWrapper: FC = () => {
   >([]);
   const [createEntryErrors, setCreateEntryErrors] = useState<string[]>([]);
 
-  useSyncSearchParam("source", dbSource);
+  useSyncSearchParam("source", primaryDbSource);
 
   const title = isLoading
     ? "Artist View - Loading...."
@@ -53,7 +54,7 @@ const ArtistWindowWrapper: FC = () => {
   useEffect(() => {
     setCreateEntryNotifications([]);
     setCreateEntryErrors([]);
-  }, [dbSource]);
+  }, [primaryDbSource]);
 
   useEffect(() => {
     if (!artistId) {
@@ -63,14 +64,14 @@ const ArtistWindowWrapper: FC = () => {
     setIsLoading(true);
 
     api
-      .getArtistById(artistId, dbSource)
+      .getArtistById(artistId, primaryDbSource)
       .then(setArtist)
       .catch((error: unknown) => {
         console.error("Error getting artist by id", error);
         setArtist(undefined);
       })
       .finally(() => setIsLoading(false));
-  }, [artistId, dbSource]);
+  }, [artistId, primaryDbSource]);
 
   if (!artistId) {
     const error = new Error("artistId is required");
@@ -86,8 +87,8 @@ const ArtistWindowWrapper: FC = () => {
         <h1>Artist view</h1>
         <DbSourceSelect
           id="artist-db-source"
-          value={dbSource}
-          onChange={setDbSource}
+          value={primaryDbSource}
+          onChange={setPrimaryDbSource}
         />
       </header>
 
@@ -121,7 +122,7 @@ const ArtistWindowWrapper: FC = () => {
                 children: (
                   <ArtistEntriesSearch
                     artistId={artistId}
-                    dbSource={dbSource}
+                    dbSource={primaryDbSource}
                   />
                 ),
               },
@@ -133,15 +134,11 @@ const ArtistWindowWrapper: FC = () => {
                 children: (
                   <ArtistAddEntryForm
                     artistId={artistId}
-                    primaryDbSource={dbSource}
+                    primaryDbSource={primaryDbSource}
                     onCancel={() => setActiveTab("searchEntries")}
                     onEntrySaved={(notifications, errors) => {
                       setCreateEntryNotifications(notifications);
                       setCreateEntryErrors(errors);
-
-                      if (errors.length === 0) {
-                        setActiveTab("searchEntries");
-                      }
                     }}
                   />
                 ),
