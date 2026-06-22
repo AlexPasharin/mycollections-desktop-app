@@ -38,7 +38,9 @@ export const createMusicalEntry: CreateMusicalEntry = async (
       if (altNames.length > 0) {
         await trx
           .insertInto("alternativeMusicalEntryNames")
-          .values(altNames.map((altName) => ({ name: altName.name, entryId })))
+          .values(
+            altNames.map(({ nameId, name }) => ({ nameId, name, entryId })),
+          )
           .execute();
       }
 

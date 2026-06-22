@@ -30,6 +30,7 @@ import type {
   CreateMusicalEntry,
   CreateMusicalEntryInput,
   EntryByIdResult,
+  MusicalEntryAltNameInput,
   UpdateMusicalEntry,
   UpdateMusicalEntryInput,
 } from "@/types/entries";
@@ -774,14 +775,23 @@ const createEntryAcrossDbSources = async (
   const outcomes: SaveEntryOutcome[] = [];
   let savedEntry: EntryByIdResult | undefined;
   let sharedEntryId: string | undefined;
+  let sharedAltNameIds: AltNameIdMap | undefined;
 
   for (const source of orderedTargets) {
-    const input = withSharedEntryId(createInput, sharedEntryId);
+    const input = withSharedCreateInput(
+      createInput,
+      sharedEntryId,
+      sharedAltNameIds,
+    );
 
     try {
       const result = await createMusicalEntry(input, source);
       savedEntry = savedEntry ?? result.entry;
       sharedEntryId ??= result.entry.entryId;
+      sharedAltNameIds ??= buildAltNameIdsMap(
+        createInput.altNames,
+        result.entry.altNames,
+      );
 
       outcomes.push({
         source,
@@ -811,7 +821,7 @@ const createEntryAcrossDbSources = async (
 type UpdateEntryOutcome = SaveEntryOutcome;
 
 const buildAltNameIdsMap = (
-  inputAltNames: UpdateMusicalEntryInput["altNames"],
+  inputAltNames: MusicalEntryAltNameInput[],
   updatedAltNames: EntryByIdResult["altNames"],
 ): AltNameIdMap => {
   const map = new Map<AltName, AltNameId>();
@@ -834,20 +844,39 @@ const buildAltNameIdsMap = (
   return map;
 };
 
-const withSharedAltNameIds = (
-  input: UpdateMusicalEntryInput,
+const applySharedAltNameIds = <T extends MusicalEntryAltNameInput>(
+  altNames: T[],
   sharedAltNameIds: AltNameIdMap | undefined,
-): UpdateMusicalEntryInput => ({
-  ...input,
-  altNames: input.altNames.map((altName) => {
+): T[] =>
+  altNames.map((altName) => {
     if (altName.nameId !== undefined) {
       return altName;
     }
 
     const nameId = sharedAltNameIds?.get(altName.name.trim());
 
-    return nameId === undefined ? altName : { nameId, name: altName.name };
-  }),
+    return nameId === undefined ? altName : { ...altName, nameId };
+  });
+
+const withSharedCreateInput = (
+  createInput: CreateMusicalEntryInput,
+  sharedEntryId: string | undefined,
+  sharedAltNameIds: AltNameIdMap | undefined,
+): CreateMusicalEntryInput =>
+  withSharedEntryId(
+    {
+      ...createInput,
+      altNames: applySharedAltNameIds(createInput.altNames, sharedAltNameIds),
+    },
+    sharedEntryId,
+  );
+
+const withSharedAltNameIds = (
+  input: UpdateMusicalEntryInput,
+  sharedAltNameIds: AltNameIdMap | undefined,
+): UpdateMusicalEntryInput => ({
+  ...input,
+  altNames: applySharedAltNameIds(input.altNames, sharedAltNameIds),
 });
 
 type AltName = string;

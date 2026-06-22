@@ -83,16 +83,14 @@ export type SearchArtistEntries = (
   dbSource: DbSource,
 ) => Promise<SearchArtistEntriesResult>;
 
-export type UpdateMusicalEntryAltNameInput = { nameId?: string; name: string };
-
-export type CreateMusicalEntryAltNameInput = { name: string };
+export type MusicalEntryAltNameInput = { nameId?: string; name: string };
 
 export type UpdateMusicalEntryInput = {
   entryId: string;
   entry: Omit<Updateable<MusicalEntry>, "entryId">;
   tagIds: string[];
   typeIds: string[];
-  altNames: UpdateMusicalEntryAltNameInput[];
+  altNames: MusicalEntryAltNameInput[];
 };
 
 export type UpdateMusicalEntry = (
@@ -104,7 +102,7 @@ export type CreateMusicalEntryInput = {
   entry: Insertable<MusicalEntry>;
   tagIds: string[];
   typeIds: string[];
-  altNames: CreateMusicalEntryAltNameInput[];
+  altNames: MusicalEntryAltNameInput[];
   artistId: string;
 };
 
