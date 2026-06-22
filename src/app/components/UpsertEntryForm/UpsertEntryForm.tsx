@@ -55,8 +55,8 @@ type UpsertEntryFormSharedProps = {
 export type UpsertEntryFormUpdateProps = UpsertEntryFormSharedProps & {
   mode: "update";
   entry: UpsertEntryFormEntry;
-  updateMusicalEntry: UpdateMusicalEntry;
   artistId?: never;
+  updateMusicalEntry: UpdateMusicalEntry;
 };
 
 export type UpsertEntryFormCreateProps = UpsertEntryFormSharedProps & {
@@ -94,9 +94,9 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     artistId,
   } = props;
 
-  const [form, setForm] = useState<UpsertEntryFormDraft>(() => {
-    return restoredState?.form ?? initialUpsertEntryFormDraft(entry);
-  });
+  const [form, setForm] = useState<UpsertEntryFormDraft>(
+    restoredState?.form ?? initialUpsertEntryFormDraft(entry),
+  );
 
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
     useState(false);
@@ -361,9 +361,10 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
 
     savePromise
       .then(({ entry: savedEntry, outcomes }) => {
-        const { notifications, errors } = isCreateMode
-          ? buildCreateEntryFeedback(outcomes)
-          : buildUpdateEntryFeedback(outcomes);
+        const { notifications, errors } = buildUpsertEntryFeedback(
+          outcomes,
+          mode,
+        );
 
         setIsConfirmOpen(false);
 
@@ -725,7 +726,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
 
 export default UpsertEntryForm;
 
-type SaveEntryOutcome =
+type UpsertEntryOutcome =
   | {
       source: DbSource;
       status: "fulfilled";
@@ -738,9 +739,9 @@ type SaveEntryOutcome =
       reason: unknown;
     };
 
-type SaveEntryOutcomes = {
+type UpsertEntryOutcomes = {
   entry: EntryByIdResult | undefined;
-  outcomes: SaveEntryOutcome[];
+  outcomes: UpsertEntryOutcome[];
 };
 
 const withSharedEntryId = (
@@ -759,13 +760,13 @@ const createEntryAcrossDbSources = async (
   targets: ReadonlySet<DbSource>,
   primaryDbSource: DbSource,
   createMusicalEntry: CreateMusicalEntry,
-): Promise<SaveEntryOutcomes> => {
+): Promise<UpsertEntryOutcomes> => {
   const orderedTargets = [
     primaryDbSource,
     ...Array.from(targets).filter((source) => source !== primaryDbSource),
   ];
 
-  const outcomes: SaveEntryOutcome[] = [];
+  const outcomes: UpsertEntryOutcome[] = [];
   let savedEntry: EntryByIdResult | undefined;
   let sharedEntryId: string | undefined;
   let sharedAltNameIds: AltNameIdMap | undefined;
@@ -810,8 +811,6 @@ const createEntryAcrossDbSources = async (
     outcomes,
   };
 };
-
-type UpdateEntryOutcome = SaveEntryOutcome;
 
 const buildAltNameIdsMap = (
   inputAltNames: MusicalEntryAltNameInput[],
@@ -881,13 +880,13 @@ const updateEntryAcrossDbSources = async (
   targets: ReadonlySet<DbSource>,
   primaryDbSource: DbSource,
   updateMusicalEntry: UpdateMusicalEntry,
-): Promise<SaveEntryOutcomes> => {
+): Promise<UpsertEntryOutcomes> => {
   const orderedTargets = [
     primaryDbSource,
     ...Array.from(targets).filter((source) => source !== primaryDbSource),
   ];
 
-  const outcomes: UpdateEntryOutcome[] = [];
+  const outcomes: UpsertEntryOutcome[] = [];
   let updatedEntry: EntryByIdResult | undefined;
   let sharedAltNameIds: AltNameIdMap | undefined;
 
@@ -931,8 +930,9 @@ const updateEntryAcrossDbSources = async (
 const formatSaveEntryError = (reason: unknown): string =>
   reason instanceof Error ? reason.message : "Failed to save musical entry";
 
-const buildCreateEntryFeedback = (
-  outcomes: SaveEntryOutcome[],
+const buildUpsertEntryFeedback = (
+  outcomes: UpsertEntryOutcome[],
+  mode: "create" | "update",
 ): { notifications: string[]; errors: string[] } => {
   const notifications: string[] = [];
   const errors: string[] = [];
@@ -941,32 +941,10 @@ const buildCreateEntryFeedback = (
     if (outcome.status === "fulfilled") {
       notifications.push(...outcome.notifications);
     } else {
-      const errorMessage = `Failed to create musical entry in ${dbSourceLabel(outcome.source)}`;
+      const errorMessage = `Failed to ${mode} musical entry in ${dbSourceLabel(outcome.source)}`;
       console.error(errorMessage, outcome.reason);
 
       errors.push(`${errorMessage}: ${formatSaveEntryError(outcome.reason)}`);
-    }
-  }
-
-  return { notifications, errors };
-};
-
-const formatUpdateEntryError = formatSaveEntryError;
-
-const buildUpdateEntryFeedback = (
-  outcomes: UpdateEntryOutcome[],
-): { notifications: string[]; errors: string[] } => {
-  const notifications: string[] = [];
-  const errors: string[] = [];
-
-  for (const outcome of outcomes) {
-    if (outcome.status === "fulfilled") {
-      notifications.push(...outcome.notifications);
-    } else {
-      const errorMessage = `Failed to update musical entry in ${dbSourceLabel(outcome.source)}`;
-      console.error(errorMessage, outcome.reason);
-
-      errors.push(`${errorMessage}: ${formatUpdateEntryError(outcome.reason)}`);
     }
   }
 
