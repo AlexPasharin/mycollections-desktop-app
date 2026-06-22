@@ -5,7 +5,7 @@ import type { TagId } from "@/types/tags";
 import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
 
-export type UpsertMusicalEntryRow = {
+type UpsertMusicalEntryRow = {
   mainName: string;
   originalReleaseDate: string | null;
   discogsUrl: string | null;
@@ -14,7 +14,7 @@ export type UpsertMusicalEntryRow = {
   relationToQueen: string | null;
 };
 
-export type UpsertMusicalEntryInputPayload = {
+type UpsertMusicalEntryInputPayload = {
   entry: UpsertMusicalEntryRow;
   tagIds: string[];
   typeIds: string[];

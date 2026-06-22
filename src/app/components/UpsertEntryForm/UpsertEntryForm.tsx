@@ -375,19 +375,10 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
         }
       })
       .catch((error: unknown) => {
-        console.error(
-          isCreateMode
-            ? "Failed to create musical entry"
-            : "Failed to update musical entry",
-          error,
-        );
-        setSubmitError(
-          error instanceof Error
-            ? error.message
-            : isCreateMode
-              ? "Failed to create musical entry"
-              : "Failed to update musical entry",
-        );
+        const errorMessage = `Failed to ${mode} musical entry`;
+
+        console.error(errorMessage, error);
+        setSubmitError(error instanceof Error ? error.message : errorMessage);
       })
       .finally(() => {
         setIsSubmitting(false);
@@ -836,10 +827,10 @@ const buildAltNameIdsMap = (
   return map;
 };
 
-const applySharedAltNameIds = <T extends MusicalEntryAltNameInput>(
-  altNames: T[],
+const applySharedAltNameIds = (
+  altNames: MusicalEntryAltNameInput[],
   sharedAltNameIds: AltNameIdMap | undefined,
-): T[] =>
+): MusicalEntryAltNameInput[] =>
   altNames.map((altName) => {
     if (altName.nameId !== undefined) {
       return altName;
@@ -927,8 +918,11 @@ const updateEntryAcrossDbSources = async (
   };
 };
 
-const formatSaveEntryError = (reason: unknown): string =>
-  reason instanceof Error ? reason.message : "Failed to save musical entry";
+const formatSaveEntryError = (
+  reason: unknown,
+  mode: "create" | "update",
+): string =>
+  reason instanceof Error ? reason.message : `Failed to ${mode} musical entry`;
 
 const buildUpsertEntryFeedback = (
   outcomes: UpsertEntryOutcome[],
@@ -944,7 +938,9 @@ const buildUpsertEntryFeedback = (
       const errorMessage = `Failed to ${mode} musical entry in ${dbSourceLabel(outcome.source)}`;
       console.error(errorMessage, outcome.reason);
 
-      errors.push(`${errorMessage}: ${formatSaveEntryError(outcome.reason)}`);
+      errors.push(
+        `${errorMessage}: ${formatSaveEntryError(outcome.reason, mode)}`,
+      );
     }
   }
 

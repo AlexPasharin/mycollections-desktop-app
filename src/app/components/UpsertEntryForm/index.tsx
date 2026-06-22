@@ -75,7 +75,6 @@ const UpsertEntryFormWrapper: FC<UpsertEntryFormWrapperProps> = ({
     Promise.all([
       fetchEntryTypes(primaryDbSource),
       loadEntryReleaseTagIds({
-        mode,
         getEntryReleaseTagIds,
         entryId,
         primaryDbSource,
@@ -117,53 +116,43 @@ const UpsertEntryFormWrapper: FC<UpsertEntryFormWrapperProps> = ({
       ? tags.filter((tag) => !releaseTagIds.has(tag.tagId))
       : tags;
 
-  if (mode === "update") {
-    return (
-      <UpsertEntryForm
-        {...rest}
-        mode="update"
-        entry={entry}
-        updateMusicalEntry={api.updateMusicalEntry}
-        primaryDbSource={primaryDbSource}
-        tags={filteredTags}
-        allEntryTypes={allEntryTypes}
-      />
-    );
-  }
+  const sharedProps = {
+    ...rest,
+    primaryDbSource,
+    tags: filteredTags,
+    allEntryTypes,
+  };
 
-  return (
-    <UpsertEntryForm
-      {...rest}
-      mode="create"
-      artistId={artistId}
-      createMusicalEntry={api.createMusicalEntry}
-      primaryDbSource={primaryDbSource}
-      tags={filteredTags}
-      allEntryTypes={allEntryTypes}
-    />
-  );
+  const childProps =
+    mode === "update"
+      ? {
+          mode,
+          entry,
+          updateMusicalEntry: api.updateMusicalEntry,
+        }
+      : {
+          mode,
+          artistId,
+          createMusicalEntry: api.createMusicalEntry,
+        };
+
+  return <UpsertEntryForm {...sharedProps} {...childProps} />;
 };
 
 export default UpsertEntryFormWrapper;
 
 type LoadEntryReleaseTagIdsParams = {
-  mode: UpsertEntryFormWrapperProps["mode"];
   getEntryReleaseTagIds: GetEntryReleaseTagIds | undefined;
   entryId: string | undefined;
   primaryDbSource: DbSource;
 };
 
 const loadEntryReleaseTagIds = async ({
-  mode,
   getEntryReleaseTagIds,
   entryId,
   primaryDbSource,
 }: LoadEntryReleaseTagIdsParams): Promise<Set<string>> => {
-  if (
-    mode === "update" &&
-    getEntryReleaseTagIds !== undefined &&
-    entryId !== undefined
-  ) {
+  if (getEntryReleaseTagIds !== undefined && entryId !== undefined) {
     const entryReleaseTagIds = await getEntryReleaseTagIds(
       entryId,
       primaryDbSource,
