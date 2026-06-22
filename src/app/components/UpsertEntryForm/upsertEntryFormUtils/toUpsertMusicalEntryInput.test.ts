@@ -1,8 +1,5 @@
-import type { UpsertEntryAltNameRow, UpsertEntryFormEntry } from "./formValues";
-import { toUpdateMusicalEntryInput } from "./toUpdateMusicalEntryInput";
-
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-const entry = { entryId: "entry-abc" } as UpsertEntryFormEntry;
+import type { UpsertEntryAltNameRow } from "./formValues";
+import { toUpsertMusicalEntryInput } from "./toUpsertMusicalEntryInput";
 
 const altNameRow = (
   id: string,
@@ -14,11 +11,10 @@ const altNameRow = (
   ...(nameId === undefined ? {} : { nameId }),
 });
 
-describe("toUpdateMusicalEntryInput", () => {
-  it("maps entryId and scalar entry fields from validated form values", () => {
+describe("toUpsertMusicalEntryInput", () => {
+  it("maps scalar entry fields from validated form values", () => {
     expect(
-      toUpdateMusicalEntryInput({
-        entry,
+      toUpsertMusicalEntryInput({
         mainName: "  A Night at the Opera  ",
         originalReleaseDate: { year: "1975", month: "11", day: "21" },
         discogsUrl: "https://www.discogs.com/master/123-title",
@@ -30,7 +26,6 @@ describe("toUpdateMusicalEntryInput", () => {
         relationToQueen: "  Core album  ",
       }),
     ).toEqual({
-      entryId: "entry-abc",
       entry: {
         mainName: "  A Night at the Opera  ",
         originalReleaseDate: "1975-11-21",
@@ -47,8 +42,7 @@ describe("toUpdateMusicalEntryInput", () => {
 
   it("converts empty optional strings to null", () => {
     expect(
-      toUpdateMusicalEntryInput({
-        entry,
+      toUpsertMusicalEntryInput({
         mainName: "News of the World",
         originalReleaseDate: { year: "", month: "", day: "" },
         discogsUrl: "   ",
@@ -60,7 +54,6 @@ describe("toUpdateMusicalEntryInput", () => {
         relationToQueen: "ignored when unchecked",
       }),
     ).toEqual({
-      entryId: "entry-abc",
       entry: {
         mainName: "News of the World",
         originalReleaseDate: null,
@@ -77,8 +70,7 @@ describe("toUpdateMusicalEntryInput", () => {
 
   it("clears relationToQueen when the entry is not part of the Queen collection", () => {
     expect(
-      toUpdateMusicalEntryInput({
-        entry,
+      toUpsertMusicalEntryInput({
         mainName: "Flash Gordon",
         originalReleaseDate: { year: "1980", month: "", day: "" },
         discogsUrl: "",
@@ -94,8 +86,7 @@ describe("toUpdateMusicalEntryInput", () => {
 
   it("nulls relationToQueen when part of Queen collection but the field is blank", () => {
     expect(
-      toUpdateMusicalEntryInput({
-        entry,
+      toUpsertMusicalEntryInput({
         mainName: "A Kind of Magic",
         originalReleaseDate: { year: "1986", month: "", day: "" },
         discogsUrl: "",
@@ -111,8 +102,7 @@ describe("toUpdateMusicalEntryInput", () => {
 
   it("serializes year-only and year-month release dates", () => {
     expect(
-      toUpdateMusicalEntryInput({
-        entry,
+      toUpsertMusicalEntryInput({
         mainName: "Queen",
         originalReleaseDate: { year: "1973", month: "", day: "" },
         discogsUrl: "",
@@ -126,8 +116,7 @@ describe("toUpdateMusicalEntryInput", () => {
     ).toBe("1973");
 
     expect(
-      toUpdateMusicalEntryInput({
-        entry,
+      toUpsertMusicalEntryInput({
         mainName: "Queen II",
         originalReleaseDate: { year: "1974", month: "3", day: "" },
         discogsUrl: "",
@@ -148,8 +137,7 @@ describe("toUpdateMusicalEntryInput", () => {
     ];
 
     expect(
-      toUpdateMusicalEntryInput({
-        entry,
+      toUpsertMusicalEntryInput({
         mainName: "The Game",
         originalReleaseDate: { year: "1980", month: "", day: "" },
         discogsUrl: "",

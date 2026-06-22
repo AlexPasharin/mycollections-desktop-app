@@ -51,7 +51,7 @@ export type UpsertEntryFormPersistedState = {
   checkedDbSources: ReadonlySet<DbSource>;
 };
 
-export const initialUpsertEntryFormDraftValue = (
+export const initialUpdateEntryFormDraft = (
   entry: UpsertEntryFormEntry,
 ): UpsertEntryFormDraft => {
   const {
@@ -83,7 +83,7 @@ export const initialUpsertEntryFormDraftValue = (
   });
 };
 
-export const initialUpsertEntryFormDraftForCreate = (): UpsertEntryFormDraft =>
+export const initialCreateEntryFormDraft = (): UpsertEntryFormDraft =>
   buildUpsertEntryFormDraft({
     mainName: "",
     originalReleaseDate: null,

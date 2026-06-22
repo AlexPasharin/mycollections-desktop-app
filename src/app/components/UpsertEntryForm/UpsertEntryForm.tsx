@@ -9,14 +9,13 @@ import {
 } from "./upsertEntryFormUtils/errorMessages";
 import {
   defaultAltNameRow,
-  initialUpsertEntryFormDraftForCreate,
-  initialUpsertEntryFormDraftValue,
+  initialCreateEntryFormDraft,
+  initialUpdateEntryFormDraft,
   type UpsertEntryFormDraft,
   type UpsertEntryFormEntry,
   type UpsertEntryFormPersistedState,
 } from "./upsertEntryFormUtils/formValues";
-import { toCreateMusicalEntryInput } from "./upsertEntryFormUtils/toCreateMusicalEntryInput";
-import { toUpdateMusicalEntryInput } from "./upsertEntryFormUtils/toUpdateMusicalEntryInput";
+import { toUpsertMusicalEntryInput } from "./upsertEntryFormUtils/toUpsertMusicalEntryInput";
 import UpsertEntryTypesSection from "./UpsertEntryTypesSection";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
@@ -57,11 +56,13 @@ export type UpsertEntryFormUpdateProps = UpsertEntryFormSharedProps & {
   mode: "update";
   entry: UpsertEntryFormEntry;
   updateMusicalEntry: UpdateMusicalEntry;
+  artistId?: never;
 };
 
 export type UpsertEntryFormCreateProps = UpsertEntryFormSharedProps & {
   mode: "create";
   artistId: string;
+  entry?: never;
   createMusicalEntry: CreateMusicalEntry;
 };
 
@@ -89,15 +90,11 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     allEntryTypes,
     restoredState,
     onPersistState,
+    entry,
+    artistId,
   } = props;
 
   const isCreateMode = mode === "create";
-  const entry = mode === "update" ? props.entry : undefined;
-  const updateMusicalEntry =
-    mode === "update" ? props.updateMusicalEntry : undefined;
-  const createMusicalEntry =
-    mode === "create" ? props.createMusicalEntry : undefined;
-  const artistId = mode === "create" ? props.artistId : undefined;
 
   const [form, setForm] = useState<UpsertEntryFormDraft>(() => {
     if (restoredState?.form) {
@@ -105,8 +102,8 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     }
 
     return isCreateMode
-      ? initialUpsertEntryFormDraftForCreate()
-      : initialUpsertEntryFormDraftValue(props.entry);
+      ? initialCreateEntryFormDraft()
+      : initialUpdateEntryFormDraft(props.entry);
   });
 
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
@@ -130,7 +127,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
   const prevEntryRef = useRef(entry);
 
   useEffect(() => {
-    if (isCreateMode || entry === undefined) {
+    if (isCreateMode) {
       return;
     }
 
@@ -139,7 +136,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     }
 
     prevEntryRef.current = entry;
-    setForm(initialUpsertEntryFormDraftValue(entry));
+    setForm(initialUpdateEntryFormDraft(entry));
     setShowSubmissionValidationError(false);
     setIsConfirmOpen(false);
     setSubmitError(undefined);
@@ -342,44 +339,31 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     setIsSubmitting(true);
     setSubmitError(undefined);
 
-    const savePromise =
-      isCreateMode && createMusicalEntry !== undefined && artistId !== undefined
-        ? createEntryAcrossDbSources(
-            toCreateMusicalEntryInput({
-              artistId,
-              mainName,
-              originalReleaseDate,
-              discogsUrl,
-              comment,
-              selectedTags,
-              selectedTypes,
-              altNames,
-              partOfQueenCollection,
-              relationToQueen,
-            }),
-            checkedDbSources,
-            primaryDbSource,
-            createMusicalEntry,
-          )
-        : updateMusicalEntry !== undefined && entry !== undefined
-          ? updateEntryAcrossDbSources(
-              toUpdateMusicalEntryInput({
-                entry,
-                mainName,
-                originalReleaseDate,
-                discogsUrl,
-                comment,
-                selectedTags,
-                selectedTypes,
-                altNames,
-                partOfQueenCollection,
-                relationToQueen,
-              }),
-              checkedDbSources,
-              primaryDbSource,
-              updateMusicalEntry,
-            )
-          : Promise.reject(new Error("Entry form is missing save handlers"));
+    const upsertInput = toUpsertMusicalEntryInput({
+      mainName,
+      originalReleaseDate,
+      discogsUrl,
+      comment,
+      selectedTags,
+      selectedTypes,
+      altNames,
+      partOfQueenCollection,
+      relationToQueen,
+    });
+
+    const savePromise = isCreateMode
+      ? createEntryAcrossDbSources(
+          { ...upsertInput, artistId },
+          checkedDbSources,
+          primaryDbSource,
+          props.createMusicalEntry,
+        )
+      : updateEntryAcrossDbSources(
+          { ...upsertInput, entryId: entry.entryId },
+          checkedDbSources,
+          primaryDbSource,
+          props.updateMusicalEntry,
+        );
 
     savePromise
       .then(({ entry: savedEntry, outcomes }) => {
@@ -390,10 +374,6 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
         setIsConfirmOpen(false);
 
         if (savedEntry) {
-          if (isCreateMode) {
-            setForm(initialUpsertEntryFormDraftForCreate());
-          }
-
           onEntrySaved(savedEntry, notifications, errors);
         } else if (errors.length > 0) {
           setSubmitError(errors.join("\n"));

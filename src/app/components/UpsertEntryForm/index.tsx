@@ -10,6 +10,7 @@ import type {
 } from "./upsertEntryFormApi";
 
 import type { DbSource } from "@/db/db-source";
+import type { GetEntryReleaseTagIds } from "@/types/releases";
 import type { TagListItem } from "@/types/tags";
 
 export type { UpsertEntryFormCreateApi, UpsertEntryFormUpdateApi };
@@ -26,7 +27,6 @@ export type UpsertEntryFormWrapperUpdateProps = Omit<
   "tags" | "allEntryTypes" | "updateMusicalEntry"
 > &
   UpsertEntryFormWrapperSharedProps & {
-    mode: "update";
     api: UpsertEntryFormUpdateApi;
   };
 
@@ -35,7 +35,6 @@ export type UpsertEntryFormWrapperCreateProps = Omit<
   "tags" | "allEntryTypes" | "createMusicalEntry"
 > &
   UpsertEntryFormWrapperSharedProps & {
-    mode: "create";
     api: UpsertEntryFormCreateApi;
   };
 
@@ -43,17 +42,17 @@ export type UpsertEntryFormWrapperProps =
   | UpsertEntryFormWrapperUpdateProps
   | UpsertEntryFormWrapperCreateProps;
 
-const UpsertEntryFormWrapper: FC<UpsertEntryFormWrapperProps> = (props) => {
-  const {
-    mode,
-    primaryDbSource,
-    tags,
-    tagsLoading,
-    tagsLoadFailed,
-    api,
-    ...formProps
-  } = props;
-
+const UpsertEntryFormWrapper: FC<UpsertEntryFormWrapperProps> = ({
+  mode,
+  primaryDbSource,
+  tags,
+  tagsLoading,
+  tagsLoadFailed,
+  api,
+  entry,
+  artistId,
+  ...rest
+}) => {
   const [allEntryTypes, setAllEntryTypes] = useState<
     Awaited<ReturnType<UpsertEntryFormUpdateApi["fetchEntryTypes"]>>
   >([]);
@@ -64,7 +63,8 @@ const UpsertEntryFormWrapper: FC<UpsertEntryFormWrapperProps> = (props) => {
   const [dataLoadingFailed, setDataLoadingFailed] = useState(false);
 
   const fetchEntryTypes = api.fetchEntryTypes;
-  const entryId = mode === "update" ? props.entry.entryId : undefined;
+  const entryId = entry?.entryId;
+
   const getEntryReleaseTagIds =
     mode === "update" ? api.getEntryReleaseTagIds : undefined;
 
@@ -72,33 +72,26 @@ const UpsertEntryFormWrapper: FC<UpsertEntryFormWrapperProps> = (props) => {
     setLoading(true);
     setDataLoadingFailed(false);
 
-    const loadReferenceData = async () => {
-      try {
-        const entryTypesData = await fetchEntryTypes(primaryDbSource);
+    Promise.all([
+      fetchEntryTypes(primaryDbSource),
+      loadEntryReleaseTagIds({
+        mode,
+        getEntryReleaseTagIds,
+        entryId,
+        primaryDbSource,
+      }),
+    ])
+      .then(([entryTypesData, entryReleaseTagIds]) => {
         setAllEntryTypes(entryTypesData);
-
-        if (
-          mode === "update" &&
-          getEntryReleaseTagIds !== undefined &&
-          entryId !== undefined
-        ) {
-          const entryReleaseTagIds = await getEntryReleaseTagIds(
-            entryId,
-            primaryDbSource,
-          );
-          setReleaseTagIds(new Set(entryReleaseTagIds));
-        } else {
-          setReleaseTagIds(new Set());
-        }
-      } catch (error: unknown) {
+        setReleaseTagIds(entryReleaseTagIds);
+      })
+      .catch((error: unknown) => {
         console.error("Error fetching data required for entry form", error);
         setDataLoadingFailed(true);
-      } finally {
+      })
+      .finally(() => {
         setLoading(false);
-      }
-    };
-
-    void loadReferenceData();
+      });
   }, [mode, primaryDbSource, entryId, fetchEntryTypes, getEntryReleaseTagIds]);
 
   if (loading || tagsLoading) {
@@ -127,9 +120,9 @@ const UpsertEntryFormWrapper: FC<UpsertEntryFormWrapperProps> = (props) => {
   if (mode === "update") {
     return (
       <UpsertEntryForm
-        {...formProps}
+        {...rest}
         mode="update"
-        entry={props.entry}
+        entry={entry}
         updateMusicalEntry={api.updateMusicalEntry}
         primaryDbSource={primaryDbSource}
         tags={filteredTags}
@@ -140,9 +133,9 @@ const UpsertEntryFormWrapper: FC<UpsertEntryFormWrapperProps> = (props) => {
 
   return (
     <UpsertEntryForm
-      {...formProps}
+      {...rest}
       mode="create"
-      artistId={props.artistId}
+      artistId={artistId}
       createMusicalEntry={api.createMusicalEntry}
       primaryDbSource={primaryDbSource}
       tags={filteredTags}
@@ -152,3 +145,32 @@ const UpsertEntryFormWrapper: FC<UpsertEntryFormWrapperProps> = (props) => {
 };
 
 export default UpsertEntryFormWrapper;
+
+type LoadEntryReleaseTagIdsParams = {
+  mode: UpsertEntryFormWrapperProps["mode"];
+  getEntryReleaseTagIds: GetEntryReleaseTagIds | undefined;
+  entryId: string | undefined;
+  primaryDbSource: DbSource;
+};
+
+const loadEntryReleaseTagIds = async ({
+  mode,
+  getEntryReleaseTagIds,
+  entryId,
+  primaryDbSource,
+}: LoadEntryReleaseTagIdsParams): Promise<Set<string>> => {
+  if (
+    mode === "update" &&
+    getEntryReleaseTagIds !== undefined &&
+    entryId !== undefined
+  ) {
+    const entryReleaseTagIds = await getEntryReleaseTagIds(
+      entryId,
+      primaryDbSource,
+    );
+
+    return new Set(entryReleaseTagIds);
+  }
+
+  return new Set();
+};

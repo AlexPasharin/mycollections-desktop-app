@@ -85,6 +85,8 @@ export type SearchArtistEntries = (
 
 export type UpdateMusicalEntryAltNameInput = { nameId?: string; name: string };
 
+export type CreateMusicalEntryAltNameInput = { name: string };
+
 export type UpdateMusicalEntryInput = {
   entryId: string;
   entry: Omit<Updateable<MusicalEntry>, "entryId">;
@@ -102,7 +104,7 @@ export type CreateMusicalEntryInput = {
   entry: Insertable<MusicalEntry>;
   tagIds: string[];
   typeIds: string[];
-  altNames: string[];
+  altNames: CreateMusicalEntryAltNameInput[];
   artistId: string;
 };
 
