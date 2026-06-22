@@ -51,50 +51,26 @@ export type UpsertEntryFormPersistedState = {
   checkedDbSources: ReadonlySet<DbSource>;
 };
 
-export const initialUpdateEntryFormDraft = (
-  entry: UpsertEntryFormEntry,
+export const initialUpsertEntryFormDraft = (
+  entry?: UpsertEntryFormEntry,
 ): UpsertEntryFormDraft => {
-  const {
-    mainName,
-    originalReleaseDate,
-    discogsUrl,
-    comment,
-    partOfQueenCollection,
-    relationToQueen,
-    tags,
-    types,
-    altNames,
-  } = entry;
-
   return buildUpsertEntryFormDraft({
-    mainName,
-    originalReleaseDate,
-    discogsUrl,
-    comment,
-    partOfQueenCollection,
-    relationToQueen,
-    tagIds: tags.map((tag) => tag.tagId),
-    typeIds: types.map((type) => type.entryTypeId),
-    altNames: altNames.map(({ nameId, name }) => ({
-      id: nameId,
-      nameId,
-      name,
-    })),
+    mainName: entry?.mainName ?? "",
+    originalReleaseDate: entry?.originalReleaseDate ?? null,
+    discogsUrl: entry?.discogsUrl ?? "https://www.discogs.com/master/<id>-...",
+    comment: entry?.comment ?? "",
+    partOfQueenCollection: entry?.partOfQueenCollection ?? false,
+    relationToQueen: entry?.relationToQueen ?? null,
+    tagIds: entry?.tags.map((tag) => tag.tagId) ?? [],
+    typeIds: entry?.types.map((type) => type.entryTypeId) ?? [],
+    altNames:
+      entry?.altNames.map(({ nameId, name }) => ({
+        id: nameId,
+        nameId,
+        name,
+      })) ?? [],
   });
 };
-
-export const initialCreateEntryFormDraft = (): UpsertEntryFormDraft =>
-  buildUpsertEntryFormDraft({
-    mainName: "",
-    originalReleaseDate: null,
-    discogsUrl: "https://www.discogs.com/master/<id>-...",
-    comment: "",
-    partOfQueenCollection: false,
-    relationToQueen: null,
-    tagIds: [],
-    typeIds: [],
-    altNames: [],
-  });
 
 type BuildUpsertEntryFormDraftArgs = {
   mainName: string;

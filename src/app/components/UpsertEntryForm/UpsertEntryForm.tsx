@@ -9,8 +9,7 @@ import {
 } from "./upsertEntryFormUtils/errorMessages";
 import {
   defaultAltNameRow,
-  initialCreateEntryFormDraft,
-  initialUpdateEntryFormDraft,
+  initialUpsertEntryFormDraft,
   type UpsertEntryFormDraft,
   type UpsertEntryFormEntry,
   type UpsertEntryFormPersistedState,
@@ -95,16 +94,8 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     artistId,
   } = props;
 
-  const isCreateMode = mode === "create";
-
   const [form, setForm] = useState<UpsertEntryFormDraft>(() => {
-    if (restoredState?.form) {
-      return restoredState.form;
-    }
-
-    return isCreateMode
-      ? initialCreateEntryFormDraft()
-      : initialUpdateEntryFormDraft(props.entry);
+    return restoredState?.form ?? initialUpsertEntryFormDraft(entry);
   });
 
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
@@ -127,6 +118,8 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
   // Skip on mount so a restored draft is not overwritten.
   const prevEntryRef = useRef(entry);
 
+  const isCreateMode = mode === "create";
+
   useEffect(() => {
     if (isCreateMode) {
       return;
@@ -137,7 +130,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     }
 
     prevEntryRef.current = entry;
-    setForm(initialUpdateEntryFormDraft(entry));
+    setForm(initialUpsertEntryFormDraft(entry));
     setShowSubmissionValidationError(false);
     setIsConfirmOpen(false);
     setSubmitError(undefined);
