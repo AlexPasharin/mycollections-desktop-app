@@ -4,7 +4,6 @@ import api from "./api";
 import ArtistAddEntryForm from "./ArtistAddEntryForm";
 import ArtistInfo from "./ArtistEntriesContent/ArtistInfo";
 import ArtistEntriesSearch from "./ArtistEntriesSearch";
-import styles from "./ArtistWindowWrapper.module.css";
 
 import DbSourceSelect from "@/app/components/DbSourceSelect";
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
@@ -83,8 +82,8 @@ const ArtistWindowWrapper: FC = () => {
 
   return (
     <div>
-      <header className={styles.header}>
-        <h1>Artist view</h1>
+      <header className="mb-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3">
+        <h1 className="m-0">Artist view</h1>
         <DbSourceSelect
           id="artist-db-source"
           value={primaryDbSource}
