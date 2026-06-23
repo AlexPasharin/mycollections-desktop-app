@@ -1,30 +1,14 @@
 import { type FC, useEffect, useState } from "react";
 
 import api from "./api";
-import ArtistAddEntryForm from "./ArtistAddEntryForm";
-import ArtistInfo from "./ArtistEntriesContent/ArtistInfo";
-import ArtistEntriesSearch from "./ArtistEntriesSearch";
-import styles from "./ArtistWindowWrapper.module.css";
+import ArtistWindowMainContent from "./ArtistWindowMainContent";
 
 import DbSourceSelect from "@/app/components/DbSourceSelect";
-import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
-import FormFieldNotifications from "@/app/components/FormFieldNotifications";
-import Tabs from "@/app/components/Tabs";
 import type { DbSource } from "@/db/db-source";
 import { parseDbSource } from "@/db/parse-db-source";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useSyncSearchParam } from "@/hooks/useSyncSearchParam";
 import type { ArtistByIdResult } from "@/types/artists";
-
-type ArtistEntriesTab = "searchEntries" | "addEntry";
-
-/** Stable ids for this tablist (single Artist view per document). */
-const SEARCH_ENTRIES_TAB_ID = "artist-search-entries-tab";
-const SEARCH_ENTRIES_PANEL_ID = "artist-search-entries-panel";
-const ADD_ENTRY_TAB_ID = "artist-add-entry-tab";
-const ADD_ENTRY_PANEL_ID = "artist-add-entry-panel";
-const CREATE_ENTRY_NOTIFICATIONS_ID = "artist-create-entry-notifications";
-const CREATE_ENTRY_ERRORS_ID = "artist-create-entry-errors";
 
 const ArtistWindowWrapper: FC = () => {
   const params = new URLSearchParams(window.location.search);
@@ -35,11 +19,6 @@ const ArtistWindowWrapper: FC = () => {
   );
   const [artist, setArtist] = useState<ArtistByIdResult>();
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<ArtistEntriesTab>("searchEntries");
-  const [createEntryNotifications, setCreateEntryNotifications] = useState<
-    string[]
-  >([]);
-  const [createEntryErrors, setCreateEntryErrors] = useState<string[]>([]);
 
   useSyncSearchParam("source", primaryDbSource);
 
@@ -50,11 +29,6 @@ const ArtistWindowWrapper: FC = () => {
       : "Artist View";
 
   useDocumentTitle(title);
-
-  useEffect(() => {
-    setCreateEntryNotifications([]);
-    setCreateEntryErrors([]);
-  }, [primaryDbSource]);
 
   useEffect(() => {
     if (!artistId) {
@@ -83,8 +57,8 @@ const ArtistWindowWrapper: FC = () => {
 
   return (
     <div>
-      <header className={styles.header}>
-        <h1>Artist view</h1>
+      <header className="mb-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3">
+        <h1 className="m-0">Artist view</h1>
         <DbSourceSelect
           id="artist-db-source"
           value={primaryDbSource}
@@ -95,59 +69,13 @@ const ArtistWindowWrapper: FC = () => {
       {isLoading ? (
         <p>Loading...</p>
       ) : artist ? (
-        <>
-          <ArtistInfo artist={artist} />
-
-          <FormFieldNotifications
-            id={CREATE_ENTRY_NOTIFICATIONS_ID}
-            messages={createEntryNotifications.map((notification) => ({
-              notification,
-            }))}
-          />
-          <FormFieldErrorMessages
-            id={CREATE_ENTRY_ERRORS_ID}
-            messages={createEntryErrors.map((message) => ({ message }))}
-          />
-
-          <Tabs
-            ariaLabel="Search artist entries or add a new entry"
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            tabs={[
-              {
-                id: "searchEntries",
-                tabId: SEARCH_ENTRIES_TAB_ID,
-                panelId: SEARCH_ENTRIES_PANEL_ID,
-                label: "Search entries",
-                children: (
-                  <ArtistEntriesSearch
-                    artistId={artistId}
-                    dbSource={primaryDbSource}
-                  />
-                ),
-              },
-              {
-                id: "addEntry",
-                tabId: ADD_ENTRY_TAB_ID,
-                panelId: ADD_ENTRY_PANEL_ID,
-                label: "Add new entry",
-                children: (
-                  <ArtistAddEntryForm
-                    artistId={artistId}
-                    primaryDbSource={primaryDbSource}
-                    onCancel={() => setActiveTab("searchEntries")}
-                    onEntrySaved={(notifications, errors) => {
-                      setCreateEntryNotifications(notifications);
-                      setCreateEntryErrors(errors);
-                    }}
-                  />
-                ),
-              },
-            ]}
-          />
-        </>
+        <ArtistWindowMainContent
+          artist={artist}
+          artistId={artistId}
+          primaryDbSource={primaryDbSource}
+        />
       ) : (
-        <p>Artist does not exist</p>
+        <p>Artist not found in database</p>
       )}
     </div>
   );

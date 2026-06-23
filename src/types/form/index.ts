@@ -3,6 +3,11 @@ export type FormFieldError = {
   sources?: PropertyKey[] | undefined;
 };
 
+export type FormFeedback = {
+  notifications: string[];
+  errors: string[];
+};
+
 type Notifications =
   | {
       notification: string;
