@@ -6,8 +6,8 @@ import { applyWithNotificationsFor } from "../client/kysely";
 
 import type { DB } from "@/types/db/database";
 import type {
+  MusicalEntryAltNameInput,
   UpdateMusicalEntry,
-  UpdateMusicalEntryAltNameInput,
 } from "@/types/entries";
 
 export const updateMusicalEntry: UpdateMusicalEntry = async (
@@ -83,7 +83,7 @@ const syncEntryTypes = async (
 const syncEntryAltNames = async (
   trx: DbTransaction,
   entryId: string,
-  altNames: UpdateMusicalEntryAltNameInput[],
+  altNames: MusicalEntryAltNameInput[],
 ) => {
   const providedNameIds = altNames
     .map((altName) => altName.nameId)
@@ -115,7 +115,7 @@ const syncEntryAltNames = async (
 const upsertEntryAltName = async (
   trx: DbTransaction,
   entryId: string,
-  altName: UpdateMusicalEntryAltNameInput,
+  altName: MusicalEntryAltNameInput,
   existingNameIds: Set<string>,
 ) => {
   const { nameId, name } = altName;

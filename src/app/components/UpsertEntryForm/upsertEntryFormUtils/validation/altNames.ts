@@ -1,19 +1,19 @@
-import type { EditEntryAltNamesErrors } from "../errorMessages";
-import type { EditEntryAltNameRow } from "../formValues";
+import type { UpsertEntryAltNamesErrors } from "../errorMessages";
+import type { UpsertEntryAltNameRow } from "../formValues";
 
 import type { FormFieldValidationResult } from "@/types/form";
 
 export const validateAltNames =
   (mainName: string) =>
   (
-    rows: EditEntryAltNameRow[],
+    rows: UpsertEntryAltNameRow[],
   ): FormFieldValidationResult<
-    EditEntryAltNameRow[],
-    EditEntryAltNamesErrors
+    UpsertEntryAltNameRow[],
+    UpsertEntryAltNamesErrors
   > => {
     const normalizedMainName = mainName.trim().toLowerCase();
     const seenNames = new Set<string>();
-    const errors: EditEntryAltNamesErrors = {};
+    const errors: UpsertEntryAltNamesErrors = {};
 
     let valid = true;
 

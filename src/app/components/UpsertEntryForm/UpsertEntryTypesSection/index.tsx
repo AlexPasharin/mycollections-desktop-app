@@ -1,17 +1,15 @@
 import type { FC } from "react";
 
-import styles from "./EditEntryTypesSection.module.css";
-
 import type { EntryTypeListItem } from "@/types/entryTypes";
 
-type EditEntryTypesSectionProps = {
+type UpsertEntryTypesSectionProps = {
   allEntryTypes: EntryTypeListItem[];
   selectedTypeIds: Set<string>;
   onAddType: (entryTypeId: string) => void;
   onRemoveType: (entryTypeId: string) => void;
 };
 
-const EditEntryTypesSection: FC<EditEntryTypesSectionProps> = ({
+const UpsertEntryTypesSection: FC<UpsertEntryTypesSectionProps> = ({
   allEntryTypes,
   selectedTypeIds,
   onAddType,
@@ -30,17 +28,23 @@ const EditEntryTypesSection: FC<EditEntryTypesSectionProps> = ({
   );
 
   return (
-    <div className={styles.section}>
-      <h2 className={styles.heading}>Types</h2>
+    <div className="mt-0 mb-[0.65rem]">
+      <h2 className="mb-3 text-base leading-snug font-semibold">Types</h2>
 
       {selectedTypes.length > 0 && (
-        <ul className={styles.selectedList} aria-label="Selected types">
+        <ul
+          className="mb-3 flex list-none flex-wrap gap-[0.4rem] p-0"
+          aria-label="Selected types"
+        >
           {selectedTypes.map((entryType) => (
-            <li key={entryType.entryTypeId} className={styles.selectedItem}>
+            <li
+              key={entryType.entryTypeId}
+              className="inline-flex items-center gap-[0.35rem] rounded bg-black/5 px-2 py-1 text-[0.92em]"
+            >
               <span>{entryType.name}</span>
               <button
                 type="button"
-                className={styles.removeType}
+                className="cursor-pointer border-none bg-transparent px-[0.35rem] py-[0.1rem] text-[0.85em] text-[#1a5fb4] underline hover:text-[#0d3d82]"
                 onClick={() => {
                   onRemoveType(entryType.entryTypeId);
                 }}
@@ -52,13 +56,16 @@ const EditEntryTypesSection: FC<EditEntryTypesSectionProps> = ({
         </ul>
       )}
 
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="edit-entry-type-select">
+      <div className="mb-[0.65rem] flex flex-col gap-[0.35rem]">
+        <label
+          className="text-[0.92em] font-semibold"
+          htmlFor="upsert-entry-type-select"
+        >
           Add type
         </label>
         <select
-          id="edit-entry-type-select"
-          className={styles.select}
+          id="upsert-entry-type-select"
+          className="box-border w-full max-w-96 px-2 py-[0.35rem] text-base"
           value=""
           onChange={(e) => {
             const { value } = e.target;
@@ -80,4 +87,4 @@ const EditEntryTypesSection: FC<EditEntryTypesSectionProps> = ({
   );
 };
 
-export default EditEntryTypesSection;
+export default UpsertEntryTypesSection;

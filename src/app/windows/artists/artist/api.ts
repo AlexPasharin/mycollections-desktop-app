@@ -1,12 +1,18 @@
 import type { GetArtistById } from "@/types/artists";
 import type {
   CreateEntryWindowParams,
+  CreateMusicalEntry,
   SearchArtistEntries,
 } from "@/types/entries";
+import type { FetchEntryTypes } from "@/types/entryTypes";
+import type { FetchTags } from "@/types/tags";
 
 export type API = {
   getArtistById: GetArtistById;
   searchArtistEntries: SearchArtistEntries;
+  fetchTags: FetchTags;
+  fetchEntryTypes: FetchEntryTypes;
+  createMusicalEntry: CreateMusicalEntry;
   openNewEntryWindow: (params: CreateEntryWindowParams) => void;
 };
 

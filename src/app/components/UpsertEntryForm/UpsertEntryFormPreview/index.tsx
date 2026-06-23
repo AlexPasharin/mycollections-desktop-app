@@ -1,8 +1,6 @@
 import type { FC } from "react";
 
-import styles from "./EditEntryFormPreview.module.css";
-
-import type { EditEntryFormDraft } from "../editEntryFormUtils/formValues";
+import type { UpsertEntryFormDraft } from "../upsertEntryFormUtils/formValues";
 
 import FormPreviewField, {
   FormPreviewBlockField,
@@ -13,13 +11,13 @@ import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
 import { orPlaceholder } from "@/utils/form";
 
-type EditEntryFormPreviewProps = {
-  form: EditEntryFormDraft;
+type UpsertEntryFormPreviewProps = {
+  form: UpsertEntryFormDraft;
   tags: TagListItem[];
   allEntryTypes: EntryTypeListItem[];
 };
 
-const EditEntryFormPreview: FC<EditEntryFormPreviewProps> = ({
+const UpsertEntryFormPreview: FC<UpsertEntryFormPreviewProps> = ({
   form,
   tags,
   allEntryTypes,
@@ -46,7 +44,7 @@ const EditEntryFormPreview: FC<EditEntryFormPreviewProps> = ({
   });
 
   return (
-    <div className={styles.preview}>
+    <div className="flex flex-col gap-[0.45rem] text-[0.92em]">
       <FormPreviewField label="Main name">
         {form.mainName.value}
       </FormPreviewField>
@@ -74,9 +72,9 @@ const EditEntryFormPreview: FC<EditEntryFormPreviewProps> = ({
       </FormPreviewField>
       <FormPreviewBlockField label="Alternative names">
         {form.altNames.value.length === 0 ? (
-          <p className={styles.multiline}>{orPlaceholder(null)}</p>
+          <p className="whitespace-pre-wrap">{orPlaceholder(null)}</p>
         ) : (
-          <ul className={styles.list}>
+          <ul className="mt-[0.2rem] pl-[1.1rem]">
             {form.altNames.value.map((row) => (
               <li key={row.id}>{orPlaceholder(row.name.trim())}</li>
             ))}
@@ -87,13 +85,13 @@ const EditEntryFormPreview: FC<EditEntryFormPreviewProps> = ({
         {form.partOfQueenCollection.value ? "Yes" : "No"}
       </FormPreviewField>
       <FormPreviewBlockField label="Relation to Queen">
-        <p className={styles.multiline}>{orPlaceholder(relationToQueen)}</p>
+        <p className="whitespace-pre-wrap">{orPlaceholder(relationToQueen)}</p>
       </FormPreviewBlockField>
       <FormPreviewBlockField label="Comment">
-        <p className={styles.multiline}>{orPlaceholder(comment)}</p>
+        <p className="whitespace-pre-wrap">{orPlaceholder(comment)}</p>
       </FormPreviewBlockField>
     </div>
   );
 };
 
-export default EditEntryFormPreview;
+export default UpsertEntryFormPreview;

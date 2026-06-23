@@ -1,4 +1,4 @@
-import type { Updateable } from "kysely";
+import type { Insertable, Updateable } from "kysely";
 
 import type { DbSource } from "@/db/db-source";
 import type { GeneralizedDateFromDb } from "@/types/date";
@@ -83,17 +83,30 @@ export type SearchArtistEntries = (
   dbSource: DbSource,
 ) => Promise<SearchArtistEntriesResult>;
 
-export type UpdateMusicalEntryAltNameInput = { nameId?: string; name: string };
+export type MusicalEntryAltNameInput = { nameId?: string; name: string };
 
 export type UpdateMusicalEntryInput = {
   entryId: string;
   entry: Omit<Updateable<MusicalEntry>, "entryId">;
   tagIds: string[];
   typeIds: string[];
-  altNames: UpdateMusicalEntryAltNameInput[];
+  altNames: MusicalEntryAltNameInput[];
 };
 
 export type UpdateMusicalEntry = (
   input: UpdateMusicalEntryInput,
+  dbSource: DbSource,
+) => Promise<{ entry: EntryByIdResult; notifications: string[] }>;
+
+export type CreateMusicalEntryInput = {
+  entry: Insertable<MusicalEntry>;
+  tagIds: string[];
+  typeIds: string[];
+  altNames: MusicalEntryAltNameInput[];
+  artistId: string;
+};
+
+export type CreateMusicalEntry = (
+  input: CreateMusicalEntryInput,
   dbSource: DbSource,
 ) => Promise<{ entry: EntryByIdResult; notifications: string[] }>;

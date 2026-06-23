@@ -1,14 +1,14 @@
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { FormFieldError } from "@/types/form";
 
-export type EditEntryAltNameRowId = string;
+export type UpsertEntryAltNameRowId = string;
 
-export type EditEntryAltNamesErrors = Record<
-  EditEntryAltNameRowId,
+export type UpsertEntryAltNamesErrors = Record<
+  UpsertEntryAltNameRowId,
   FormFieldError[]
 >;
 
-export const initialEditEntryFormFieldErrors = {
+export const initialUpsertEntryFormFieldErrors = {
   mainName: [],
   originalReleaseDate: [],
   discogsUrl: [],
@@ -20,17 +20,17 @@ export const initialEditEntryFormFieldErrors = {
   relationToQueen: [],
 };
 
-type EditEntryAltNameInputFieldKey = {
-  rowId: EditEntryAltNameRowId;
+type UpsertEntryAltNameInputFieldKey = {
+  rowId: UpsertEntryAltNameRowId;
 };
 
-export type EditEntryFormInputFieldKey =
+export type UpsertEntryFormInputFieldKey =
   | Exclude<
-      keyof typeof initialEditEntryFormFieldErrors,
+      keyof typeof initialUpsertEntryFormFieldErrors,
       "originalReleaseDate" | "altNames"
     >
   | keyof GeneralizedDateFormInputValue
-  | EditEntryAltNameInputFieldKey;
+  | UpsertEntryAltNameInputFieldKey;
 
-export const isAltNameInputFieldKey = (key: EditEntryFormInputFieldKey) =>
+export const isAltNameInputFieldKey = (key: UpsertEntryFormInputFieldKey) =>
   typeof key === "object" && "rowId" in key;

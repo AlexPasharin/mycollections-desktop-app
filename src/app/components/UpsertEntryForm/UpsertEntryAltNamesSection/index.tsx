@@ -1,15 +1,13 @@
 import type { FC } from "react";
 
-import styles from "./EditEntryAltNamesSection.module.css";
-
-import type { EditEntryAltNamesErrors } from "../editEntryFormUtils/errorMessages";
-import type { EditEntryAltNameRow } from "../editEntryFormUtils/formValues";
+import type { UpsertEntryAltNamesErrors } from "../upsertEntryFormUtils/errorMessages";
+import type { UpsertEntryAltNameRow } from "../upsertEntryFormUtils/formValues";
 
 import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
 
-type EditEntryAltNamesSectionProps = {
-  altNames: EditEntryAltNameRow[];
-  errors: EditEntryAltNamesErrors;
+type UpsertEntryAltNamesSectionProps = {
+  altNames: UpsertEntryAltNameRow[];
+  errors: UpsertEntryAltNamesErrors;
   onChangeName: (rowId: string, name: string) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
@@ -17,7 +15,7 @@ type EditEntryAltNamesSectionProps = {
   onBlur: () => void;
 };
 
-const EditEntryAltNamesSection: FC<EditEntryAltNamesSectionProps> = ({
+const UpsertEntryAltNamesSection: FC<UpsertEntryAltNamesSectionProps> = ({
   altNames,
   errors,
   onChangeName,
@@ -26,25 +24,33 @@ const EditEntryAltNamesSection: FC<EditEntryAltNamesSectionProps> = ({
   onFocus,
   onBlur,
 }) => (
-  <div className={styles.section}>
-    <h2 className={styles.heading}>Alternative names</h2>
+  <div className="mt-0 mb-[0.65rem]">
+    <h2 className="mb-3 text-base leading-snug font-semibold">
+      Alternative names
+    </h2>
 
     {altNames.length > 0 && (
-      <ul className={styles.rows} aria-label="Alternative names">
+      <ul
+        className="mb-3 flex flex-col gap-[0.55rem]"
+        aria-label="Alternative names"
+      >
         {altNames.map((row, index) => {
           const rowErrors = errors[row.id];
           const hasErrors = rowErrors && rowErrors.length > 0;
-          const errorId = `edit-entry-alt-name-error-${row.id}`;
-          const inputId = `edit-entry-alt-name-${row.id}`;
+          const errorId = `upsert-entry-alt-name-error-${row.id}`;
+          const inputId = `upsert-entry-alt-name-${row.id}`;
 
           return (
-            <li key={row.id} className={styles.row}>
-              <label className={styles.label} htmlFor={inputId}>
+            <li key={row.id} className="flex flex-wrap items-start gap-2">
+              <label
+                className="min-w-28 pt-[0.35rem] text-[0.92em] font-semibold"
+                htmlFor={inputId}
+              >
                 Alt name {index + 1}
               </label>
               <input
                 id={inputId}
-                className={styles.input}
+                className="min-w-40 flex-[1_1_14rem] px-2 py-[0.35rem] text-base"
                 type="text"
                 value={row.name}
                 onChange={(e) => {
@@ -60,7 +66,7 @@ const EditEntryAltNamesSection: FC<EditEntryAltNamesSectionProps> = ({
               />
               <button
                 type="button"
-                className={styles.removeRow}
+                className="cursor-pointer rounded-md border border-[#bcbcbc] bg-white px-[0.6rem] py-[0.35rem] text-[0.92em] text-[#333] hover:bg-[#f1f1f1]"
                 onClick={() => {
                   onRemoveRow(row.id);
                 }}
@@ -74,10 +80,14 @@ const EditEntryAltNamesSection: FC<EditEntryAltNamesSectionProps> = ({
       </ul>
     )}
 
-    <button type="button" className={styles.addRow} onClick={onAddRow}>
+    <button
+      type="button"
+      className="inline-block cursor-pointer border-none bg-transparent px-0 py-1 text-[0.92em] text-[#1a5fb4] underline hover:text-[#0d3d82]"
+      onClick={onAddRow}
+    >
       Add alternative name
     </button>
   </div>
 );
 
-export default EditEntryAltNamesSection;
+export default UpsertEntryAltNamesSection;

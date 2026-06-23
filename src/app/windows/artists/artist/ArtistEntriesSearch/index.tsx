@@ -17,13 +17,11 @@ const ARTIST_ENTRIES_SEARCH_LIMIT = 10;
 type ArtistEntriesSearchProps = {
   artistId: string;
   dbSource: DbSource;
-  loadingArtistData: boolean;
 };
 
 const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
   artistId,
   dbSource,
-  loadingArtistData,
 }) => {
   const [query, setQuery] = useState("");
   const [entries, setEntries] = useState<EntrySearchResult[]>([]);
@@ -51,10 +49,9 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
   useEffect(() => {
     artistEntriesSearchRequestIdRef.current += 1;
 
-    if (loadingArtistData || !debouncedQuery) {
+    if (!debouncedQuery) {
       setEntries([]);
       setNextCursor(null);
-
       setIsSearching(false);
 
       return;
@@ -92,17 +89,12 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
           setIsSearching(false);
         }
       });
-  }, [artistId, debouncedQuery, dbSource, loadingArtistData]);
+  }, [artistId, debouncedQuery, dbSource]);
 
   const hasMoreToLoad = nextCursor !== null;
 
   const loadMore = () => {
-    if (
-      !hasMoreToLoad ||
-      isLoadingMore ||
-      !debouncedQuery ||
-      loadingArtistData
-    ) {
+    if (!hasMoreToLoad || isLoadingMore || !debouncedQuery) {
       return;
     }
 
@@ -139,7 +131,6 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filter by name…"
-          disabled={loadingArtistData}
         />
       </label>
       {debouncedQuery &&
@@ -152,7 +143,7 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
               : "Showing all results"}
           </p>
         )}
-      {debouncedQuery && !loadingArtistData && (
+      {debouncedQuery && (
         <ArtistEntriesSearchResults
           entries={entries}
           dbSource={dbSource}

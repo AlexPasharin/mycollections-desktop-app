@@ -23,6 +23,7 @@ import {
   FETCH_TAGS,
   CREATE_TAG,
   FETCH_ENTRY_TYPES,
+  CREATE_MUSICAL_ENTRY,
   UPDATE_MUSICAL_ENTRY,
   CREATE_MUSICAL_RELEASE,
   UPDATE_MUSICAL_RELEASE,
@@ -37,6 +38,7 @@ import { fetchArtists, getArtistById, queryArtist } from "@/db/artists";
 import { fetchCountries } from "@/db/countries";
 import type { DbSource } from "@/db/db-source";
 import {
+  createMusicalEntry,
   fetchEntryTypes,
   getEntryById,
   searchArtistEntries,
@@ -55,6 +57,7 @@ import {
 import { fetchTags, createTag } from "@/db/tags";
 import type { FetchArtistsParams } from "@/types/artists";
 import type {
+  CreateMusicalEntryInput,
   SearchArtistEntriesParams,
   UpdateMusicalEntryInput,
 } from "@/types/entries";
@@ -129,6 +132,11 @@ await app.whenReady().then(async () => {
   );
   ipcMain.handle(FETCH_ENTRY_TYPES, (_, dbSource: DbSource) =>
     fetchEntryTypes(dbSource),
+  );
+  ipcMain.handle(
+    CREATE_MUSICAL_ENTRY,
+    (_, input: CreateMusicalEntryInput, dbSource: DbSource) =>
+      createMusicalEntry(input, dbSource),
   );
   ipcMain.handle(
     UPDATE_MUSICAL_ENTRY,
