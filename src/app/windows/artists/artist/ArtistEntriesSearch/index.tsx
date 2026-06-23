@@ -17,13 +17,16 @@ const ARTIST_ENTRIES_SEARCH_LIMIT = 10;
 type ArtistEntriesSearchProps = {
   artistId: string;
   dbSource: DbSource;
+  query: string;
+  onQueryChange: (query: string) => void;
 };
 
 const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
   artistId,
   dbSource,
+  query,
+  onQueryChange,
 }) => {
-  const [query, setQuery] = useState("");
   const [entries, setEntries] = useState<EntrySearchResult[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
@@ -129,7 +132,7 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => onQueryChange(e.target.value)}
           placeholder="Filter by name…"
         />
       </label>

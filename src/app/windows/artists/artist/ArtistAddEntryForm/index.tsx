@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FC } from "react";
+import { useEffect, useRef, useState, type FC, type RefObject } from "react";
 
 import ArtistAddEntrySuccess from "./ArtistAddEntrySuccess";
 
@@ -8,18 +8,21 @@ import UpsertEntryForm from "@/app/components/UpsertEntryForm";
 import type { UpsertEntryFormPersistedState } from "@/app/components/UpsertEntryForm/upsertEntryFormUtils/formValues";
 import type { DbSource } from "@/db/db-source";
 import type { EntryByIdResult } from "@/types/entries";
+import type { FormFeedback } from "@/types/form";
 import type { TagListItem } from "@/types/tags";
 
 type ArtistAddEntryFormProps = {
   artistId: string;
   primaryDbSource: DbSource;
+  createEntryDraftRef: RefObject<UpsertEntryFormPersistedState | null>;
   onCancel: () => void;
-  onEntrySaved: (notifications: string[], errors: string[]) => void;
+  onEntrySaved: (feedback: FormFeedback) => void;
 };
 
 const ArtistAddEntryForm: FC<ArtistAddEntryFormProps> = ({
   artistId,
   primaryDbSource,
+  createEntryDraftRef,
   onCancel,
   onEntrySaved,
 }) => {
@@ -28,9 +31,6 @@ const ArtistAddEntryForm: FC<ArtistAddEntryFormProps> = ({
   const [tagsLoadFailed, setTagsLoadFailed] = useState(false);
   const [savedEntry, setSavedEntry] = useState<EntryByIdResult | null>(null);
 
-  const createEntryDraftRef = useRef<UpsertEntryFormPersistedState | null>(
-    null,
-  );
   const fetchTagsTokenRef = useRef(0);
   const tagsDbSourceRef = useRef<DbSource | null>(null);
 
@@ -81,7 +81,7 @@ const ArtistAddEntryForm: FC<ArtistAddEntryFormProps> = ({
   ) => {
     createEntryDraftRef.current = null;
     setSavedEntry(entry);
-    onEntrySaved(notifications, errors);
+    onEntrySaved({ notifications, errors });
   };
 
   const handleCancel = () => {
