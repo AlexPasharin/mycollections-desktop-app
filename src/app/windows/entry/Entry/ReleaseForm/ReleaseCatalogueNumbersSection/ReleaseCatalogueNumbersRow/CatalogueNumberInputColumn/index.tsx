@@ -2,7 +2,7 @@ import type { FC } from "react";
 
 import styles from "../ReleaseCatalogueNumbersRow.module.css";
 
-import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
+import ErrorMessages from "@/app/components/ErrorMessages";
 import { errorSetToMessages } from "@/validation";
 
 export type CatalogueNumberInputColumnProps = {
@@ -94,7 +94,7 @@ const CatalogueNumberInputColumn: FC<CatalogueNumberInputColumnProps> = ({
             </div>
           </div>
           <div className={styles.fieldErrorSlot}>
-            <FormFieldErrorMessages id={errorId} messages={errorMessages} />
+            <ErrorMessages id={errorId} messages={errorMessages} />
           </div>
         </div>
       );

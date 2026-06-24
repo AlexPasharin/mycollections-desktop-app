@@ -19,10 +19,10 @@ import UpsertEntryTypesSection from "./UpsertEntryTypesSection";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
+import ErrorMessages from "@/app/components/ErrorMessages";
 import AddTagsFormSection from "@/app/components/Form/AddTagsFormSection";
-import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
-import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
+import NotificationMessages from "@/app/components/NotificationMessages";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
 import type {
@@ -34,6 +34,11 @@ import type {
   UpdateMusicalEntryInput,
 } from "@/types/entries";
 import type { EntryTypeListItem } from "@/types/entryTypes";
+import type {
+  FormFeedback,
+  FeedbackErrors,
+  FeedbackNotifications,
+} from "@/types/form";
 import type { TagListItem } from "@/types/tags";
 import { isDateInputFieldKey, omitProperty } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
@@ -45,11 +50,7 @@ type UpsertEntryFormSharedProps = {
   restoredState?: UpsertEntryFormPersistedState | null;
   onPersistState: (state: UpsertEntryFormPersistedState) => void;
   onCancel: () => void;
-  onEntrySaved: (
-    entry: EntryByIdResult,
-    notifications: string[],
-    errors: string[],
-  ) => void;
+  onEntrySaved: (entry: EntryByIdResult, feedback: FormFeedback) => void;
 };
 
 export type UpsertEntryFormUpdateProps = UpsertEntryFormSharedProps & {
@@ -369,9 +370,9 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
         setIsConfirmOpen(false);
 
         if (savedEntry) {
-          onEntrySaved(savedEntry, notifications, errors);
+          onEntrySaved(savedEntry, { notifications, errors });
         } else if (errors.length > 0) {
-          setSubmitError(errors.join("\n"));
+          setSubmitError(errors.map((error) => error.message).join("\n"));
         }
       })
       .catch((error: unknown) => {
@@ -451,7 +452,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
             autoComplete="off"
             required
           />
-          <FormFieldErrorMessages
+          <ErrorMessages
             id={MAIN_NAME_FIELD_ERROR_ID}
             messages={mainNameErrors}
           />
@@ -476,7 +477,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
             invalid={hasOriginalReleaseDateErrors}
             groupErrorId={ORIGINAL_RELEASE_DATE_FIELD_ERROR_ID}
           />
-          <FormFieldErrorMessages
+          <ErrorMessages
             id={ORIGINAL_RELEASE_DATE_FIELD_ERROR_ID}
             messages={originalReleaseDateErrors}
           />
@@ -506,11 +507,11 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
             aria-describedby={discogsUrlDescribedByIds || undefined}
             autoComplete="off"
           />
-          <FormFieldErrorMessages
+          <ErrorMessages
             id={DISCOGS_URL_FIELD_ERROR_ID}
             messages={discogsUrlErrors}
           />
-          <FormFieldNotifications
+          <NotificationMessages
             id={DISCOGS_URL_FIELD_NOTIFICATIONS_ID}
             messages={discogsUrlNotifications}
           />
@@ -554,7 +555,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           onFocus={(rowId) => onFocus({ rowId })}
           onBlur={() => onBlur("altNames")}
         />
-        <FormFieldNotifications
+        <NotificationMessages
           id={DISCOGS_URL_FIELD_NOTIFICATIONS_ID}
           messages={altNamesNotifications}
         />
@@ -607,7 +608,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
                   : undefined
               }
             />
-            <FormFieldNotifications
+            <NotificationMessages
               id={RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID}
               messages={relationToQueenNotifications}
             />
@@ -639,7 +640,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
                 : undefined
             }
           />
-          <FormFieldNotifications
+          <NotificationMessages
             id={COMMENT_FIELD_NOTIFICATIONS_ID}
             messages={commentNotifications}
           />
@@ -927,20 +928,22 @@ const formatSaveEntryError = (
 const buildUpsertEntryFeedback = (
   outcomes: UpsertEntryOutcome[],
   mode: "create" | "update",
-): { notifications: string[]; errors: string[] } => {
-  const notifications: string[] = [];
-  const errors: string[] = [];
+): FormFeedback => {
+  const notifications: FeedbackNotifications = [];
+  const errors: FeedbackErrors = [];
 
   for (const outcome of outcomes) {
     if (outcome.status === "fulfilled") {
-      notifications.push(...outcome.notifications);
+      notifications.push(
+        ...outcome.notifications.map((notification) => ({ notification })),
+      );
     } else {
       const errorMessage = `Failed to ${mode} musical entry in ${dbSourceLabel(outcome.source)}`;
       console.error(errorMessage, outcome.reason);
 
-      errors.push(
-        `${errorMessage}: ${formatSaveEntryError(outcome.reason, mode)}`,
-      );
+      errors.push({
+        message: `${errorMessage}: ${formatSaveEntryError(outcome.reason, mode)}`,
+      });
     }
   }
 

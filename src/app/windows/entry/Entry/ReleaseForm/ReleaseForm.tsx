@@ -37,10 +37,11 @@ import ReleaseNameField from "./ReleaseNameField";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
+import ErrorMessages from "@/app/components/ErrorMessages";
+import FeedbackSection from "@/app/components/FeedbackSection";
 import AddTagsFormSection from "@/app/components/Form/AddTagsFormSection";
-import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
-import FormFieldNotifications from "@/app/components/FormFieldNotifications";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
+import NotificationMessages from "@/app/components/NotificationMessages";
 import api from "@/app/windows/entry/api";
 import type { DbSource } from "@/db/db-source";
 import { dbSourceLabel } from "@/db/db-source-options";
@@ -650,13 +651,11 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             autoComplete="off"
             required
           />
-          <FormFieldErrorMessages
-            id={RELEASE_VERSION_FIELD_ERROR_ID}
-            messages={releaseVersionErrors}
-          />
-          <FormFieldNotifications
-            id={RELEASE_VERSION_FIELD_NOTIFICATIONS_ID}
-            messages={releaseVersionNotifications}
+          <FeedbackSection
+            notificationsId={RELEASE_VERSION_FIELD_NOTIFICATIONS_ID}
+            errorsId={RELEASE_VERSION_FIELD_ERROR_ID}
+            notifications={releaseVersionNotifications}
+            errors={releaseVersionErrors}
           />
         </div>
 
@@ -683,7 +682,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             invalid={hasReleaseDateErrors}
             groupErrorId={RELEASE_DATE_FIELD_ERROR_ID}
           />
-          <FormFieldErrorMessages
+          <ErrorMessages
             id={RELEASE_DATE_FIELD_ERROR_ID}
             messages={releaseDateErrors}
           />
@@ -710,11 +709,11 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             aria-describedby={discogsUrlDescribedByIds || undefined}
             autoComplete="off"
           />
-          <FormFieldErrorMessages
+          <ErrorMessages
             id={DISCOGS_URL_FIELD_ERROR_ID}
             messages={discogsUrlErrors}
           />
-          <FormFieldNotifications
+          <NotificationMessages
             id={DISCOGS_URL_FIELD_NOTIFICATIONS_ID}
             messages={discogsUrlNotifications}
           />
@@ -877,7 +876,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
                   : undefined
               }
             />
-            <FormFieldNotifications
+            <NotificationMessages
               id={RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID}
               messages={relationToQueenNotifications}
             />
@@ -903,7 +902,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
                 : undefined
             }
           />
-          <FormFieldNotifications
+          <NotificationMessages
             id={COMMENT_FIELD_NOTIFICATIONS_ID}
             messages={commentNotifications}
           />
@@ -929,7 +928,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
                 : undefined
             }
           />
-          <FormFieldNotifications
+          <NotificationMessages
             id={CONDITION_PROBLEMS_FIELD_NOTIFICATIONS_ID}
             messages={conditionProblemsNotifications}
           />

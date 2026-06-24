@@ -9,8 +9,7 @@ import {
   type ReleaseFormTabSharedData,
 } from "./ReleaseForm/releaseFormUtils/formValues";
 
-import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
-import FormFieldNotifications from "@/app/components/FormFieldNotifications";
+import FeedbackSection from "@/app/components/FeedbackSection";
 import Tabs from "@/app/components/Tabs";
 import UpsertEntryForm from "@/app/components/UpsertEntryForm";
 import type { UpsertEntryFormPersistedState } from "@/app/components/UpsertEntryForm/upsertEntryFormUtils/formValues";
@@ -19,11 +18,13 @@ import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES } from "@/db/db-source-options";
 import type { CountryListItem } from "@/types/countries";
 import type { EntryByIdResult } from "@/types/entries";
+import type { FormFeedback } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
 import type { ReleaseByIdResult } from "@/types/releases";
 import type { TagListItem } from "@/types/tags";
 import { sanitizeReleaseDate } from "@/utils/date";
+import { formFeedbackInitialValue } from "@/utils/form";
 
 type EntryProps = {
   entry: EntryByIdResult;
@@ -96,11 +97,8 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
   const countriesDbSourceRef = useRef<DbSource | null>(null);
   const fetchCountriesTokenRef = useRef(0);
 
-  const [latestUpdateEntryNotifications, setLatestUpdateEntryNotifications] =
-    useState<string[]>([]);
-  const [latestUpdateEntryErrors, setLatestUpdateEntryErrors] = useState<
-    string[]
-  >([]);
+  const [latestUpdateEntryFeedback, setLatestUpdateEntryFeedback] =
+    useState<FormFeedback>(formFeedbackInitialValue);
 
   const [latestAddedReleaseId, setLatestAddedReleaseId] = useState<string>();
   const [
@@ -141,23 +139,11 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
 
   const handleEntryUpdated = (
     updatedEntry: EntryByIdResult,
-    notifications: string[],
-    errors: string[],
+    feedback: FormFeedback,
   ) => {
     onEntryUpdated(updatedEntry);
-    setLatestUpdateEntryNotifications(notifications);
-    setLatestUpdateEntryErrors(errors);
+    setLatestUpdateEntryFeedback(feedback);
   };
-
-  const updateEntryNotifications = latestUpdateEntryNotifications.map(
-    (notification) => ({
-      notification,
-    }),
-  );
-
-  const updateEntryErrors = latestUpdateEntryErrors.map((message) => ({
-    message,
-  }));
 
   const sanitizedEntry = useMemo(
     () => ({
@@ -440,13 +426,11 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
             label: "Edit entry",
             children: (
               <>
-                <FormFieldNotifications
-                  id={EDIT_ENTRY_UPDATE_NOTIFICATIONS_ID}
-                  messages={updateEntryNotifications}
-                />
-                <FormFieldErrorMessages
-                  id={EDIT_ENTRY_UPDATE_ERRORS_ID}
-                  messages={updateEntryErrors}
+                <FeedbackSection
+                  notificationsId={EDIT_ENTRY_UPDATE_NOTIFICATIONS_ID}
+                  errorsId={EDIT_ENTRY_UPDATE_ERRORS_ID}
+                  notifications={latestUpdateEntryFeedback.notifications}
+                  errors={latestUpdateEntryFeedback.errors}
                 />
                 <UpsertEntryForm
                   mode="update"

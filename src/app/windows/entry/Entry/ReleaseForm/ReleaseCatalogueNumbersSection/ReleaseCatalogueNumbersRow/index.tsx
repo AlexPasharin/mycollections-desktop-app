@@ -13,7 +13,7 @@ import type {
   CatalogueNumberRowState,
 } from "../../releaseFormUtils/formValues";
 
-import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
+import ErrorMessages from "@/app/components/ErrorMessages";
 import type { LabelListItem } from "@/types/labels";
 import { errorSetToMessages } from "@/validation";
 
@@ -165,7 +165,7 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
                       </div>
                     </div>
                     <div className={styles.fieldErrorSlot}>
-                      <FormFieldErrorMessages
+                      <ErrorMessages
                         id={labelErrorId}
                         messages={labelErrorMessages}
                       />
@@ -293,10 +293,7 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
           </div>
 
           <div className={styles.rowErrorSlot}>
-            <FormFieldErrorMessages
-              id={rowCommonErrorId}
-              messages={rowCommonMessages}
-            />
+            <ErrorMessages id={rowCommonErrorId} messages={rowCommonMessages} />
           </div>
         </div>
 

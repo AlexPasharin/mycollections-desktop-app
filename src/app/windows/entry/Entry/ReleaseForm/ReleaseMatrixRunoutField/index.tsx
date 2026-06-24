@@ -4,9 +4,8 @@ import styles from "./ReleaseMatrixRunoutField.module.css";
 
 import type { ReleaseFormMatrixRunoutDraft } from "../releaseFormUtils/formValues";
 
-import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
-import FormFieldNotifications from "@/app/components/FormFieldNotifications";
-import type { FormFieldError } from "@/types/form";
+import FeedbackSection from "@/app/components/FeedbackSection";
+import type { FeedbackErrors, FeedbackNotifications } from "@/types/form";
 
 const MATRIX_RUNOUT_FIELD_ERROR_ID = "add-release-matrix-runout-error";
 const MATRIX_RUNOUT_FIELD_NOTIFICATIONS_ID =
@@ -14,8 +13,8 @@ const MATRIX_RUNOUT_FIELD_NOTIFICATIONS_ID =
 
 type ReleaseMatrixRunoutFieldProps = {
   matrixRunout: ReleaseFormMatrixRunoutDraft;
-  errorMessages: FormFieldError[];
-  notifications: { notification: string }[];
+  errorMessages: FeedbackErrors;
+  notifications: FeedbackNotifications;
   onValueChange: (value: string) => void;
   onTreatAsTextChange: (treatAsText: boolean) => void;
   onFocus: () => void;
@@ -90,13 +89,11 @@ const ReleaseMatrixRunoutField: FC<ReleaseMatrixRunoutFieldProps> = ({
           treat as plain text, not json object
         </label>
       </div>
-      <FormFieldErrorMessages
-        id={MATRIX_RUNOUT_FIELD_ERROR_ID}
-        messages={errorMessages}
-      />
-      <FormFieldNotifications
-        id={MATRIX_RUNOUT_FIELD_NOTIFICATIONS_ID}
-        messages={notifications}
+      <FeedbackSection
+        notificationsId={MATRIX_RUNOUT_FIELD_NOTIFICATIONS_ID}
+        errorsId={MATRIX_RUNOUT_FIELD_ERROR_ID}
+        notifications={notifications}
+        errors={errorMessages}
       />
     </div>
   );

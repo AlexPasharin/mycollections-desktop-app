@@ -3,11 +3,12 @@ import { type FC, useEffect, useState } from "react";
 import AddTagForm from "./AddTagForm";
 import AllTagsList from "./AllTagsList";
 
-import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
-import FormFieldNotifications from "@/app/components/FormFieldNotifications";
+import FeedbackSection from "@/app/components/FeedbackSection";
 import Tabs from "@/app/components/Tabs";
 import type { DbSource } from "@/db/db-source";
+import type { FormFeedback } from "@/types/form";
 import type { TagListItem } from "@/types/tags";
+import { formFeedbackInitialValue } from "@/utils/form";
 
 type TagsProps = {
   primaryDbSource: DbSource;
@@ -24,32 +25,26 @@ const ADD_PANEL_ID = "tags-add-panel";
 const Tags: FC<TagsProps> = ({ primaryDbSource }) => {
   const [activeTab, setActiveTab] = useState<TagsTab>("tagsList");
   const [recentlyAddedTagId, setRecentlyAddedTagId] = useState<string>();
-  const [addTagNotifications, setAddTagNotifications] = useState<string[]>([]);
-  const [addTagErrors, setAddTagErrors] = useState<string[]>([]);
+  const [addTagFeedback, setAddTagFeedback] = useState<FormFeedback>(
+    formFeedbackInitialValue,
+  );
   const [tags, setTags] = useState<TagListItem[]>([]);
 
   useEffect(() => {
     setRecentlyAddedTagId(undefined);
-    setAddTagNotifications([]);
-    setAddTagErrors([]);
+    setAddTagFeedback(formFeedbackInitialValue);
   }, [primaryDbSource]);
 
   const handleClearAddTagFeedback = () => {
-    setAddTagNotifications([]);
-    setAddTagErrors([]);
+    setAddTagFeedback(formFeedbackInitialValue);
   };
 
-  const handleCreateTag = ({
-    tagId,
-    notifications: successNotifications,
-    errors: failureMessages,
-  }: {
+  const handleCreateTag = (result: {
     tagId: string | undefined;
-    notifications: string[];
-    errors: string[];
+    feedback: FormFeedback;
   }) => {
-    setAddTagNotifications(successNotifications);
-    setAddTagErrors(failureMessages);
+    const { tagId, feedback } = result;
+    setAddTagFeedback(feedback);
 
     if (tagId !== undefined) {
       setRecentlyAddedTagId(tagId);
@@ -59,15 +54,10 @@ const Tags: FC<TagsProps> = ({ primaryDbSource }) => {
 
   return (
     <>
-      <FormFieldNotifications
-        id="add-tag-notifications"
-        messages={addTagNotifications.map((notification) => ({
-          notification,
-        }))}
-      />
-      <FormFieldErrorMessages
-        id="add-tag-errors"
-        messages={addTagErrors.map((message) => ({ message }))}
+      <FeedbackSection
+        notificationsId="add-tag-notifications"
+        errorsId="add-tag-errors"
+        {...addTagFeedback}
       />
 
       <Tabs

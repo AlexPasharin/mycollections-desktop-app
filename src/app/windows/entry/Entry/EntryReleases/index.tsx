@@ -5,8 +5,8 @@ import EntryReleasesList from "./EntryReleasesList";
 
 import api from "../../api";
 
-import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
-import FormFieldNotifications from "@/app/components/FormFieldNotifications";
+import ErrorMessages from "@/app/components/ErrorMessages";
+import NotificationMessages from "@/app/components/NotificationMessages";
 import type { DbSource } from "@/db/db-source";
 import type { CountryListItem } from "@/types/countries";
 import type { EntryByIdResult } from "@/types/entries";
@@ -142,7 +142,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
 
   const createNotificationBanner = createNotifications.length > 0 && (
     <div className={styles.createNotification} role="status">
-      <FormFieldNotifications
+      <NotificationMessages
         id={CREATE_NOTIFICATIONS_ID}
         messages={createNotifications}
       />
@@ -161,7 +161,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
 
   const createErrorBanner = createErrors.length > 0 && (
     <div className={styles.createError}>
-      <FormFieldErrorMessages id={CREATE_ERRORS_ID} messages={createErrors} />
+      <ErrorMessages id={CREATE_ERRORS_ID} messages={createErrors} />
       <button
         type="button"
         className={styles.createErrorDismiss}
@@ -179,7 +179,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
 
   const updateNotificationBanner = updateNotifications.length > 0 && (
     <div className={styles.createNotification} role="status">
-      <FormFieldNotifications
+      <NotificationMessages
         id={UPDATE_NOTIFICATIONS_ID}
         messages={updateNotifications}
       />
@@ -198,7 +198,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
 
   const updateErrorBanner = updateErrors.length > 0 && (
     <div className={styles.createError}>
-      <FormFieldErrorMessages id={UPDATE_ERRORS_ID} messages={updateErrors} />
+      <ErrorMessages id={UPDATE_ERRORS_ID} messages={updateErrors} />
       <button
         type="button"
         className={styles.createErrorDismiss}
@@ -214,7 +214,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
 
   const deleteErrorBanner = deleteErrors.length > 0 && (
     <div className={styles.createError}>
-      <FormFieldErrorMessages id={DELETE_ERRORS_ID} messages={deleteErrors} />
+      <ErrorMessages id={DELETE_ERRORS_ID} messages={deleteErrors} />
       <button
         type="button"
         className={styles.createErrorDismiss}

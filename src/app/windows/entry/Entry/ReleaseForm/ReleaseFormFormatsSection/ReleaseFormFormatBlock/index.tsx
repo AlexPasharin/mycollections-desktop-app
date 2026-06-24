@@ -8,7 +8,7 @@ import type {
 } from "../../releaseFormUtils/errorMessages";
 import type { ReleaseFormFormatInput } from "../../releaseFormUtils/formValues";
 
-import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
+import ErrorMessages from "@/app/components/ErrorMessages";
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
 import type { FormFieldError } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
@@ -164,10 +164,7 @@ const ReleaseFormFormatBlock: FC<ReleaseFormFormatBlockProps> = ({
         )}
       </div>
 
-      <FormFieldErrorMessages
-        id={rowErrorElementId}
-        messages={formatRowErrors}
-      />
+      <ErrorMessages id={rowErrorElementId} messages={formatRowErrors} />
 
       {onRemoveFormat && (
         <div className={styles.removeRow}>

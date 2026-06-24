@@ -5,7 +5,7 @@ import styles from "./ReleaseCountriesSection.module.css";
 import type { ReleaseFormCountriesSubsectionErrors } from "../releaseFormUtils/errorMessages";
 import type { CountrySelectionInput } from "../releaseFormUtils/formValues";
 
-import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
+import ErrorMessages from "@/app/components/ErrorMessages";
 import type { CountryListItem } from "@/types/countries";
 import { errorSetToMessages } from "@/validation";
 
@@ -62,7 +62,7 @@ const ReleaseCountriesSection: FC<ReleaseCountriesSectionProps> = ({
       </div>
 
       <div className={styles.propertyErrors}>
-        <FormFieldErrorMessages
+        <ErrorMessages
           id={`${selectIdPrefix}-property-errors`}
           messages={errorSetToMessages(propertyErrorMessages)}
         />
@@ -123,7 +123,7 @@ const ReleaseCountriesSection: FC<ReleaseCountriesSectionProps> = ({
                 </div>
               </div>
               <div className={styles.rowFieldErrors}>
-                <FormFieldErrorMessages
+                <ErrorMessages
                   id={rowErrorId}
                   messages={errorSetToMessages(rowErrorMessagesForDisplay)}
                 />

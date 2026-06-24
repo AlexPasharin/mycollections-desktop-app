@@ -53,7 +53,8 @@ const ArtistWindowMainContent: FC<ArtistWindowMainContentProps> = ({
       <FeedbackSection
         notificationsId={CREATE_ENTRY_NOTIFICATIONS_ID}
         errorsId={CREATE_ENTRY_ERRORS_ID}
-        feedback={createEntryFeedback}
+        notifications={createEntryFeedback.notifications}
+        errors={createEntryFeedback.errors}
       />
 
       <Tabs

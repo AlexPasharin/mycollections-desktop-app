@@ -1,30 +1,26 @@
-export type FormFieldError = {
+type FeedbackError = {
   message: string;
+};
+
+export type FormFieldError = FeedbackError & {
   sources?: PropertyKey[] | undefined;
 };
 
-export type FormFeedback = {
-  notifications: string[];
-  errors: string[];
-};
-
-type Notifications =
-  | {
-      notification: string;
-    }[]
-  | undefined;
+export type FeedbackNotifications = {
+  notification: string;
+}[];
 
 export type FormFieldValidationResult<T = string, E = FormFieldError[]> =
   | {
       valid: true;
       value: T;
-      notifications?: Notifications;
+      notifications?: FeedbackNotifications | undefined;
     }
   | {
       valid: false;
       value: T;
       errorMessages: E;
-      notifications?: Notifications;
+      notifications?: FeedbackNotifications | undefined;
     };
 
 export type FormField<T = string, U = FormFieldError[]> = {
@@ -32,7 +28,12 @@ export type FormField<T = string, U = FormFieldError[]> = {
   valid: boolean;
   validationFn: (value: T) => FormFieldValidationResult<T, U>;
   errors: U;
-  notifications: {
-    notification: string;
-  }[];
+  notifications: FeedbackNotifications;
+};
+
+export type FeedbackErrors = FeedbackError[];
+
+export type FormFeedback = {
+  notifications: FeedbackNotifications;
+  errors: FeedbackErrors;
 };
