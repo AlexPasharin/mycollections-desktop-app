@@ -74,14 +74,10 @@ const ArtistAddEntryForm: FC<ArtistAddEntryFormProps> = ({
     setSavedEntry(null);
   }, [primaryDbSource]);
 
-  const handleEntrySaved = (
-    entry: EntryByIdResult,
-    notifications: string[],
-    errors: string[],
-  ) => {
+  const handleEntrySaved = (entry: EntryByIdResult, feedback: FormFeedback) => {
     createEntryDraftRef.current = null;
     setSavedEntry(entry);
-    onEntrySaved({ notifications, errors });
+    onEntrySaved(feedback);
   };
 
   const handleCancel = () => {

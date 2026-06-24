@@ -5,6 +5,11 @@ import api from "../../api";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
+import type {
+  FeedbackErrors,
+  FeedbackNotifications,
+  FormFeedback,
+} from "@/types/form";
 import type { CreateTagInput, TagListItem } from "@/types/tags";
 import { updateImmutableSet } from "@/utils/immutableSet";
 
@@ -14,8 +19,7 @@ type AddTagFormProps = {
   onClearAddTagFeedback: () => void;
   onCreateTag: (result: {
     tagId: string | undefined;
-    notifications: string[];
-    errors: string[];
+    feedback: FormFeedback;
   }) => void;
 };
 
@@ -162,8 +166,7 @@ const createTagAcrossDbSources = async (
   primaryDbSource: DbSource,
 ): Promise<{
   tagId: string | undefined;
-  notifications: string[];
-  errors: string[];
+  feedback: FormFeedback;
 }> => {
   const orderedTargets = [
     primaryDbSource,
@@ -198,27 +201,29 @@ const createTagAcrossDbSources = async (
 
   return {
     tagId: sharedTagId,
-    ...buildCreateTagFeedback(outcomes),
+    feedback: buildCreateTagFeedback(outcomes),
   };
 };
 
 const formatCreateTagError = (reason: unknown): string =>
   reason instanceof Error ? reason.message : "Failed to create tag";
 
-const buildCreateTagFeedback = (
-  outcomes: CreateTagOutcome[],
-): { notifications: string[]; errors: string[] } => {
-  const notifications: string[] = [];
-  const errors: string[] = [];
+const buildCreateTagFeedback = (outcomes: CreateTagOutcome[]): FormFeedback => {
+  const notifications: FeedbackNotifications = [];
+  const errors: FeedbackErrors = [];
 
   for (const outcome of outcomes) {
     if (outcome.status === "fulfilled") {
-      notifications.push(...outcome.notifications);
+      notifications.push(
+        ...outcome.notifications.map((notification) => ({ notification })),
+      );
     } else {
       const errorMessage = `Failed to create tag in ${dbSourceLabel(outcome.source)}`;
       console.error(errorMessage, outcome.reason);
 
-      errors.push(`${errorMessage}: ${formatCreateTagError(outcome.reason)}`);
+      errors.push({
+        message: `${errorMessage}: ${formatCreateTagError(outcome.reason)}`,
+      });
     }
   }
 

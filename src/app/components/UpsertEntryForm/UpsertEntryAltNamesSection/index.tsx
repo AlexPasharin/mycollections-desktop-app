@@ -3,7 +3,7 @@ import type { FC } from "react";
 import type { UpsertEntryAltNamesErrors } from "../upsertEntryFormUtils/errorMessages";
 import type { UpsertEntryAltNameRow } from "../upsertEntryFormUtils/formValues";
 
-import FormFieldErrorMessages from "@/app/components/FormFieldErrorMessages";
+import ErrorMessages from "@/app/components/ErrorMessages";
 
 type UpsertEntryAltNamesSectionProps = {
   altNames: UpsertEntryAltNameRow[];
@@ -73,7 +73,7 @@ const UpsertEntryAltNamesSection: FC<UpsertEntryAltNamesSectionProps> = ({
               >
                 Remove
               </button>
-              <FormFieldErrorMessages id={errorId} messages={rowErrors} />
+              <ErrorMessages id={errorId} messages={rowErrors} />
             </li>
           );
         })}
