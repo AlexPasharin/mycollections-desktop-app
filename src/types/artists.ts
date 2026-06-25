@@ -1,5 +1,7 @@
+import type { Updateable } from "kysely";
+
 import type { DbSource } from "@/db/db-source";
-import type { ArtistType } from "@/types/db/database";
+import type { Artist, ArtistType } from "@/types/db/database";
 
 export type ListArtist = {
   artistId: string;
@@ -40,14 +42,36 @@ export type QueryArtist = (
   dbSource: DbSource,
 ) => Promise<ArtistQueryResult>;
 
+export type ArtistAltNameInfo = {
+  nameId: string;
+  name: string;
+};
+
 export type ArtistByIdResult = {
   artistId: string;
   name: string;
   type: ArtistType;
   partOfQueenFamily: boolean;
+  altNames: ArtistAltNameInfo[];
 };
 
 export type GetArtistById = (
   artistId: string,
   dbSource: DbSource,
 ) => Promise<ArtistByIdResult | undefined>;
+
+export type ArtistAltNameInput = {
+  nameId?: string;
+  name: string;
+};
+
+export type UpdateArtistInput = {
+  artistId: string;
+  artist: Omit<Updateable<Artist>, "artistId">;
+  altNames: ArtistAltNameInput[];
+};
+
+export type UpdateArtist = (
+  input: UpdateArtistInput,
+  dbSource: DbSource,
+) => Promise<{ artist: ArtistByIdResult; notifications: string[] }>;
