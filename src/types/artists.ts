@@ -50,6 +50,7 @@ export type ArtistAltNameInfo = {
 export type ArtistByIdResult = {
   artistId: string;
   name: string;
+  nameForSorting: string | null;
   type: ArtistType;
   partOfQueenFamily: boolean;
   altNames: ArtistAltNameInfo[];

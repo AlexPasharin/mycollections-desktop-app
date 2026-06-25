@@ -11,7 +11,7 @@ export const fetchArtistByIdResult = async (
 ): Promise<ArtistByIdResult | undefined> => {
   const artist = await db
     .selectFrom("artists")
-    .select(["artistId", "name", "type", "partOfQueenFamily"])
+    .select(["artistId", "name", "nameForSorting", "type", "partOfQueenFamily"])
     .where("artistId", "=", artistId)
     .executeTakeFirst();
 
