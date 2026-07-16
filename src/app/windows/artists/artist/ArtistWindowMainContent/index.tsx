@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type FC } from "react";
 import ArtistAddEntryForm from "../ArtistAddEntryForm";
 import ArtistInfo from "../ArtistEntriesContent/ArtistInfo";
 import ArtistEntriesSearch from "../ArtistEntriesSearch";
-import ArtistUpdateForm from "../ArtistUpdateForm";
+import ArtistUpsertForm from "../ArtistUpsertForm";
 
 import FeedbackSection from "@/app/components/FeedbackSection";
 import Tabs from "@/app/components/Tabs";
@@ -126,7 +126,7 @@ const ArtistWindowMainContent: FC<ArtistWindowMainContentProps> = ({
             panelId: UPDATE_ARTIST_PANEL_ID,
             label: "Update artist",
             children: (
-              <ArtistUpdateForm
+              <ArtistUpsertForm
                 artist={artist}
                 primaryDbSource={primaryDbSource}
                 onClearFeedback={handleClearUpdateArtistFeedback}

@@ -1,6 +1,7 @@
 import { type FC } from "react";
 
 import type { ArtistByIdResult } from "@/types/artists";
+import { formatArtistTypeLabel } from "@/utils/artist";
 
 type ArtistInfoProps = {
   artist: ArtistByIdResult;
@@ -19,7 +20,7 @@ const ArtistInfo: FC<ArtistInfoProps> = ({ artist }) => {
         </p>
       )}
       <p className="m-0 text-[0.95em]">
-        {type}
+        {formatArtistTypeLabel(type)}
         {partOfQueenFamily && " · Part of Queen family"}
       </p>
     </div>
