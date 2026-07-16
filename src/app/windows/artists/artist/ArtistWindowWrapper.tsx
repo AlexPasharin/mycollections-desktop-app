@@ -73,6 +73,7 @@ const ArtistWindowWrapper: FC = () => {
           artist={artist}
           artistId={artistId}
           primaryDbSource={primaryDbSource}
+          onArtistUpdated={setArtist}
         />
       ) : (
         <p>Artist not found in database</p>

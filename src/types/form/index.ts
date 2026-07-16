@@ -10,7 +10,11 @@ export type FeedbackNotifications = {
   notification: string;
 }[];
 
-export type FormFieldValidationResult<T = string, E = FormFieldError[]> =
+export type FormFieldValidationResult<
+  T = string,
+  E = FormFieldError[],
+  EResult = T,
+> =
   | {
       valid: true;
       value: T;
@@ -18,15 +22,23 @@ export type FormFieldValidationResult<T = string, E = FormFieldError[]> =
     }
   | {
       valid: false;
-      value: T;
+      value: EResult;
       errorMessages: E;
       notifications?: FeedbackNotifications | undefined;
     };
 
-export type FormField<T = string, U = FormFieldError[]> = {
+export type FormField<
+  T = string,
+  U = FormFieldError[],
+  VResult = T,
+  EResult = T,
+> = {
   value: T;
   valid: boolean;
-  validationFn: (value: T) => FormFieldValidationResult<T, U>;
+  validationFn: (
+    value: T,
+    form?: Record<string, FormField<unknown, unknown, unknown, unknown>>,
+  ) => FormFieldValidationResult<VResult, U, EResult>;
   errors: U;
   notifications: FeedbackNotifications;
 };
