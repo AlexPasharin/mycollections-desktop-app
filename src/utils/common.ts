@@ -92,3 +92,16 @@ export const nullIfEmpty = (value: string): string | null => {
 
   return trimmed === "" ? null : trimmed;
 };
+
+export const matchesTrimmedCaseInsensitiveSubstring = (
+  text: string,
+  query: string,
+): boolean => {
+  const trimmedQuery = query.trim();
+
+  if (trimmedQuery === "") {
+    return true;
+  }
+
+  return text.toLowerCase().includes(trimmedQuery.toLowerCase());
+};

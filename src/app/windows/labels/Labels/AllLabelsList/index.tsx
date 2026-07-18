@@ -4,6 +4,7 @@ import api from "../../api";
 
 import type { DbSource } from "@/db/db-source";
 import type { LabelListItem } from "@/types/labels";
+import { matchesTrimmedCaseInsensitiveSubstring } from "@/utils/common";
 
 type AllLabelsListProps = {
   primaryDbSource: DbSource;
@@ -23,6 +24,7 @@ const AllLabelsList: FC<AllLabelsListProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingError, setLoadingError] = useState<unknown>(null);
+  const [nameFilterQuery, setNameFilterQuery] = useState("");
 
   useEffect(() => {
     setIsLoading(true);
@@ -38,6 +40,14 @@ const AllLabelsList: FC<AllLabelsListProps> = ({
       })
       .finally(() => setIsLoading(false));
   }, [primaryDbSource, onLabelsChange]);
+
+  useEffect(() => {
+    setNameFilterQuery("");
+  }, [primaryDbSource]);
+
+  const filteredLabels = labels.filter(({ name }) =>
+    matchesTrimmedCaseInsensitiveSubstring(name, nameFilterQuery),
+  );
 
   if (isLoading) {
     return <p>Loading labels...</p>;
@@ -59,16 +69,40 @@ const AllLabelsList: FC<AllLabelsListProps> = ({
   }
 
   return (
-    <ol className="flex flex-col gap-2 p-4">
-      {labels.map(({ labelId, name }) => (
-        <li key={labelId} className="font-semibold">
-          {name}
-          {recentlyAddedLabel?.labelId === labelId && (
-            <span className={recentlyAddedBadgeClassName}>Recently added</span>
-          )}
-        </li>
-      ))}
-    </ol>
+    <>
+      <div className="flex flex-col gap-1 px-4 pt-4">
+        <label htmlFor="labels-name-filter" className="font-medium">
+          Find label
+        </label>
+        <input
+          id="labels-name-filter"
+          type="text"
+          value={nameFilterQuery}
+          onChange={(event) => setNameFilterQuery(event.target.value)}
+          placeholder="Filter by name…"
+          className="max-w-md rounded border border-gray-300 px-2 py-1"
+        />
+      </div>
+
+      {filteredLabels.length === 0 && (
+        <p className="p-4">No labels match your filter.</p>
+      )}
+
+      {filteredLabels.length > 0 && (
+        <ol className="flex flex-col gap-2 p-4">
+          {filteredLabels.map(({ labelId, name }) => (
+            <li key={labelId} className="font-semibold">
+              {name}
+              {recentlyAddedLabel?.labelId === labelId && (
+                <span className={recentlyAddedBadgeClassName}>
+                  Recently added
+                </span>
+              )}
+            </li>
+          ))}
+        </ol>
+      )}
+    </>
   );
 };
 

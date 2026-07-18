@@ -17,10 +17,7 @@ type AddTagFormProps = {
   primaryDbSource: DbSource;
   tags: TagListItem[];
   onClearAddTagFeedback: () => void;
-  onCreateTag: (result: {
-    tagId: string | undefined;
-    feedback: FormFeedback;
-  }) => void;
+  onCreateTag: (result: { tag?: TagListItem; feedback: FormFeedback }) => void;
 };
 
 const AddTagForm: FC<AddTagFormProps> = ({
@@ -165,7 +162,7 @@ const createTagAcrossDbSources = async (
   targets: ReadonlySet<DbSource>,
   primaryDbSource: DbSource,
 ): Promise<{
-  tagId: string | undefined;
+  tag?: TagListItem;
   feedback: FormFeedback;
 }> => {
   const orderedTargets = [
@@ -200,7 +197,7 @@ const createTagAcrossDbSources = async (
   }
 
   return {
-    tagId: sharedTagId,
+    ...(sharedTagId === undefined ? {} : { tag: { tagId: sharedTagId, tag } }),
     feedback: buildCreateTagFeedback(outcomes),
   };
 };
