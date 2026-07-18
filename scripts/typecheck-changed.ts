@@ -11,6 +11,10 @@ import {
 
 const require = createRequire(import.meta.url);
 
+const appAmbientTypeFiles = (cwd: string): string[] => [
+  resolve(cwd, "src/assets/svg.d.ts"),
+];
+
 function pickTypeScriptRoots(relativePaths: string[], cwd: string): string[] {
   const unique = [...new Set(relativePaths)];
 
@@ -113,7 +117,10 @@ if (appRoots.length > 0) {
     `${JSON.stringify(
       {
         extends: baseConfig,
-        files: appRoots,
+        files: [
+          ...appRoots,
+          ...appAmbientTypeFiles(cwd).filter((file) => existsSync(file)),
+        ],
       },
       null,
       2,

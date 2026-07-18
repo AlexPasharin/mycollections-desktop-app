@@ -2,6 +2,7 @@ import { type FC } from "react";
 
 import styles from "./EntryDetailsPanel.module.css";
 
+import CopyTextCta from "@/app/components/CopyTextCta";
 import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
 import type { EntryByIdResult } from "@/types/entries";
 import { formatGeneralizedDate } from "@/utils/date";
@@ -104,6 +105,13 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry }) => {
           <p className={styles.comment}>{comment}</p>
         </div>
       )}
+
+      <CopyTextCta
+        text={entry.entryId}
+        label="copy entry's id"
+        successMessage="Entry id copied to clipboard"
+        errorMessage="Could not copy entry id to clipboard"
+      />
     </div>
   );
 };

@@ -1,8 +1,6 @@
-import "@/assets/svg-types";
-
 import { type ComponentPropsWithoutRef, type FC } from "react";
 
-import selectChevron from "@/assets/select-chevron.svg";
+import selectChevron from "@/assets/icons/select-chevron.svg";
 
 type SelectProps = ComponentPropsWithoutRef<"select">;
 
