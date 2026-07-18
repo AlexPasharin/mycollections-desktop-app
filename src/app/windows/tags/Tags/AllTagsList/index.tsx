@@ -2,6 +2,7 @@ import { type FC, useEffect, useState } from "react";
 
 import api from "../../api";
 
+import FilteredByInputQuery from "@/app/components/FilteredByInputQuery";
 import type { DbSource } from "@/db/db-source";
 import type { TagListItem } from "@/types/tags";
 import { matchesTrimmedCaseInsensitiveSubstring } from "@/utils/common";
@@ -24,7 +25,6 @@ const AllTagsList: FC<AllTagsListProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingError, setLoadingError] = useState<unknown>(null);
-  const [nameFilterQuery, setNameFilterQuery] = useState("");
 
   useEffect(() => {
     setIsLoading(true);
@@ -40,19 +40,6 @@ const AllTagsList: FC<AllTagsListProps> = ({
       })
       .finally(() => setIsLoading(false));
   }, [primaryDbSource, onTagsChange]);
-
-  useEffect(() => {
-    setNameFilterQuery("");
-  }, [primaryDbSource]);
-
-  const trimmedNameFilterQuery = nameFilterQuery.trim();
-
-  const filteredTags =
-    trimmedNameFilterQuery === ""
-      ? tags
-      : tags.filter(({ tag }) =>
-          matchesTrimmedCaseInsensitiveSubstring(tag, trimmedNameFilterQuery),
-        );
 
   if (isLoading) {
     return <p>Loading tags...</p>;
@@ -74,26 +61,17 @@ const AllTagsList: FC<AllTagsListProps> = ({
   }
 
   return (
-    <>
-      <div className="flex flex-col gap-1 px-4 pt-4">
-        <label htmlFor="tags-name-filter" className="font-medium">
-          Find tag
-        </label>
-        <input
-          id="tags-name-filter"
-          type="text"
-          value={nameFilterQuery}
-          onChange={(event) => setNameFilterQuery(event.target.value)}
-          placeholder="Filter by name…"
-          className="max-w-md rounded border border-gray-300 px-2 py-1"
-        />
-      </div>
-
-      {trimmedNameFilterQuery !== "" && filteredTags.length === 0 && (
-        <p className="p-4">No tags match your filter.</p>
-      )}
-
-      {filteredTags.length > 0 && (
+    <FilteredByInputQuery
+      key={primaryDbSource}
+      items={tags}
+      matchesFilter={({ tag }, trimmedQuery) =>
+        matchesTrimmedCaseInsensitiveSubstring(tag, trimmedQuery)
+      }
+      inputId="tags-name-filter"
+      inputLabel="Find tag"
+      noMatchesMessage="No tags match your filter."
+    >
+      {(filteredTags) => (
         <ol className="flex flex-col gap-2 p-4">
           {filteredTags.map(({ tagId, tag }) => (
             <li key={tagId} className="font-semibold">
@@ -107,7 +85,7 @@ const AllTagsList: FC<AllTagsListProps> = ({
           ))}
         </ol>
       )}
-    </>
+    </FilteredByInputQuery>
   );
 };
 
