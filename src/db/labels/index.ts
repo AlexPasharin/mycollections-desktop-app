@@ -1,6 +1,6 @@
-import { dbClient } from "../client/kysely";
+import { applyWithNotificationsFor, dbClient } from "../client/kysely";
 
-import type { FetchLabels } from "@/types/labels";
+import type { CreateLabel, FetchLabels } from "@/types/labels";
 
 export const fetchLabels: FetchLabels = (dbSource) =>
   dbClient(dbSource)
@@ -8,3 +8,17 @@ export const fetchLabels: FetchLabels = (dbSource) =>
     .select(["labelId", "name"])
     .orderBy("name")
     .execute();
+
+export const createLabel: CreateLabel = ({ name, labelId }, dbSource) =>
+  applyWithNotificationsFor(
+    (trx) =>
+      trx
+        .insertInto("labels")
+        .values(labelId === undefined ? { name } : { name, labelId })
+        .returning(["labelId", "name"])
+        .executeTakeFirstOrThrow(),
+    dbSource,
+  ).then(({ results, notifications }) => ({
+    label: results,
+    notifications,
+  }));

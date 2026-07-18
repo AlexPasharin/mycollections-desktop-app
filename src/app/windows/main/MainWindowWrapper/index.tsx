@@ -37,6 +37,13 @@ const MainWindowWrapper: FC = () => {
           >
             Manage tags
           </button>
+          <button
+            type="button"
+            className="cursor-pointer rounded-md border border-indigo-600 bg-indigo-600 px-[0.95rem] py-[0.45rem] font-[inherit] text-[0.9rem] font-medium text-white transition-[background,border-color] duration-150 ease-in-out hover:border-indigo-700 hover:bg-indigo-700"
+            onClick={() => api.openNewLabelsWindow({ source: dbSource })}
+          >
+            Manage labels
+          </button>
           <DbSourceSelect
             id="main-db-source"
             value={dbSource}

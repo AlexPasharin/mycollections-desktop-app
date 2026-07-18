@@ -3,24 +3,24 @@ import { type FC, useEffect, useState } from "react";
 import api from "../../api";
 
 import type { DbSource } from "@/db/db-source";
-import type { TagListItem } from "@/types/tags";
+import type { LabelListItem } from "@/types/labels";
 import { matchesTrimmedCaseInsensitiveSubstring } from "@/utils/common";
 
-type AllTagsListProps = {
+type AllLabelsListProps = {
   primaryDbSource: DbSource;
-  tags: TagListItem[];
-  onTagsChange: (tags: TagListItem[]) => void;
-  recentlyAddedTag?: TagListItem | undefined;
+  labels: LabelListItem[];
+  onLabelsChange: (labels: LabelListItem[]) => void;
+  recentlyAddedLabel?: LabelListItem | undefined;
 };
 
 const recentlyAddedBadgeClassName =
   "ml-2 inline-block rounded-full border border-[#6ee7b7] bg-[#d1fae5] px-[0.45rem] py-[0.05rem] align-middle text-[0.75em] font-semibold leading-[1.35] text-[#14532d]";
 
-const AllTagsList: FC<AllTagsListProps> = ({
+const AllLabelsList: FC<AllLabelsListProps> = ({
   primaryDbSource,
-  tags,
-  onTagsChange,
-  recentlyAddedTag,
+  labels,
+  onLabelsChange,
+  recentlyAddedLabel,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingError, setLoadingError] = useState<unknown>(null);
@@ -31,31 +31,26 @@ const AllTagsList: FC<AllTagsListProps> = ({
     setLoadingError(null);
 
     api
-      .fetchTags(primaryDbSource)
-      .then(onTagsChange)
+      .fetchLabels(primaryDbSource)
+      .then(onLabelsChange)
       .catch((error: unknown) => {
-        console.error("Error fetching tags", error);
-        onTagsChange([]);
+        console.error("Error fetching labels", error);
+        onLabelsChange([]);
         setLoadingError(error);
       })
       .finally(() => setIsLoading(false));
-  }, [primaryDbSource, onTagsChange]);
+  }, [primaryDbSource, onLabelsChange]);
 
   useEffect(() => {
     setNameFilterQuery("");
   }, [primaryDbSource]);
 
-  const trimmedNameFilterQuery = nameFilterQuery.trim();
-
-  const filteredTags =
-    trimmedNameFilterQuery === ""
-      ? tags
-      : tags.filter(({ tag }) =>
-          matchesTrimmedCaseInsensitiveSubstring(tag, trimmedNameFilterQuery),
-        );
+  const filteredLabels = labels.filter(({ name }) =>
+    matchesTrimmedCaseInsensitiveSubstring(name, nameFilterQuery),
+  );
 
   if (isLoading) {
-    return <p>Loading tags...</p>;
+    return <p>Loading labels...</p>;
   }
 
   if (loadingError) {
@@ -64,23 +59,23 @@ const AllTagsList: FC<AllTagsListProps> = ({
         Loading failed:{" "}
         {loadingError instanceof Error
           ? loadingError.message
-          : "Could not load tags"}
+          : "Could not load labels"}
       </p>
     );
   }
 
-  if (tags.length === 0) {
-    return <p>No tags found.</p>;
+  if (labels.length === 0) {
+    return <p>No labels found.</p>;
   }
 
   return (
     <>
       <div className="flex flex-col gap-1 px-4 pt-4">
-        <label htmlFor="tags-name-filter" className="font-medium">
-          Find tag
+        <label htmlFor="labels-name-filter" className="font-medium">
+          Find label
         </label>
         <input
-          id="tags-name-filter"
+          id="labels-name-filter"
           type="text"
           value={nameFilterQuery}
           onChange={(event) => setNameFilterQuery(event.target.value)}
@@ -89,16 +84,16 @@ const AllTagsList: FC<AllTagsListProps> = ({
         />
       </div>
 
-      {trimmedNameFilterQuery !== "" && filteredTags.length === 0 && (
-        <p className="p-4">No tags match your filter.</p>
+      {filteredLabels.length === 0 && (
+        <p className="p-4">No labels match your filter.</p>
       )}
 
-      {filteredTags.length > 0 && (
+      {filteredLabels.length > 0 && (
         <ol className="flex flex-col gap-2 p-4">
-          {filteredTags.map(({ tagId, tag }) => (
-            <li key={tagId} className="font-semibold">
-              {tag}
-              {recentlyAddedTag?.tagId === tagId && (
+          {filteredLabels.map(({ labelId, name }) => (
+            <li key={labelId} className="font-semibold">
+              {name}
+              {recentlyAddedLabel?.labelId === labelId && (
                 <span className={recentlyAddedBadgeClassName}>
                   Recently added
                 </span>
@@ -111,4 +106,4 @@ const AllTagsList: FC<AllTagsListProps> = ({
   );
 };
 
-export default AllTagsList;
+export default AllLabelsList;

@@ -10,30 +10,33 @@ import type {
   FeedbackNotifications,
   FormFeedback,
 } from "@/types/form";
-import type { CreateTagInput, TagListItem } from "@/types/tags";
+import type { CreateLabelInput, LabelListItem } from "@/types/labels";
 import { updateImmutableSet } from "@/utils/immutableSet";
 
-type AddTagFormProps = {
+type AddLabelFormProps = {
   primaryDbSource: DbSource;
-  tags: TagListItem[];
-  onClearAddTagFeedback: () => void;
-  onCreateTag: (result: { tag?: TagListItem; feedback: FormFeedback }) => void;
+  labels: LabelListItem[];
+  onClearAddLabelFeedback: () => void;
+  onCreateLabel: (result: {
+    label?: LabelListItem;
+    feedback: FormFeedback;
+  }) => void;
 };
 
-const AddTagForm: FC<AddTagFormProps> = ({
+const AddLabelForm: FC<AddLabelFormProps> = ({
   primaryDbSource,
-  tags,
-  onClearAddTagFeedback,
-  onCreateTag,
+  labels,
+  onClearAddLabelFeedback,
+  onCreateLabel,
 }) => {
-  const [tagName, setTagName] = useState("");
+  const [labelName, setLabelName] = useState("");
   const [checkedDbSources, setCheckedDbSources] = useState<
     ReadonlySet<DbSource>
   >(() => new Set(ALL_DB_SOURCES));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>();
 
-  const trimmedTagName = tagName.trim();
+  const trimmedLabelName = labelName.trim();
 
   const handleToggleDbSource = (source: DbSource) => {
     setCheckedDbSources((prev) =>
@@ -48,7 +51,7 @@ const AddTagForm: FC<AddTagFormProps> = ({
       return;
     }
 
-    const validationError = validateTagName(trimmedTagName, tags);
+    const validationError = validateLabelName(trimmedLabelName, labels);
 
     if (validationError !== undefined) {
       setSubmitError(validationError);
@@ -56,43 +59,47 @@ const AddTagForm: FC<AddTagFormProps> = ({
       return;
     }
 
-    onClearAddTagFeedback();
+    onClearAddLabelFeedback();
     setSubmitError(undefined);
     setIsSubmitting(true);
 
-    createTagAcrossDbSources(trimmedTagName, checkedDbSources, primaryDbSource)
-      .then(onCreateTag)
+    createLabelAcrossDbSources(
+      trimmedLabelName,
+      checkedDbSources,
+      primaryDbSource,
+    )
+      .then(onCreateLabel)
       .catch((error: unknown) => {
-        console.error("Error creating tag", error);
-        setSubmitError(formatCreateTagError(error));
+        console.error("Error creating label", error);
+        setSubmitError(formatCreateLabelError(error));
       })
       .finally(() => setIsSubmitting(false));
   };
 
   return (
     <>
-      <h2 className="mt-0">Add tag</h2>
+      <h2 className="mt-0">Add label</h2>
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-1">
-          <label htmlFor="new-tag-name" className="font-medium">
-            Tag name
+          <label htmlFor="new-label-name" className="font-medium">
+            Label name
           </label>
           <input
-            id="new-tag-name"
+            id="new-label-name"
             type="text"
-            value={tagName}
+            value={labelName}
             onChange={(event) => {
-              setTagName(event.target.value);
+              setLabelName(event.target.value);
               setSubmitError(undefined);
             }}
             disabled={isSubmitting}
             aria-invalid={submitError !== undefined}
-            aria-describedby={submitError ? "new-tag-name-error" : undefined}
+            aria-describedby={submitError ? "new-label-name-error" : undefined}
             className="max-w-md rounded border border-gray-300 px-2 py-1"
           />
           {submitError && (
             <p
-              id="new-tag-name-error"
+              id="new-label-name-error"
               className="m-0 text-[0.85em] text-[#b42318]"
               role="alert"
             >
@@ -103,8 +110,8 @@ const AddTagForm: FC<AddTagFormProps> = ({
 
         <DbSourcesCheckboxes
           heading="Add to databases"
-          headingId="add-tag-db-sources-heading"
-          idPrefix="add-tag-db-source"
+          headingId="add-label-db-sources-heading"
+          idPrefix="add-label-db-source"
           activeDbSource={primaryDbSource}
           checkedSources={checkedDbSources}
           onToggle={handleToggleDbSource}
@@ -115,7 +122,7 @@ const AddTagForm: FC<AddTagFormProps> = ({
             type="submit"
             className="cursor-pointer rounded-md border border-indigo-600 bg-indigo-600 px-[0.95rem] py-[0.45rem] font-[inherit] text-[0.9rem] font-medium text-white transition-[background,border-color] duration-150 ease-in-out hover:enabled:border-indigo-700 hover:enabled:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Adding\u2026" : "Add tag"}
+            {isSubmitting ? "Adding\u2026" : "Add label"}
           </button>
         </div>
       </form>
@@ -123,24 +130,24 @@ const AddTagForm: FC<AddTagFormProps> = ({
   );
 };
 
-export default AddTagForm;
+export default AddLabelForm;
 
-const validateTagName = (
-  trimmedTagName: string,
-  tags: TagListItem[],
+const validateLabelName = (
+  trimmedLabelName: string,
+  labels: LabelListItem[],
 ): string | undefined => {
-  if (trimmedTagName.length === 0) {
-    return "Tag name is required";
+  if (trimmedLabelName.length === 0) {
+    return "Label name is required";
   }
 
-  if (tags.some(({ tag }) => tag.trim() === trimmedTagName)) {
-    return "A tag with this name already exists";
+  if (labels.some(({ name }) => name.trim() === trimmedLabelName)) {
+    return "A label with this name already exists";
   }
 
   return undefined;
 };
 
-type CreateTagOutcome =
+type CreateLabelOutcome =
   | {
       source: DbSource;
       status: "fulfilled";
@@ -152,17 +159,20 @@ type CreateTagOutcome =
       reason: unknown;
     };
 
-const withTagId = (tag: string, tagId: string | undefined): CreateTagInput => ({
-  tag,
-  ...(tagId === undefined ? {} : { tagId }),
+const withLabelId = (
+  name: string,
+  labelId: string | undefined,
+): CreateLabelInput => ({
+  name,
+  ...(labelId === undefined ? {} : { labelId }),
 });
 
-const createTagAcrossDbSources = async (
-  tag: string,
+const createLabelAcrossDbSources = async (
+  name: string,
   targets: ReadonlySet<DbSource>,
   primaryDbSource: DbSource,
 ): Promise<{
-  tag?: TagListItem;
+  label?: LabelListItem;
   feedback: FormFeedback;
 }> => {
   const orderedTargets = [
@@ -170,13 +180,16 @@ const createTagAcrossDbSources = async (
     ...Array.from(targets).filter((source) => source !== primaryDbSource),
   ];
 
-  const outcomes: CreateTagOutcome[] = [];
-  let sharedTagId: string | undefined;
+  const outcomes: CreateLabelOutcome[] = [];
+  let sharedLabelId: string | undefined;
 
   for (const source of orderedTargets) {
     try {
-      const result = await api.createTag(withTagId(tag, sharedTagId), source);
-      sharedTagId ??= result.tag.tagId;
+      const result = await api.createLabel(
+        withLabelId(name, sharedLabelId),
+        source,
+      );
+      sharedLabelId ??= result.label.labelId;
 
       outcomes.push({
         source,
@@ -190,22 +203,26 @@ const createTagAcrossDbSources = async (
         reason,
       });
 
-      if (sharedTagId === undefined) {
+      if (sharedLabelId === undefined) {
         break;
       }
     }
   }
 
   return {
-    ...(sharedTagId === undefined ? {} : { tag: { tagId: sharedTagId, tag } }),
-    feedback: buildCreateTagFeedback(outcomes),
+    ...(sharedLabelId === undefined
+      ? {}
+      : { label: { labelId: sharedLabelId, name } }),
+    feedback: buildCreateLabelFeedback(outcomes),
   };
 };
 
-const formatCreateTagError = (reason: unknown): string =>
-  reason instanceof Error ? reason.message : "Failed to create tag";
+const formatCreateLabelError = (reason: unknown): string =>
+  reason instanceof Error ? reason.message : "Failed to create label";
 
-const buildCreateTagFeedback = (outcomes: CreateTagOutcome[]): FormFeedback => {
+const buildCreateLabelFeedback = (
+  outcomes: CreateLabelOutcome[],
+): FormFeedback => {
   const notifications: FeedbackNotifications = [];
   const errors: FeedbackErrors = [];
 
@@ -215,11 +232,11 @@ const buildCreateTagFeedback = (outcomes: CreateTagOutcome[]): FormFeedback => {
         ...outcome.notifications.map((notification) => ({ notification })),
       );
     } else {
-      const errorMessage = `Failed to create tag in ${dbSourceLabel(outcome.source)}`;
+      const errorMessage = `Failed to create label in ${dbSourceLabel(outcome.source)}`;
       console.error(errorMessage, outcome.reason);
 
       errors.push({
-        message: `${errorMessage}: ${formatCreateTagError(outcome.reason)}`,
+        message: `${errorMessage}: ${formatCreateLabelError(outcome.reason)}`,
       });
     }
   }

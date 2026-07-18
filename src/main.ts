@@ -3,6 +3,7 @@ import electronSquirrelStartup from "electron-squirrel-startup";
 
 import createArtistWindow from "./app/windows/artists/artist/createWindow";
 import createEntryWindow from "./app/windows/entry/createWindow";
+import createLabelsWindow from "./app/windows/labels/createWindow";
 import createMainWindow from "./app/windows/main/create";
 import createTagsWindow from "./app/windows/tags/createWindow";
 import type {
@@ -20,6 +21,7 @@ import {
   GET_RELEASE_BY_ID,
   FETCH_RELEASE_FORMATS,
   FETCH_LABELS,
+  CREATE_LABEL,
   FETCH_COUNTRIES,
   FETCH_TAGS,
   CREATE_TAG,
@@ -32,6 +34,7 @@ import {
   OPEN_ARTIST_WINDOW,
   OPEN_ENTRY_WINDOW,
   OPEN_TAGS_WINDOW,
+  OPEN_LABELS_WINDOW,
   QUERY_ARTIST,
   SEARCH_ARTIST_ENTRIES,
 } from "@/appConstants/ipcEvents";
@@ -51,7 +54,7 @@ import {
   updateMusicalEntry,
 } from "@/db/entries";
 import { fetchReleasesFormats } from "@/db/formats";
-import { fetchLabels } from "@/db/labels";
+import { fetchLabels, createLabel } from "@/db/labels";
 import {
   createMusicalRelease,
   deleteRelease,
@@ -67,6 +70,10 @@ import type {
   SearchArtistEntriesParams,
   UpdateMusicalEntryInput,
 } from "@/types/entries";
+import type {
+  CreateLabelInput,
+  CreateLabelsWindowParams,
+} from "@/types/labels";
 import type {
   CreateMusicalReleaseInput,
   UpdateMusicalReleaseInput,
@@ -134,6 +141,11 @@ await app.whenReady().then(async () => {
   ipcMain.handle(FETCH_LABELS, (_, dbSource: DbSource) =>
     fetchLabels(dbSource),
   );
+  ipcMain.handle(
+    CREATE_LABEL,
+    (_, input: CreateLabelInput, dbSource: DbSource) =>
+      createLabel(input, dbSource),
+  );
   ipcMain.handle(FETCH_COUNTRIES, (_, dbSource: DbSource) =>
     fetchCountries(dbSource),
   );
@@ -170,6 +182,10 @@ await app.whenReady().then(async () => {
 
   ipcMain.on(OPEN_TAGS_WINDOW, (_event, params: CreateTagsWindowParams) => {
     void createTagsWindow(params);
+  });
+
+  ipcMain.on(OPEN_LABELS_WINDOW, (_event, params: CreateLabelsWindowParams) => {
+    void createLabelsWindow(params);
   });
 
   await createMainWindow();
