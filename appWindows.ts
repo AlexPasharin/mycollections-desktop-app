@@ -13,6 +13,9 @@ const appWindows = {
   tags_window: {
     folder: "windows/tags",
   },
+  labels_window: {
+    folder: "windows/labels",
+  },
 } as const satisfies Record<
   AppWindowName,
   {

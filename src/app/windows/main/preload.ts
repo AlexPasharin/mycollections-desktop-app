@@ -5,10 +5,12 @@ import type { API } from "./api";
 import {
   FETCH_ARTISTS,
   OPEN_ARTIST_WINDOW,
+  OPEN_LABELS_WINDOW,
   OPEN_TAGS_WINDOW,
   QUERY_ARTIST,
 } from "@/appConstants/ipcEvents";
 import type { CreateArtistWindowParams } from "@/types/entries";
+import type { CreateLabelsWindowParams } from "@/types/labels";
 import type { CreateTagsWindowParams } from "@/types/tags";
 
 const api = {
@@ -20,6 +22,8 @@ const api = {
     ipcRenderer.send(OPEN_ARTIST_WINDOW, params),
   openNewTagsWindow: (params: CreateTagsWindowParams) =>
     ipcRenderer.send(OPEN_TAGS_WINDOW, params),
+  openNewLabelsWindow: (params: CreateLabelsWindowParams) =>
+    ipcRenderer.send(OPEN_LABELS_WINDOW, params),
 } as const satisfies API;
 
 contextBridge.exposeInMainWorld("api", api);
