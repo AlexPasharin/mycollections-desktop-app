@@ -43,6 +43,19 @@ export type GetEntryReleaseTagIds = (
 
 export type JsonParsingErrorData = { rawJson: unknown; error: string };
 
+export type RelatedReleaseArtist = {
+  isEntriesMainArtist: boolean | null;
+  artistName: string;
+};
+
+export type RelatedReleaseItem = {
+  releaseId: string;
+  releaseVersion: string;
+  entryId: string;
+  entryMainName: string;
+  artists: RelatedReleaseArtist[];
+};
+
 export type ReleaseByIdResult = Omit<
   Selectable<MusicalRelease>,
   | "countries"
@@ -58,6 +71,8 @@ export type ReleaseByIdResult = Omit<
   countries: ReleaseCountries | JsonParsingErrorData;
   catalogueNumbers: ReleaseCatNumbers | JsonParsingErrorData;
   matrixRunout: ReleaseMatrixRunout | JsonParsingErrorData;
+  parentReleases: RelatedReleaseItem[];
+  childReleases: RelatedReleaseItem[];
 };
 
 export type GetReleaseById = (

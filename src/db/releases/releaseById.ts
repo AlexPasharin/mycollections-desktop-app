@@ -2,8 +2,11 @@ import { sql } from "kysely";
 
 import { dbClient } from "../client/kysely";
 
+import type { DbSource } from "@/db/db-source";
 import type {
   GetReleaseById,
+  RelatedReleaseArtist,
+  RelatedReleaseItem,
   ReleaseByIdResult,
   ReleaseFormatOfReleaseItem,
 } from "@/types/releases";
@@ -88,12 +91,19 @@ export const getReleaseById: GetReleaseById = async (releaseId, dbSource) => {
   const { countries, catalogueNumbers, matrixRunout, releaseDate, ...rest } =
     release;
 
+  const [parentReleases, childReleases] = await Promise.all([
+    fetchParentReleases(releaseId, dbSource),
+    fetchChildReleases(releaseId, dbSource),
+  ]);
+
   return {
     ...rest,
     releaseDate: parseStringAsGeneralizedDate(releaseDate),
     countries: getReleaseCountries(countries),
     catalogueNumbers: getReleaseCatNumbers(catalogueNumbers),
     matrixRunout: getReleaseMatrixRunout(matrixRunout),
+    parentReleases,
+    childReleases,
   };
 };
 
@@ -148,4 +158,78 @@ const getReleaseMatrixRunout = (matrixRunout: unknown) => {
   }
 
   return validation.data;
+};
+
+const fetchParentReleases = (
+  releaseId: string,
+  dbSource: DbSource,
+): Promise<RelatedReleaseItem[]> =>
+  fetchRelatedReleases(releaseId, dbSource, "parent");
+
+const fetchChildReleases = (
+  releaseId: string,
+  dbSource: DbSource,
+): Promise<RelatedReleaseItem[]> =>
+  fetchRelatedReleases(releaseId, dbSource, "child");
+
+const fetchRelatedReleases = (
+  releaseId: string,
+  dbSource: DbSource,
+  relation: "parent" | "child",
+): Promise<RelatedReleaseItem[]> => {
+  const relatedReleaseJoinColumn =
+    relation === "parent"
+      ? "parentMusicalReleases.parentReleaseId"
+      : "parentMusicalReleases.childReleaseId";
+  const currentReleaseFilterColumn =
+    relation === "parent"
+      ? "parentMusicalReleases.childReleaseId"
+      : "parentMusicalReleases.parentReleaseId";
+
+  return dbClient(dbSource)
+    .selectFrom("parentMusicalReleases")
+    .innerJoin(
+      "musicalReleases",
+      relatedReleaseJoinColumn,
+      "musicalReleases.releaseId",
+    )
+    .innerJoin(
+      "musicalEntries",
+      "musicalReleases.entryId",
+      "musicalEntries.entryId",
+    )
+    .leftJoin(
+      "musicalEntriesArtists",
+      "musicalEntries.entryId",
+      "musicalEntriesArtists.entryId",
+    )
+    .leftJoin("artists", "musicalEntriesArtists.artistId", "artists.artistId")
+    .leftJoin(
+      "alternativeArtistNames",
+      "musicalEntriesArtists.entryArtistNameId",
+      "alternativeArtistNames.nameId",
+    )
+    .where(currentReleaseFilterColumn, "=", releaseId)
+    .select([
+      "musicalReleases.releaseId",
+      "musicalReleases.releaseVersion",
+      "musicalEntries.entryId",
+      "musicalEntries.mainName as entryMainName",
+      sql<RelatedReleaseArtist[]>`coalesce(
+        jsonb_agg(DISTINCT jsonb_build_object(
+          'isEntriesMainArtist', ${sql.ref("musicalEntriesArtists.isEntriesMainArtist")},
+          'artistName', coalesce(${sql.ref("alternativeArtistNames.name")}, ${sql.ref("artists.name")})
+        )) FILTER (WHERE ${sql.ref("musicalEntriesArtists.id")} IS NOT NULL),
+        '[]'::jsonb
+      )`.as("artists"),
+    ])
+    .groupBy([
+      "musicalReleases.releaseId",
+      "musicalReleases.releaseVersion",
+      "musicalEntries.entryId",
+      "musicalEntries.mainName",
+    ])
+    .orderBy("musicalEntries.mainName", "asc")
+    .orderBy("musicalReleases.releaseId", "asc")
+    .execute();
 };

@@ -13,6 +13,7 @@ export type CreateArtistWindowParams = {
 export type CreateEntryWindowParams = {
   entryId: string;
   source: DbSource;
+  releaseId?: string;
 };
 
 export type EntrySearchResult = {

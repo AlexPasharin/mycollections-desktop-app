@@ -58,6 +58,8 @@ const release: ReleaseByIdResult = {
   partOfQueenCollection: true,
   relationToQueen: "Related single",
   entryId: "entry-1",
+  parentReleases: [],
+  childReleases: [],
 };
 
 describe("initialReleaseFormStateValue", () => {
