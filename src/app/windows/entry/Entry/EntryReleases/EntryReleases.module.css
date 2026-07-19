@@ -146,3 +146,30 @@
   outline: 2px solid #14532d;
   outline-offset: 2px;
 }
+
+.focusedReleaseCta {
+  margin: 0.75rem 0 0;
+  font-size: 0.92rem;
+  color: #444;
+}
+
+.focusedReleaseCtaButton {
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  font-size: inherit;
+  color: #1a5fb4;
+  background: transparent;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.focusedReleaseCtaButton:hover {
+  color: #0d3d82;
+}
+
+.focusedReleaseCtaButton:focus-visible {
+  outline: 2px solid #1a5fb4;
+  outline-offset: 2px;
+}
