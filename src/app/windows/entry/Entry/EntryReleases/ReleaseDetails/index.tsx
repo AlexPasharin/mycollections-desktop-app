@@ -6,22 +6,37 @@ import styles from "./ReleaseDetails.module.css";
 import ReleaseFormatItem from "./ReleaseFormatItem";
 import ReleaseMatrixRunout from "./ReleaseMatrixRunout";
 
+import api from "../../../api";
+
 import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
+import type { DbSource } from "@/db/db-source";
 import type { CountryListItem } from "@/types/countries";
 import type { EntryByIdResult } from "@/types/entries";
-import type { ReleaseByIdResult } from "@/types/releases";
+import type {
+  RelatedReleaseArtist,
+  RelatedReleaseItem,
+  ReleaseByIdResult,
+} from "@/types/releases";
 import { formatGeneralizedDate } from "@/utils/date";
 
 type ReleaseDetailsProps = {
   entry: EntryByIdResult;
   release: ReleaseByIdResult;
   allCountries: CountryListItem[];
+  primaryDbSource: DbSource;
+  showReleaseActions: boolean;
+  onEdit: (release: ReleaseByIdResult) => void;
+  onUseAsBlueprint: (releaseBlueprint: ReleaseByIdResult) => void;
 };
 
 const ReleaseDetails: FC<ReleaseDetailsProps> = ({
   entry,
   release,
   allCountries,
+  primaryDbSource,
+  showReleaseActions,
+  onEdit,
+  onUseAsBlueprint,
 }) => {
   const {
     releaseVersion,
@@ -116,6 +131,31 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
       )}
       <ReleaseCatNumbers catalogueNumbers={catalogueNumbers} />
       <ReleaseMatrixRunout matrixRunout={matrixRunout} />
+      <RelatedReleases
+        parentReleases={release.parentReleases}
+        childReleases={release.childReleases}
+        primaryDbSource={primaryDbSource}
+      />
+      {showReleaseActions && (
+        <div className={styles.detailsActions}>
+          <button
+            type="button"
+            className={styles.detailsActionButton}
+            onClick={() => onEdit(release)}
+            aria-label={`Edit release ${releaseVersion}`}
+          >
+            Edit release
+          </button>
+          <button
+            type="button"
+            className={styles.detailsActionButtonSecondary}
+            onClick={() => onUseAsBlueprint(release)}
+            aria-label={`Use release ${releaseVersion} as a blueprint to add a new release`}
+          >
+            Use as a blueprint to add a new release
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -135,3 +175,98 @@ const DetailLabeledField: FC<DetailLabeledFieldProps> = ({
     {children}
   </p>
 );
+
+type RelatedReleasesProps = {
+  parentReleases: RelatedReleaseItem[];
+  childReleases: RelatedReleaseItem[];
+  primaryDbSource: DbSource;
+};
+
+const RelatedReleases: FC<RelatedReleasesProps> = ({
+  parentReleases,
+  childReleases,
+  primaryDbSource,
+}) => {
+  if (parentReleases.length === 0 && childReleases.length === 0) {
+    return null;
+  }
+
+  const openRelatedReleaseWindow = (relatedRelease: RelatedReleaseItem) => {
+    api.openNewEntryWindow({
+      entryId: relatedRelease.entryId,
+      source: primaryDbSource,
+      releaseId: relatedRelease.releaseId,
+    });
+  };
+
+  return (
+    <div className={styles.relatedReleases}>
+      {parentReleases.length > 0 && (
+        <RelatedReleasesSection
+          label="Parent releases:"
+          releases={parentReleases}
+          onReleaseSelect={openRelatedReleaseWindow}
+        />
+      )}
+      {childReleases.length > 0 && (
+        <RelatedReleasesSection
+          label="Child releases:"
+          releases={childReleases}
+          onReleaseSelect={openRelatedReleaseWindow}
+        />
+      )}
+    </div>
+  );
+};
+
+type RelatedReleasesSectionProps = {
+  label: string;
+  releases: RelatedReleaseItem[];
+  onReleaseSelect: (release: RelatedReleaseItem) => void;
+};
+
+const RelatedReleasesSection: FC<RelatedReleasesSectionProps> = ({
+  label,
+  releases,
+  onReleaseSelect,
+}) => (
+  <div className={styles.relatedReleasesSection}>
+    <span className={styles.relatedReleasesLabel}>{label}</span>
+    <ul className={styles.relatedReleasesList}>
+      {releases.map((relatedRelease) => (
+        <li key={relatedRelease.releaseId}>
+          <button
+            type="button"
+            className={styles.relatedReleaseLink}
+            onClick={() => onReleaseSelect(relatedRelease)}
+          >
+            {formatRelatedReleaseLabel(relatedRelease)}
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+const formatRelatedReleaseLabel = (
+  relatedRelease: RelatedReleaseItem,
+): string =>
+  `${formatRelatedReleaseArtist(relatedRelease.artists)} - ${relatedRelease.entryMainName} (${relatedRelease.releaseVersion})`;
+
+const formatRelatedReleaseArtist = (
+  artists: RelatedReleaseArtist[],
+): string => {
+  const mainArtist = artists.find(
+    (artist) => artist.isEntriesMainArtist === true,
+  );
+
+  if (mainArtist) {
+    return mainArtist.artistName;
+  }
+
+  if (artists.length > 0) {
+    return artists.map((artist) => artist.artistName).join(", ");
+  }
+
+  return "(Unknown artist)";
+};

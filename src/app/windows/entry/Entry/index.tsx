@@ -32,6 +32,9 @@ type EntryProps = {
   onEntryUpdated: (entry: EntryByIdResult) => void;
 };
 
+const readFocusedReleaseIdFromUrl = (): string | null =>
+  new URLSearchParams(window.location.search).get("releaseId");
+
 type EntryTab =
   | { id: "releases" | "editEntry"; data?: never }
   | {
@@ -68,8 +71,12 @@ const EDIT_ENTRY_UPDATE_NOTIFICATIONS_ID = "edit-entry-update-notifications";
 const EDIT_ENTRY_UPDATE_ERRORS_ID = "edit-entry-update-errors";
 
 const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
+  const [focusedReleaseId, setFocusedReleaseId] = useState<string | null>(
+    readFocusedReleaseIdFromUrl,
+  );
+  const isFocusedReleaseView = focusedReleaseId !== null;
   const [activeTab, setActiveTab] = useState<EntryTab>(
-    entryTabInitialState("releaseUpsertForm"),
+    entryTabInitialState("releases"),
   );
 
   const [tags, setTags] = useState<TagListItem[]>([]);
@@ -336,6 +343,43 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
     };
   }, [activeTabId, primaryDbSource]);
 
+  const handleShowFullEntryWindow = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("releaseId");
+    window.history.replaceState(null, "", url.toString());
+    setFocusedReleaseId(null);
+
+    setActiveTab(entryTabInitialState("releases"));
+  };
+
+  const entryReleasesPanel = (
+    <EntryReleases
+      entry={entry}
+      primaryDbSource={primaryDbSource}
+      allCountries={allCountries}
+      countriesLoading={countriesLoading}
+      countriesLoadFailed={countriesLoadFailed}
+      focusedReleaseId={focusedReleaseId}
+      onShowFullEntryWindow={handleShowFullEntryWindow}
+      latestAddedReleaseId={latestAddedReleaseId}
+      latestUpdatedReleaseId={latestUpdatedReleaseId}
+      latestCreateNotifications={latestCreateReleaseNotifications}
+      latestCreatedErrors={latestCreateReleaseErrors}
+      latestUpdateNotifications={latestUpdateReleaseNotifications}
+      latestUpdatedErrors={latestUpdateReleaseErrors}
+      onUseReleaseAsBlueprint={handleUseReleaseAsBlueprint}
+      onEditRelease={handleEditRelease}
+      onDismissCreateNotifications={() =>
+        setLatestCreateReleaseNotifications([])
+      }
+      onDismissCreatedErrors={() => setLatestCreateReleaseErrors([])}
+      onDismissUpdateNotifications={() =>
+        setLatestUpdateReleaseNotifications([])
+      }
+      onDismissUpdatedErrors={() => setLatestUpdateReleaseErrors([])}
+    />
+  );
+
   return (
     <div>
       <h1>{entry.mainName}</h1>
@@ -343,119 +387,101 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
       <EntryArtists artists={entry.artists} />
       <EntryDetailsPanel entry={entry} />
 
-      <Tabs
-        ariaLabel="Releases, add release, and edit entry"
-        activeTab={activeTabId}
-        onTabChange={handleTabChange}
-        tabs={[
-          {
-            id: "releases",
-            tabId: RELEASES_TAB_ID,
-            panelId: RELEASES_PANEL_ID,
-            label: "Releases in collection",
-            children: (
-              <EntryReleases
-                entry={entry}
-                primaryDbSource={primaryDbSource}
-                allCountries={allCountries}
-                countriesLoading={countriesLoading}
-                countriesLoadFailed={countriesLoadFailed}
-                latestAddedReleaseId={latestAddedReleaseId}
-                latestUpdatedReleaseId={latestUpdatedReleaseId}
-                latestCreateNotifications={latestCreateReleaseNotifications}
-                latestCreatedErrors={latestCreateReleaseErrors}
-                latestUpdateNotifications={latestUpdateReleaseNotifications}
-                latestUpdatedErrors={latestUpdateReleaseErrors}
-                onUseReleaseAsBlueprint={handleUseReleaseAsBlueprint}
-                onEditRelease={handleEditRelease}
-                onDismissCreateNotifications={() =>
-                  setLatestCreateReleaseNotifications([])
-                }
-                onDismissCreatedErrors={() => setLatestCreateReleaseErrors([])}
-                onDismissUpdateNotifications={() =>
-                  setLatestUpdateReleaseNotifications([])
-                }
-                onDismissUpdatedErrors={() => setLatestUpdateReleaseErrors([])}
-              />
-            ),
-          },
-          {
-            id: "releaseUpsertForm",
-            tabId: ADD_RELEASE_TAB_ID,
-            panelId: ADD_RELEASE_PANEL_ID,
-            label: isReleaseFormUpdateMode ? "Edit release" : "Add new release",
-            children: (
-              <ReleaseForm
-                entry={sanitizedEntry}
-                primaryDbSource={primaryDbSource}
-                tags={tags}
-                allFormats={allFormats}
-                labels={labels}
-                allCountries={allCountries}
-                referenceDataLoading={
-                  addReleaseReferenceDataLoading ||
-                  tagsLoading ||
-                  countriesLoading
-                }
-                referenceDataLoadFailed={
-                  addReleaseReferenceDataLoadFailed ||
-                  tagsLoadFailed ||
-                  countriesLoadFailed
-                }
-                formState={releaseFormState}
-                onFormStateChange={setReleaseFormState}
-                tabData={
-                  isReleaseFormUpdateMode
-                    ? {
-                        ...releaseFormTabData,
-                        onReleaseUpdated: handleReleaseUpdated,
-                      }
-                    : {
-                        ...(releaseFormTabData ??
-                          upsertReleaseFormTabInitialStateDate),
-                        onReleaseCreated: handleReleaseCreated,
-                      }
-                }
-              />
-            ),
-          },
-          {
-            id: "editEntry",
-            tabId: EDIT_ENTRY_TAB_ID,
-            panelId: EDIT_ENTRY_PANEL_ID,
-            label: "Edit entry",
-            children: (
-              <>
-                <FeedbackSection
-                  notificationsId={EDIT_ENTRY_UPDATE_NOTIFICATIONS_ID}
-                  errorsId={EDIT_ENTRY_UPDATE_ERRORS_ID}
-                  notifications={latestUpdateEntryFeedback.notifications}
-                  errors={latestUpdateEntryFeedback.errors}
-                />
-                <UpsertEntryForm
-                  mode="update"
+      {isFocusedReleaseView ? (
+        entryReleasesPanel
+      ) : (
+        <Tabs
+          ariaLabel="Releases, add release, and edit entry"
+          activeTab={activeTabId}
+          onTabChange={handleTabChange}
+          tabs={[
+            {
+              id: "releases",
+              tabId: RELEASES_TAB_ID,
+              panelId: RELEASES_PANEL_ID,
+              label: "Releases in collection",
+              children: entryReleasesPanel,
+            },
+            {
+              id: "releaseUpsertForm",
+              tabId: ADD_RELEASE_TAB_ID,
+              panelId: ADD_RELEASE_PANEL_ID,
+              label: isReleaseFormUpdateMode
+                ? "Edit release"
+                : "Add new release",
+              children: (
+                <ReleaseForm
                   entry={sanitizedEntry}
                   primaryDbSource={primaryDbSource}
                   tags={tags}
-                  api={{
-                    fetchEntryTypes: api.fetchEntryTypes,
-                    getEntryReleaseTagIds: api.getEntryReleaseTagIds,
-                    updateMusicalEntry: api.updateMusicalEntry,
-                  }}
-                  tagsLoading={tagsLoading}
-                  tagsLoadFailed={tagsLoadFailed}
-                  restoredState={editEntryDraftRef.current}
-                  onPersistState={(state) => {
-                    editEntryDraftRef.current = state;
-                  }}
-                  onCancel={() => handleTabChange("releases")}
-                  onEntrySaved={handleEntryUpdated}
+                  allFormats={allFormats}
+                  labels={labels}
+                  allCountries={allCountries}
+                  referenceDataLoading={
+                    addReleaseReferenceDataLoading ||
+                    tagsLoading ||
+                    countriesLoading
+                  }
+                  referenceDataLoadFailed={
+                    addReleaseReferenceDataLoadFailed ||
+                    tagsLoadFailed ||
+                    countriesLoadFailed
+                  }
+                  formState={releaseFormState}
+                  onFormStateChange={setReleaseFormState}
+                  tabData={
+                    isReleaseFormUpdateMode
+                      ? {
+                          ...releaseFormTabData,
+                          onReleaseUpdated: handleReleaseUpdated,
+                        }
+                      : {
+                          ...(releaseFormTabData ??
+                            upsertReleaseFormTabInitialStateDate),
+                          onReleaseCreated: handleReleaseCreated,
+                        }
+                  }
                 />
-              </>
-            ),
-          },
-        ]}
-      />
+              ),
+            },
+            {
+              id: "editEntry",
+              tabId: EDIT_ENTRY_TAB_ID,
+              panelId: EDIT_ENTRY_PANEL_ID,
+              label: "Edit entry",
+              children: (
+                <>
+                  <FeedbackSection
+                    notificationsId={EDIT_ENTRY_UPDATE_NOTIFICATIONS_ID}
+                    errorsId={EDIT_ENTRY_UPDATE_ERRORS_ID}
+                    notifications={latestUpdateEntryFeedback.notifications}
+                    errors={latestUpdateEntryFeedback.errors}
+                  />
+                  <UpsertEntryForm
+                    mode="update"
+                    entry={sanitizedEntry}
+                    primaryDbSource={primaryDbSource}
+                    tags={tags}
+                    api={{
+                      fetchEntryTypes: api.fetchEntryTypes,
+                      getEntryReleaseTagIds: api.getEntryReleaseTagIds,
+                      updateMusicalEntry: api.updateMusicalEntry,
+                    }}
+                    tagsLoading={tagsLoading}
+                    tagsLoadFailed={tagsLoadFailed}
+                    restoredState={editEntryDraftRef.current}
+                    onPersistState={(state) => {
+                      editEntryDraftRef.current = state;
+                    }}
+                    onCancel={() => handleTabChange("releases")}
+                    onEntrySaved={handleEntryUpdated}
+                  />
+                </>
+              ),
+            },
+          ]}
+        />
+      )}
     </div>
   );
 };

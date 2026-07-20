@@ -3,9 +3,6 @@
 interface CssExports {
   'chevron': string;
   'chevronExpanded': string;
-  'detailsActionButton': string;
-  'detailsActionButtonSecondary': string;
-  'detailsActions': string;
   'detailsLoading': string;
   'detailsMissing': string;
   'detailsSlide': string;

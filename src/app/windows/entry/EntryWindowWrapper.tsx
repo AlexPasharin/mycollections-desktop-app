@@ -14,8 +14,6 @@ const EntryWindowWrapper: FC = () => {
   const params = new URLSearchParams(window.location.search);
   const entryId = params.get("entryId");
 
-  console.info({ entryId });
-
   const [dbSource, setDbSource] = useState<DbSource>(
     parseDbSource(params.get("source")),
   );

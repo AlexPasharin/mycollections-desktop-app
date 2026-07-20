@@ -18,6 +18,8 @@ type EntryReleasesProps = {
   allCountries: CountryListItem[];
   countriesLoading: boolean;
   countriesLoadFailed: boolean;
+  focusedReleaseId: string | null;
+  onShowFullEntryWindow: () => void;
   latestAddedReleaseId: string | undefined;
   latestUpdatedReleaseId: string | undefined;
   latestCreateNotifications: string[];
@@ -44,6 +46,8 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   allCountries,
   countriesLoading,
   countriesLoadFailed,
+  focusedReleaseId,
+  onShowFullEntryWindow,
   latestAddedReleaseId,
   latestUpdatedReleaseId,
   latestCreateNotifications,
@@ -57,6 +61,8 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   onDismissUpdateNotifications,
   onDismissUpdatedErrors,
 }) => {
+  const isFocusedReleaseView = focusedReleaseId !== null;
+
   const [releases, setReleases] = useState<EntryRelease[]>();
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -69,10 +75,19 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   const fetchTokenRef = useRef(0);
 
   const fetchReleases = useCallback(() => {
-    const token = ++fetchTokenRef.current;
-    setLoading(true);
     setLoadFailed(false);
     setReleases(undefined);
+
+    // Focused mode has no entry-wide list to fetch: the selected release loads
+    // its own details (and header) inside the list.
+    if (focusedReleaseId !== null) {
+      setLoading(false);
+
+      return;
+    }
+
+    const token = ++fetchTokenRef.current;
+    setLoading(true);
 
     api
       .getEntryReleases(entry.entryId, primaryDbSource)
@@ -95,7 +110,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
         setReleases([]);
         setLoading(false);
       });
-  }, [entry.entryId, primaryDbSource]);
+  }, [entry.entryId, primaryDbSource, focusedReleaseId]);
 
   // Fetches on mount; remounting (e.g. after visiting "Add release") loads a fresh list.
   useEffect(() => {
@@ -135,6 +150,8 @@ const EntryReleases: FC<EntryReleasesProps> = ({
       </p>
     );
   }
+
+  const visibleReleases = releases ?? [];
 
   const createNotifications = latestCreateNotifications.map((notification) => ({
     notification,
@@ -243,7 +260,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
       </div>
     );
 
-  if (!releases || releases.length === 0) {
+  if (!isFocusedReleaseView && (!releases || releases.length === 0)) {
     return (
       <>
         <p className={styles.emptyState}>
@@ -266,13 +283,30 @@ const EntryReleases: FC<EntryReleasesProps> = ({
       {updateErrorBanner}
       {updateNotificationBanner}
       {deleteErrorBanner}
-      <h2 className={styles.sectionTitle}>Releases in collection: </h2>
+      {isFocusedReleaseView ? (
+        <div className={styles.focusedReleaseCta}>
+          <p className="mb-2 text-xl font-bold">
+            Note! Showing only selected release&apos;s details.
+          </p>
+          <button
+            type="button"
+            className={styles.focusedReleaseCtaButton}
+            onClick={onShowFullEntryWindow}
+          >
+            Click here to see full entry&apos;s window content
+          </button>
+        </div>
+      ) : (
+        <h2 className={styles.sectionTitle}>Releases in collection: </h2>
+      )}
       <div className={styles.field}>
         <EntryReleasesList
           entry={entry}
           primaryDbSource={primaryDbSource}
-          releases={releases}
+          releases={visibleReleases}
           allCountries={allCountries}
+          focusedReleaseId={focusedReleaseId}
+          showReleaseActions={!isFocusedReleaseView}
           latestAddedReleaseId={latestAddedReleaseId}
           latestUpdatedReleaseId={latestUpdatedReleaseId}
           onUseReleaseAsBlueprint={onUseReleaseAsBlueprint}

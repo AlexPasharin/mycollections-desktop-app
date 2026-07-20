@@ -10,6 +10,8 @@ interface CssExports {
   'deletedNotificationText': string;
   'emptyState': string;
   'field': string;
+  'focusedReleaseCta': string;
+  'focusedReleaseCtaButton': string;
   'panel': string;
   'sectionTitle': string;
 }
