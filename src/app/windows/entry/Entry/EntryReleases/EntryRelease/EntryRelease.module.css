@@ -213,3 +213,52 @@
   background: #4f46e5;
   border-color: #4f46e5;
 }
+
+.relatedReleases {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #e0dcf5;
+  font-size: 0.92em;
+}
+
+.relatedReleasesSection + .relatedReleasesSection {
+  margin-top: 0.65rem;
+}
+
+.relatedReleasesLabel {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.relatedReleasesList {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.relatedReleasesList li + li {
+  margin-top: 0.2rem;
+}
+
+.relatedReleaseLink {
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  font-size: inherit;
+  color: #1a5fb4;
+  background: transparent;
+  border: none;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.relatedReleaseLink:hover {
+  color: #0d3d82;
+}
+
+.relatedReleaseLink:focus-visible {
+  outline: 2px solid #1a5fb4;
+  outline-offset: 2px;
+}

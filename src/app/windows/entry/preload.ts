@@ -16,9 +16,13 @@ import {
   CREATE_MUSICAL_RELEASE,
   UPDATE_MUSICAL_RELEASE,
   DELETE_RELEASE,
+  OPEN_ENTRY_WINDOW,
 } from "@/appConstants/ipcEvents";
 import type { DbSource } from "@/db/db-source";
-import type { UpdateMusicalEntryInput } from "@/types/entries";
+import type {
+  CreateEntryWindowParams,
+  UpdateMusicalEntryInput,
+} from "@/types/entries";
 import type {
   CreateMusicalReleaseInput,
   UpdateMusicalReleaseInput,
@@ -54,6 +58,8 @@ const api = {
     ipcRenderer.invoke(DELETE_RELEASE, releaseId, dbSource),
   updateMusicalEntry: (input: UpdateMusicalEntryInput, dbSource: DbSource) =>
     ipcRenderer.invoke(UPDATE_MUSICAL_ENTRY, input, dbSource),
+  openNewEntryWindow: (params: CreateEntryWindowParams) =>
+    ipcRenderer.send(OPEN_ENTRY_WINDOW, params),
 } as const satisfies API;
 
 contextBridge.exposeInMainWorld("api", api);
