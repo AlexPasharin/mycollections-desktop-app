@@ -139,31 +139,15 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     setLatestDeletedErrors([]);
   };
 
-  const focusedReleaseCta = isFocusedReleaseView && (
-    <p className={styles.focusedReleaseCta}>
-      Showing only selected release&apos;s details.{" "}
-      <button
-        type="button"
-        className={styles.focusedReleaseCtaButton}
-        onClick={onShowFullEntryWindow}
-      >
-        Click here to show full entry&apos;s window content
-      </button>
-    </p>
-  );
-
   if (loading || countriesLoading) {
     return <p className={styles.emptyState}>Loading releases&hellip;</p>;
   }
 
   if (loadFailed || countriesLoadFailed) {
     return (
-      <>
-        <p className={styles.emptyState}>
-          Could not load releases or related data.
-        </p>
-        {focusedReleaseCta}
-      </>
+      <p className={styles.emptyState}>
+        Could not load releases or related data.
+      </p>
     );
   }
 
@@ -299,7 +283,20 @@ const EntryReleases: FC<EntryReleasesProps> = ({
       {updateErrorBanner}
       {updateNotificationBanner}
       {deleteErrorBanner}
-      {!isFocusedReleaseView && (
+      {isFocusedReleaseView ? (
+        <div className={styles.focusedReleaseCta}>
+          <p className="mb-2 text-xl font-bold">
+            Note! Showing only selected release&apos;s details.
+          </p>
+          <button
+            type="button"
+            className={styles.focusedReleaseCtaButton}
+            onClick={onShowFullEntryWindow}
+          >
+            Click here to see full entry&apos;s window content
+          </button>
+        </div>
+      ) : (
         <h2 className={styles.sectionTitle}>Releases in collection: </h2>
       )}
       <div className={styles.field}>
@@ -318,7 +315,6 @@ const EntryReleases: FC<EntryReleasesProps> = ({
         />
       </div>
       {deletedNotification}
-      {focusedReleaseCta}
     </div>
   );
 };

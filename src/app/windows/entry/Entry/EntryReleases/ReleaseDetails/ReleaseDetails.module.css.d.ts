@@ -5,7 +5,15 @@ interface CssExports {
   'detailField': string;
   'detailLabel': string;
   'detailLabelItalic': string;
+  'detailsActionButton': string;
+  'detailsActionButtonSecondary': string;
+  'detailsActions': string;
   'formatsList': string;
+  'relatedReleaseLink': string;
+  'relatedReleases': string;
+  'relatedReleasesLabel': string;
+  'relatedReleasesList': string;
+  'relatedReleasesSection': string;
   'releaseDetails': string;
   'tagsList': string;
   'tagsListItem': string;

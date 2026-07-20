@@ -14,8 +14,6 @@ import type { EntryByIdResult } from "@/types/entries";
 import type {
   DeleteReleaseResult,
   EntryRelease as EntryReleaseRow,
-  RelatedReleaseArtist,
-  RelatedReleaseItem,
   ReleaseByIdResult,
 } from "@/types/releases";
 
@@ -233,38 +231,15 @@ const EntryRelease: FC<EntryReleaseProps> = ({
                 </p>
               )}
               {detailsStatus === "loaded" && details && (
-                <>
-                  <ReleaseDetails
-                    entry={entry}
-                    release={details}
-                    allCountries={allCountries}
-                  />
-                  <RelatedReleases
-                    parentReleases={details.parentReleases}
-                    childReleases={details.childReleases}
-                    primaryDbSource={primaryDbSource}
-                  />
-                  {showReleaseActions && (
-                    <div className={styles.detailsActions}>
-                      <button
-                        type="button"
-                        className={styles.detailsActionButton}
-                        onClick={() => onEdit(details)}
-                        aria-label={`Edit release ${versionLabel}`}
-                      >
-                        Edit release
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.detailsActionButtonSecondary}
-                        onClick={() => onUseAsBlueprint(details)}
-                        aria-label={`Use release ${versionLabel} as a blueprint to add a new release`}
-                      >
-                        Use as a blueprint to add a new release
-                      </button>
-                    </div>
-                  )}
-                </>
+                <ReleaseDetails
+                  entry={entry}
+                  release={details}
+                  allCountries={allCountries}
+                  primaryDbSource={primaryDbSource}
+                  showReleaseActions={showReleaseActions}
+                  onEdit={onEdit}
+                  onUseAsBlueprint={onUseAsBlueprint}
+                />
               )}
             </div>
           )}
@@ -301,101 +276,6 @@ const EntryRelease: FC<EntryReleaseProps> = ({
 };
 
 export default EntryRelease;
-
-type RelatedReleasesProps = {
-  parentReleases: RelatedReleaseItem[];
-  childReleases: RelatedReleaseItem[];
-  primaryDbSource: DbSource;
-};
-
-const RelatedReleases: FC<RelatedReleasesProps> = ({
-  parentReleases,
-  childReleases,
-  primaryDbSource,
-}) => {
-  if (parentReleases.length === 0 && childReleases.length === 0) {
-    return null;
-  }
-
-  const openRelatedReleaseWindow = (relatedRelease: RelatedReleaseItem) => {
-    api.openNewEntryWindow({
-      entryId: relatedRelease.entryId,
-      source: primaryDbSource,
-      releaseId: relatedRelease.releaseId,
-    });
-  };
-
-  return (
-    <div className={styles.relatedReleases}>
-      {parentReleases.length > 0 && (
-        <RelatedReleasesSection
-          label="Parent releases:"
-          releases={parentReleases}
-          onReleaseSelect={openRelatedReleaseWindow}
-        />
-      )}
-      {childReleases.length > 0 && (
-        <RelatedReleasesSection
-          label="Child releases:"
-          releases={childReleases}
-          onReleaseSelect={openRelatedReleaseWindow}
-        />
-      )}
-    </div>
-  );
-};
-
-type RelatedReleasesSectionProps = {
-  label: string;
-  releases: RelatedReleaseItem[];
-  onReleaseSelect: (release: RelatedReleaseItem) => void;
-};
-
-const RelatedReleasesSection: FC<RelatedReleasesSectionProps> = ({
-  label,
-  releases,
-  onReleaseSelect,
-}) => (
-  <div className={styles.relatedReleasesSection}>
-    <span className={styles.relatedReleasesLabel}>{label}</span>
-    <ul className={styles.relatedReleasesList}>
-      {releases.map((relatedRelease) => (
-        <li key={relatedRelease.releaseId}>
-          <button
-            type="button"
-            className={styles.relatedReleaseLink}
-            onClick={() => onReleaseSelect(relatedRelease)}
-          >
-            {formatRelatedReleaseLabel(relatedRelease)}
-          </button>
-        </li>
-      ))}
-    </ul>
-  </div>
-);
-
-const formatRelatedReleaseLabel = (
-  relatedRelease: RelatedReleaseItem,
-): string =>
-  `${formatRelatedReleaseArtist(relatedRelease.artists)} - ${relatedRelease.entryMainName} (${relatedRelease.releaseVersion})`;
-
-const formatRelatedReleaseArtist = (
-  artists: RelatedReleaseArtist[],
-): string => {
-  const mainArtist = artists.find(
-    (artist) => artist.isEntriesMainArtist === true,
-  );
-
-  if (mainArtist) {
-    return mainArtist.artistName;
-  }
-
-  if (artists.length > 0) {
-    return artists.map((artist) => artist.artistName).join(", ");
-  }
-
-  return "(Unknown artist)";
-};
 
 /** Derives the collapsed-row header shape from already-fetched release details. */
 const rowFromDetails = (

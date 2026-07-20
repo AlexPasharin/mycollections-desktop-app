@@ -3,9 +3,6 @@
 interface CssExports {
   'chevron': string;
   'chevronExpanded': string;
-  'detailsActionButton': string;
-  'detailsActionButtonSecondary': string;
-  'detailsActions': string;
   'detailsLoading': string;
   'detailsMissing': string;
   'detailsSlide': string;
@@ -14,11 +11,6 @@ interface CssExports {
   'entryRelease': string;
   'recentlyAddedBadge': string;
   'recentlyEditedBadge': string;
-  'relatedReleaseLink': string;
-  'relatedReleases': string;
-  'relatedReleasesLabel': string;
-  'relatedReleasesList': string;
-  'relatedReleasesSection': string;
   'releaseDetailsPanel': string;
   'releaseRemove': string;
   'releaseRow': string;
