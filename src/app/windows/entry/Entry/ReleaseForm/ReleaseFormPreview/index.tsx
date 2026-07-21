@@ -101,6 +101,21 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
           selectedTagNames.length === 0 ? null : selectedTagNames.join(", "),
         )}
       </FormPreviewField>
+      <FormPreviewBlockField label="Related releases">
+        {formState.relatedReleases.value.length === 0 ? (
+          <p className={styles.multiline}>{orPlaceholder(null)}</p>
+        ) : (
+          <ul className={styles.list}>
+            {formState.relatedReleases.value.map((row) => (
+              <li key={row.id}>
+                {row.releaseId}
+                {" — "}
+                {row.relation}
+              </li>
+            ))}
+          </ul>
+        )}
+      </FormPreviewBlockField>
       <FormPreviewField label="Part of Queen collection">
         {formState.partOfQueenCollection.value ? "Yes" : "No"}
       </FormPreviewField>

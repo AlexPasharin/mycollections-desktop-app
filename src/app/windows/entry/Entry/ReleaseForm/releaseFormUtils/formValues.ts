@@ -3,6 +3,7 @@ import {
   type ReleaseFormCatNumbersErrors,
   type ReleaseFormCountriesErrors,
   type ReleaseFormFormatErrors,
+  type ReleaseFormRelatedReleasesErrors,
 } from "./errorMessages";
 import {
   validateDiscogsUrl,
@@ -10,6 +11,7 @@ import {
   validateReleaseFormats,
   validateReleaseCatNumbers,
   validateReleaseMatrixRunout,
+  validateRelatedReleases,
 } from "./validation";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
@@ -168,6 +170,24 @@ export type ReleaseFormMatrixRunoutDraft = {
 export type ReleaseFormFormatInputs = ReleaseFormFormatInput[];
 export type ReleaseFormCatNumbersInputs = CatalogueNumberRowState[];
 
+export type ReleaseFormRelatedReleaseRelation = "parent" | "child";
+
+export type ReleaseFormRelatedReleaseRow = {
+  id: string;
+  releaseId: string;
+  relation: ReleaseFormRelatedReleaseRelation | "";
+};
+
+export type ValidReleaseFormRelatedReleaseRow = ReleaseFormRelatedReleaseRow & {
+  relation: ReleaseFormRelatedReleaseRelation;
+};
+
+export const defaultRelatedReleaseRow = (): ReleaseFormRelatedReleaseRow =>
+  withNewId({
+    releaseId: "",
+    relation: "",
+  });
+
 export type ReleaseFormState = {
   name: FormField<ReleaseFormNameInput>;
   releaseVersion: FormField;
@@ -185,6 +205,11 @@ export type ReleaseFormState = {
   relationToQueen: FormField<string>;
   comment: FormField<string>;
   conditionProblems: FormField<string>;
+  relatedReleases: FormField<
+    ReleaseFormRelatedReleaseRow[],
+    ReleaseFormRelatedReleasesErrors,
+    ValidReleaseFormRelatedReleaseRow[]
+  >;
   dbSources: FormField<ReadonlySet<DbSource>>;
 };
 
@@ -316,6 +341,16 @@ export const initialReleaseFormStateValue = ({
       errors: initialReleaseFormFieldErrors.conditionProblems,
       notifications: [],
     },
+    relatedReleases: {
+      value: relatedReleasesToFormValue(
+        releaseBlueprint?.parentReleases,
+        releaseBlueprint?.childReleases,
+      ),
+      valid: true,
+      validationFn: validateRelatedReleases,
+      errors: initialReleaseFormFieldErrors.relatedReleases,
+      notifications: [],
+    },
     dbSources: {
       value: dbSources ?? new Set(ALL_DB_SOURCES),
       valid: true,
@@ -334,6 +369,24 @@ const buildCountryLookup = (allCountries: CountryListItem[]) => {
       .filter((value) => codeNames.has(value))
       .map((codeName) => withNewId({ codeName }));
 };
+
+const relatedReleasesToFormValue = (
+  parentReleases: ReleaseByIdResult["parentReleases"] | undefined,
+  childReleases: ReleaseByIdResult["childReleases"] | undefined,
+): ValidReleaseFormRelatedReleaseRow[] => [
+  ...(parentReleases ?? []).map((release) =>
+    withNewId({
+      releaseId: release.releaseId,
+      relation: "parent" as const,
+    }),
+  ),
+  ...(childReleases ?? []).map((release) =>
+    withNewId({
+      releaseId: release.releaseId,
+      relation: "child" as const,
+    }),
+  ),
+];
 
 const resolveNameInput = (
   entry: ReleaseFormEntry,

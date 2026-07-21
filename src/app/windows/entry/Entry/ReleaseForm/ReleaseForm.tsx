@@ -18,6 +18,7 @@ import {
   isCatalogueNumbersInputFieldKey,
   isCountriesInputFieldKey,
   isFormatInputFieldKey,
+  isRelatedReleasesInputFieldKey,
   type ReleaseFormInputFieldKey,
   emptyMutableCountriesSubsectionErrors,
   initialReleaseFormFieldErrors,
@@ -25,7 +26,9 @@ import {
 import {
   defaultCatalogueNumberRow,
   defaultFormatInputRow,
+  defaultRelatedReleaseRow,
   emptyCountrySelection,
+  type ReleaseFormRelatedReleaseRelation,
   type ReleaseFormState,
   type ReleaseFormEntry,
   type ReleaseFormTabUpdateModeSharedData,
@@ -34,6 +37,7 @@ import {
 import { toUpsertMusicalReleaseInput } from "./releaseFormUtils/toUpsertMusicalReleaseInput";
 import ReleaseMatrixRunoutField from "./ReleaseMatrixRunoutField";
 import ReleaseNameField from "./ReleaseNameField";
+import ReleaseRelatedReleasesSection from "./ReleaseRelatedReleasesSection";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
@@ -244,6 +248,17 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       return;
     }
 
+    if (isRelatedReleasesInputFieldKey(key)) {
+      const { relatedReleaseRowId } = key;
+
+      setField("relatedReleases", (prev) => ({
+        ...prev.relatedReleases,
+        errors: omitProperty(prev.relatedReleases.errors, relatedReleaseRowId),
+      }));
+
+      return;
+    }
+
     const errorKey = isDateInputFieldKey(key) ? "releaseDate" : key;
 
     setField(errorKey, (prev) => {
@@ -334,6 +349,40 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
 
       return next;
     });
+  };
+
+  const addRelatedReleaseRow = () => {
+    setFieldValue("relatedReleases", (prev) => [
+      ...prev.relatedReleases.value,
+      defaultRelatedReleaseRow(),
+    ]);
+  };
+
+  const removeRelatedReleaseRow = (rowId: string) => {
+    setField("relatedReleases", (prev) => ({
+      ...prev.relatedReleases,
+      value: prev.relatedReleases.value.filter((row) => row.id !== rowId),
+      errors: omitProperty(prev.relatedReleases.errors, rowId),
+    }));
+  };
+
+  const setRelatedReleaseId = (rowId: string, releaseId: string) => {
+    setFieldValue("relatedReleases", (prev) =>
+      prev.relatedReleases.value.map((row) =>
+        row.id === rowId ? { ...row, releaseId } : row,
+      ),
+    );
+  };
+
+  const setRelatedReleaseRelation = (
+    rowId: string,
+    relation: ReleaseFormRelatedReleaseRelation | "",
+  ) => {
+    setFieldValue("relatedReleases", (prev) =>
+      prev.relatedReleases.value.map((row) =>
+        row.id === rowId ? { ...row, relation } : row,
+      ),
+    );
   };
 
   const addCountrySelectionRow = () => {
@@ -446,6 +495,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       selectedTags: validateField("selectedTags"),
       partOfQueenCollection: validateField("partOfQueenCollection"),
       relationToQueen: validateField("relationToQueen"),
+      relatedReleases: validateField("relatedReleases"),
       name: validateField("name"),
     };
 
@@ -833,6 +883,19 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           selectedTagIds={formState.selectedTags.value}
           onAddTag={addSelectedTag}
           onRemoveTag={removeSelectedTag}
+        />
+
+        <hr className={styles.sectionDivider} aria-hidden />
+
+        <ReleaseRelatedReleasesSection
+          relatedReleases={formState.relatedReleases.value}
+          errors={formState.relatedReleases.errors}
+          onChangeReleaseId={setRelatedReleaseId}
+          onChangeRelation={setRelatedReleaseRelation}
+          onAddRow={addRelatedReleaseRow}
+          onRemoveRow={removeRelatedReleaseRow}
+          onFocus={(rowId) => onFocus({ relatedReleaseRowId: rowId })}
+          onBlur={() => onBlur("relatedReleases")}
         />
 
         <hr className={styles.sectionDivider} aria-hidden />
