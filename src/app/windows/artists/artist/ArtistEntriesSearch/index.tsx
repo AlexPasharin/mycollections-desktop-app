@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type FC } from "react";
 
 import api from "../api";
 import ArtistEntriesSearchResults from "../ArtistEntriesSearchResults";
-import styles from "../ArtistEntriesSearchResults/ArtistEntriesSearchResults.module.css";
 
 import type { DbSource } from "@/db/db-source";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -140,7 +139,7 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
         !isDebouncing &&
         !isSearching &&
         entries.length > 0 && (
-          <p className={styles.topResultsNote}>
+          <p className="italic">
             {hasMoreToLoad
               ? `Showing first ${entries.length} results — more available`
               : "Showing all results"}
