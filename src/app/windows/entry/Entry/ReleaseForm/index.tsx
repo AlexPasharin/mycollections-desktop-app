@@ -63,6 +63,7 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
         allCountries,
         releaseBlueprint: tabData.releaseBlueprint,
         dbSources: tabData.dbSources,
+        mode: tabData.mode,
       }),
     );
   }, [

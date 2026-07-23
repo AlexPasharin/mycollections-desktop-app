@@ -651,6 +651,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
         allCountries,
         releaseBlueprint,
         dbSources: formState.dbSources.value,
+        mode: tabData.mode,
       }),
     );
     setShowSubmissionValidationError(false);
@@ -779,6 +780,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             className={styles.input}
             type="url"
             value={formState.discogsUrl.value}
+            placeholder="https://www.discogs.com/release/<id>..."
             onChange={(e) => setFieldValue("discogsUrl", e.target.value)}
             onFocus={() => onFocus("discogsUrl")}
             onBlur={() => onBlur("discogsUrl")}

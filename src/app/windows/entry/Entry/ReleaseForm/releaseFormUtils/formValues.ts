@@ -229,21 +229,20 @@ export type ReleaseFormTabSharedData =
   | ReleaseFormTabCreateModeSharedData
   | ReleaseFormTabUpdateModeSharedData;
 
-const DEFAULT_DISCOGS_URL_PLACEHOLDER =
-  "https://www.discogs.com/release/<id>-...";
-
 export const initialReleaseFormStateValue = ({
   entry,
   allFormats,
   allCountries,
   releaseBlueprint,
   dbSources,
+  mode,
 }: {
   entry: ReleaseFormEntry;
   allFormats: ReleasesFormatListItem[];
   allCountries: CountryListItem[];
   releaseBlueprint?: ReleaseByIdResult | undefined;
   dbSources?: ReadonlySet<DbSource> | undefined;
+  mode?: ReleaseFormTabSharedData["mode"];
 }): ReleaseFormState => {
   return {
     releaseVersion: {
@@ -261,7 +260,7 @@ export const initialReleaseFormStateValue = ({
       notifications: [],
     },
     discogsUrl: {
-      value: DEFAULT_DISCOGS_URL_PLACEHOLDER,
+      value: mode === "update" ? (releaseBlueprint?.discogsUrl ?? "") : "",
       valid: true,
       validationFn: validateDiscogsUrl,
       errors: initialReleaseFormFieldErrors.discogsUrl,
