@@ -439,6 +439,7 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
                           ...(releaseFormTabData ??
                             upsertReleaseFormTabInitialStateDate),
                           onReleaseCreated: handleReleaseCreated,
+                          onUseReleaseAsBlueprint: handleUseReleaseAsBlueprint,
                         }
                   }
                 />

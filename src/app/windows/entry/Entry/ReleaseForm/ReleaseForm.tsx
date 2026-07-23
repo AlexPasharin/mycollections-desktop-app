@@ -9,6 +9,7 @@ import {
 import ReleaseCatalogueNumbersSection from "./ReleaseCatalogueNumbersSection";
 import ReleaseCountriesSection from "./ReleaseCountriesSection";
 import styles from "./ReleaseForm.module.css";
+import ReleaseFormBlueprintLoader from "./ReleaseFormBlueprintLoader";
 import ReleaseFormFormatsSection from "./ReleaseFormFormatsSection";
 import ReleaseFormPreview from "./ReleaseFormPreview";
 import {
@@ -52,7 +53,10 @@ import { dbSourceLabel } from "@/db/db-source-options";
 import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
-import type { CreateMusicalReleaseInput } from "@/types/releases";
+import type {
+  CreateMusicalReleaseInput,
+  ReleaseByIdResult,
+} from "@/types/releases";
 import type { TagListItem } from "@/types/tags";
 import { isDateInputFieldKey, omitProperty } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
@@ -64,6 +68,7 @@ export type ReleaseFormTabData =
         notifications: string[],
         errors: string[],
       ) => void;
+      onUseReleaseAsBlueprint: (releaseBlueprint: ReleaseByIdResult) => void;
     })
   | (ReleaseFormTabUpdateModeSharedData & {
       onReleaseUpdated: (
@@ -679,6 +684,16 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   return (
     <div className={styles.section}>
       <form className={styles.form} onSubmit={handleSubmit}>
+        {!isUpdateMode && (
+          <>
+            <ReleaseFormBlueprintLoader
+              primaryDbSource={primaryDbSource}
+              onReleaseFetched={tabData.onUseReleaseAsBlueprint}
+            />
+            <hr className={styles.sectionDivider} aria-hidden />
+          </>
+        )}
+
         <div className={styles.field}>
           <label className={styles.heading} htmlFor="add-release-version">
             Release version
@@ -751,6 +766,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             className={styles.input}
             type="url"
             value={formState.discogsUrl.value}
+            placeholder="https://www.discogs.com/release/<id>..."
             onChange={(e) => setFieldValue("discogsUrl", e.target.value)}
             onFocus={() => onFocus("discogsUrl")}
             onBlur={() => onBlur("discogsUrl")}
@@ -1002,7 +1018,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             className={styles.cancelButton}
             onClick={onClearFormState}
           >
-            {isUpdateMode ? "Discard changes" : "Clear Form"}
+            Discard changes
           </button>
           <button
             type="submit"
