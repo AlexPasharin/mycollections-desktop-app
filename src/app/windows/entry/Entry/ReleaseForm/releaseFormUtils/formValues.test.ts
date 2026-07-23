@@ -31,7 +31,7 @@ const release: ReleaseByIdResult = {
   releaseVersion: "UK first press",
   releaseDate: { year: 1981, month: 3, day: 1 },
   discogsUrl: "https://www.discogs.com/release/1-test",
-  alternativeName: "Alt Album",
+  alternativeName: { nameId: "alt-1", name: "Alt Album" },
   formats: [
     {
       id: "format-row-1",
@@ -79,7 +79,7 @@ const release: ReleaseByIdResult = {
 };
 
 describe("initialReleaseFormStateValue", () => {
-  it("maps release fields into a validated add-release draft when release is given", () => {
+  it("maps release fields into a validated update-release draft when release is given", () => {
     const draft = initialReleaseFormStateValue({
       entry,
       allFormats,

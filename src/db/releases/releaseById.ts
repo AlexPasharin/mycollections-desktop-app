@@ -60,7 +60,8 @@ export const getReleaseById: GetReleaseById = async (releaseId, dbSource) => {
     .where("musicalReleases.releaseId", "=", releaseId)
     .select([
       ...musicalReleaseColumns,
-      "alternativeMusicalEntryNames.name as alternativeName",
+      "alternativeMusicalEntryNames.nameId as alternativeNameId",
+      "alternativeMusicalEntryNames.name as alternativeNameValue",
       sql<TagListItem[]>`coalesce(
         jsonb_agg(DISTINCT jsonb_build_object(
           'tagId', ${sql.ref("tags.tagId")},
@@ -81,15 +82,26 @@ export const getReleaseById: GetReleaseById = async (releaseId, dbSource) => {
         '[]'::jsonb
       )`.as("formats"),
     ])
-    .groupBy([...musicalReleaseColumns, "alternativeMusicalEntryNames.name"])
+    .groupBy([
+      ...musicalReleaseColumns,
+      "alternativeMusicalEntryNames.nameId",
+      "alternativeMusicalEntryNames.name",
+    ])
     .executeTakeFirst();
 
   if (!release) {
     return release;
   }
 
-  const { countries, catalogueNumbers, matrixRunout, releaseDate, ...rest } =
-    release;
+  const {
+    countries,
+    catalogueNumbers,
+    matrixRunout,
+    releaseDate,
+    alternativeNameId,
+    alternativeNameValue,
+    ...rest
+  } = release;
 
   const [parentReleases, childReleases] = await Promise.all([
     fetchParentReleases(releaseId, dbSource),
@@ -98,6 +110,10 @@ export const getReleaseById: GetReleaseById = async (releaseId, dbSource) => {
 
   return {
     ...rest,
+    alternativeName:
+      alternativeNameId && alternativeNameValue
+        ? { nameId: alternativeNameId, name: alternativeNameValue }
+        : null,
     releaseDate: parseStringAsGeneralizedDate(releaseDate),
     countries: getReleaseCountries(countries),
     catalogueNumbers: getReleaseCatNumbers(catalogueNumbers),

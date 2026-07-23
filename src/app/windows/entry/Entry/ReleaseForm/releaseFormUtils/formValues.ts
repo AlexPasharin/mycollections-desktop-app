@@ -235,12 +235,14 @@ export const initialReleaseFormStateValue = ({
   allCountries,
   releaseBlueprint,
   dbSources,
+  mode,
 }: {
   entry: ReleaseFormEntry;
   allFormats: ReleasesFormatListItem[];
   allCountries: CountryListItem[];
   releaseBlueprint?: ReleaseByIdResult | undefined;
   dbSources?: ReadonlySet<DbSource> | undefined;
+  mode?: ReleaseFormTabSharedData["mode"];
 }): ReleaseFormState => {
   return {
     releaseVersion: {
@@ -258,9 +260,7 @@ export const initialReleaseFormStateValue = ({
       notifications: [],
     },
     discogsUrl: {
-      value:
-        releaseBlueprint?.discogsUrl ??
-        "https://www.discogs.com/release/<id>-...",
+      value: mode === "update" ? (releaseBlueprint?.discogsUrl ?? "") : "",
       valid: true,
       validationFn: validateDiscogsUrl,
       errors: initialReleaseFormFieldErrors.discogsUrl,
@@ -395,7 +395,9 @@ const resolveNameInput = (
   const alternativeName = release?.alternativeName;
 
   const matchedAltName = alternativeName
-    ? entry.altNames.find((altName) => altName.name === alternativeName)
+    ? entry.altNames.find(
+        (altName) => altName.nameId === alternativeName.nameId,
+      )
     : null;
 
   return matchedAltName
