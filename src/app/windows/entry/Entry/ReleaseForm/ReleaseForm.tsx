@@ -9,6 +9,7 @@ import {
 import ReleaseCatalogueNumbersSection from "./ReleaseCatalogueNumbersSection";
 import ReleaseCountriesSection from "./ReleaseCountriesSection";
 import styles from "./ReleaseForm.module.css";
+import ReleaseFormBlueprintLoader from "./ReleaseFormBlueprintLoader";
 import ReleaseFormFormatsSection from "./ReleaseFormFormatsSection";
 import ReleaseFormPreview from "./ReleaseFormPreview";
 import {
@@ -28,6 +29,7 @@ import {
   defaultFormatInputRow,
   defaultRelatedReleaseRow,
   emptyCountrySelection,
+  initialReleaseFormStateValue,
   type ReleaseFormRelatedReleaseRelation,
   type ReleaseFormState,
   type ReleaseFormEntry,
@@ -52,7 +54,10 @@ import { dbSourceLabel } from "@/db/db-source-options";
 import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
-import type { CreateMusicalReleaseInput } from "@/types/releases";
+import type {
+  CreateMusicalReleaseInput,
+  ReleaseByIdResult,
+} from "@/types/releases";
 import type { TagListItem } from "@/types/tags";
 import { isDateInputFieldKey, omitProperty } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
@@ -638,6 +643,20 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
     setSubmitError(undefined);
   };
 
+  const handlePopulateFromRelease = (releaseBlueprint: ReleaseByIdResult) => {
+    setFormState(
+      initialReleaseFormStateValue({
+        entry,
+        allFormats,
+        allCountries,
+        releaseBlueprint,
+        ignoreBlueprintName: true,
+        dbSources: formState.dbSources.value,
+      }),
+    );
+    setShowSubmissionValidationError(false);
+  };
+
   const releaseVersionErrors = formState.releaseVersion.errors;
   const releaseVersionNotifications = formState.releaseVersion.notifications;
   const discogsUrlErrors = formState.discogsUrl.errors;
@@ -679,6 +698,16 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   return (
     <div className={styles.section}>
       <form className={styles.form} onSubmit={handleSubmit}>
+        {!isUpdateMode && (
+          <>
+            <ReleaseFormBlueprintLoader
+              primaryDbSource={primaryDbSource}
+              onReleaseFetched={handlePopulateFromRelease}
+            />
+            <hr className={styles.sectionDivider} aria-hidden />
+          </>
+        )}
+
         <div className={styles.field}>
           <label className={styles.heading} htmlFor="add-release-version">
             Release version
