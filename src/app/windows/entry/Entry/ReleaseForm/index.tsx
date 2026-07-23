@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   type Dispatch,
@@ -51,11 +52,7 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
 
   const dataReady = !referenceDataLoading && !referenceDataLoadFailed;
 
-  useEffect(() => {
-    if (!dataReady || formState !== null) {
-      return;
-    }
-
+  const setInitialFormState = useCallback(() => {
     onFormStateChange(
       initialReleaseFormStateValue({
         entry,
@@ -67,14 +64,22 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
       }),
     );
   }, [
-    dataReady,
-    formState,
-    onFormStateChange,
-    tabData,
     entry,
     allFormats,
     allCountries,
+    tabData.releaseBlueprint,
+    tabData.dbSources,
+    tabData.mode,
+    onFormStateChange,
   ]);
+
+  useEffect(() => {
+    if (!dataReady || formState !== null) {
+      return;
+    }
+
+    setInitialFormState();
+  }, [dataReady, formState, setInitialFormState]);
 
   if (referenceDataLoading || formState === null) {
     return (
@@ -104,17 +109,6 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
     });
   };
 
-  const onClearFormState = () => {
-    setFormState(
-      initialReleaseFormStateValue({
-        entry,
-        allFormats,
-        allCountries,
-        dbSources: tabData.dbSources,
-      }),
-    );
-  };
-
   return (
     <ReleaseForm
       entry={entry}
@@ -122,7 +116,7 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
       labels={labels}
       allFormats={allFormats}
       allCountries={allCountries}
-      onClearFormState={onClearFormState}
+      onClearFormState={setInitialFormState}
       formState={formState}
       setFormState={setFormState}
       tagsAvailableForReleases={tagsAvailableForReleases}

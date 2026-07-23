@@ -29,7 +29,6 @@ import {
   defaultFormatInputRow,
   defaultRelatedReleaseRow,
   emptyCountrySelection,
-  initialReleaseFormStateValue,
   type ReleaseFormRelatedReleaseRelation,
   type ReleaseFormState,
   type ReleaseFormEntry,
@@ -69,6 +68,7 @@ export type ReleaseFormTabData =
         notifications: string[],
         errors: string[],
       ) => void;
+      onUseReleaseAsBlueprint: (releaseBlueprint: ReleaseByIdResult) => void;
     })
   | (ReleaseFormTabUpdateModeSharedData & {
       onReleaseUpdated: (
@@ -643,20 +643,6 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
     setSubmitError(undefined);
   };
 
-  const handlePopulateFromRelease = (releaseBlueprint: ReleaseByIdResult) => {
-    setFormState(
-      initialReleaseFormStateValue({
-        entry,
-        allFormats,
-        allCountries,
-        releaseBlueprint,
-        dbSources: formState.dbSources.value,
-        mode: tabData.mode,
-      }),
-    );
-    setShowSubmissionValidationError(false);
-  };
-
   const releaseVersionErrors = formState.releaseVersion.errors;
   const releaseVersionNotifications = formState.releaseVersion.notifications;
   const discogsUrlErrors = formState.discogsUrl.errors;
@@ -702,7 +688,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           <>
             <ReleaseFormBlueprintLoader
               primaryDbSource={primaryDbSource}
-              onReleaseFetched={handlePopulateFromRelease}
+              onReleaseFetched={tabData.onUseReleaseAsBlueprint}
             />
             <hr className={styles.sectionDivider} aria-hidden />
           </>
@@ -1032,7 +1018,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             className={styles.cancelButton}
             onClick={onClearFormState}
           >
-            {isUpdateMode ? "Discard changes" : "Clear Form"}
+            Discard changes
           </button>
           <button
             type="submit"
