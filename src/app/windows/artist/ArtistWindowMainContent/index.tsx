@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type FC } from "react";
 
-import ArtistAddEntryForm from "../ArtistAddEntryForm";
-import ArtistInfo from "../ArtistEntriesContent/ArtistInfo";
-import ArtistEntriesSearch from "../ArtistEntriesSearch";
-import ArtistUpsertForm from "../ArtistUpsertForm";
+import ArtistAddEntryForm from "./ArtistAddEntryForm";
+import ArtistEntriesSearch from "./ArtistEntriesSearch";
+import ArtistInfo from "./ArtistInfo";
+import ArtistUpsertForm from "./ArtistUpsertForm";
 
 import FeedbackSection from "@/app/components/FeedbackSection";
 import Tabs from "@/app/components/Tabs";

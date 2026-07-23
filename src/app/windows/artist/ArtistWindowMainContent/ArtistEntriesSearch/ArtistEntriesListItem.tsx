@@ -1,6 +1,6 @@
 import { type FC } from "react";
 
-import api from "../api";
+import api from "../../api";
 
 import type { DbSource } from "@/db/db-source";
 import type { EntrySearchResult } from "@/types/entries";

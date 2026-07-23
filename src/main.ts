@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import electronSquirrelStartup from "electron-squirrel-startup";
 
-import createArtistWindow from "./app/windows/artists/artist/createWindow";
+import createArtistWindow from "./app/windows/artist/createWindow";
 import createEntryWindow from "./app/windows/entry/createWindow";
 import createLabelsWindow from "./app/windows/labels/createWindow";
 import createMainWindow from "./app/windows/main/create";

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FC } from "react";
 
-import api from "../api";
-import ArtistEntriesSearchResults from "../ArtistEntriesSearchResults";
+import ArtistEntriesSearchResults from "./ArtistEntriesSearchResults";
+
+import api from "../../api";
 
 import type { DbSource } from "@/db/db-source";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
