@@ -80,10 +80,21 @@ export type GetReleaseById = (
   dbSource: DbSource,
 ) => Promise<ReleaseByIdResult | undefined>;
 
-export type CreateMusicalReleaseInput = {
-  release: Insertable<MusicalRelease>;
+export type MusicalReleaseRelatedReleaseRelation = "parent" | "child";
+
+export type MusicalReleaseRelatedReleaseInput = {
+  relatedReleaseId: string;
+  relation: MusicalReleaseRelatedReleaseRelation;
+};
+
+interface UpsertMusicalReleaseBase {
   formats: Omit<Insertable<FormatOfRelease>, "releaseId">[];
   tagIds: string[];
+  relatedReleases: MusicalReleaseRelatedReleaseInput[];
+}
+
+export type CreateMusicalReleaseInput = UpsertMusicalReleaseBase & {
+  release: Insertable<MusicalRelease>;
 };
 
 export type CreateMusicalRelease = (
@@ -91,11 +102,9 @@ export type CreateMusicalRelease = (
   dbSource: DbSource,
 ) => Promise<{ releaseId: string; notifications: string[] }>;
 
-export type UpdateMusicalReleaseInput = {
+export type UpdateMusicalReleaseInput = UpsertMusicalReleaseBase & {
   releaseId: string;
   release: Omit<Updateable<MusicalRelease>, "releaseId">;
-  formats: Omit<Insertable<FormatOfRelease>, "releaseId">[];
-  tagIds: string[];
 };
 
 export type UpdateMusicalRelease = (

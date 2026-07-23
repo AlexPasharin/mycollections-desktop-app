@@ -49,6 +49,7 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
   const matrixRunoutJson = toReleaseMatrixRunoutJson(
     formState.matrixRunout.value,
   );
+  const formats = formState.formats.value;
 
   return (
     <div className={styles.preview}>
@@ -71,27 +72,31 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
         )}
       </FormPreviewField>
       <FormPreviewBlockField label="Formats">
-        <ul className={styles.list}>
-          {formState.formats.value.map((row) => {
-            const shortName =
-              formatShortNameById.get(row.formatId) ?? "(unknown format)";
-            const flags = [
-              row.pictureSleeve ? "picture sleeve" : null,
-              row.jukeboxHole ? "jukebox hole" : null,
-            ].filter((value) => value !== null);
+        {formats.length > 0 ? (
+          <ul className={styles.list}>
+            {formats.map((row) => {
+              const shortName =
+                formatShortNameById.get(row.formatId) ?? "(unknown format)";
+              const flags = [
+                row.pictureSleeve ? "picture sleeve" : null,
+                row.jukeboxHole ? "jukebox hole" : null,
+              ].filter((value) => value !== null);
 
-            return (
-              <li key={row.id}>
-                {shortName} × {row.amount}
-                {flags.length > 0 && (
-                  <span className={styles.flagsSuffix}>
-                    ({flags.join(", ")})
-                  </span>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+              return (
+                <li key={row.id}>
+                  {shortName} × {row.amount}
+                  {flags.length > 0 && (
+                    <span className={styles.flagsSuffix}>
+                      ({flags.join(", ")})
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          orPlaceholder(null)
+        )}
       </FormPreviewBlockField>
       <JsonField label="Countries" value={countriesJson} />
       <JsonField label="Catalogue numbers" value={catNumbersJson} />
@@ -103,7 +108,7 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
       </FormPreviewField>
       <FormPreviewBlockField label="Related releases">
         {formState.relatedReleases.value.length === 0 ? (
-          <p className={styles.multiline}>{orPlaceholder(null)}</p>
+          orPlaceholder(null)
         ) : (
           <ul className={styles.list}>
             {formState.relatedReleases.value.map((row) => (

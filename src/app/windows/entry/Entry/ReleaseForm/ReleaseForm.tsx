@@ -117,24 +117,8 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
     useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-
   const [submitError, setSubmitError] = useState<string>();
-
-  const setFieldValue = <K extends keyof ReleaseFormState>(
-    key: K,
-    value:
-      | ReleaseFormState[K]["value"]
-      | ((prev: ReleaseFormState) => ReleaseFormState[K]["value"]),
-  ) =>
-    setFormState((prev) => ({
-      ...prev,
-      [key]: {
-        ...prev[key],
-        value: typeof value === "function" ? value(prev) : value,
-      },
-    }));
 
   const setField = <K extends keyof ReleaseFormState>(
     key: K,
@@ -146,7 +130,20 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       ...prev,
       [key]: typeof value === "function" ? value(prev) : value,
     }));
+
+    setShowSubmissionValidationError(false);
   };
+
+  const setFieldValue = <K extends keyof ReleaseFormState>(
+    key: K,
+    value:
+      | ReleaseFormState[K]["value"]
+      | ((prev: ReleaseFormState) => ReleaseFormState[K]["value"]),
+  ) =>
+    setField(key, (prev) => ({
+      ...prev[key],
+      value: typeof value === "function" ? value(prev) : value,
+    }));
 
   // on focus we attempt to remove errors related to the field that is being focused
   const onFocus = (key: ReleaseFormInputFieldKey) => {
@@ -545,6 +542,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       relationToQueen: { value: relationToQueen },
       comment: { value: comment },
       conditionProblems: { value: conditionProblems },
+      relatedReleases: { value: relatedReleases },
       dbSources: { value: dbSources },
     } = formState;
 
@@ -563,6 +561,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       relationToQueen,
       comment,
       conditionProblems,
+      relatedReleases,
     };
 
     setIsSubmitting(true);
@@ -1132,7 +1131,7 @@ const updateReleasesAcrossDbSources = async (
   updateInput: ReturnType<typeof toUpsertMusicalReleaseInput>,
   targets: DbSource[],
 ) => {
-  const { release, formats, tagIds } = updateInput;
+  const { release, formats, tagIds, relatedReleases } = updateInput;
 
   const outcomes = await Promise.all(
     targets.map(async (source): Promise<SaveReleaseOutcome> => {
@@ -1143,6 +1142,7 @@ const updateReleasesAcrossDbSources = async (
             release,
             formats,
             tagIds,
+            relatedReleases,
           },
           source,
         );

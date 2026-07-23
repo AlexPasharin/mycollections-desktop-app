@@ -90,12 +90,7 @@ const ReleaseFormFormatsSection: FC<ReleaseFormFormatsSectionProps> = ({
 
   return (
     <div className={styles.section}>
-      <h2 className={styles.heading}>
-        Formats
-        <sup className={styles.requiredMark} aria-hidden="true">
-          *
-        </sup>
-      </h2>
+      <h2 className={styles.heading}>Formats</h2>
 
       {formats.map((formatRow, rowIndex) => (
         <div key={formatRow.id}>
@@ -116,9 +111,7 @@ const ReleaseFormFormatsSection: FC<ReleaseFormFormatsSectionProps> = ({
                 onFormatChange(formatRow.id, formatId)
               }
               patchFormat={(patch) => patchFormat(formatRow.id, patch)}
-              onRemoveFormat={
-                rowIndex > 0 ? () => removeFormatRow(formatRow.id) : undefined
-              }
+              onRemoveFormat={() => removeFormatRow(formatRow.id)}
               onFieldFocus={onFieldFocus}
               onBlur={onBlur}
             />

@@ -1,10 +1,12 @@
+import { insertReleaseRelatedReleases } from "./relatedReleases";
+
 import { applyWithNotificationsFor } from "../client/kysely";
 import { toJsonbParam } from "../utils";
 
 import type { CreateMusicalRelease } from "@/types/releases";
 
 export const createMusicalRelease: CreateMusicalRelease = async (
-  { release, formats, tagIds },
+  { release, formats, tagIds, relatedReleases },
   dbSource,
 ) => {
   const { results, notifications } = await applyWithNotificationsFor(
@@ -36,6 +38,8 @@ export const createMusicalRelease: CreateMusicalRelease = async (
           .values(tagIds.map((tagId) => ({ releaseId, tagId })))
           .execute();
       }
+
+      await insertReleaseRelatedReleases(trx, releaseId, relatedReleases);
 
       return { releaseId };
     },
