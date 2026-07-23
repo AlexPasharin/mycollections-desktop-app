@@ -1,7 +1,5 @@
 import { type FC } from "react";
 
-import styles from "./ArtistEntriesList.module.css";
-
 import ArtistEntriesListItem from "../ArtistEntriesListItem";
 
 import type { DbSource } from "@/db/db-source";
@@ -16,7 +14,7 @@ const ArtistEntriesList: FC<ArtistEntriesListProps> = ({
   entries,
   dbSource,
 }) => (
-  <ul className={styles.list}>
+  <ul className="mt-3 list-none pl-0">
     {entries.map((entry) => (
       <ArtistEntriesListItem
         key={entry.entryId}
