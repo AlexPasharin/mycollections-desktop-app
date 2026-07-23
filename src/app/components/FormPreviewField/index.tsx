@@ -19,7 +19,7 @@ export const FormPreviewBlockField: FC<FormPreviewFieldProps> = ({
   children,
 }) => (
   <div className="m-0">
-    <span className="mb-1 block font-semibold">{label}:</span>
+    <span className="mb-1 font-semibold">{label}:</span>
     {children}
   </div>
 );

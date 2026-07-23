@@ -8,6 +8,7 @@ import ReleaseMatrixRunout from "./ReleaseMatrixRunout";
 
 import api from "../../../api";
 
+import CopyTextCta from "@/app/components/CopyTextCta";
 import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
 import type { DbSource } from "@/db/db-source";
 import type { CountryListItem } from "@/types/countries";
@@ -156,6 +157,12 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
           </button>
         </div>
       )}
+      <CopyTextCta
+        text={release.releaseId}
+        label="copy release's id"
+        successMessage="Release id copied to clipboard"
+        errorMessage="Could not copy release id to clipboard"
+      />
     </div>
   );
 };

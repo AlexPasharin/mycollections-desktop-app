@@ -76,7 +76,7 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
   );
   const isFocusedReleaseView = focusedReleaseId !== null;
   const [activeTab, setActiveTab] = useState<EntryTab>(
-    entryTabInitialState("releases"),
+    entryTabInitialState("releaseUpsertForm"),
   );
 
   const [tags, setTags] = useState<TagListItem[]>([]);

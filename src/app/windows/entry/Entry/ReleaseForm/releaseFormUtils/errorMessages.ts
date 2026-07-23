@@ -44,6 +44,13 @@ export type ReleaseFormCatNumbersErrors = Record<
   ReleaseFormCatalogueNumberRowErrors
 >;
 
+export type RelatedReleaseRowId = string;
+
+export type ReleaseFormRelatedReleasesErrors = Record<
+  RelatedReleaseRowId,
+  FormFieldError[]
+>;
+
 export const emptyMutableCountriesSubsectionErrors =
   (): ReleaseFormCountriesSubsectionErrors => ({
     countrySelectErrorMessages: {},
@@ -67,6 +74,7 @@ export const initialReleaseFormFieldErrors = {
   selectedTags: [],
   partOfQueenCollection: [],
   relationToQueen: [],
+  relatedReleases: {},
   dbSources: [],
 };
 
@@ -94,6 +102,10 @@ export type ReleaseFormCountriesInputFieldKey = {
   rowId: string;
 };
 
+export type ReleaseFormRelatedReleasesInputFieldKey = {
+  relatedReleaseRowId: RelatedReleaseRowId;
+};
+
 export type ReleaseFormInputFieldKey =
   | "releaseVersion"
   | "discogsUrl"
@@ -104,7 +116,8 @@ export type ReleaseFormInputFieldKey =
   | ReleaseDateFieldErrorSource
   | ReleaseFormFormatInputFieldKey
   | ReleaseFormCatalogueNumbersInputFieldKey
-  | ReleaseFormCountriesInputFieldKey;
+  | ReleaseFormCountriesInputFieldKey
+  | ReleaseFormRelatedReleasesInputFieldKey;
 
 export const isFormatInputFieldKey = (key: ReleaseFormInputFieldKey) =>
   typeof key === "object" && "formatRowId" in key;
@@ -139,6 +152,9 @@ export const catalogueNumbersInputBucketKeyFor = (
 
 export const isCountriesInputFieldKey = (key: ReleaseFormInputFieldKey) =>
   typeof key === "object" && "countriesSubsection" in key;
+
+export const isRelatedReleasesInputFieldKey = (key: ReleaseFormInputFieldKey) =>
+  typeof key === "object" && "relatedReleaseRowId" in key;
 
 export const removeMadeInCountrySelectionRowFromFieldErrors = (
   countries: ReleaseFormCountriesErrors,

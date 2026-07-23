@@ -16,7 +16,7 @@ import {
 import { strictStringToIntSchema } from "@/validation";
 
 export const validateReleaseFormats = (formats: ReleasesFormatListItem[]) => {
-  const validationSchema = formatsSchema(formats);
+  const validationSchema = releaseFormFormatInputArraySchema(formats);
 
   return (
     value: ReleaseFormFormatInputs,
@@ -49,7 +49,6 @@ export const validateReleaseFormats = (formats: ReleasesFormatListItem[]) => {
 const releaseFormFormatInputArraySchema = (formats: ReleasesFormatListItem[]) =>
   z
     .array(releaseFormFormatInputSchema(formats))
-    .nonempty()
     .superRefine((filterRows, ctx) => {
       const seenKeys = new Set<string>();
       let index = 0;
@@ -108,9 +107,6 @@ const releaseFormFormatInputSchema = (formats: ReleasesFormatListItem[]) => {
       }
     });
 };
-
-const formatsSchema = (formats: ReleasesFormatListItem[]) =>
-  releaseFormFormatInputArraySchema(formats);
 
 const getFormatsFormFieldErrors = (
   errorMessages: ValidationResultErrorMessages,

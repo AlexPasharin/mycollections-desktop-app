@@ -24,7 +24,7 @@ type ReleaseFormFormatBlockProps = {
   formatRowErrors?: FormFieldError[] | undefined;
   onFormatChange: (formatId: string) => void;
   patchFormat: (patch: ReleaseFormFormatRowPatch) => void;
-  onRemoveFormat?: (() => void) | undefined;
+  onRemoveFormat: () => void;
   onFieldFocus: (key: ReleaseFormFormatInputFieldKey) => void;
   onBlur: () => void;
 };
@@ -166,19 +166,17 @@ const ReleaseFormFormatBlock: FC<ReleaseFormFormatBlockProps> = ({
 
       <ErrorMessages id={rowErrorElementId} messages={formatRowErrors} />
 
-      {onRemoveFormat && (
-        <div className={styles.removeRow}>
-          <button
-            type="button"
-            className={styles.removeFormat}
-            id={`add-release-remove-format${suffix}`}
-            aria-label={`Remove format ${rowIndex + 1}`}
-            onClick={onRemoveFormat}
-          >
-            Remove format
-          </button>
-        </div>
-      )}
+      <div className={styles.removeRow}>
+        <button
+          type="button"
+          className={styles.removeFormat}
+          id={`add-release-remove-format${suffix}`}
+          aria-label={`Remove format ${rowIndex + 1}`}
+          onClick={onRemoveFormat}
+        >
+          Remove format
+        </button>
+      </div>
     </div>
   );
 };

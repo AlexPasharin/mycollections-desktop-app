@@ -5,11 +5,16 @@ import type {
   ReleaseFormFormatInputs,
   ReleaseFormMatrixRunoutDraft,
   ReleaseFormNameInput,
+  ReleaseFormRelatedReleaseRow,
   CatalogueNumberRowState,
   CountrySelectionInput,
 } from "./formValues";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
+import type {
+  MusicalReleaseRelatedReleaseInput,
+  MusicalReleaseRelatedReleaseRelation,
+} from "@/types/releases";
 import type { TagId } from "@/types/tags";
 import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
@@ -28,6 +33,7 @@ type ToUpsertMusicalReleaseInputArgs = {
   relationToQueen: string;
   comment: string;
   conditionProblems: string;
+  relatedReleases: ReleaseFormRelatedReleaseRow[];
   entry: ReleaseFormEntry;
 };
 
@@ -49,7 +55,20 @@ export const toUpsertMusicalReleaseInput = (
   release: toMusicalReleaseRowFromForm(args),
   formats: toReleaseFormatsFromForm(args.formats),
   tagIds: toReleaseTagIdsFromForm(args.selectedTags),
+  relatedReleases: toRelatedReleasesFromForm(args.relatedReleases),
 });
+
+export const toRelatedReleasesFromForm = (
+  rows: ReleaseFormRelatedReleaseRow[],
+): MusicalReleaseRelatedReleaseInput[] =>
+  rows.map(({ releaseId, relation }) => ({
+    relatedReleaseId: releaseId,
+
+    // assertion is safe because the form validator guarantees the relation is valid
+    // TODO: improve this mechanism
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    relation: relation as MusicalReleaseRelatedReleaseRelation,
+  }));
 
 const toMusicalReleaseRowFromForm = ({
   entry,

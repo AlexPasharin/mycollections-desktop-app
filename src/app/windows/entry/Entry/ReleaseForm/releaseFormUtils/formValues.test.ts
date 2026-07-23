@@ -58,8 +58,24 @@ const release: ReleaseByIdResult = {
   partOfQueenCollection: true,
   relationToQueen: "Related single",
   entryId: "entry-1",
-  parentReleases: [],
-  childReleases: [],
+  parentReleases: [
+    {
+      releaseId: "parent-release-1",
+      releaseVersion: "Original LP",
+      entryId: "entry-2",
+      entryMainName: "Parent album",
+      artists: [],
+    },
+  ],
+  childReleases: [
+    {
+      releaseId: "child-release-1",
+      releaseVersion: "Single",
+      entryId: "entry-3",
+      entryMainName: "Child single",
+      artists: [],
+    },
+  ],
 };
 
 describe("initialReleaseFormStateValue", () => {
@@ -98,5 +114,15 @@ describe("initialReleaseFormStateValue", () => {
       value: JSON.stringify(release.matrixRunout, null, 4),
       treatAsText: false,
     });
+    expect(draft.relatedReleases.value).toEqual([
+      expect.objectContaining({
+        releaseId: "parent-release-1",
+        relation: "parent",
+      }),
+      expect.objectContaining({
+        releaseId: "child-release-1",
+        relation: "child",
+      }),
+    ]);
   });
 });
