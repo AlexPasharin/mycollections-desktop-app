@@ -1,8 +1,6 @@
 import { type FC } from "react";
 
-import styles from "./ArtistEntriesListItem.module.css";
-
-import api from "../api";
+import api from "../../api";
 
 import type { DbSource } from "@/db/db-source";
 import type { EntrySearchResult } from "@/types/entries";
@@ -23,18 +21,18 @@ const ArtistEntriesListItem: FC<ArtistEntriesListItemProps> = ({
   return (
     <li>
       <button
-        className={styles.item}
+        className="m-0 w-full origin-left cursor-pointer border-none bg-transparent py-[0.35rem] text-left text-inherit transition-transform duration-150 ease-in-out [font:inherit] hover:scale-[1.03] focus-visible:scale-[1.03]"
         type="button"
         onClick={() => {
           api.openNewEntryWindow({ entryId, source: dbSource });
         }}
       >
         <div>
-          <span className={styles.mainName}>{mainName}</span>
+          <span className="font-bold">{mainName}</span>
           {typesJoined && <span> ({typesJoined})</span>}
         </div>
         {altNamesJoined && (
-          <div className={styles.altNamesSection}>
+          <div className="mt-[0.2rem] italic">
             also known as: {altNamesJoined}
           </div>
         )}

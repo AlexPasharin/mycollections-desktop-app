@@ -5,7 +5,7 @@ const appWindows = {
     folder: "windows/main",
   },
   artist_window: {
-    folder: "windows/artists/artist",
+    folder: "windows/artist",
   },
   entry_window: {
     folder: "windows/entry",

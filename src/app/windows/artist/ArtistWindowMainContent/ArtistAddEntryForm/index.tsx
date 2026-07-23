@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FC, type RefObject } from "react";
 
 import ArtistAddEntrySuccess from "./ArtistAddEntrySuccess";
 
-import api from "../api";
+import api from "../../api";
 
 import UpsertEntryForm from "@/app/components/UpsertEntryForm";
 import type { UpsertEntryFormPersistedState } from "@/app/components/UpsertEntryForm/upsertEntryFormUtils/formValues";

@@ -1,6 +1,6 @@
 import { type FC } from "react";
 
-import ArtistEntriesList from "../ArtistEntriesList";
+import ArtistEntriesList from "./ArtistEntriesList";
 
 import type { DbSource } from "@/db/db-source";
 import type { EntrySearchResult } from "@/types/entries";

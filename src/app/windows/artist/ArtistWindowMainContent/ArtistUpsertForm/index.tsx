@@ -8,7 +8,7 @@ import {
 } from "./artistUpsertFormUtils/formValues";
 import { toUpsertArtistInput } from "./artistUpsertFormUtils/toUpsertArtistInput";
 
-import api from "../api";
+import api from "../../api";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
