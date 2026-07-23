@@ -72,7 +72,7 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
       </DetailLabeledField>
       {alternativeName && (
         <DetailLabeledField label="Released as">
-          {alternativeName}
+          {alternativeName.name}
         </DetailLabeledField>
       )}
       {formats.length > 0 && (

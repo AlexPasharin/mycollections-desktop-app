@@ -1,5 +1,6 @@
 import type { Insertable, Selectable, Updateable } from "kysely";
 
+import type { EntryAltNameInfo } from "./entries";
 import type { TagId, TagListItem } from "./tags";
 
 import type { DbSource } from "@/db/db-source";
@@ -67,7 +68,7 @@ export type ReleaseByIdResult = Omit<
   releaseDate: GeneralizedDateFromDb;
   tags: TagListItem[];
   formats: ReleaseFormatOfReleaseItem[];
-  alternativeName: string | null;
+  alternativeName: EntryAltNameInfo | null;
   countries: ReleaseCountries | JsonParsingErrorData;
   catalogueNumbers: ReleaseCatNumbers | JsonParsingErrorData;
   matrixRunout: ReleaseMatrixRunout | JsonParsingErrorData;

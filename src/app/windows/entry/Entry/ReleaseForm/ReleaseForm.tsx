@@ -650,7 +650,6 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
         allFormats,
         allCountries,
         releaseBlueprint,
-        ignoreBlueprintName: true,
         dbSources: formState.dbSources.value,
       }),
     );

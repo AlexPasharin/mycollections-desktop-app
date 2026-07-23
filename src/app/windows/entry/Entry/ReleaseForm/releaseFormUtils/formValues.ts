@@ -237,18 +237,14 @@ export const initialReleaseFormStateValue = ({
   allFormats,
   allCountries,
   releaseBlueprint,
-  ignoreBlueprintName = false,
   dbSources,
 }: {
   entry: ReleaseFormEntry;
   allFormats: ReleasesFormatListItem[];
   allCountries: CountryListItem[];
   releaseBlueprint?: ReleaseByIdResult | undefined;
-  ignoreBlueprintName?: boolean;
   dbSources?: ReadonlySet<DbSource> | undefined;
 }): ReleaseFormState => {
-  const nameBlueprint = ignoreBlueprintName ? undefined : releaseBlueprint;
-
   return {
     releaseVersion: {
       value: releaseBlueprint?.releaseVersion ?? "",
@@ -258,7 +254,7 @@ export const initialReleaseFormStateValue = ({
       notifications: [],
     },
     name: {
-      value: resolveNameInput(entry, nameBlueprint),
+      value: resolveNameInput(entry, releaseBlueprint),
       valid: true,
       validationFn: validatePassThrough,
       errors: initialReleaseFormFieldErrors.name,
@@ -400,7 +396,9 @@ const resolveNameInput = (
   const alternativeName = release?.alternativeName;
 
   const matchedAltName = alternativeName
-    ? entry.altNames.find((altName) => altName.name === alternativeName)
+    ? entry.altNames.find(
+        (altName) => altName.nameId === alternativeName.nameId,
+      )
     : null;
 
   return matchedAltName
