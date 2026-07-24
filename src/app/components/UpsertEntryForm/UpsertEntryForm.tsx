@@ -5,16 +5,20 @@ import UpsertEntryFormPreview from "./UpsertEntryFormPreview";
 import {
   initialUpsertEntryFormFieldErrors,
   isAltNameInputFieldKey,
+  isRelatedEntriesInputFieldKey,
   type UpsertEntryFormInputFieldKey,
 } from "./upsertEntryFormUtils/errorMessages";
 import {
   defaultAltNameRow,
+  defaultRelatedEntryRow,
   initialUpsertEntryFormDraft,
+  type UpsertEntryRelatedEntryRelation,
   type UpsertEntryFormDraft,
   type UpsertEntryFormEntry,
   type UpsertEntryFormPersistedState,
 } from "./upsertEntryFormUtils/formValues";
 import { toUpsertMusicalEntryInput } from "./upsertEntryFormUtils/toUpsertMusicalEntryInput";
+import UpsertEntryRelatedEntriesSection from "./UpsertEntryRelatedEntriesSection";
 import UpsertEntryTypesSection from "./UpsertEntryTypesSection";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
@@ -177,6 +181,16 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
       return;
     }
 
+    if (isRelatedEntriesInputFieldKey(key)) {
+      setField("relatedEntries", (prev) => ({
+        ...prev.relatedEntries,
+        errors: omitProperty(prev.relatedEntries.errors, key.relatedEntryRowId),
+        notifications: [],
+      }));
+
+      return;
+    }
+
     const errorKey = isDateInputFieldKey(key) ? "originalReleaseDate" : key;
 
     setField(errorKey, (prev) => {
@@ -276,6 +290,40 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     );
   };
 
+  const addRelatedEntryRow = () => {
+    setFieldValue("relatedEntries", (prev) => [
+      ...prev.relatedEntries.value,
+      defaultRelatedEntryRow(),
+    ]);
+  };
+
+  const removeRelatedEntryRow = (rowId: string) => {
+    setField("relatedEntries", (prev) => ({
+      ...prev.relatedEntries,
+      value: prev.relatedEntries.value.filter((row) => row.id !== rowId),
+      errors: omitProperty(prev.relatedEntries.errors, rowId),
+    }));
+  };
+
+  const setRelatedEntryId = (rowId: string, entryId: string) => {
+    setFieldValue("relatedEntries", (prev) =>
+      prev.relatedEntries.value.map((row) =>
+        row.id === rowId ? { ...row, entryId } : row,
+      ),
+    );
+  };
+
+  const setRelatedEntryRelation = (
+    rowId: string,
+    relation: UpsertEntryRelatedEntryRelation | "",
+  ) => {
+    setFieldValue("relatedEntries", (prev) =>
+      prev.relatedEntries.value.map((row) =>
+        row.id === rowId ? { ...row, relation } : row,
+      ),
+    );
+  };
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
 
@@ -291,6 +339,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
       selectedTags: validateField("selectedTags"),
       selectedTypes: validateField("selectedTypes"),
       altNames: validateField("altNames"),
+      relatedEntries: validateField("relatedEntries"),
       partOfQueenCollection: validateField("partOfQueenCollection"),
       relationToQueen: validateField("relationToQueen"),
     };
@@ -327,6 +376,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
       selectedTags: { value: selectedTags },
       selectedTypes: { value: selectedTypes },
       altNames: { value: altNames },
+      relatedEntries: { value: relatedEntries },
       partOfQueenCollection: { value: partOfQueenCollection },
       relationToQueen: { value: relationToQueen },
     } = form;
@@ -342,6 +392,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
       selectedTags,
       selectedTypes,
       altNames,
+      relatedEntries,
       partOfQueenCollection,
       relationToQueen,
     });
@@ -499,6 +550,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
             id="upsert-entry-discogs-url"
             className="px-2 py-[0.35rem] text-base"
             type="url"
+            placeholder="https://www.discogs.com/master/<id>-..."
             value={form.discogsUrl.value}
             onChange={(e) => setFieldValue("discogsUrl", e.target.value)}
             onFocus={() => onFocus("discogsUrl")}
@@ -558,6 +610,23 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
         <NotificationMessages
           id={DISCOGS_URL_FIELD_NOTIFICATIONS_ID}
           messages={altNamesNotifications}
+        />
+
+        <hr
+          className="my-[0.9rem] border-0 border-t border-black/25"
+          aria-hidden
+        />
+
+        <UpsertEntryRelatedEntriesSection
+          relatedEntries={form.relatedEntries.value}
+          errors={form.relatedEntries.errors}
+          notifications={form.relatedEntries.notifications}
+          onChangeEntryId={setRelatedEntryId}
+          onChangeRelation={setRelatedEntryRelation}
+          onAddRow={addRelatedEntryRow}
+          onRemoveRow={removeRelatedEntryRow}
+          onFocus={(rowId) => onFocus({ relatedEntryRowId: rowId })}
+          onBlur={() => onBlur("relatedEntries")}
         />
 
         <hr

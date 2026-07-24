@@ -13,11 +13,8 @@ import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
 import type { DbSource } from "@/db/db-source";
 import type { CountryListItem } from "@/types/countries";
 import type { EntryByIdResult } from "@/types/entries";
-import type {
-  RelatedReleaseArtist,
-  RelatedReleaseItem,
-  ReleaseByIdResult,
-} from "@/types/releases";
+import type { RelatedReleaseItem, ReleaseByIdResult } from "@/types/releases";
+import { formatEntryArtistsLabel } from "@/utils/artist";
 import { formatGeneralizedDate } from "@/utils/date";
 
 type ReleaseDetailsProps = {
@@ -53,6 +50,8 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
     conditionProblems,
     partOfQueenCollection,
     relationToQueen,
+    parentReleases,
+    childReleases,
   } = release;
 
   return (
@@ -133,8 +132,8 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
       <ReleaseCatNumbers catalogueNumbers={catalogueNumbers} />
       <ReleaseMatrixRunout matrixRunout={matrixRunout} />
       <RelatedReleases
-        parentReleases={release.parentReleases}
-        childReleases={release.childReleases}
+        parentReleases={parentReleases}
+        childReleases={childReleases}
         primaryDbSource={primaryDbSource}
       />
       {showReleaseActions && (
@@ -258,22 +257,4 @@ const RelatedReleasesSection: FC<RelatedReleasesSectionProps> = ({
 const formatRelatedReleaseLabel = (
   relatedRelease: RelatedReleaseItem,
 ): string =>
-  `${formatRelatedReleaseArtist(relatedRelease.artists)} - ${relatedRelease.entryMainName} (${relatedRelease.releaseVersion})`;
-
-const formatRelatedReleaseArtist = (
-  artists: RelatedReleaseArtist[],
-): string => {
-  const mainArtist = artists.find(
-    (artist) => artist.isEntriesMainArtist === true,
-  );
-
-  if (mainArtist) {
-    return mainArtist.artistName;
-  }
-
-  if (artists.length > 0) {
-    return artists.map((artist) => artist.artistName).join(", ");
-  }
-
-  return "(Unknown artist)";
-};
+  `${formatEntryArtistsLabel(relatedRelease.artists)} - ${relatedRelease.entryMainName} (${relatedRelease.releaseVersion})`;

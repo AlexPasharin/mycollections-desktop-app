@@ -81,6 +81,19 @@ const UpsertEntryFormPreview: FC<UpsertEntryFormPreviewProps> = ({
           </ul>
         )}
       </FormPreviewBlockField>
+      <FormPreviewBlockField label="Related entries">
+        {form.relatedEntries.value.length === 0 ? (
+          <p className="whitespace-pre-wrap">{orPlaceholder(null)}</p>
+        ) : (
+          <ul className="mt-[0.2rem] pl-[1.1rem]">
+            {form.relatedEntries.value.map((row) => (
+              <li key={row.id}>
+                {orPlaceholder(row.entryId.trim())} — {row.relation}
+              </li>
+            ))}
+          </ul>
+        )}
+      </FormPreviewBlockField>
       <FormPreviewField label="Part of Queen collection">
         {form.partOfQueenCollection.value ? "Yes" : "No"}
       </FormPreviewField>

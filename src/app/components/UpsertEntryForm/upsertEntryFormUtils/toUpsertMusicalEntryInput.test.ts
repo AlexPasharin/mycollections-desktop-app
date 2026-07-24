@@ -22,6 +22,9 @@ describe("toUpsertMusicalEntryInput", () => {
         selectedTags: new Set(["tag-a", "tag-b"]),
         selectedTypes: new Set(["type-1"]),
         altNames: [altNameRow("row-1", "ANATO", "name-id-1")],
+        relatedEntries: [
+          { id: "row-2", entryId: "entry-parent", relation: "parent" },
+        ],
         partOfQueenCollection: true,
         relationToQueen: "  Core album  ",
       }),
@@ -37,6 +40,7 @@ describe("toUpsertMusicalEntryInput", () => {
       tagIds: ["tag-a", "tag-b"],
       typeIds: ["type-1"],
       altNames: [{ id: "row-1", name: "ANATO", nameId: "name-id-1" }],
+      relatedEntries: [{ relatedEntryId: "entry-parent", relation: "parent" }],
     });
   });
 
@@ -50,6 +54,7 @@ describe("toUpsertMusicalEntryInput", () => {
         selectedTags: new Set(),
         selectedTypes: new Set(),
         altNames: [],
+        relatedEntries: [],
         partOfQueenCollection: false,
         relationToQueen: "ignored when unchecked",
       }),
@@ -65,6 +70,7 @@ describe("toUpsertMusicalEntryInput", () => {
       tagIds: [],
       typeIds: [],
       altNames: [],
+      relatedEntries: [],
     });
   });
 
@@ -78,6 +84,7 @@ describe("toUpsertMusicalEntryInput", () => {
         selectedTags: new Set(["tag-a"]),
         selectedTypes: new Set(),
         altNames: [],
+        relatedEntries: [],
         partOfQueenCollection: false,
         relationToQueen: "  Would be cleared  ",
       }).entry.relationToQueen,
@@ -94,6 +101,7 @@ describe("toUpsertMusicalEntryInput", () => {
         selectedTags: new Set(),
         selectedTypes: new Set(),
         altNames: [],
+        relatedEntries: [],
         partOfQueenCollection: true,
         relationToQueen: "   ",
       }).entry.relationToQueen,
@@ -110,6 +118,7 @@ describe("toUpsertMusicalEntryInput", () => {
         selectedTags: new Set(),
         selectedTypes: new Set(),
         altNames: [],
+        relatedEntries: [],
         partOfQueenCollection: false,
         relationToQueen: "",
       }).entry.originalReleaseDate,
@@ -124,6 +133,7 @@ describe("toUpsertMusicalEntryInput", () => {
         selectedTags: new Set(),
         selectedTypes: new Set(),
         altNames: [],
+        relatedEntries: [],
         partOfQueenCollection: false,
         relationToQueen: "",
       }).entry.originalReleaseDate,
@@ -145,6 +155,7 @@ describe("toUpsertMusicalEntryInput", () => {
         selectedTags: new Set(),
         selectedTypes: new Set(),
         altNames,
+        relatedEntries: [],
         partOfQueenCollection: false,
         relationToQueen: "",
       }).altNames,
