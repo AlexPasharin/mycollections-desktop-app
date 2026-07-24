@@ -41,6 +41,12 @@ export type EntryTypeInfo = {
   name: string;
 };
 
+export type RelatedEntryItem = {
+  entryId: string;
+  mainName: string;
+  artists: EntryArtistInfo[];
+};
+
 export type EntryByIdResult = {
   entryId: string;
   mainName: string;
@@ -53,6 +59,8 @@ export type EntryByIdResult = {
   types: EntryTypeInfo[];
   altNames: EntryAltNameInfo[];
   tags: TagListItem[];
+  parentEntries: RelatedEntryItem[];
+  childEntries: RelatedEntryItem[];
 };
 
 export type GetEntryById = (
@@ -86,13 +94,24 @@ export type SearchArtistEntries = (
 
 export type MusicalEntryAltNameInput = { nameId?: string; name: string };
 
-export type UpdateMusicalEntryInput = {
-  entryId: string;
-  entry: Omit<Updateable<MusicalEntry>, "entryId">;
+export type MusicalEntryRelatedEntryRelation = "parent" | "child";
+
+export type MusicalEntryRelatedEntryInput = {
+  relatedEntryId: string;
+  relation: MusicalEntryRelatedEntryRelation;
+};
+
+interface UpsertMusicalEntryBase {
   tagIds: string[];
   typeIds: string[];
   altNames: MusicalEntryAltNameInput[];
-};
+  relatedEntries: MusicalEntryRelatedEntryInput[];
+}
+
+export type UpdateMusicalEntryInput = {
+  entryId: string;
+  entry: Omit<Updateable<MusicalEntry>, "entryId">;
+} & UpsertMusicalEntryBase;
 
 export type UpdateMusicalEntry = (
   input: UpdateMusicalEntryInput,
@@ -101,11 +120,8 @@ export type UpdateMusicalEntry = (
 
 export type CreateMusicalEntryInput = {
   entry: Insertable<MusicalEntry>;
-  tagIds: string[];
-  typeIds: string[];
-  altNames: MusicalEntryAltNameInput[];
   artistId: string;
-};
+} & UpsertMusicalEntryBase;
 
 export type CreateMusicalEntry = (
   input: CreateMusicalEntryInput,

@@ -1,11 +1,12 @@
 import { fetchEntryByIdResult } from "./entryById";
+import { insertEntryRelatedEntries } from "./relatedEntries";
 
 import { applyWithNotificationsFor } from "../client/kysely";
 
 import type { CreateMusicalEntry } from "@/types/entries";
 
 export const createMusicalEntry: CreateMusicalEntry = async (
-  { entry, tagIds, typeIds, altNames, artistId },
+  { entry, tagIds, typeIds, altNames, relatedEntries, artistId },
   dbSource,
 ) => {
   const { results: createdEntry, notifications } =
@@ -43,6 +44,8 @@ export const createMusicalEntry: CreateMusicalEntry = async (
           )
           .execute();
       }
+
+      await insertEntryRelatedEntries(trx, entryId, relatedEntries);
 
       const entryAfterCreate = await fetchEntryByIdResult(trx, entryId);
 
