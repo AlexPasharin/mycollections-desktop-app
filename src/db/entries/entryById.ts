@@ -1,5 +1,6 @@
 import { sql, type Kysely } from "kysely";
 
+import { fetchRelatedEntries } from "./relatedEntries";
 import { selectFromExtendedMusicalEntryRows } from "./utils";
 
 import { dbClient } from "../client/kysely";
@@ -89,11 +90,18 @@ export const fetchEntryByIdResult = async (
     return entry;
   }
 
+  const [parentEntries, childEntries] = await Promise.all([
+    fetchRelatedEntries(db, entryId, "parent"),
+    fetchRelatedEntries(db, entryId, "child"),
+  ]);
+
   return {
     ...entry,
     originalReleaseDate: parseStringAsGeneralizedDate(
       entry.originalReleaseDate,
     ),
+    parentEntries,
+    childEntries,
   };
 };
 

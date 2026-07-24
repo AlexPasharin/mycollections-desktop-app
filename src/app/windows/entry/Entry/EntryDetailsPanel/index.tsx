@@ -2,16 +2,24 @@ import { type FC } from "react";
 
 import styles from "./EntryDetailsPanel.module.css";
 
+import api from "../../api";
+
 import CopyTextCta from "@/app/components/CopyTextCta";
 import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
-import type { EntryByIdResult } from "@/types/entries";
+import type { DbSource } from "@/db/db-source";
+import type { EntryByIdResult, RelatedEntryItem } from "@/types/entries";
+import { formatEntryArtistsLabel } from "@/utils/artist";
 import { formatGeneralizedDate } from "@/utils/date";
 
 type EntryDetailsPanelProps = {
   entry: EntryByIdResult;
+  primaryDbSource: DbSource;
 };
 
-const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry }) => {
+const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({
+  entry,
+  primaryDbSource,
+}) => {
   const {
     types,
     altNames,
@@ -21,6 +29,8 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry }) => {
     relationToQueen,
     tags,
     comment,
+    parentEntries,
+    childEntries,
   } = entry;
 
   return (
@@ -106,6 +116,12 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry }) => {
         </div>
       )}
 
+      <RelatedEntries
+        parentEntries={parentEntries}
+        childEntries={childEntries}
+        primaryDbSource={primaryDbSource}
+      />
+
       <CopyTextCta
         text={entry.entryId}
         label="copy entry's id"
@@ -117,3 +133,77 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({ entry }) => {
 };
 
 export default EntryDetailsPanel;
+
+type RelatedEntriesProps = {
+  parentEntries: RelatedEntryItem[];
+  childEntries: RelatedEntryItem[];
+  primaryDbSource: DbSource;
+};
+
+const RelatedEntries: FC<RelatedEntriesProps> = ({
+  parentEntries,
+  childEntries,
+  primaryDbSource,
+}) => {
+  if (parentEntries.length === 0 && childEntries.length === 0) {
+    return null;
+  }
+
+  const openRelatedEntryWindow = (relatedEntry: RelatedEntryItem) => {
+    api.openNewEntryWindow({
+      entryId: relatedEntry.entryId,
+      source: primaryDbSource,
+    });
+  };
+
+  return (
+    <div className="mt-[0.85rem] flex flex-col gap-[0.65rem] border-t border-[#e0dcf5] pt-[0.85rem] text-[0.92em]">
+      {parentEntries.length > 0 && (
+        <RelatedEntriesSection
+          label="Parent entries:"
+          entries={parentEntries}
+          onEntrySelect={openRelatedEntryWindow}
+        />
+      )}
+      {childEntries.length > 0 && (
+        <RelatedEntriesSection
+          label="Child entries:"
+          entries={childEntries}
+          onEntrySelect={openRelatedEntryWindow}
+        />
+      )}
+    </div>
+  );
+};
+
+type RelatedEntriesSectionProps = {
+  label: string;
+  entries: RelatedEntryItem[];
+  onEntrySelect: (entry: RelatedEntryItem) => void;
+};
+
+const RelatedEntriesSection: FC<RelatedEntriesSectionProps> = ({
+  label,
+  entries,
+  onEntrySelect,
+}) => (
+  <div>
+    <span className="mb-1 block font-semibold">{label}</span>
+    <ul className="m-0 list-none p-0 [&>li+li]:mt-[0.2rem]">
+      {entries.map((relatedEntry) => (
+        <li key={relatedEntry.entryId}>
+          <button
+            type="button"
+            className="m-0 cursor-pointer border-none bg-transparent p-0 text-left font-[inherit] text-[#1a5fb4] text-[inherit] underline hover:text-[#0d3d82] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a5fb4]"
+            onClick={() => onEntrySelect(relatedEntry)}
+          >
+            {formatRelatedEntryLabel(relatedEntry)}
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+const formatRelatedEntryLabel = (relatedEntry: RelatedEntryItem): string =>
+  `${formatEntryArtistsLabel(relatedEntry.artists)} - ${relatedEntry.mainName}`;

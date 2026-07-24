@@ -18,6 +18,8 @@ const entry: ReleaseFormEntry = {
   types: [],
   altNames: [{ nameId: "alt-1", name: "Alt Album" }],
   tags: [],
+  parentEntries: [],
+  childEntries: [],
 };
 
 const allFormats = [{ formatId: "fmt-vinyl", shortName: "Vinyl" }];

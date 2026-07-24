@@ -1,26 +1,26 @@
 import type { FC } from "react";
 
-import type { ReleaseFormRelatedReleasesErrors } from "../releaseFormUtils/errorMessages";
+import type { UpsertEntryRelatedEntriesErrors } from "../upsertEntryFormUtils/errorMessages";
 import type {
-  ReleaseFormRelatedReleaseRelation,
-  ReleaseFormRelatedReleaseRow,
-} from "../releaseFormUtils/formValues";
+  UpsertEntryRelatedEntryRelation,
+  UpsertEntryRelatedEntryRow,
+} from "../upsertEntryFormUtils/formValues";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
 import NotificationMessages from "@/app/components/NotificationMessages";
 import type { FeedbackNotifications } from "@/types/form";
 
-const RELATED_RELEASES_NOTIFICATIONS_ID =
-  "add-release-related-releases-notifications";
+const RELATED_ENTRIES_NOTIFICATIONS_ID =
+  "upsert-entry-related-entries-notifications";
 
-type ReleaseRelatedReleasesSectionProps = {
-  relatedReleases: ReleaseFormRelatedReleaseRow[];
-  errors: ReleaseFormRelatedReleasesErrors;
+type UpsertEntryRelatedEntriesSectionProps = {
+  relatedEntries: UpsertEntryRelatedEntryRow[];
+  errors: UpsertEntryRelatedEntriesErrors;
   notifications: FeedbackNotifications;
-  onChangeReleaseId: (rowId: string, releaseId: string) => void;
+  onChangeEntryId: (rowId: string, entryId: string) => void;
   onChangeRelation: (
     rowId: string,
-    relation: ReleaseFormRelatedReleaseRelation | "",
+    relation: UpsertEntryRelatedEntryRelation | "",
   ) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
@@ -28,11 +28,13 @@ type ReleaseRelatedReleasesSectionProps = {
   onBlur: () => void;
 };
 
-const ReleaseRelatedReleasesSection: FC<ReleaseRelatedReleasesSectionProps> = ({
-  relatedReleases,
+const UpsertEntryRelatedEntriesSection: FC<
+  UpsertEntryRelatedEntriesSectionProps
+> = ({
+  relatedEntries,
   errors,
   notifications,
-  onChangeReleaseId,
+  onChangeEntryId,
   onChangeRelation,
   onAddRow,
   onRemoveRow,
@@ -41,21 +43,21 @@ const ReleaseRelatedReleasesSection: FC<ReleaseRelatedReleasesSectionProps> = ({
 }) => (
   <div className="mt-0 mb-[0.65rem]">
     <h2 className="mb-3 text-base leading-snug font-semibold">
-      Related releases
+      Related entries
     </h2>
 
-    {relatedReleases.length > 0 && (
+    {relatedEntries.length > 0 && (
       <ul
         className="mb-3 flex list-none flex-col gap-[0.55rem] p-0"
-        aria-label="Related releases"
+        aria-label="Related entries"
       >
-        {relatedReleases.map((row, index) => {
+        {relatedEntries.map((row, index) => {
           const rowErrors = errors[row.id];
           const hasErrors = rowErrors !== undefined && rowErrors.length > 0;
-          const errorId = `add-release-related-release-error-${row.id}`;
-          const releaseIdInputId = `add-release-related-release-id-${row.id}`;
-          const relationSelectId = `add-release-related-release-relation-${row.id}`;
-          const removeAriaLabel = `Remove related release ${index + 1}`;
+          const errorId = `upsert-entry-related-entry-error-${row.id}`;
+          const entryIdInputId = `upsert-entry-related-entry-id-${row.id}`;
+          const relationSelectId = `upsert-entry-related-entry-relation-${row.id}`;
+          const removeAriaLabel = `Remove related entry ${index + 1}`;
 
           return (
             <li key={row.id}>
@@ -63,18 +65,18 @@ const ReleaseRelatedReleasesSection: FC<ReleaseRelatedReleasesSectionProps> = ({
                 <span className="text-[0.92em] font-semibold">
                   Related {index + 1}
                 </span>
-                <label className="sr-only" htmlFor={releaseIdInputId}>
-                  Release ID {index + 1}
+                <label className="sr-only" htmlFor={entryIdInputId}>
+                  Entry ID {index + 1}
                 </label>
                 <input
-                  id={releaseIdInputId}
+                  id={entryIdInputId}
                   className="px-2 py-[0.35rem] text-base"
                   type="text"
                   size={36}
-                  value={row.releaseId}
-                  placeholder="Release ID"
+                  value={row.entryId}
+                  placeholder="Entry ID"
                   onChange={(e) => {
-                    onChangeReleaseId(row.id, e.target.value);
+                    onChangeEntryId(row.id, e.target.value);
                   }}
                   onFocus={() => {
                     onFocus(row.id);
@@ -131,7 +133,7 @@ const ReleaseRelatedReleasesSection: FC<ReleaseRelatedReleasesSectionProps> = ({
     )}
 
     <NotificationMessages
-      id={RELATED_RELEASES_NOTIFICATIONS_ID}
+      id={RELATED_ENTRIES_NOTIFICATIONS_ID}
       messages={notifications}
     />
 
@@ -140,16 +142,16 @@ const ReleaseRelatedReleasesSection: FC<ReleaseRelatedReleasesSectionProps> = ({
       className="inline-block cursor-pointer border-none bg-transparent px-0 py-1 text-[0.92em] text-[#1a5fb4] underline hover:text-[#0d3d82]"
       onClick={onAddRow}
     >
-      Add related release
+      Add related entry
     </button>
   </div>
 );
 
-export default ReleaseRelatedReleasesSection;
+export default UpsertEntryRelatedEntriesSection;
 
 const parseRelationSelectValue = (
   value: string,
-): ReleaseFormRelatedReleaseRelation | "" => {
+): UpsertEntryRelatedEntryRelation | "" => {
   if (value === "parent" || value === "child") {
     return value;
   }

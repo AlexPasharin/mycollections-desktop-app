@@ -1,8 +1,13 @@
 import {
   initialUpsertEntryFormFieldErrors,
   type UpsertEntryAltNamesErrors,
+  type UpsertEntryRelatedEntriesErrors,
 } from "./errorMessages";
-import { validateAltNames, validateEntryDiscogsUrl } from "./validation";
+import {
+  validateAltNames,
+  validateEntryDiscogsUrl,
+  validateRelatedEntries,
+} from "./validation";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { DbSource } from "@/db/db-source";
@@ -34,6 +39,24 @@ export type UpsertEntryAltNameRow = {
 export const defaultAltNameRow = (name = ""): UpsertEntryAltNameRow =>
   withNewId({ name });
 
+export type UpsertEntryRelatedEntryRelation = "parent" | "child";
+
+export type UpsertEntryRelatedEntryRow = {
+  id: string;
+  entryId: string;
+  relation: UpsertEntryRelatedEntryRelation | "";
+};
+
+export type ValidUpsertEntryRelatedEntryRow = UpsertEntryRelatedEntryRow & {
+  relation: UpsertEntryRelatedEntryRelation;
+};
+
+export const defaultRelatedEntryRow = (): UpsertEntryRelatedEntryRow =>
+  withNewId({
+    entryId: "",
+    relation: "",
+  });
+
 export type UpsertEntryFormDraft = {
   mainName: FormField;
   originalReleaseDate: FormField<GeneralizedDateFormInputValue>;
@@ -42,6 +65,11 @@ export type UpsertEntryFormDraft = {
   selectedTags: FormField<Set<TagId>>;
   selectedTypes: FormField<Set<string>>;
   altNames: FormField<UpsertEntryAltNameRow[], UpsertEntryAltNamesErrors>;
+  relatedEntries: FormField<
+    UpsertEntryRelatedEntryRow[],
+    UpsertEntryRelatedEntriesErrors,
+    ValidUpsertEntryRelatedEntryRow[]
+  >;
   partOfQueenCollection: FormField<boolean>;
   relationToQueen: FormField<string>;
 };
@@ -54,112 +82,124 @@ export type UpsertEntryFormPersistedState = {
 export const initialUpsertEntryFormDraft = (
   entry?: UpsertEntryFormEntry,
 ): UpsertEntryFormDraft => {
-  return buildUpsertEntryFormDraft({
-    mainName: entry?.mainName ?? "",
-    originalReleaseDate: entry?.originalReleaseDate ?? null,
-    discogsUrl: entry?.discogsUrl ?? "https://www.discogs.com/master/<id>-...",
-    comment: entry?.comment ?? "",
-    partOfQueenCollection: entry?.partOfQueenCollection ?? false,
-    relationToQueen: entry?.relationToQueen ?? null,
-    tagIds: entry?.tags.map((tag) => tag.tagId) ?? [],
-    typeIds: entry?.types.map((type) => type.entryTypeId) ?? [],
-    altNames:
-      entry?.altNames.map(({ nameId, name }) => ({
-        id: nameId,
-        nameId,
-        name,
-      })) ?? [],
-  });
-};
+  const {
+    mainName,
+    originalReleaseDate,
+    discogsUrl,
+    comment,
+    partOfQueenCollection,
+    relationToQueen,
+    tags,
+    types,
+    altNames,
+    parentEntries,
+    childEntries,
+  } = entry ?? {};
 
-type BuildUpsertEntryFormDraftArgs = {
-  mainName: string;
-  originalReleaseDate: GeneralizedDate | null;
-  discogsUrl: string | null;
-  comment: string | null;
-  partOfQueenCollection: boolean;
-  relationToQueen: string | null;
-  tagIds: TagId[];
-  typeIds: string[];
-  altNames: UpsertEntryAltNameRow[];
-};
+  const tagIds = tags?.map((tag) => tag.tagId) ?? [];
+  const typeIds = types?.map((type) => type.entryTypeId) ?? [];
 
-const buildUpsertEntryFormDraft = ({
-  mainName,
-  originalReleaseDate,
-  discogsUrl,
-  comment,
-  partOfQueenCollection,
-  relationToQueen,
-  tagIds,
-  typeIds,
-  altNames,
-}: BuildUpsertEntryFormDraftArgs): UpsertEntryFormDraft => ({
-  mainName: {
-    value: mainName,
-    valid: true,
-    validationFn: validateRequiredTrimmedText("Main name is required."),
-    errors: initialUpsertEntryFormFieldErrors.mainName,
-    notifications: [],
-  },
-  originalReleaseDate: {
-    value: {
-      year: String(originalReleaseDate?.year ?? ""),
-      month: String(originalReleaseDate?.month ?? ""),
-      day: String(originalReleaseDate?.day ?? ""),
+  const altNameRows =
+    altNames?.map(({ nameId, name }) => ({
+      id: nameId,
+      nameId,
+      name,
+    })) ?? [];
+
+  const relatedEntries = relatedEntriesToFormValue(parentEntries, childEntries);
+
+  return {
+    mainName: {
+      value: mainName ?? "",
+      valid: true,
+      validationFn: validateRequiredTrimmedText("Main name is required."),
+      errors: initialUpsertEntryFormFieldErrors.mainName,
+      notifications: [],
     },
-    valid: true,
-    validationFn: validateReleaseDate(null),
-    errors: initialUpsertEntryFormFieldErrors.originalReleaseDate,
-    notifications: [],
-  },
-  discogsUrl: {
-    value: discogsUrl ?? "https://www.discogs.com/master/<id>-...",
-    valid: true,
-    validationFn: validateEntryDiscogsUrl,
-    errors: initialUpsertEntryFormFieldErrors.discogsUrl,
-    notifications: [],
-  },
-  comment: {
-    value: comment ?? "",
-    valid: true,
-    validationFn: validateOptionalTrimmedText,
-    errors: initialUpsertEntryFormFieldErrors.comment,
-    notifications: [],
-  },
-  selectedTags: {
-    value: new Set(tagIds),
-    valid: true,
-    validationFn: validatePassThrough,
-    errors: initialUpsertEntryFormFieldErrors.selectedTags,
-    notifications: [],
-  },
-  selectedTypes: {
-    value: new Set(typeIds),
-    valid: true,
-    validationFn: validatePassThrough,
-    errors: initialUpsertEntryFormFieldErrors.selectedTypes,
-    notifications: [],
-  },
-  altNames: {
-    value: altNames,
-    valid: true,
-    validationFn: validateAltNames(mainName),
-    errors: initialUpsertEntryFormFieldErrors.altNames,
-    notifications: [],
-  },
-  partOfQueenCollection: {
-    value: partOfQueenCollection,
-    valid: true,
-    validationFn: validatePassThrough,
-    errors: initialUpsertEntryFormFieldErrors.partOfQueenCollection,
-    notifications: [],
-  },
-  relationToQueen: {
-    value: relationToQueen ?? "",
-    valid: true,
-    validationFn: validateOptionalTrimmedText,
-    errors: initialUpsertEntryFormFieldErrors.relationToQueen,
-    notifications: [],
-  },
-});
+    originalReleaseDate: {
+      value: {
+        year: String(originalReleaseDate?.year ?? ""),
+        month: String(originalReleaseDate?.month ?? ""),
+        day: String(originalReleaseDate?.day ?? ""),
+      },
+      valid: true,
+      validationFn: validateReleaseDate(null),
+      errors: initialUpsertEntryFormFieldErrors.originalReleaseDate,
+      notifications: [],
+    },
+    discogsUrl: {
+      value: discogsUrl ?? "",
+      valid: true,
+      validationFn: validateEntryDiscogsUrl,
+      errors: initialUpsertEntryFormFieldErrors.discogsUrl,
+      notifications: [],
+    },
+    comment: {
+      value: comment ?? "",
+      valid: true,
+      validationFn: validateOptionalTrimmedText,
+      errors: initialUpsertEntryFormFieldErrors.comment,
+      notifications: [],
+    },
+    selectedTags: {
+      value: new Set(tagIds),
+      valid: true,
+      validationFn: validatePassThrough,
+      errors: initialUpsertEntryFormFieldErrors.selectedTags,
+      notifications: [],
+    },
+    selectedTypes: {
+      value: new Set(typeIds),
+      valid: true,
+      validationFn: validatePassThrough,
+      errors: initialUpsertEntryFormFieldErrors.selectedTypes,
+      notifications: [],
+    },
+    altNames: {
+      value: altNameRows,
+      valid: true,
+      validationFn: validateAltNames(mainName ?? ""),
+      errors: initialUpsertEntryFormFieldErrors.altNames,
+      notifications: [],
+    },
+    relatedEntries: {
+      value: relatedEntries,
+      valid: true,
+      validationFn: validateRelatedEntries,
+      errors: initialUpsertEntryFormFieldErrors.relatedEntries,
+      notifications: [],
+    },
+    partOfQueenCollection: {
+      value: partOfQueenCollection ?? false,
+      valid: true,
+      validationFn: validatePassThrough,
+      errors: initialUpsertEntryFormFieldErrors.partOfQueenCollection,
+      notifications: [],
+    },
+    relationToQueen: {
+      value: relationToQueen ?? "",
+      valid: true,
+      validationFn: validateOptionalTrimmedText,
+      errors: initialUpsertEntryFormFieldErrors.relationToQueen,
+      notifications: [],
+    },
+  };
+};
+
+const relatedEntriesToFormValue = (
+  parentEntries: EntryByIdResult["parentEntries"] | undefined,
+  childEntries: EntryByIdResult["childEntries"] | undefined,
+): ValidUpsertEntryRelatedEntryRow[] => [
+  ...(parentEntries ?? []).map(({ entryId }) =>
+    withNewId({
+      entryId: entryId,
+      relation: "parent" as const,
+    }),
+  ),
+  ...(childEntries ?? []).map(({ entryId }) =>
+    withNewId({
+      entryId: entryId,
+      relation: "child" as const,
+    }),
+  ),
+];

@@ -1,6 +1,13 @@
-import type { UpsertEntryAltNameRow } from "./formValues";
+import type {
+  UpsertEntryAltNameRow,
+  UpsertEntryRelatedEntryRow,
+} from "./formValues";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
+import type {
+  MusicalEntryRelatedEntryInput,
+  MusicalEntryRelatedEntryRelation,
+} from "@/types/entries";
 import type { TagId } from "@/types/tags";
 import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
@@ -19,6 +26,7 @@ type UpsertMusicalEntryInputPayload = {
   tagIds: string[];
   typeIds: string[];
   altNames: UpsertEntryAltNameRow[];
+  relatedEntries: MusicalEntryRelatedEntryInput[];
 };
 
 type ToUpsertMusicalEntryInputArgs = {
@@ -29,6 +37,7 @@ type ToUpsertMusicalEntryInputArgs = {
   selectedTags: Set<TagId>;
   selectedTypes: Set<string>;
   altNames: UpsertEntryAltNameRow[];
+  relatedEntries: UpsertEntryRelatedEntryRow[];
   partOfQueenCollection: boolean;
   relationToQueen: string;
 };
@@ -41,6 +50,7 @@ export const toUpsertMusicalEntryInput = ({
   selectedTags,
   selectedTypes,
   altNames,
+  relatedEntries,
   partOfQueenCollection,
   relationToQueen,
 }: ToUpsertMusicalEntryInputArgs): UpsertMusicalEntryInputPayload => ({
@@ -57,4 +67,16 @@ export const toUpsertMusicalEntryInput = ({
   tagIds: Array.from(selectedTags),
   typeIds: Array.from(selectedTypes),
   altNames,
+  relatedEntries: toRelatedEntriesFromForm(relatedEntries),
 });
+
+export const toRelatedEntriesFromForm = (
+  rows: UpsertEntryRelatedEntryRow[],
+): MusicalEntryRelatedEntryInput[] =>
+  rows.map(({ entryId, relation }) => ({
+    relatedEntryId: entryId,
+
+    // The form validator guarantees the relation is valid before saving.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    relation: relation as MusicalEntryRelatedEntryRelation,
+  }));

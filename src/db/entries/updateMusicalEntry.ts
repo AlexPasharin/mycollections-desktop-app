@@ -1,17 +1,19 @@
 import type { Kysely } from "kysely";
 
 import { fetchEntryByIdResult } from "./entryById";
+import { insertEntryRelatedEntries } from "./relatedEntries";
 
 import { applyWithNotificationsFor } from "../client/kysely";
 
 import type { DB } from "@/types/db/database";
 import type {
   MusicalEntryAltNameInput,
+  MusicalEntryRelatedEntryInput,
   UpdateMusicalEntry,
 } from "@/types/entries";
 
 export const updateMusicalEntry: UpdateMusicalEntry = async (
-  { entryId, entry, tagIds, typeIds, altNames },
+  { entryId, entry, tagIds, typeIds, altNames, relatedEntries },
   dbSource,
 ) => {
   const { results: updatedEntry, notifications } =
@@ -25,6 +27,7 @@ export const updateMusicalEntry: UpdateMusicalEntry = async (
       await syncEntryTags(trx, entryId, tagIds);
       await syncEntryTypes(trx, entryId, typeIds);
       await syncEntryAltNames(trx, entryId, altNames);
+      await syncEntryRelatedEntries(trx, entryId, relatedEntries);
 
       const entryAfterUpdate = await fetchEntryByIdResult(trx, entryId);
 
@@ -110,6 +113,24 @@ const syncEntryAltNames = async (
   for (const altName of altNames) {
     await upsertEntryAltName(trx, entryId, altName, existingNameIds);
   }
+};
+
+const syncEntryRelatedEntries = async (
+  trx: DbTransaction,
+  entryId: string,
+  relatedEntries: MusicalEntryRelatedEntryInput[],
+) => {
+  await trx
+    .deleteFrom("parentMusicalEntries")
+    .where((eb) =>
+      eb.or([
+        eb("parentEntryId", "=", entryId),
+        eb("childEntryId", "=", entryId),
+      ]),
+    )
+    .execute();
+
+  await insertEntryRelatedEntries(trx, entryId, relatedEntries);
 };
 
 const upsertEntryAltName = async (

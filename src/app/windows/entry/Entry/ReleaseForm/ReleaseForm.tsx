@@ -256,6 +256,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       setField("relatedReleases", (prev) => ({
         ...prev.relatedReleases,
         errors: omitProperty(prev.relatedReleases.errors, relatedReleaseRowId),
+        notifications: [],
       }));
 
       return;
@@ -905,6 +906,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
         <ReleaseRelatedReleasesSection
           relatedReleases={formState.relatedReleases.value}
           errors={formState.relatedReleases.errors}
+          notifications={formState.relatedReleases.notifications}
           onChangeReleaseId={setRelatedReleaseId}
           onChangeRelation={setRelatedReleaseRelation}
           onAddRow={addRelatedReleaseRow}
