@@ -52,7 +52,12 @@ export const fetchRelatedEntries = (
         '[]'::jsonb
       )`.as("artists"),
     ])
-    .groupBy(["musicalEntries.entryId", "musicalEntries.mainName"])
+    .groupBy([
+      "musicalEntries.entryId",
+      "musicalEntries.mainName",
+      "parentMusicalEntries.childEntryOrderNumber",
+    ])
+    .orderBy("parentMusicalEntries.childEntryOrderNumber", "asc")
     .orderBy("musicalEntries.mainName", "asc")
     .orderBy("musicalEntries.entryId", "asc")
     .execute();

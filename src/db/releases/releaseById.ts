@@ -244,7 +244,9 @@ const fetchRelatedReleases = (
       "musicalReleases.releaseVersion",
       "musicalEntries.entryId",
       "musicalEntries.mainName",
+      "parentMusicalReleases.childReleaseOrderNumber",
     ])
+    .orderBy("parentMusicalReleases.childReleaseOrderNumber", "asc")
     .orderBy("musicalEntries.mainName", "asc")
     .orderBy("musicalReleases.releaseId", "asc")
     .execute();
