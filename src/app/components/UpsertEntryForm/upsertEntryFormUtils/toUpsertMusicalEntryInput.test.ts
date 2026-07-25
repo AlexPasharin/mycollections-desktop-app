@@ -23,7 +23,12 @@ describe("toUpsertMusicalEntryInput", () => {
         selectedTypes: new Set(["type-1"]),
         altNames: [altNameRow("row-1", "ANATO", "name-id-1")],
         relatedEntries: [
-          { id: "row-2", entryId: "entry-parent", relation: "parent" },
+          {
+            id: "row-2",
+            entryId: "entry-parent",
+            relation: "parent",
+            orderNumber: "1",
+          },
         ],
         partOfQueenCollection: true,
         relationToQueen: "  Core album  ",
@@ -40,7 +45,13 @@ describe("toUpsertMusicalEntryInput", () => {
       tagIds: ["tag-a", "tag-b"],
       typeIds: ["type-1"],
       altNames: [{ id: "row-1", name: "ANATO", nameId: "name-id-1" }],
-      relatedEntries: [{ relatedEntryId: "entry-parent", relation: "parent" }],
+      relatedEntries: [
+        {
+          relatedEntryId: "entry-parent",
+          relation: "parent",
+          childEntryOrderNumber: 1,
+        },
+      ],
     });
   });
 

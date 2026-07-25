@@ -78,6 +78,8 @@ model ParentMusicalEntry {
   childEntry   MusicalEntry @relation("ChildEntry", fields: [childEntryId], references: [id])
   childEntryId String       @map("child_entry_id") @db.Uuid
 
+  childEntryOrderNumber Int @default(1) @map("child_entry_order_number")
+
   @@id([parentEntryId, childEntryId])
   @@map("parent_musical_entries")
 }

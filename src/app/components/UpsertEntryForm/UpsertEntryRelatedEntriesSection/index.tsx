@@ -1,27 +1,23 @@
 import type { FC } from "react";
 
 import type { UpsertEntryRelatedEntriesErrors } from "../upsertEntryFormUtils/errorMessages";
+import type { UpsertEntryRelatedEntryRow } from "../upsertEntryFormUtils/formValues";
+
+import RelatedItemsFormSection, {
+  type RelatedItemsFormSectionLabels,
+} from "@/app/components/RelatedItemsFormSection";
 import type {
-  UpsertEntryRelatedEntryRelation,
-  UpsertEntryRelatedEntryRow,
-} from "../upsertEntryFormUtils/formValues";
-
-import ErrorMessages from "@/app/components/ErrorMessages";
-import NotificationMessages from "@/app/components/NotificationMessages";
-import type { FeedbackNotifications } from "@/types/form";
-
-const RELATED_ENTRIES_NOTIFICATIONS_ID =
-  "upsert-entry-related-entries-notifications";
+  FeedbackNotifications,
+  FormRelatedItemRelation,
+} from "@/types/form";
 
 type UpsertEntryRelatedEntriesSectionProps = {
   relatedEntries: UpsertEntryRelatedEntryRow[];
   errors: UpsertEntryRelatedEntriesErrors;
   notifications: FeedbackNotifications;
   onChangeEntryId: (rowId: string, entryId: string) => void;
-  onChangeRelation: (
-    rowId: string,
-    relation: UpsertEntryRelatedEntryRelation | "",
-  ) => void;
+  onChangeRelation: (rowId: string, relation: FormRelatedItemRelation) => void;
+  onChangeOrderNumber: (rowId: string, orderNumber: string) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
   onFocus: (rowId: string) => void;
@@ -36,125 +32,37 @@ const UpsertEntryRelatedEntriesSection: FC<
   notifications,
   onChangeEntryId,
   onChangeRelation,
+  onChangeOrderNumber,
   onAddRow,
   onRemoveRow,
   onFocus,
   onBlur,
 }) => (
-  <div className="mt-0 mb-[0.65rem]">
-    <h2 className="mb-3 text-base leading-snug font-semibold">
-      Related entries
-    </h2>
-
-    {relatedEntries.length > 0 && (
-      <ul
-        className="mb-3 flex list-none flex-col gap-[0.55rem] p-0"
-        aria-label="Related entries"
-      >
-        {relatedEntries.map((row, index) => {
-          const rowErrors = errors[row.id];
-          const hasErrors = rowErrors !== undefined && rowErrors.length > 0;
-          const errorId = `upsert-entry-related-entry-error-${row.id}`;
-          const entryIdInputId = `upsert-entry-related-entry-id-${row.id}`;
-          const relationSelectId = `upsert-entry-related-entry-relation-${row.id}`;
-          const removeAriaLabel = `Remove related entry ${index + 1}`;
-
-          return (
-            <li key={row.id}>
-              <div className="flex items-center gap-4">
-                <span className="text-[0.92em] font-semibold">
-                  Related {index + 1}
-                </span>
-                <label className="sr-only" htmlFor={entryIdInputId}>
-                  Entry ID {index + 1}
-                </label>
-                <input
-                  id={entryIdInputId}
-                  className="px-2 py-[0.35rem] text-base"
-                  type="text"
-                  size={36}
-                  value={row.entryId}
-                  placeholder="Entry ID"
-                  onChange={(e) => {
-                    onChangeEntryId(row.id, e.target.value);
-                  }}
-                  onFocus={() => {
-                    onFocus(row.id);
-                  }}
-                  onBlur={onBlur}
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-                <label className="sr-only" htmlFor={relationSelectId}>
-                  Relation {index + 1}
-                </label>
-                <select
-                  id={relationSelectId}
-                  className="px-2 py-[0.35rem] text-base"
-                  value={row.relation}
-                  onChange={(e) => {
-                    onChangeRelation(
-                      row.id,
-                      parseRelationSelectValue(e.target.value),
-                    );
-                  }}
-                  onFocus={() => {
-                    onFocus(row.id);
-                  }}
-                  onBlur={onBlur}
-                  aria-invalid={hasErrors}
-                  aria-describedby={hasErrors ? errorId : undefined}
-                >
-                  <option value="">Relation…</option>
-                  <option value="parent">Parent</option>
-                  <option value="child">Child</option>
-                </select>
-                <button
-                  type="button"
-                  className="inline-flex h-[1.85rem] shrink-0 cursor-pointer items-center justify-center rounded-[0.2rem] border-none bg-transparent p-0 text-[1.05rem] leading-none text-[#a40000] hover:bg-[rgba(164,0,0,0.08)] hover:text-[#7a0000] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#1a5fb4]"
-                  aria-label={removeAriaLabel}
-                  title={removeAriaLabel}
-                  onClick={() => {
-                    onRemoveRow(row.id);
-                  }}
-                >
-                  <span aria-hidden="true">❌</span>
-                </button>
-              </div>
-              {hasErrors && (
-                <div className="mt-2">
-                  <ErrorMessages id={errorId} messages={rowErrors} />
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    )}
-
-    <NotificationMessages
-      id={RELATED_ENTRIES_NOTIFICATIONS_ID}
-      messages={notifications}
-    />
-
-    <button
-      type="button"
-      className="inline-block cursor-pointer border-none bg-transparent px-0 py-1 text-[0.92em] text-[#1a5fb4] underline hover:text-[#0d3d82]"
-      onClick={onAddRow}
-    >
-      Add related entry
-    </button>
-  </div>
+  <RelatedItemsFormSection
+    rows={relatedEntries}
+    getRelatedId={(row) => row.entryId}
+    errors={errors}
+    notifications={notifications}
+    labels={ENTRY_RELATED_ITEMS_LABELS}
+    onChangeRelatedId={onChangeEntryId}
+    onChangeRelation={onChangeRelation}
+    onChangeOrderNumber={onChangeOrderNumber}
+    onAddRow={onAddRow}
+    onRemoveRow={onRemoveRow}
+    onFocus={onFocus}
+    onBlur={onBlur}
+  />
 );
 
 export default UpsertEntryRelatedEntriesSection;
 
-const parseRelationSelectValue = (
-  value: string,
-): UpsertEntryRelatedEntryRelation | "" => {
-  if (value === "parent" || value === "child") {
-    return value;
-  }
-
-  return "";
+const ENTRY_RELATED_ITEMS_LABELS: RelatedItemsFormSectionLabels = {
+  sectionTitle: "Related entries",
+  listAriaLabel: "Related entries",
+  relatedIdLabel: "Entry ID",
+  relatedIdPlaceholder: "Entry ID",
+  removeItemAriaLabel: (index) => `Remove related entry ${index + 1}`,
+  addRowButtonLabel: "Add related entry",
+  notificationsId: "upsert-entry-related-entries-notifications",
+  rowIdPrefix: "upsert-entry-related-entry",
 };

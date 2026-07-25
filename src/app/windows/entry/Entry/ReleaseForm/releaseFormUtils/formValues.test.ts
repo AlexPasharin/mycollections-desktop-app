@@ -67,6 +67,7 @@ const release: ReleaseByIdResult = {
       entryId: "entry-2",
       entryMainName: "Parent album",
       artists: [],
+      childReleaseOrderNumber: 1,
     },
   ],
   childReleases: [
@@ -76,6 +77,7 @@ const release: ReleaseByIdResult = {
       entryId: "entry-3",
       entryMainName: "Child single",
       artists: [],
+      childReleaseOrderNumber: 1,
     },
   ],
 };
@@ -87,6 +89,7 @@ describe("initialReleaseFormStateValue", () => {
       allFormats,
       allCountries,
       releaseBlueprint: release,
+      mode: "update",
     });
 
     expect(draft.releaseVersion.value).toBe("UK first press");

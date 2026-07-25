@@ -29,7 +29,6 @@ import {
   defaultFormatInputRow,
   defaultRelatedReleaseRow,
   emptyCountrySelection,
-  type ReleaseFormRelatedReleaseRelation,
   type ReleaseFormState,
   type ReleaseFormEntry,
   type ReleaseFormTabUpdateModeSharedData,
@@ -51,6 +50,7 @@ import api from "@/app/windows/entry/api";
 import type { DbSource } from "@/db/db-source";
 import { dbSourceLabel } from "@/db/db-source-options";
 import type { CountryListItem } from "@/types/countries";
+import type { FormRelatedItemRelation } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
 import type {
@@ -379,11 +379,19 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
 
   const setRelatedReleaseRelation = (
     rowId: string,
-    relation: ReleaseFormRelatedReleaseRelation | "",
+    relation: FormRelatedItemRelation,
   ) => {
     setFieldValue("relatedReleases", (prev) =>
       prev.relatedReleases.value.map((row) =>
         row.id === rowId ? { ...row, relation } : row,
+      ),
+    );
+  };
+
+  const setRelatedReleaseOrderNumber = (rowId: string, orderNumber: string) => {
+    setFieldValue("relatedReleases", (prev) =>
+      prev.relatedReleases.value.map((row) =>
+        row.id === rowId ? { ...row, orderNumber } : row,
       ),
     );
   };
@@ -909,6 +917,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           notifications={formState.relatedReleases.notifications}
           onChangeReleaseId={setRelatedReleaseId}
           onChangeRelation={setRelatedReleaseRelation}
+          onChangeOrderNumber={setRelatedReleaseOrderNumber}
           onAddRow={addRelatedReleaseRow}
           onRemoveRow={removeRelatedReleaseRow}
           onFocus={(rowId) => onFocus({ relatedReleaseRowId: rowId })}

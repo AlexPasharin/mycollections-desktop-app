@@ -4,10 +4,8 @@ import type {
 } from "./formValues";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
-import type {
-  MusicalEntryRelatedEntryInput,
-  MusicalEntryRelatedEntryRelation,
-} from "@/types/entries";
+import type { RelatedItemRelation } from "@/types/common";
+import type { MusicalEntryRelatedEntryInput } from "@/types/entries";
 import type { TagId } from "@/types/tags";
 import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
@@ -73,10 +71,12 @@ export const toUpsertMusicalEntryInput = ({
 export const toRelatedEntriesFromForm = (
   rows: UpsertEntryRelatedEntryRow[],
 ): MusicalEntryRelatedEntryInput[] =>
-  rows.map(({ entryId, relation }) => ({
+  rows.map(({ entryId, relation, orderNumber }) => ({
     relatedEntryId: entryId,
 
     // The form validator guarantees the relation is valid before saving.
+    // TODO: improve this mechanism
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    relation: relation as MusicalEntryRelatedEntryRelation,
+    relation: relation as RelatedItemRelation,
+    childEntryOrderNumber: parseInt(orderNumber, 10), // orderNumber is guaranteed to be a positive integer by the form validator
   }));

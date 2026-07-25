@@ -10,10 +10,12 @@ import {
 } from "./validation";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
+import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
 import type { DbSource } from "@/db/db-source";
+import type { RelatedItemRelation } from "@/types/common";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryByIdResult } from "@/types/entries";
-import type { FormField } from "@/types/form";
+import type { FormField, RelatedItemRow } from "@/types/form";
 import type { TagId } from "@/types/tags";
 import { withNewId } from "@/utils/id";
 import {
@@ -39,22 +41,19 @@ export type UpsertEntryAltNameRow = {
 export const defaultAltNameRow = (name = ""): UpsertEntryAltNameRow =>
   withNewId({ name });
 
-export type UpsertEntryRelatedEntryRelation = "parent" | "child";
-
-export type UpsertEntryRelatedEntryRow = {
-  id: string;
+export type UpsertEntryRelatedEntryRow = RelatedItemRow & {
   entryId: string;
-  relation: UpsertEntryRelatedEntryRelation | "";
 };
 
 export type ValidUpsertEntryRelatedEntryRow = UpsertEntryRelatedEntryRow & {
-  relation: UpsertEntryRelatedEntryRelation;
+  relation: RelatedItemRelation;
 };
 
 export const defaultRelatedEntryRow = (): UpsertEntryRelatedEntryRow =>
   withNewId({
     entryId: "",
     relation: "",
+    orderNumber: "",
   });
 
 export type UpsertEntryFormDraft = {
@@ -190,16 +189,18 @@ const relatedEntriesToFormValue = (
   parentEntries: EntryByIdResult["parentEntries"] | undefined,
   childEntries: EntryByIdResult["childEntries"] | undefined,
 ): ValidUpsertEntryRelatedEntryRow[] => [
-  ...(parentEntries ?? []).map(({ entryId }) =>
+  ...(parentEntries ?? []).map(({ entryId, childEntryOrderNumber }) =>
     withNewId({
       entryId: entryId,
-      relation: "parent" as const,
+      relation: PARENT_RELATION as RelatedItemRelation,
+      orderNumber: String(childEntryOrderNumber),
     }),
   ),
-  ...(childEntries ?? []).map(({ entryId }) =>
+  ...(childEntries ?? []).map(({ entryId, childEntryOrderNumber }) =>
     withNewId({
       entryId: entryId,
-      relation: "child" as const,
+      relation: CHILD_RELATION as RelatedItemRelation,
+      orderNumber: String(childEntryOrderNumber),
     }),
   ),
 ];

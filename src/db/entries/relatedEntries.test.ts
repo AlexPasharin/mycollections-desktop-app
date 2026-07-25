@@ -27,14 +27,30 @@ describe("insertEntryRelatedEntries", () => {
     const { trx, insertInto, values, execute } = createInsertTrxMock();
 
     await insertEntryRelatedEntries(trx, entryId, [
-      { relatedEntryId: parentEntryId, relation: "parent" },
-      { relatedEntryId: childEntryId, relation: "child" },
+      {
+        relatedEntryId: parentEntryId,
+        relation: "parent",
+        childEntryOrderNumber: 2,
+      },
+      {
+        relatedEntryId: childEntryId,
+        relation: "child",
+        childEntryOrderNumber: 3,
+      },
     ]);
 
     expect(insertInto).toHaveBeenCalledWith("parentMusicalEntries");
     expect(values).toHaveBeenCalledWith([
-      { parentEntryId, childEntryId: entryId },
-      { parentEntryId: entryId, childEntryId },
+      {
+        parentEntryId,
+        childEntryId: entryId,
+        childEntryOrderNumber: 2,
+      },
+      {
+        parentEntryId: entryId,
+        childEntryId,
+        childEntryOrderNumber: 3,
+      },
     ]);
     expect(execute).toHaveBeenCalled();
   });

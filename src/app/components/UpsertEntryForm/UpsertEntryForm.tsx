@@ -12,7 +12,6 @@ import {
   defaultAltNameRow,
   defaultRelatedEntryRow,
   initialUpsertEntryFormDraft,
-  type UpsertEntryRelatedEntryRelation,
   type UpsertEntryFormDraft,
   type UpsertEntryFormEntry,
   type UpsertEntryFormPersistedState,
@@ -42,6 +41,7 @@ import type {
   FormFeedback,
   FeedbackErrors,
   FeedbackNotifications,
+  FormRelatedItemRelation,
 } from "@/types/form";
 import type { TagListItem } from "@/types/tags";
 import { isDateInputFieldKey, omitProperty } from "@/utils/common";
@@ -315,11 +315,19 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
 
   const setRelatedEntryRelation = (
     rowId: string,
-    relation: UpsertEntryRelatedEntryRelation | "",
+    relation: FormRelatedItemRelation,
   ) => {
     setFieldValue("relatedEntries", (prev) =>
       prev.relatedEntries.value.map((row) =>
         row.id === rowId ? { ...row, relation } : row,
+      ),
+    );
+  };
+
+  const setRelatedEntryOrderNumber = (rowId: string, orderNumber: string) => {
+    setFieldValue("relatedEntries", (prev) =>
+      prev.relatedEntries.value.map((row) =>
+        row.id === rowId ? { ...row, orderNumber } : row,
       ),
     );
   };
@@ -623,6 +631,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           notifications={form.relatedEntries.notifications}
           onChangeEntryId={setRelatedEntryId}
           onChangeRelation={setRelatedEntryRelation}
+          onChangeOrderNumber={setRelatedEntryOrderNumber}
           onAddRow={addRelatedEntryRow}
           onRemoveRow={removeRelatedEntryRow}
           onFocus={(rowId) => onFocus({ relatedEntryRowId: rowId })}
