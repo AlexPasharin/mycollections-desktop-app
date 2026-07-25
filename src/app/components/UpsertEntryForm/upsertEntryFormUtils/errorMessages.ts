@@ -10,6 +10,13 @@ export type UpsertEntryAltNamesErrors = Record<
 
 export type UpsertEntryRelatedEntriesErrors = Record<string, FormFieldError[]>;
 
+export type UpsertEntryArtistsErrors = Record<string, FormFieldError[]>;
+
+export type UpsertEntryArtistFieldSource =
+  | "artistId"
+  | "entryArtistAltNameId"
+  | "isEntriesMainArtist";
+
 export const initialUpsertEntryFormFieldErrors = {
   mainName: [],
   originalReleaseDate: [],
@@ -17,6 +24,7 @@ export const initialUpsertEntryFormFieldErrors = {
   comment: [],
   selectedTags: [],
   selectedTypes: [],
+  artists: {},
   altNames: {},
   relatedEntries: {},
   partOfQueenCollection: [],
@@ -31,14 +39,20 @@ type UpsertEntryRelatedEntriesInputFieldKey = {
   relatedEntryRowId: string;
 };
 
+type UpsertEntryArtistsInputFieldKey = {
+  artistRowId: string;
+  source: UpsertEntryArtistFieldSource;
+};
+
 export type UpsertEntryFormInputFieldKey =
   | Exclude<
       keyof typeof initialUpsertEntryFormFieldErrors,
-      "originalReleaseDate" | "altNames" | "relatedEntries"
+      "originalReleaseDate" | "artists" | "altNames" | "relatedEntries"
     >
   | keyof GeneralizedDateFormInputValue
   | UpsertEntryAltNameInputFieldKey
-  | UpsertEntryRelatedEntriesInputFieldKey;
+  | UpsertEntryRelatedEntriesInputFieldKey
+  | UpsertEntryArtistsInputFieldKey;
 
 export const isAltNameInputFieldKey = (key: UpsertEntryFormInputFieldKey) =>
   typeof key === "object" && "rowId" in key;
@@ -46,3 +60,6 @@ export const isAltNameInputFieldKey = (key: UpsertEntryFormInputFieldKey) =>
 export const isRelatedEntriesInputFieldKey = (
   key: UpsertEntryFormInputFieldKey,
 ) => typeof key === "object" && "relatedEntryRowId" in key;
+
+export const isArtistsInputFieldKey = (key: UpsertEntryFormInputFieldKey) =>
+  typeof key === "object" && "artistRowId" in key;

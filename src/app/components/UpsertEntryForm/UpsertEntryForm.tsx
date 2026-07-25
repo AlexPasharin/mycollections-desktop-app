@@ -1,20 +1,24 @@
 import { useEffect, useRef, useState, type FC, type FormEvent } from "react";
 
 import UpsertEntryAltNamesSection from "./UpsertEntryAltNamesSection";
+import UpsertEntryArtistsSection from "./UpsertEntryArtistsSection";
 import UpsertEntryFormPreview from "./UpsertEntryFormPreview";
 import {
   initialUpsertEntryFormFieldErrors,
   isAltNameInputFieldKey,
+  isArtistsInputFieldKey,
   isRelatedEntriesInputFieldKey,
   type UpsertEntryFormInputFieldKey,
 } from "./upsertEntryFormUtils/errorMessages";
 import {
   defaultAltNameRow,
+  defaultArtistRow,
   defaultRelatedEntryRow,
   initialUpsertEntryFormDraft,
   type UpsertEntryFormDraft,
   type UpsertEntryFormEntry,
   type UpsertEntryFormPersistedState,
+  type UpsertEntryArtistRow,
 } from "./upsertEntryFormUtils/formValues";
 import { toUpsertMusicalEntryInput } from "./upsertEntryFormUtils/toUpsertMusicalEntryInput";
 import UpsertEntryRelatedEntriesSection from "./UpsertEntryRelatedEntriesSection";
@@ -100,7 +104,11 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
   } = props;
 
   const [form, setForm] = useState<UpsertEntryFormDraft>(
-    restoredState?.form ?? initialUpsertEntryFormDraft(entry),
+    restoredState?.form ??
+      initialUpsertEntryFormDraft({
+        entry,
+        defaultArtistId: artistId,
+      }),
   );
 
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
@@ -135,11 +143,11 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     }
 
     prevEntryRef.current = entry;
-    setForm(initialUpsertEntryFormDraft(entry));
+    setForm(initialUpsertEntryFormDraft({ entry, defaultArtistId: artistId }));
     setShowSubmissionValidationError(false);
     setIsConfirmOpen(false);
     setSubmitError(undefined);
-  }, [entry, isCreateMode]);
+  }, [entry, artistId, isCreateMode]);
 
   const setFieldValue = <K extends keyof UpsertEntryFormDraft>(
     key: K,
@@ -187,6 +195,38 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
         errors: omitProperty(prev.relatedEntries.errors, key.relatedEntryRowId),
         notifications: [],
       }));
+
+      return;
+    }
+
+    if (isArtistsInputFieldKey(key)) {
+      setField("artists", (prev) => {
+        const rowErrors = prev.artists.errors[key.artistRowId] ?? [];
+        const filteredRowErrors = rowErrors.filter(
+          (error) =>
+            error.sources &&
+            error.sources.length > 0 &&
+            !error.sources.includes(key.source),
+        );
+
+        const nextErrors =
+          filteredRowErrors.length > 0
+            ? {
+                ...prev.artists.errors,
+                [key.artistRowId]: filteredRowErrors,
+              }
+            : omitProperty(prev.artists.errors, key.artistRowId);
+
+        const notifications = prev.artists.notifications.filter(
+          (notification) => !notification.sources?.includes(key.source),
+        );
+
+        return {
+          ...prev.artists,
+          errors: nextErrors,
+          notifications,
+        };
+      });
 
       return;
     }
@@ -290,6 +330,32 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     );
   };
 
+  const addArtistRow = () => {
+    setFieldValue("artists", (prev) => [
+      ...prev.artists.value,
+      defaultArtistRow(),
+    ]);
+  };
+
+  const removeArtistRow = (rowId: string) => {
+    setField("artists", (prev) => ({
+      ...prev.artists,
+      value: prev.artists.value.filter((row) => row.id !== rowId),
+      errors: omitProperty(prev.artists.errors, rowId),
+    }));
+  };
+
+  const updateArtistRow = (
+    rowId: string,
+    patch: Partial<Omit<UpsertEntryArtistRow, "id">>,
+  ) => {
+    setFieldValue("artists", (prev) =>
+      prev.artists.value.map((row) =>
+        row.id === rowId ? { ...row, ...patch } : row,
+      ),
+    );
+  };
+
   const addRelatedEntryRow = () => {
     setFieldValue("relatedEntries", (prev) => [
       ...prev.relatedEntries.value,
@@ -347,6 +413,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
       selectedTags: validateField("selectedTags"),
       selectedTypes: validateField("selectedTypes"),
       altNames: validateField("altNames"),
+      artists: validateField("artists"),
       relatedEntries: validateField("relatedEntries"),
       partOfQueenCollection: validateField("partOfQueenCollection"),
       relationToQueen: validateField("relationToQueen"),
@@ -383,6 +450,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
       comment: { value: comment },
       selectedTags: { value: selectedTags },
       selectedTypes: { value: selectedTypes },
+      artists: { value: artists },
       altNames: { value: altNames },
       relatedEntries: { value: relatedEntries },
       partOfQueenCollection: { value: partOfQueenCollection },
@@ -399,6 +467,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
       comment,
       selectedTags,
       selectedTypes,
+      artists,
       altNames,
       relatedEntries,
       partOfQueenCollection,
@@ -407,7 +476,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
 
     const savePromise = isCreateMode
       ? createEntryAcrossDbSources(
-          { ...upsertInput, artistId },
+          upsertInput,
           checkedDbSources,
           primaryDbSource,
           props.createMusicalEntry,
@@ -516,6 +585,22 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
             messages={mainNameErrors}
           />
         </div>
+
+        <hr
+          className="mt-7 mb-[0.9rem] border-0 border-t border-black/25"
+          aria-hidden
+        />
+
+        <UpsertEntryArtistsSection
+          artists={form.artists.value}
+          errors={form.artists.errors}
+          notifications={form.artists.notifications}
+          onUpdateArtistRow={updateArtistRow}
+          onAddRow={addArtistRow}
+          onRemoveRow={removeArtistRow}
+          onFocus={(rowId, source) => onFocus({ artistRowId: rowId, source })}
+          onBlur={() => onBlur("artists")}
+        />
 
         <hr
           className="mt-7 mb-[0.9rem] border-0 border-t border-black/25"

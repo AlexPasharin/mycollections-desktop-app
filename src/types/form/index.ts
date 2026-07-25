@@ -8,9 +8,12 @@ export type FormFieldError = FeedbackError & {
   sources?: PropertyKey[] | undefined;
 };
 
-export type FeedbackNotifications = {
+type FeedbackNotification = {
   notification: string;
-}[];
+  sources?: PropertyKey[] | undefined;
+};
+
+export type FeedbackNotifications = FeedbackNotification[];
 
 export type FormFieldValidationResult<
   T = string,
