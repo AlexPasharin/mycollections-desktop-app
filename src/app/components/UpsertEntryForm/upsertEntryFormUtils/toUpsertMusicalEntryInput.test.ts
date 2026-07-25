@@ -1,4 +1,4 @@
-import type { UpsertEntryAltNameRow } from "./formValues";
+import type { UpsertEntryAltNameRow, UpsertEntryArtistRow } from "./formValues";
 import { toUpsertMusicalEntryInput } from "./toUpsertMusicalEntryInput";
 
 const altNameRow = (
@@ -11,6 +11,18 @@ const altNameRow = (
   ...(nameId === undefined ? {} : { nameId }),
 });
 
+const artistRow = (
+  id: string,
+  artistId: string,
+  entryArtistAltNameId = "",
+  isEntriesMainArtist = false,
+): UpsertEntryArtistRow => ({
+  id,
+  artistId,
+  entryArtistAltNameId,
+  isEntriesMainArtist,
+});
+
 describe("toUpsertMusicalEntryInput", () => {
   it("maps scalar entry fields from validated form values", () => {
     expect(
@@ -21,6 +33,10 @@ describe("toUpsertMusicalEntryInput", () => {
         comment: "  Studio album  ",
         selectedTags: new Set(["tag-a", "tag-b"]),
         selectedTypes: new Set(["type-1"]),
+        artists: [
+          artistRow("artist-row-1", "artist-1", "alt-name-1", true),
+          artistRow("artist-row-2", "artist-2"),
+        ],
         altNames: [altNameRow("row-1", "ANATO", "name-id-1")],
         relatedEntries: [
           {
@@ -42,6 +58,18 @@ describe("toUpsertMusicalEntryInput", () => {
         partOfQueenCollection: true,
         relationToQueen: "Core album",
       },
+      artists: [
+        {
+          artistId: "artist-1",
+          entryArtistAltNameId: "alt-name-1",
+          isEntriesMainArtist: true,
+        },
+        {
+          artistId: "artist-2",
+          entryArtistAltNameId: null,
+          isEntriesMainArtist: false,
+        },
+      ],
       tagIds: ["tag-a", "tag-b"],
       typeIds: ["type-1"],
       altNames: [{ id: "row-1", name: "ANATO", nameId: "name-id-1" }],
@@ -64,6 +92,7 @@ describe("toUpsertMusicalEntryInput", () => {
         comment: "",
         selectedTags: new Set(),
         selectedTypes: new Set(),
+        artists: [],
         altNames: [],
         relatedEntries: [],
         partOfQueenCollection: false,
@@ -78,6 +107,7 @@ describe("toUpsertMusicalEntryInput", () => {
         partOfQueenCollection: false,
         relationToQueen: null,
       },
+      artists: [],
       tagIds: [],
       typeIds: [],
       altNames: [],
@@ -94,6 +124,7 @@ describe("toUpsertMusicalEntryInput", () => {
         comment: "",
         selectedTags: new Set(["tag-a"]),
         selectedTypes: new Set(),
+        artists: [],
         altNames: [],
         relatedEntries: [],
         partOfQueenCollection: false,
@@ -111,6 +142,7 @@ describe("toUpsertMusicalEntryInput", () => {
         comment: "",
         selectedTags: new Set(),
         selectedTypes: new Set(),
+        artists: [],
         altNames: [],
         relatedEntries: [],
         partOfQueenCollection: true,
@@ -128,6 +160,7 @@ describe("toUpsertMusicalEntryInput", () => {
         comment: "",
         selectedTags: new Set(),
         selectedTypes: new Set(),
+        artists: [],
         altNames: [],
         relatedEntries: [],
         partOfQueenCollection: false,
@@ -143,6 +176,7 @@ describe("toUpsertMusicalEntryInput", () => {
         comment: "",
         selectedTags: new Set(),
         selectedTypes: new Set(),
+        artists: [],
         altNames: [],
         relatedEntries: [],
         partOfQueenCollection: false,
@@ -165,11 +199,44 @@ describe("toUpsertMusicalEntryInput", () => {
         comment: "",
         selectedTags: new Set(),
         selectedTypes: new Set(),
+        artists: [],
         altNames,
         relatedEntries: [],
         partOfQueenCollection: false,
         relationToQueen: "",
       }).altNames,
     ).toBe(altNames);
+  });
+
+  it("trims and nulls empty alt-name ids", () => {
+    expect(
+      toUpsertMusicalEntryInput({
+        mainName: "Jazz",
+        originalReleaseDate: { year: "1978", month: "", day: "" },
+        discogsUrl: "",
+        comment: "",
+        selectedTags: new Set(),
+        selectedTypes: new Set(),
+        artists: [
+          artistRow("row-1", "artist-main", "  alt-name-1  ", true),
+          artistRow("row-2", "artist-other", "   "),
+        ],
+        altNames: [],
+        relatedEntries: [],
+        partOfQueenCollection: false,
+        relationToQueen: "",
+      }).artists,
+    ).toEqual([
+      {
+        artistId: "artist-main",
+        entryArtistAltNameId: "alt-name-1",
+        isEntriesMainArtist: true,
+      },
+      {
+        artistId: "artist-other",
+        entryArtistAltNameId: null,
+        isEntriesMainArtist: false,
+      },
+    ]);
   });
 });

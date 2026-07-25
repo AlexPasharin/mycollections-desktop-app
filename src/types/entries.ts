@@ -31,6 +31,7 @@ export type EntryArtistInfo = {
 
   /** Entry-specific artist's alternative name when set, otherwise the artist's main name. */
   artistName: string;
+  entryArtistAltNameId: string | null; // id of artist's alt name DB record
 };
 
 export type EntryAltNameInfo = {
@@ -97,6 +98,12 @@ export type SearchArtistEntries = (
 
 export type MusicalEntryAltNameInput = { nameId?: string; name: string };
 
+export type MusicalEntryArtistInput = {
+  artistId: string;
+  entryArtistAltNameId: string | null;
+  isEntriesMainArtist: boolean;
+};
+
 export type MusicalEntryRelatedEntryInput = {
   relatedEntryId: string;
   relation: RelatedItemRelation;
@@ -104,6 +111,7 @@ export type MusicalEntryRelatedEntryInput = {
 };
 
 interface UpsertMusicalEntryBase {
+  artists: MusicalEntryArtistInput[];
   tagIds: string[];
   typeIds: string[];
   altNames: MusicalEntryAltNameInput[];
@@ -122,7 +130,6 @@ export type UpdateMusicalEntry = (
 
 export type CreateMusicalEntryInput = {
   entry: Insertable<MusicalEntry>;
-  artistId: string;
 } & UpsertMusicalEntryBase;
 
 export type CreateMusicalEntry = (

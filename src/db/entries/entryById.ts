@@ -46,6 +46,7 @@ export const fetchEntryByIdResult = async (
       sql<EntryArtistInfo[]>`coalesce(
         jsonb_agg(DISTINCT jsonb_build_object(
           'artistId', ${sql.ref("musicalEntriesArtists.artistId")},
+          'entryArtistAltNameId', ${sql.ref("musicalEntriesArtists.entryArtistNameId")},
           'isEntriesMainArtist', ${sql.ref("musicalEntriesArtists.isEntriesMainArtist")},
           'artistName', coalesce(${sql.ref("alternativeArtistNames.name")}, ${sql.ref("artists.name")})
         )) FILTER (WHERE ${sql.ref("musicalEntriesArtists.id")} IS NOT NULL),

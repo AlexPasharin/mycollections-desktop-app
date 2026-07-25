@@ -52,6 +52,26 @@ const UpsertEntryFormPreview: FC<UpsertEntryFormPreviewProps> = ({
       <FormPreviewField label="Main name">
         {form.mainName.value}
       </FormPreviewField>
+      <FormPreviewBlockField label="Artists">
+        {form.artists.value.length === 0 ? (
+          <p className="whitespace-pre-wrap">{orPlaceholder(null)}</p>
+        ) : (
+          <ul className="mt-[0.2rem] pl-[1.1rem]">
+            {form.artists.value.map((row) => {
+              const altNameId = nullIfEmpty(row.entryArtistAltNameId.trim());
+              const mainLabel = row.isEntriesMainArtist ? " (main)" : "";
+
+              return (
+                <li key={row.id}>
+                  {orPlaceholder(row.artistId.trim())}
+                  {altNameId !== null && ` — alt name ${altNameId}`}
+                  {mainLabel}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </FormPreviewBlockField>
       <FormPreviewField label="Original release date">
         {orPlaceholder(originalReleaseDate)}
       </FormPreviewField>

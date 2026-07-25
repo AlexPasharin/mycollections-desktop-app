@@ -1,11 +1,15 @@
 import type {
   UpsertEntryAltNameRow,
+  UpsertEntryArtistRow,
   UpsertEntryRelatedEntryRow,
 } from "./formValues";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { RelatedItemRelation } from "@/types/common";
-import type { MusicalEntryRelatedEntryInput } from "@/types/entries";
+import type {
+  MusicalEntryArtistInput,
+  MusicalEntryRelatedEntryInput,
+} from "@/types/entries";
 import type { TagId } from "@/types/tags";
 import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
@@ -21,6 +25,7 @@ type UpsertMusicalEntryRow = {
 
 type UpsertMusicalEntryInputPayload = {
   entry: UpsertMusicalEntryRow;
+  artists: MusicalEntryArtistInput[];
   tagIds: string[];
   typeIds: string[];
   altNames: UpsertEntryAltNameRow[];
@@ -34,6 +39,7 @@ type ToUpsertMusicalEntryInputArgs = {
   comment: string;
   selectedTags: Set<TagId>;
   selectedTypes: Set<string>;
+  artists: UpsertEntryArtistRow[];
   altNames: UpsertEntryAltNameRow[];
   relatedEntries: UpsertEntryRelatedEntryRow[];
   partOfQueenCollection: boolean;
@@ -47,6 +53,7 @@ export const toUpsertMusicalEntryInput = ({
   comment,
   selectedTags,
   selectedTypes,
+  artists,
   altNames,
   relatedEntries,
   partOfQueenCollection,
@@ -62,11 +69,21 @@ export const toUpsertMusicalEntryInput = ({
       ? nullIfEmpty(relationToQueen)
       : null,
   },
+  artists: toArtistsFromForm(artists),
   tagIds: Array.from(selectedTags),
   typeIds: Array.from(selectedTypes),
   altNames,
   relatedEntries: toRelatedEntriesFromForm(relatedEntries),
 });
+
+export const toArtistsFromForm = (
+  rows: UpsertEntryArtistRow[],
+): MusicalEntryArtistInput[] =>
+  rows.map(({ artistId, entryArtistAltNameId, isEntriesMainArtist }) => ({
+    artistId,
+    entryArtistAltNameId: nullIfEmpty(entryArtistAltNameId),
+    isEntriesMainArtist,
+  }));
 
 export const toRelatedEntriesFromForm = (
   rows: UpsertEntryRelatedEntryRow[],

@@ -1,10 +1,12 @@
 import {
   initialUpsertEntryFormFieldErrors,
   type UpsertEntryAltNamesErrors,
+  type UpsertEntryArtistsErrors,
   type UpsertEntryRelatedEntriesErrors,
 } from "./errorMessages";
 import {
   validateAltNames,
+  validateArtists,
   validateEntryDiscogsUrl,
   validateRelatedEntries,
 } from "./validation";
@@ -41,6 +43,20 @@ export type UpsertEntryAltNameRow = {
 export const defaultAltNameRow = (name = ""): UpsertEntryAltNameRow =>
   withNewId({ name });
 
+export type UpsertEntryArtistRow = {
+  id: string;
+  artistId: string;
+  entryArtistAltNameId: string;
+  isEntriesMainArtist: boolean;
+};
+
+export const defaultArtistRow = (): UpsertEntryArtistRow =>
+  withNewId({
+    artistId: "",
+    entryArtistAltNameId: "",
+    isEntriesMainArtist: false,
+  });
+
 export type UpsertEntryRelatedEntryRow = RelatedItemRow & {
   entryId: string;
 };
@@ -63,6 +79,7 @@ export type UpsertEntryFormDraft = {
   comment: FormField<string>;
   selectedTags: FormField<Set<TagId>>;
   selectedTypes: FormField<Set<string>>;
+  artists: FormField<UpsertEntryArtistRow[], UpsertEntryArtistsErrors>;
   altNames: FormField<UpsertEntryAltNameRow[], UpsertEntryAltNamesErrors>;
   relatedEntries: FormField<
     UpsertEntryRelatedEntryRow[],
@@ -78,9 +95,15 @@ export type UpsertEntryFormPersistedState = {
   checkedDbSources: ReadonlySet<DbSource>;
 };
 
-export const initialUpsertEntryFormDraft = (
-  entry?: UpsertEntryFormEntry,
-): UpsertEntryFormDraft => {
+type InitialUpsertEntryFormDraftArgs = {
+  entry?: UpsertEntryFormEntry | undefined;
+  defaultArtistId?: string | undefined;
+};
+
+export const initialUpsertEntryFormDraft = ({
+  entry,
+  defaultArtistId,
+}: InitialUpsertEntryFormDraftArgs): UpsertEntryFormDraft => {
   const {
     mainName,
     originalReleaseDate,
@@ -90,6 +113,7 @@ export const initialUpsertEntryFormDraft = (
     relationToQueen,
     tags,
     types,
+    artists,
     altNames,
     parentEntries,
     childEntries,
@@ -97,6 +121,8 @@ export const initialUpsertEntryFormDraft = (
 
   const tagIds = tags?.map((tag) => tag.tagId) ?? [];
   const typeIds = types?.map((type) => type.entryTypeId) ?? [];
+
+  const artistRows = artistsToFormValue(artists, defaultArtistId);
 
   const altNameRows =
     altNames?.map(({ nameId, name }) => ({
@@ -154,6 +180,13 @@ export const initialUpsertEntryFormDraft = (
       errors: initialUpsertEntryFormFieldErrors.selectedTypes,
       notifications: [],
     },
+    artists: {
+      value: artistRows,
+      valid: true,
+      validationFn: validateArtists,
+      errors: initialUpsertEntryFormFieldErrors.artists,
+      notifications: [],
+    },
     altNames: {
       value: altNameRows,
       valid: true,
@@ -183,6 +216,34 @@ export const initialUpsertEntryFormDraft = (
       notifications: [],
     },
   };
+};
+
+const artistsToFormValue = (
+  artists: EntryByIdResult["artists"] | undefined,
+  defaultArtistId: string | undefined,
+): UpsertEntryArtistRow[] => {
+  if (artists !== undefined) {
+    return artists.map(
+      ({ artistId, entryArtistAltNameId, isEntriesMainArtist }) =>
+        withNewId({
+          artistId,
+          entryArtistAltNameId: entryArtistAltNameId ?? "",
+          isEntriesMainArtist: isEntriesMainArtist ?? false,
+        }),
+    );
+  }
+
+  if (defaultArtistId) {
+    return [
+      withNewId({
+        artistId: defaultArtistId,
+        entryArtistAltNameId: "",
+        isEntriesMainArtist: true,
+      }),
+    ];
+  }
+
+  return [];
 };
 
 const relatedEntriesToFormValue = (

@@ -17,7 +17,10 @@ type FeedbackState = "success" | "error";
 const copyTextCtaClassName =
   "inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#bcbcbc] bg-white px-[0.6rem] py-[0.35rem] text-[0.92em] text-[#333] hover:bg-[#f1f1f1]";
 
-const copyTextCtaContainerClassName = "mt-2 flex flex-wrap items-center gap-2";
+const copyTextCtaContainerClassName =
+  "mt-2 inline-flex flex-col items-start gap-1";
+
+const feedbackSectionClassName = "inline-flex items-center gap-1 text-[0.92em]";
 
 const CopyTextCta: FC<CopyTextCtaProps> = ({
   text,
@@ -52,21 +55,35 @@ const CopyTextCta: FC<CopyTextCtaProps> = ({
         {label}
       </button>
 
-      {feedback === "success" && (
-        <span className="inline-flex items-center gap-1 text-[0.92em] text-green-700">
-          <Icon src={checkIcon} />
-          {successMessage}
-        </span>
-      )}
-
-      {feedback === "error" && (
-        <span className="inline-flex items-center gap-1 text-[0.92em] text-red-700">
-          <Icon src={crossIcon} />
-          {errorMessage}
-        </span>
-      )}
+      <FeedbackSection
+        feedback={feedback}
+        successMessage={successMessage}
+        errorMessage={errorMessage}
+      />
     </div>
   );
 };
 
 export default CopyTextCta;
+
+const FeedbackSection: FC<{
+  feedback: FeedbackState | undefined;
+  successMessage: string;
+  errorMessage: string;
+}> = ({ feedback, successMessage, errorMessage }) => {
+  if (!feedback) {
+    return null;
+  }
+
+  const message = feedback === "success" ? successMessage : errorMessage;
+  const colorClassName =
+    feedback === "success" ? "text-green-700" : "text-red-700";
+  const iconSrc = feedback === "success" ? checkIcon : crossIcon;
+
+  return (
+    <span className={`${feedbackSectionClassName} ${colorClassName}`}>
+      <Icon src={iconSrc} />
+      {message}
+    </span>
+  );
+};
