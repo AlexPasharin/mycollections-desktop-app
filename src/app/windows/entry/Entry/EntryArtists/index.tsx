@@ -10,9 +10,9 @@ type EntryArtistsProps = {
 
 const EntryArtists: FC<EntryArtistsProps> = ({ artists }) => {
   const mainArtist = artists.find((a) => a.isEntriesMainArtist === true);
-  const otherArtists = mainArtist
-    ? artists.filter((a) => a.artistId !== mainArtist.artistId)
-    : artists;
+  const otherArtists = artists.filter(
+    (a) => a.artistId !== mainArtist?.artistId,
+  );
 
   return (
     <div className={styles.field}>
