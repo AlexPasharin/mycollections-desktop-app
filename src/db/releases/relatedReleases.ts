@@ -1,5 +1,6 @@
 import type { Insertable, Kysely } from "kysely";
 
+import { PARENT_RELATION } from "@/constants";
 import type { DB, ParentMusicalRelease } from "@/types/db/database";
 import type { MusicalReleaseRelatedReleaseInput } from "@/types/releases";
 
@@ -8,7 +9,7 @@ export const toParentMusicalReleaseRows = (
   relatedReleases: MusicalReleaseRelatedReleaseInput[],
 ): Insertable<ParentMusicalRelease>[] =>
   relatedReleases.map(({ relatedReleaseId, relation }) =>
-    relation === "parent"
+    relation === PARENT_RELATION
       ? { parentReleaseId: relatedReleaseId, childReleaseId: releaseId }
       : { parentReleaseId: releaseId, childReleaseId: relatedReleaseId },
   );

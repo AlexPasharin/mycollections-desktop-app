@@ -16,3 +16,6 @@ export const ENGLISH_MONTH_NAMES = [
 ] as const;
 
 export const SEVEN_INCH_FORMAT_SHORT_NAME = "7''";
+
+export const PARENT_RELATION = "parent";
+export const CHILD_RELATION = "child";

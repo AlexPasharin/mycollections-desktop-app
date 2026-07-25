@@ -1,5 +1,6 @@
 import type { Insertable, Selectable, Updateable } from "kysely";
 
+import type { RelatedItemRelation } from "./common";
 import type { EntryAltNameInfo } from "./entries";
 import type { TagId, TagListItem } from "./tags";
 
@@ -81,11 +82,9 @@ export type GetReleaseById = (
   dbSource: DbSource,
 ) => Promise<ReleaseByIdResult | undefined>;
 
-export type MusicalReleaseRelatedReleaseRelation = "parent" | "child";
-
 export type MusicalReleaseRelatedReleaseInput = {
   relatedReleaseId: string;
-  relation: MusicalReleaseRelatedReleaseRelation;
+  relation: RelatedItemRelation;
 };
 
 interface UpsertMusicalReleaseBase {

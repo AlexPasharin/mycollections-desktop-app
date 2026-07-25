@@ -1,3 +1,5 @@
+import type { RelatedItemRelation } from "../common";
+
 type FeedbackError = {
   message: string;
 };
@@ -48,4 +50,11 @@ export type FeedbackErrors = FeedbackError[];
 export type FormFeedback = {
   notifications: FeedbackNotifications;
   errors: FeedbackErrors;
+};
+
+export type FormRelatedItemRelation = RelatedItemRelation | "";
+
+export type RelatedItemRow = {
+  id: string;
+  relation: FormRelatedItemRelation;
 };

@@ -4,10 +4,8 @@ import type {
 } from "./formValues";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
-import type {
-  MusicalEntryRelatedEntryInput,
-  MusicalEntryRelatedEntryRelation,
-} from "@/types/entries";
+import type { RelatedItemRelation } from "@/types/common";
+import type { MusicalEntryRelatedEntryInput } from "@/types/entries";
 import type { TagId } from "@/types/tags";
 import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
@@ -78,5 +76,5 @@ export const toRelatedEntriesFromForm = (
 
     // The form validator guarantees the relation is valid before saving.
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    relation: relation as MusicalEntryRelatedEntryRelation,
+    relation: relation as RelatedItemRelation,
   }));

@@ -1,5 +1,7 @@
 import type { Insertable, Updateable } from "kysely";
 
+import type { RelatedItemRelation } from "./common";
+
 import type { DbSource } from "@/db/db-source";
 import type { GeneralizedDateFromDb } from "@/types/date";
 import type { MusicalEntry } from "@/types/db/database";
@@ -94,11 +96,9 @@ export type SearchArtistEntries = (
 
 export type MusicalEntryAltNameInput = { nameId?: string; name: string };
 
-export type MusicalEntryRelatedEntryRelation = "parent" | "child";
-
 export type MusicalEntryRelatedEntryInput = {
   relatedEntryId: string;
-  relation: MusicalEntryRelatedEntryRelation;
+  relation: RelatedItemRelation;
 };
 
 interface UpsertMusicalEntryBase {

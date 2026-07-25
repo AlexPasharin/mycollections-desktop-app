@@ -1,5 +1,7 @@
 import { sql, type Kysely } from "kysely";
 
+import { PARENT_RELATION } from "@/constants";
+import type { RelatedItemRelation } from "@/types/common";
 import type { DB } from "@/types/db/database";
 import type {
   EntryArtistInfo,
@@ -10,16 +12,17 @@ import type {
 export const fetchRelatedEntries = (
   db: Kysely<DB>,
   entryId: string,
-  relation: "parent" | "child",
+  relation: RelatedItemRelation,
 ): Promise<RelatedEntryItem[]> => {
-  const relatedEntryJoinColumn =
-    relation === "parent"
-      ? "parentMusicalEntries.parentEntryId"
-      : "parentMusicalEntries.childEntryId";
-  const currentEntryFilterColumn =
-    relation === "parent"
-      ? "parentMusicalEntries.childEntryId"
-      : "parentMusicalEntries.parentEntryId";
+  const isParentRelation = relation === PARENT_RELATION;
+
+  const relatedEntryJoinColumn = isParentRelation
+    ? "parentMusicalEntries.parentEntryId"
+    : "parentMusicalEntries.childEntryId";
+
+  const currentEntryFilterColumn = isParentRelation
+    ? "parentMusicalEntries.childEntryId"
+    : "parentMusicalEntries.parentEntryId";
 
   return db
     .selectFrom("parentMusicalEntries")
@@ -69,7 +72,7 @@ export const insertEntryRelatedEntries = async (
   relatedEntries: MusicalEntryRelatedEntryInput[],
 ) => {
   const rows = relatedEntries.map(({ relatedEntryId, relation }) =>
-    relation === "parent"
+    relation === PARENT_RELATION
       ? { parentEntryId: relatedEntryId, childEntryId: entryId }
       : { parentEntryId: entryId, childEntryId: relatedEntryId },
   );

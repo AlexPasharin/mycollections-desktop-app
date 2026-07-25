@@ -2,7 +2,9 @@ import { sql } from "kysely";
 
 import { dbClient } from "../client/kysely";
 
+import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
 import type { DbSource } from "@/db/db-source";
+import type { RelatedItemRelation } from "@/types/common";
 import type {
   GetReleaseById,
   RelatedReleaseArtist,
@@ -180,27 +182,28 @@ const fetchParentReleases = (
   releaseId: string,
   dbSource: DbSource,
 ): Promise<RelatedReleaseItem[]> =>
-  fetchRelatedReleases(releaseId, dbSource, "parent");
+  fetchRelatedReleases(releaseId, dbSource, PARENT_RELATION);
 
 const fetchChildReleases = (
   releaseId: string,
   dbSource: DbSource,
 ): Promise<RelatedReleaseItem[]> =>
-  fetchRelatedReleases(releaseId, dbSource, "child");
+  fetchRelatedReleases(releaseId, dbSource, CHILD_RELATION);
 
 const fetchRelatedReleases = (
   releaseId: string,
   dbSource: DbSource,
-  relation: "parent" | "child",
+  relation: RelatedItemRelation,
 ): Promise<RelatedReleaseItem[]> => {
-  const relatedReleaseJoinColumn =
-    relation === "parent"
-      ? "parentMusicalReleases.parentReleaseId"
-      : "parentMusicalReleases.childReleaseId";
-  const currentReleaseFilterColumn =
-    relation === "parent"
-      ? "parentMusicalReleases.childReleaseId"
-      : "parentMusicalReleases.parentReleaseId";
+  const isParentRelation = relation === PARENT_RELATION;
+
+  const relatedReleaseJoinColumn = isParentRelation
+    ? "parentMusicalReleases.parentReleaseId"
+    : "parentMusicalReleases.childReleaseId";
+
+  const currentReleaseFilterColumn = isParentRelation
+    ? "parentMusicalReleases.childReleaseId"
+    : "parentMusicalReleases.parentReleaseId";
 
   return dbClient(dbSource)
     .selectFrom("parentMusicalReleases")

@@ -15,12 +15,14 @@ import {
 } from "./validation";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
+import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES } from "@/db/db-source-options";
+import type { RelatedItemRelation } from "@/types/common";
 import type { CountryListItem } from "@/types/countries";
 import type { GeneralizedDate, GeneralizedDateFromDb } from "@/types/date";
 import type { EntryAltNameInfo, EntryByIdResult } from "@/types/entries";
-import type { FormField } from "@/types/form";
+import type { FormField, RelatedItemRow } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type {
   JsonParsingErrorData,
@@ -170,16 +172,12 @@ export type ReleaseFormMatrixRunoutDraft = {
 export type ReleaseFormFormatInputs = ReleaseFormFormatInput[];
 export type ReleaseFormCatNumbersInputs = CatalogueNumberRowState[];
 
-export type ReleaseFormRelatedReleaseRelation = "parent" | "child";
-
-export type ReleaseFormRelatedReleaseRow = {
-  id: string;
+export type ReleaseFormRelatedReleaseRow = RelatedItemRow & {
   releaseId: string;
-  relation: ReleaseFormRelatedReleaseRelation | "";
 };
 
 export type ValidReleaseFormRelatedReleaseRow = ReleaseFormRelatedReleaseRow & {
-  relation: ReleaseFormRelatedReleaseRelation;
+  relation: RelatedItemRelation;
 };
 
 export const defaultRelatedReleaseRow = (): ReleaseFormRelatedReleaseRow =>
@@ -377,13 +375,13 @@ const relatedReleasesToFormValue = (
   ...(parentReleases ?? []).map((release) =>
     withNewId({
       releaseId: release.releaseId,
-      relation: "parent" as const,
+      relation: PARENT_RELATION as RelatedItemRelation,
     }),
   ),
   ...(childReleases ?? []).map((release) =>
     withNewId({
       releaseId: release.releaseId,
-      relation: "child" as const,
+      relation: CHILD_RELATION as RelatedItemRelation,
     }),
   ),
 ];

@@ -5,6 +5,7 @@ import { selectFromExtendedMusicalEntryRows } from "./utils";
 
 import { dbClient } from "../client/kysely";
 
+import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
 import type { DB } from "@/types/db/database";
 import type {
   EntryAltNameInfo,
@@ -91,8 +92,8 @@ export const fetchEntryByIdResult = async (
   }
 
   const [parentEntries, childEntries] = await Promise.all([
-    fetchRelatedEntries(db, entryId, "parent"),
-    fetchRelatedEntries(db, entryId, "child"),
+    fetchRelatedEntries(db, entryId, PARENT_RELATION),
+    fetchRelatedEntries(db, entryId, CHILD_RELATION),
   ]);
 
   return {

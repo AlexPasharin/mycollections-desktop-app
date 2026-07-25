@@ -1,13 +1,11 @@
 import { validate as isValidUuid } from "uuid";
 
-import type { FormFieldError, FormFieldValidationResult } from "@/types/form";
-
-export type RelatedItemRelation = "parent" | "child";
-
-export type RelatedItemRow = {
-  id: string;
-  relation: RelatedItemRelation | "";
-};
+import type { RelatedItemRelation } from "@/types/common";
+import type {
+  FormFieldError,
+  FormFieldValidationResult,
+  RelatedItemRow,
+} from "@/types/form";
 
 type ValidateRelatedItemsMessages = {
   missingRelation: string;
@@ -70,7 +68,7 @@ export const validateRelatedItems = <TRow extends RelatedItemRow>(
   if (!valid) {
     return {
       valid: false,
-      value: rows,
+      value: validatedRows,
       errorMessages: errors,
       notifications: notifications.length > 0 ? notifications : undefined,
     };
