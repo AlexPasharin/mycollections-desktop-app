@@ -57,5 +57,5 @@ export type FormRelatedItemRelation = RelatedItemRelation | "";
 export type RelatedItemRow = {
   id: string;
   relation: FormRelatedItemRelation;
-  orderNumber: number;
+  orderNumber: string;
 };

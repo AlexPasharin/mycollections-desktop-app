@@ -27,7 +27,7 @@ describe("toUpsertMusicalEntryInput", () => {
             id: "row-2",
             entryId: "entry-parent",
             relation: "parent",
-            orderNumber: 1,
+            orderNumber: "1",
           },
         ],
         partOfQueenCollection: true,
@@ -45,7 +45,13 @@ describe("toUpsertMusicalEntryInput", () => {
       tagIds: ["tag-a", "tag-b"],
       typeIds: ["type-1"],
       altNames: [{ id: "row-1", name: "ANATO", nameId: "name-id-1" }],
-      relatedEntries: [{ relatedEntryId: "entry-parent", relation: "parent" }],
+      relatedEntries: [
+        {
+          relatedEntryId: "entry-parent",
+          relation: "parent",
+          childEntryOrderNumber: 1,
+        },
+      ],
     });
   });
 

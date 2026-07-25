@@ -100,6 +100,7 @@ export type MusicalEntryAltNameInput = { nameId?: string; name: string };
 export type MusicalEntryRelatedEntryInput = {
   relatedEntryId: string;
   relation: RelatedItemRelation;
+  childEntryOrderNumber: number;
 };
 
 interface UpsertMusicalEntryBase {

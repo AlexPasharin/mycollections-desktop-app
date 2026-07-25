@@ -17,6 +17,7 @@ type ReleaseRelatedReleasesSectionProps = {
   notifications: FeedbackNotifications;
   onChangeReleaseId: (rowId: string, releaseId: string) => void;
   onChangeRelation: (rowId: string, relation: FormRelatedItemRelation) => void;
+  onChangeOrderNumber: (rowId: string, orderNumber: string) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
   onFocus: (rowId: string) => void;
@@ -29,6 +30,7 @@ const ReleaseRelatedReleasesSection: FC<ReleaseRelatedReleasesSectionProps> = ({
   notifications,
   onChangeReleaseId,
   onChangeRelation,
+  onChangeOrderNumber,
   onAddRow,
   onRemoveRow,
   onFocus,
@@ -42,6 +44,7 @@ const ReleaseRelatedReleasesSection: FC<ReleaseRelatedReleasesSectionProps> = ({
     labels={RELEASE_RELATED_ITEMS_LABELS}
     onChangeRelatedId={onChangeReleaseId}
     onChangeRelation={onChangeRelation}
+    onChangeOrderNumber={onChangeOrderNumber}
     onAddRow={onAddRow}
     onRemoveRow={onRemoveRow}
     onFocus={onFocus}

@@ -72,10 +72,19 @@ export const insertEntryRelatedEntries = async (
   entryId: string,
   relatedEntries: MusicalEntryRelatedEntryInput[],
 ) => {
-  const rows = relatedEntries.map(({ relatedEntryId, relation }) =>
-    relation === PARENT_RELATION
-      ? { parentEntryId: relatedEntryId, childEntryId: entryId }
-      : { parentEntryId: entryId, childEntryId: relatedEntryId },
+  const rows = relatedEntries.map(
+    ({ relatedEntryId, relation, childEntryOrderNumber }) =>
+      relation === PARENT_RELATION
+        ? {
+            parentEntryId: relatedEntryId,
+            childEntryId: entryId,
+            childEntryOrderNumber,
+          }
+        : {
+            parentEntryId: entryId,
+            childEntryId: relatedEntryId,
+            childEntryOrderNumber,
+          },
   );
 
   if (rows.length === 0) {

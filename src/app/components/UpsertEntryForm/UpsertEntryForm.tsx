@@ -324,6 +324,14 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     );
   };
 
+  const setRelatedEntryOrderNumber = (rowId: string, orderNumber: string) => {
+    setFieldValue("relatedEntries", (prev) =>
+      prev.relatedEntries.value.map((row) =>
+        row.id === rowId ? { ...row, orderNumber } : row,
+      ),
+    );
+  };
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
 
@@ -623,6 +631,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           notifications={form.relatedEntries.notifications}
           onChangeEntryId={setRelatedEntryId}
           onChangeRelation={setRelatedEntryRelation}
+          onChangeOrderNumber={setRelatedEntryOrderNumber}
           onAddRow={addRelatedEntryRow}
           onRemoveRow={removeRelatedEntryRow}
           onFocus={(rowId) => onFocus({ relatedEntryRowId: rowId })}

@@ -17,6 +17,7 @@ type UpsertEntryRelatedEntriesSectionProps = {
   notifications: FeedbackNotifications;
   onChangeEntryId: (rowId: string, entryId: string) => void;
   onChangeRelation: (rowId: string, relation: FormRelatedItemRelation) => void;
+  onChangeOrderNumber: (rowId: string, orderNumber: string) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
   onFocus: (rowId: string) => void;
@@ -31,6 +32,7 @@ const UpsertEntryRelatedEntriesSection: FC<
   notifications,
   onChangeEntryId,
   onChangeRelation,
+  onChangeOrderNumber,
   onAddRow,
   onRemoveRow,
   onFocus,
@@ -44,6 +46,7 @@ const UpsertEntryRelatedEntriesSection: FC<
     labels={ENTRY_RELATED_ITEMS_LABELS}
     onChangeRelatedId={onChangeEntryId}
     onChangeRelation={onChangeRelation}
+    onChangeOrderNumber={onChangeOrderNumber}
     onAddRow={onAddRow}
     onRemoveRow={onRemoveRow}
     onFocus={onFocus}

@@ -8,10 +8,19 @@ export const toParentMusicalReleaseRows = (
   releaseId: string,
   relatedReleases: MusicalReleaseRelatedReleaseInput[],
 ): Insertable<ParentMusicalRelease>[] =>
-  relatedReleases.map(({ relatedReleaseId, relation }) =>
-    relation === PARENT_RELATION
-      ? { parentReleaseId: relatedReleaseId, childReleaseId: releaseId }
-      : { parentReleaseId: releaseId, childReleaseId: relatedReleaseId },
+  relatedReleases.map(
+    ({ relatedReleaseId, relation, childReleaseOrderNumber }) =>
+      relation === PARENT_RELATION
+        ? {
+            parentReleaseId: relatedReleaseId,
+            childReleaseId: releaseId,
+            childReleaseOrderNumber,
+          }
+        : {
+            parentReleaseId: releaseId,
+            childReleaseId: relatedReleaseId,
+            childReleaseOrderNumber,
+          },
   );
 
 export const insertReleaseRelatedReleases = async (

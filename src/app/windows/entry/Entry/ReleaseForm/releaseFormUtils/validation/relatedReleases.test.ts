@@ -6,7 +6,7 @@ const relatedReleaseRow = (
   id: string,
   releaseId: string,
   relation: ReleaseFormRelatedReleaseRow["relation"],
-  orderNumber: number,
+  orderNumber: string,
 ): ReleaseFormRelatedReleaseRow => ({
   id,
   releaseId,
@@ -24,44 +24,44 @@ const trimmedReleaseIdNotification = (releaseId: string) => ({
 describe("validateRelatedReleases", () => {
   it("accepts rows with parent or child relation and a valid release id", () => {
     const result = validateRelatedReleases([
-      relatedReleaseRow("row-1", parentReleaseId, "parent", 1),
-      relatedReleaseRow("row-2", childReleaseId, "child", 2),
+      relatedReleaseRow("row-1", parentReleaseId, "parent", "1"),
+      relatedReleaseRow("row-2", childReleaseId, "child", "2"),
     ]);
 
     expect(result).toEqual({
       valid: true,
       value: [
-        relatedReleaseRow("row-1", parentReleaseId, "parent", 1),
-        relatedReleaseRow("row-2", childReleaseId, "child", 2),
+        relatedReleaseRow("row-1", parentReleaseId, "parent", "1"),
+        relatedReleaseRow("row-2", childReleaseId, "child", "2"),
       ],
     });
   });
 
   it("trims release ids in the validated value", () => {
     const result = validateRelatedReleases([
-      relatedReleaseRow("row-1", `  ${parentReleaseId}  `, "parent", 1),
+      relatedReleaseRow("row-1", `  ${parentReleaseId}  `, "parent", "1"),
     ]);
 
     expect(result).toEqual({
       valid: true,
-      value: [relatedReleaseRow("row-1", parentReleaseId, "parent", 1)],
+      value: [relatedReleaseRow("row-1", parentReleaseId, "parent", "1")],
       notifications: [trimmedReleaseIdNotification(parentReleaseId)],
     });
   });
 
   it("emits one trim notification per trimmed release id", () => {
     const result = validateRelatedReleases([
-      relatedReleaseRow("row-1", `  ${parentReleaseId}  `, "parent", 1),
-      relatedReleaseRow("row-2", childReleaseId, "child", 2),
-      relatedReleaseRow("row-3", ` ${childReleaseId} `, "child", 3),
+      relatedReleaseRow("row-1", `  ${parentReleaseId}  `, "parent", "1"),
+      relatedReleaseRow("row-2", childReleaseId, "child", "2"),
+      relatedReleaseRow("row-3", ` ${childReleaseId} `, "child", "3"),
     ]);
 
     expect(result).toEqual({
       valid: true,
       value: [
-        relatedReleaseRow("row-1", parentReleaseId, "parent", 1),
-        relatedReleaseRow("row-2", childReleaseId, "child", 2),
-        relatedReleaseRow("row-3", childReleaseId, "child", 3),
+        relatedReleaseRow("row-1", parentReleaseId, "parent", "1"),
+        relatedReleaseRow("row-2", childReleaseId, "child", "2"),
+        relatedReleaseRow("row-3", childReleaseId, "child", "3"),
       ],
       notifications: [
         trimmedReleaseIdNotification(parentReleaseId),
@@ -72,8 +72,8 @@ describe("validateRelatedReleases", () => {
 
   it("requires a parent or child relation on every row", () => {
     const rows = [
-      relatedReleaseRow("row-1", parentReleaseId, "", 1),
-      relatedReleaseRow("row-2", childReleaseId, "parent", 2),
+      relatedReleaseRow("row-1", parentReleaseId, "", "1"),
+      relatedReleaseRow("row-2", childReleaseId, "parent", "2"),
     ];
 
     const result = validateRelatedReleases(rows);
@@ -93,8 +93,8 @@ describe("validateRelatedReleases", () => {
 
   it("requires a valid uuid release id on every row", () => {
     const result = validateRelatedReleases([
-      relatedReleaseRow("row-1", "", "parent", 1),
-      relatedReleaseRow("row-2", "not-a-uuid", "child", 2),
+      relatedReleaseRow("row-1", "", "parent", "1"),
+      relatedReleaseRow("row-2", "not-a-uuid", "child", "2"),
     ]);
 
     expect(result.valid).toBe(false);
@@ -111,7 +111,7 @@ describe("validateRelatedReleases", () => {
 
   it("reports both relation and release id errors on the same row", () => {
     const result = validateRelatedReleases([
-      relatedReleaseRow("row-1", "not-a-uuid", "", 2),
+      relatedReleaseRow("row-1", "not-a-uuid", "", "2"),
     ]);
 
     expect(result.valid).toBe(false);
@@ -124,6 +124,32 @@ describe("validateRelatedReleases", () => {
       "row-1": [
         { message: "Choose whether this release is a parent or a child." },
         { message: "Release ID must be a valid UUID." },
+      ],
+    });
+  });
+
+  it("requires child order number to be an integer greater than 0", () => {
+    const result = validateRelatedReleases([
+      relatedReleaseRow("row-1", parentReleaseId, "parent", "0"),
+      relatedReleaseRow("row-2", childReleaseId, "child", "2.2"),
+    ]);
+
+    expect(result.valid).toBe(false);
+
+    if (result.valid) {
+      return;
+    }
+
+    expect(result.errorMessages).toEqual({
+      "row-1": [
+        {
+          message: "Child order number must be an integer greater than 0.",
+        },
+      ],
+      "row-2": [
+        {
+          message: "Child order number must be an integer greater than 0.",
+        },
       ],
     });
   });

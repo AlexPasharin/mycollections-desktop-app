@@ -59,13 +59,14 @@ export const toUpsertMusicalReleaseInput = (
 export const toRelatedReleasesFromForm = (
   rows: ReleaseFormRelatedReleaseRow[],
 ): MusicalReleaseRelatedReleaseInput[] =>
-  rows.map(({ releaseId, relation }) => ({
+  rows.map(({ releaseId, relation, orderNumber }) => ({
     relatedReleaseId: releaseId,
 
     // assertion is safe because the form validator guarantees the relation is valid
     // TODO: improve this mechanism
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     relation: relation as RelatedItemRelation,
+    childReleaseOrderNumber: parseInt(orderNumber, 10), // orderNumber is guaranteed to be a positive integer by the form validator
   }));
 
 const toMusicalReleaseRowFromForm = ({

@@ -86,6 +86,7 @@ export type GetReleaseById = (
 export type MusicalReleaseRelatedReleaseInput = {
   relatedReleaseId: string;
   relation: RelatedItemRelation;
+  childReleaseOrderNumber: number;
 };
 
 interface UpsertMusicalReleaseBase {

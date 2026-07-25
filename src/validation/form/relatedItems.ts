@@ -6,10 +6,15 @@ import type {
   FormFieldValidationResult,
   RelatedItemRow,
 } from "@/types/form";
+import { strictStringToIntSchema } from "@/validation";
+
+const DEFAULT_INVALID_ORDER_NUMBER_MESSAGE =
+  "Child order number must be an integer greater than 0.";
 
 type ValidateRelatedItemsMessages = {
   missingRelation: string;
   invalidRelatedId: string;
+  invalidOrderNumber?: string;
   trimmedRelatedId: (relatedId: string) => string;
 };
 
@@ -38,6 +43,10 @@ export const validateRelatedItems = <TRow extends RelatedItemRow>(
 
   const missingRelationError = { message: messages.missingRelation };
   const invalidRelatedIdError = { message: messages.invalidRelatedId };
+  const invalidOrderNumberError = {
+    message:
+      messages.invalidOrderNumber ?? DEFAULT_INVALID_ORDER_NUMBER_MESSAGE,
+  };
 
   for (const row of rows) {
     const rowErrors = [];
@@ -49,6 +58,14 @@ export const validateRelatedItems = <TRow extends RelatedItemRow>(
 
     if (!isValidUuid(trimmedRelatedId)) {
       rowErrors.push(invalidRelatedIdError);
+    }
+
+    const parsedOrderNumber = strictStringToIntSchema.safeParse(
+      row.orderNumber.trim(),
+    );
+
+    if (!parsedOrderNumber.success || parsedOrderNumber.data <= 0) {
+      rowErrors.push(invalidOrderNumberError);
     }
 
     if (rowErrors.length > 0) {

@@ -6,7 +6,7 @@ const relatedEntryRow = (
   id: string,
   entryId: string,
   relation: UpsertEntryRelatedEntryRow["relation"],
-  orderNumber: number,
+  orderNumber: string,
 ): UpsertEntryRelatedEntryRow => ({
   id,
   entryId,
@@ -21,14 +21,14 @@ describe("validateRelatedEntries", () => {
   it("accepts parent and child rows with valid entry ids", () => {
     expect(
       validateRelatedEntries([
-        relatedEntryRow("row-1", parentEntryId, "parent", 1),
-        relatedEntryRow("row-2", childEntryId, "child", 2),
+        relatedEntryRow("row-1", parentEntryId, "parent", "1"),
+        relatedEntryRow("row-2", childEntryId, "child", "2"),
       ]),
     ).toEqual({
       valid: true,
       value: [
-        relatedEntryRow("row-1", parentEntryId, "parent", 1),
-        relatedEntryRow("row-2", childEntryId, "child", 2),
+        relatedEntryRow("row-1", parentEntryId, "parent", "1"),
+        relatedEntryRow("row-2", childEntryId, "child", "2"),
       ],
     });
   });
@@ -36,11 +36,11 @@ describe("validateRelatedEntries", () => {
   it("trims entry ids in the validated value", () => {
     expect(
       validateRelatedEntries([
-        relatedEntryRow("row-1", `  ${parentEntryId}  `, "parent", 1),
+        relatedEntryRow("row-1", `  ${parentEntryId}  `, "parent", "1"),
       ]),
     ).toEqual({
       valid: true,
-      value: [relatedEntryRow("row-1", parentEntryId, "parent", 1)],
+      value: [relatedEntryRow("row-1", parentEntryId, "parent", "1")],
       notifications: [
         {
           notification: `Note: entry ID "${parentEntryId}" has been trimmed`,
@@ -51,8 +51,8 @@ describe("validateRelatedEntries", () => {
 
   it("reports missing relations and invalid entry ids per row", () => {
     const result = validateRelatedEntries([
-      relatedEntryRow("row-1", "not-a-uuid", "", 1),
-      relatedEntryRow("row-2", childEntryId, "parent", 2),
+      relatedEntryRow("row-1", "not-a-uuid", "", "1"),
+      relatedEntryRow("row-2", childEntryId, "parent", "2"),
     ]);
 
     expect(result.valid).toBe(false);
@@ -65,6 +65,32 @@ describe("validateRelatedEntries", () => {
       "row-1": [
         { message: "Choose whether this entry is a parent or a child." },
         { message: "Entry ID must be a valid UUID." },
+      ],
+    });
+  });
+
+  it("requires child order number to be an integer greater than 0", () => {
+    const result = validateRelatedEntries([
+      relatedEntryRow("row-1", parentEntryId, "parent", "0"),
+      relatedEntryRow("row-2", childEntryId, "child", "1.5"),
+    ]);
+
+    expect(result.valid).toBe(false);
+
+    if (result.valid) {
+      return;
+    }
+
+    expect(result.errorMessages).toEqual({
+      "row-1": [
+        {
+          message: "Child order number must be an integer greater than 0.",
+        },
+      ],
+      "row-2": [
+        {
+          message: "Child order number must be an integer greater than 0.",
+        },
       ],
     });
   });

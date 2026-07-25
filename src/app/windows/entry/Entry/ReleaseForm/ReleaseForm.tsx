@@ -388,6 +388,14 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
     );
   };
 
+  const setRelatedReleaseOrderNumber = (rowId: string, orderNumber: string) => {
+    setFieldValue("relatedReleases", (prev) =>
+      prev.relatedReleases.value.map((row) =>
+        row.id === rowId ? { ...row, orderNumber } : row,
+      ),
+    );
+  };
+
   const addCountrySelectionRow = () => {
     setFieldValue("countries", (prev) => ({
       ...prev.countries.value,
@@ -909,6 +917,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           notifications={formState.relatedReleases.notifications}
           onChangeReleaseId={setRelatedReleaseId}
           onChangeRelation={setRelatedReleaseRelation}
+          onChangeOrderNumber={setRelatedReleaseOrderNumber}
           onAddRow={addRelatedReleaseRow}
           onRemoveRow={removeRelatedReleaseRow}
           onFocus={(rowId) => onFocus({ relatedReleaseRowId: rowId })}
