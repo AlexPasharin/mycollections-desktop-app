@@ -39,6 +39,10 @@ const UpsertEntryFormPreview: FC<UpsertEntryFormPreviewProps> = ({
     ),
   );
 
+  const relatedEntries = form.relatedEntries.value.sort(
+    (a, b) => parseInt(a.orderNumber, 10) - parseInt(b.orderNumber, 10),
+  );
+
   const selectedTypeNames = Array.from(form.selectedTypes.value, (typeId) => {
     return typeNameById.get(typeId) ?? typeId;
   });
@@ -82,11 +86,11 @@ const UpsertEntryFormPreview: FC<UpsertEntryFormPreviewProps> = ({
         )}
       </FormPreviewBlockField>
       <FormPreviewBlockField label="Related entries">
-        {form.relatedEntries.value.length === 0 ? (
+        {relatedEntries.length === 0 ? (
           <p className="whitespace-pre-wrap">{orPlaceholder(null)}</p>
         ) : (
           <ul className="mt-[0.2rem] pl-[1.1rem]">
-            {form.relatedEntries.value.map((row) => (
+            {relatedEntries.map((row) => (
               <li key={row.id}>
                 {orPlaceholder(row.entryId.trim())} — {row.relation}
               </li>

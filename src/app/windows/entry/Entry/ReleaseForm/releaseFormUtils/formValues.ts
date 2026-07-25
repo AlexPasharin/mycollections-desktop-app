@@ -241,7 +241,7 @@ export const initialReleaseFormStateValue = ({
   allCountries: CountryListItem[];
   releaseBlueprint?: ReleaseByIdResult | undefined;
   dbSources?: ReadonlySet<DbSource> | undefined;
-  mode?: ReleaseFormTabSharedData["mode"];
+  mode: ReleaseFormTabSharedData["mode"];
 }): ReleaseFormState => {
   return {
     releaseVersion: {
@@ -259,7 +259,10 @@ export const initialReleaseFormStateValue = ({
       notifications: [],
     },
     discogsUrl: {
-      value: mode === "update" ? (releaseBlueprint?.discogsUrl ?? "") : "",
+      value:
+        mode === "update" && releaseBlueprint?.discogsUrl
+          ? releaseBlueprint.discogsUrl
+          : "",
       valid: true,
       validationFn: validateDiscogsUrl,
       errors: initialReleaseFormFieldErrors.discogsUrl,
@@ -275,14 +278,18 @@ export const initialReleaseFormStateValue = ({
       notifications: [],
     },
     countries: {
-      value: countriesToFormValue(releaseBlueprint?.countries, allCountries),
+      value: countriesToFormValue(
+        releaseBlueprint?.countries,
+        allCountries,
+        mode,
+      ),
       valid: true,
       validationFn: validateReleaseCountries,
       errors: initialReleaseFormFieldErrors.countries,
       notifications: [],
     },
     formats: {
-      value: formatsToFormValue(releaseBlueprint?.formats, allFormats),
+      value: formatsToFormValue(releaseBlueprint?.formats, allFormats, mode),
       valid: true,
       validationFn: validateReleaseFormats(allFormats),
       errors: initialReleaseFormFieldErrors.formats,
@@ -423,9 +430,12 @@ const releaseDateToFormValue = (
 const countriesToFormValue = (
   countries: ReleaseByIdResult["countries"] | undefined,
   allCountries: CountryListItem[],
+  mode: ReleaseFormTabSharedData["mode"],
 ): ReleaseFormCountries => {
   if (countries == null || isCountriesJsonParsingError(countries)) {
-    return { madeIn: [emptyCountrySelection()], printedIn: [] };
+    return mode === "update"
+      ? { madeIn: [], printedIn: [] }
+      : { madeIn: [emptyCountrySelection()], printedIn: [] };
   }
 
   const basic =
@@ -456,9 +466,10 @@ const countriesToFormValue = (
 const formatsToFormValue = (
   releaseFormats: ReleaseFormatOfReleaseItem[] | undefined,
   allFormats: ReleasesFormatListItem[],
+  mode: ReleaseFormTabSharedData["mode"],
 ): ReleaseFormFormatInputs => {
-  if (releaseFormats == null || releaseFormats.length === 0) {
-    return [defaultFormatInputRow()];
+  if (!releaseFormats?.length) {
+    return mode === "update" ? [] : [defaultFormatInputRow()];
   }
 
   const formatIds = new Set(allFormats.map((format) => format.formatId));

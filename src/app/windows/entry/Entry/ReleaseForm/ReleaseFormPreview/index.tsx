@@ -51,6 +51,10 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
   );
   const formats = formState.formats.value;
 
+  const relatedReleases = formState.relatedReleases.value.sort(
+    (a, b) => parseInt(a.orderNumber, 10) - parseInt(b.orderNumber, 10),
+  );
+
   return (
     <div className={styles.preview}>
       <FormPreviewField label="Version">
@@ -107,11 +111,11 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
         )}
       </FormPreviewField>
       <FormPreviewBlockField label="Related releases">
-        {formState.relatedReleases.value.length === 0 ? (
+        {relatedReleases.length === 0 ? (
           orPlaceholder(null)
         ) : (
           <ul className={styles.list}>
-            {formState.relatedReleases.value.map((row) => (
+            {relatedReleases.map((row) => (
               <li key={row.id}>
                 {row.releaseId}
                 {" — "}
