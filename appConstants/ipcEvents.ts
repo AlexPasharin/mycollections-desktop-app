@@ -2,6 +2,7 @@ export const FETCH_ARTISTS = "fetch-artists";
 export const QUERY_ARTIST = "query-artist";
 export const GET_ARTIST_BY_ID = "get-artist-by-id";
 export const UPDATE_ARTIST = "update-artist";
+export const CREATE_ARTIST = "create-artist";
 export const GET_ENTRY_BY_ID = "get-entry-by-id";
 export const GET_ENTRY_RELEASES = "get-entry-releases";
 export const GET_ENTRY_RELEASE_TAG_IDS = "get-entry-release-tag-ids";

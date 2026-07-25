@@ -15,6 +15,7 @@ import {
   FETCH_ARTISTS,
   GET_ARTIST_BY_ID,
   UPDATE_ARTIST,
+  CREATE_ARTIST,
   GET_ENTRY_BY_ID,
   GET_ENTRY_RELEASES,
   GET_ENTRY_RELEASE_TAG_IDS,
@@ -39,6 +40,7 @@ import {
   SEARCH_ARTIST_ENTRIES,
 } from "@/appConstants/ipcEvents";
 import {
+  createArtist,
   fetchArtists,
   getArtistById,
   queryArtist,
@@ -64,7 +66,11 @@ import {
   updateMusicalRelease,
 } from "@/db/releases";
 import { fetchTags, createTag } from "@/db/tags";
-import type { FetchArtistsParams, UpdateArtistInput } from "@/types/artists";
+import type {
+  CreateArtistInput,
+  FetchArtistsParams,
+  UpdateArtistInput,
+} from "@/types/artists";
 import type {
   CreateMusicalEntryInput,
   SearchArtistEntriesParams,
@@ -105,6 +111,11 @@ await app.whenReady().then(async () => {
     UPDATE_ARTIST,
     (_, input: UpdateArtistInput, dbSource: DbSource) =>
       updateArtist(input, dbSource),
+  );
+  ipcMain.handle(
+    CREATE_ARTIST,
+    (_, input: CreateArtistInput, dbSource: DbSource) =>
+      createArtist(input, dbSource),
   );
   ipcMain.handle(GET_ENTRY_BY_ID, (_, entryId: string, dbSource: DbSource) =>
     getEntryById(entryId, dbSource),

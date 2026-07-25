@@ -1,4 +1,4 @@
-import type { Updateable } from "kysely";
+import type { Insertable, Updateable } from "kysely";
 
 import type { DbSource } from "@/db/db-source";
 import type { Artist, ArtistType } from "@/types/db/database";
@@ -74,5 +74,15 @@ export type UpdateArtistInput = {
 
 export type UpdateArtist = (
   input: UpdateArtistInput,
+  dbSource: DbSource,
+) => Promise<{ artist: ArtistByIdResult; notifications: string[] }>;
+
+export type CreateArtistInput = {
+  artist: Insertable<Artist>;
+  altNames: ArtistAltNameInput[];
+};
+
+export type CreateArtist = (
+  input: CreateArtistInput,
   dbSource: DbSource,
 ) => Promise<{ artist: ArtistByIdResult; notifications: string[] }>;
