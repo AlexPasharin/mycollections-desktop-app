@@ -234,6 +234,7 @@ const fetchRelatedReleases = (
       "musicalReleases.releaseVersion",
       "musicalEntries.entryId",
       "musicalEntries.mainName as entryMainName",
+      "parentMusicalReleases.childReleaseOrderNumber",
       sql<RelatedReleaseArtist[]>`coalesce(
         jsonb_agg(DISTINCT jsonb_build_object(
           'isEntriesMainArtist', ${sql.ref("musicalEntriesArtists.isEntriesMainArtist")},

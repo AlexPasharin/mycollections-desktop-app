@@ -55,6 +55,7 @@ export type RelatedReleaseItem = {
   releaseVersion: string;
   entryId: string;
   entryMainName: string;
+  childReleaseOrderNumber: number;
   artists: RelatedReleaseArtist[];
 };
 

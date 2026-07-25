@@ -6,10 +6,12 @@ const relatedEntryRow = (
   id: string,
   entryId: string,
   relation: UpsertEntryRelatedEntryRow["relation"],
+  orderNumber: number,
 ): UpsertEntryRelatedEntryRow => ({
   id,
   entryId,
   relation,
+  orderNumber,
 });
 
 const parentEntryId = "11111111-1111-4111-8111-111111111111";
@@ -19,14 +21,14 @@ describe("validateRelatedEntries", () => {
   it("accepts parent and child rows with valid entry ids", () => {
     expect(
       validateRelatedEntries([
-        relatedEntryRow("row-1", parentEntryId, "parent"),
-        relatedEntryRow("row-2", childEntryId, "child"),
+        relatedEntryRow("row-1", parentEntryId, "parent", 1),
+        relatedEntryRow("row-2", childEntryId, "child", 2),
       ]),
     ).toEqual({
       valid: true,
       value: [
-        relatedEntryRow("row-1", parentEntryId, "parent"),
-        relatedEntryRow("row-2", childEntryId, "child"),
+        relatedEntryRow("row-1", parentEntryId, "parent", 1),
+        relatedEntryRow("row-2", childEntryId, "child", 2),
       ],
     });
   });
@@ -34,11 +36,11 @@ describe("validateRelatedEntries", () => {
   it("trims entry ids in the validated value", () => {
     expect(
       validateRelatedEntries([
-        relatedEntryRow("row-1", `  ${parentEntryId}  `, "parent"),
+        relatedEntryRow("row-1", `  ${parentEntryId}  `, "parent", 1),
       ]),
     ).toEqual({
       valid: true,
-      value: [relatedEntryRow("row-1", parentEntryId, "parent")],
+      value: [relatedEntryRow("row-1", parentEntryId, "parent", 1)],
       notifications: [
         {
           notification: `Note: entry ID "${parentEntryId}" has been trimmed`,
@@ -49,8 +51,8 @@ describe("validateRelatedEntries", () => {
 
   it("reports missing relations and invalid entry ids per row", () => {
     const result = validateRelatedEntries([
-      relatedEntryRow("row-1", "not-a-uuid", ""),
-      relatedEntryRow("row-2", childEntryId, "parent"),
+      relatedEntryRow("row-1", "not-a-uuid", "", 1),
+      relatedEntryRow("row-2", childEntryId, "parent", 2),
     ]);
 
     expect(result.valid).toBe(false);

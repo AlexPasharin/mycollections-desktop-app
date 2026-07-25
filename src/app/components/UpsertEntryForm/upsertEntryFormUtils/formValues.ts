@@ -53,6 +53,7 @@ export const defaultRelatedEntryRow = (): UpsertEntryRelatedEntryRow =>
   withNewId({
     entryId: "",
     relation: "",
+    orderNumber: 0,
   });
 
 export type UpsertEntryFormDraft = {
@@ -188,16 +189,18 @@ const relatedEntriesToFormValue = (
   parentEntries: EntryByIdResult["parentEntries"] | undefined,
   childEntries: EntryByIdResult["childEntries"] | undefined,
 ): ValidUpsertEntryRelatedEntryRow[] => [
-  ...(parentEntries ?? []).map(({ entryId }) =>
+  ...(parentEntries ?? []).map(({ entryId, childEntryOrderNumber }) =>
     withNewId({
       entryId: entryId,
       relation: PARENT_RELATION as RelatedItemRelation,
+      orderNumber: childEntryOrderNumber,
     }),
   ),
-  ...(childEntries ?? []).map(({ entryId }) =>
+  ...(childEntries ?? []).map(({ entryId, childEntryOrderNumber }) =>
     withNewId({
       entryId: entryId,
       relation: CHILD_RELATION as RelatedItemRelation,
+      orderNumber: childEntryOrderNumber,
     }),
   ),
 ];

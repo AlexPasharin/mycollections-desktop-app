@@ -184,6 +184,7 @@ export const defaultRelatedReleaseRow = (): ReleaseFormRelatedReleaseRow =>
   withNewId({
     releaseId: "",
     relation: "",
+    orderNumber: 0,
   });
 
 export type ReleaseFormState = {
@@ -376,12 +377,14 @@ const relatedReleasesToFormValue = (
     withNewId({
       releaseId: release.releaseId,
       relation: PARENT_RELATION as RelatedItemRelation,
+      orderNumber: release.childReleaseOrderNumber,
     }),
   ),
   ...(childReleases ?? []).map((release) =>
     withNewId({
       releaseId: release.releaseId,
       relation: CHILD_RELATION as RelatedItemRelation,
+      orderNumber: release.childReleaseOrderNumber,
     }),
   ),
 ];

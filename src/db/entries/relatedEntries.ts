@@ -46,6 +46,7 @@ export const fetchRelatedEntries = (
     .select([
       "musicalEntries.entryId",
       "musicalEntries.mainName",
+      "parentMusicalEntries.childEntryOrderNumber",
       sql<EntryArtistInfo[]>`coalesce(
         jsonb_agg(DISTINCT jsonb_build_object(
           'artistId', ${sql.ref("musicalEntriesArtists.artistId")},

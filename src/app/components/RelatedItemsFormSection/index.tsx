@@ -67,9 +67,6 @@ const RelatedItemsFormSection = <TRow extends RelatedItemRow>({
           return (
             <li key={row.id}>
               <div className="flex items-center gap-4">
-                <span className="text-[0.92em] font-semibold">
-                  Related {index + 1}
-                </span>
                 <label className="sr-only" htmlFor={relatedIdInputId}>
                   {labels.relatedIdLabel} {index + 1}
                 </label>
@@ -115,6 +112,9 @@ const RelatedItemsFormSection = <TRow extends RelatedItemRow>({
                   <option value={PARENT_RELATION}>Parent</option>
                   <option value={CHILD_RELATION}>Child</option>
                 </select>
+                <span className="text-[0.92em] font-semibold">
+                  Child № {row.orderNumber}
+                </span>
                 <button
                   type="button"
                   className="inline-flex h-[1.85rem] shrink-0 cursor-pointer items-center justify-center rounded-[0.2rem] border-none bg-transparent p-0 text-[1.05rem] leading-none text-[#a40000] hover:bg-[rgba(164,0,0,0.08)] hover:text-[#7a0000] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#1a5fb4]"

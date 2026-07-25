@@ -46,6 +46,7 @@ export type EntryTypeInfo = {
 export type RelatedEntryItem = {
   entryId: string;
   mainName: string;
+  childEntryOrderNumber: number;
   artists: EntryArtistInfo[];
 };
 
