@@ -35,7 +35,7 @@ type RelatedItemsFormSectionProps<TRow extends RelatedItemRow> = {
 };
 
 const relatedItemsGridClassName =
-  "grid w-fit max-w-full grid-cols-[32ch_5.5rem_2.75rem_1rem_1.85rem] items-center gap-x-3";
+  "grid w-fit max-w-full grid-cols-[32ch_6rem_2.75rem_1rem_1.85rem] items-center gap-x-3";
 
 const RelatedItemsFormSection = <TRow extends RelatedItemRow>({
   rows,
@@ -126,7 +126,7 @@ const RelatedItemsFormSection = <TRow extends RelatedItemRow>({
                 aria-invalid={hasErrors}
                 aria-describedby={hasErrors ? errorId : undefined}
               >
-                <option value="">Relation…</option>
+                <option value=""></option>
                 <option value={PARENT_RELATION}>Parent</option>
                 <option value={CHILD_RELATION}>Child</option>
               </select>

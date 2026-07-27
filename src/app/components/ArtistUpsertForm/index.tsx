@@ -8,8 +8,6 @@ import {
 } from "./artistUpsertFormUtils/formValues";
 import { toUpsertArtistInput } from "./artistUpsertFormUtils/toUpsertArtistInput";
 
-import api from "../../api";
-
 import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
 import ErrorMessages from "@/app/components/ErrorMessages";
@@ -19,6 +17,9 @@ import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
 import type {
   ArtistAltNameInput,
   ArtistByIdResult,
+  CreateArtist,
+  CreateArtistInput,
+  UpdateArtist,
   UpdateArtistInput,
 } from "@/types/artists";
 import { ArtistType } from "@/types/db/database";
@@ -31,29 +32,43 @@ import type {
 import { formatArtistTypeLabel } from "@/utils/artist";
 import { updateImmutableSet } from "@/utils/immutableSet";
 
-type ArtistUpsertFormProps = {
-  artist: ArtistByIdResult;
+type ArtistUpsertFormSharedProps = {
   primaryDbSource: DbSource;
   onClearFeedback: () => void;
-  onArtistUpdated: (result: {
+  onArtistSaved: (result: {
     artist: ArtistByIdResult;
     feedback: FormFeedback;
   }) => void;
 };
 
-const NAME_FIELD_ERROR_ID = "update-artist-name-error";
-const NAME_FIELD_NOTIFICATIONS_ID = "update-artist-name-notifications";
+type ArtistUpsertFormUpdateProps = ArtistUpsertFormSharedProps & {
+  mode: "update";
+  artist: ArtistByIdResult;
+  updateArtist: UpdateArtist;
+};
 
-const NAME_FOR_SORTING_FIELD_ERROR_ID = "update-artist-name-for-sorting-error";
+type ArtistUpsertFormCreateProps = ArtistUpsertFormSharedProps & {
+  mode: "create";
+  artist?: never;
+  createArtist: CreateArtist;
+};
+
+export type ArtistUpsertFormProps =
+  | ArtistUpsertFormUpdateProps
+  | ArtistUpsertFormCreateProps;
+
+const NAME_FIELD_ERROR_ID = "upsert-artist-name-error";
+const NAME_FIELD_NOTIFICATIONS_ID = "upsert-artist-name-notifications";
+
+const NAME_FOR_SORTING_FIELD_ERROR_ID = "upsert-artist-name-for-sorting-error";
 const NAME_FOR_SORTING_FIELD_NOTIFICATIONS_ID =
-  "update-artist-name-for-sorting-notifications";
+  "upsert-artist-name-for-sorting-notifications";
 
-const ArtistUpsertForm: FC<ArtistUpsertFormProps> = ({
-  artist,
-  primaryDbSource,
-  onClearFeedback,
-  onArtistUpdated,
-}) => {
+const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
+  const { mode, primaryDbSource, onClearFeedback, onArtistSaved, artist } =
+    props;
+  const isCreateMode = mode === "create";
+
   const [form, setForm] = useState<ArtistUpsertFormDraft>(() =>
     initialArtistUpsertFormDraft(artist),
   );
@@ -71,7 +86,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = ({
     setShowSubmissionValidationError(false);
     setIsConfirmOpen(false);
     setSubmitError(undefined);
-  }, [artist]);
+  }, [artist, isCreateMode]);
 
   const setFieldValue = <K extends keyof ArtistUpsertFormDraft>(
     key: K,
@@ -219,18 +234,31 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = ({
       altNames,
     });
 
-    updateArtistAcrossDbSources(
-      { ...upsertInput, artistId: artist.artistId },
-      checkedDbSources,
-      primaryDbSource,
-    )
+    const savePromise = isCreateMode
+      ? createArtistAcrossDbSources(
+          upsertInput,
+          checkedDbSources,
+          primaryDbSource,
+          props.createArtist,
+        )
+      : updateArtistAcrossDbSources(
+          { ...upsertInput, artistId: artist.artistId },
+          checkedDbSources,
+          primaryDbSource,
+          props.updateArtist,
+        );
+
+    savePromise
       .then(({ artist: savedArtist, outcomes }) => {
-        const { notifications, errors } = buildUpdateArtistFeedback(outcomes);
+        const { notifications, errors } = buildUpsertArtistFeedback(
+          outcomes,
+          mode,
+        );
 
         if (savedArtist) {
           setIsConfirmOpen(false);
 
-          onArtistUpdated({
+          onArtistSaved({
             artist: savedArtist,
             feedback: { notifications, errors },
           });
@@ -241,13 +269,16 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = ({
         const errorMessages =
           errors.length > 0
             ? errors.map((error) => error.message).join("\n")
-            : "Failed to update artist in one or more databases";
+            : `Failed to ${mode} artist in one or more databases`;
 
         setSubmitError(errorMessages);
       })
       .catch((error: unknown) => {
-        console.error("Error updating artist", error);
-        setSubmitError(formatUpdateArtistError(error));
+        console.error(
+          `Error ${mode === "create" ? "creating" : "updating"} artist`,
+          error,
+        );
+        setSubmitError(formatUpsertArtistError(error, mode));
       })
       .finally(() => setIsSubmitting(false));
   };
@@ -275,11 +306,11 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = ({
     <div>
       <form className="flex max-w-2xl flex-col gap-4" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-1">
-          <label htmlFor="update-artist-name" className="font-medium">
+          <label htmlFor="upsert-artist-name" className="font-medium">
             Name
           </label>
           <input
-            id="update-artist-name"
+            id="upsert-artist-name"
             type="text"
             value={form.name.value}
             onChange={(event) => {
@@ -306,13 +337,13 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = ({
 
         <div className="flex flex-col gap-1">
           <label
-            htmlFor="update-artist-name-for-sorting"
+            htmlFor="upsert-artist-name-for-sorting"
             className="font-medium"
           >
             Different name used for sorting (if needed)
           </label>
           <input
-            id="update-artist-name-for-sorting"
+            id="upsert-artist-name-for-sorting"
             type="text"
             value={form.nameForSorting.value}
             onChange={(event) => {
@@ -336,11 +367,11 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = ({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="update-artist-type" className="font-medium">
+          <label htmlFor="upsert-artist-type" className="font-medium">
             Type
           </label>
           <select
-            id="update-artist-type"
+            id="upsert-artist-type"
             value={form.type.value}
             onChange={(event) => {
               // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
@@ -380,7 +411,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = ({
 
           {altNameRows.length > 0 && (
             <ul
-              className="mb-3 flex flex-col gap-[0.55rem]"
+              className="mb-3 flex flex-col gap-[0.55rem] p-0"
               aria-label="Alternative names"
             >
               {altNameRows.map((row, index) => {
@@ -388,8 +419,8 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = ({
                   error.sources?.includes(row.id),
                 );
                 const hasErrors = rowErrors.length > 0;
-                const errorId = `update-artist-alt-name-error-${row.id}`;
-                const inputId = `update-artist-alt-name-${row.id}`;
+                const errorId = `upsert-artist-alt-name-error-${row.id}`;
+                const inputId = `upsert-artist-alt-name-${row.id}`;
 
                 return (
                   <li key={row.id} className="flex flex-wrap items-start gap-2">
@@ -456,22 +487,32 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = ({
             className="cursor-pointer rounded-md border border-indigo-600 bg-indigo-600 px-[0.95rem] py-[0.45rem] font-[inherit] text-[0.9rem] font-medium text-white transition-[background,border-color] duration-150 ease-in-out hover:enabled:border-indigo-700 hover:enabled:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isSubmitting}
           >
-            Save changes
+            {isCreateMode ? "Create artist" : "Save changes"}
           </button>
         </div>
       </form>
       <ConfirmDialog
         isOpen={isConfirmOpen}
         size="wide"
-        title="Confirm artist changes"
+        title={isCreateMode ? "Confirm new artist" : "Confirm artist changes"}
         description={
           isConfirmOpen && (
             <>
               <ArtistUpsertFormPreview form={form} />
               <DbSourcesCheckboxes
-                heading="Save to databases"
-                headingId="update-artist-db-sources-heading"
-                idPrefix="update-artist-db-source"
+                heading={
+                  isCreateMode ? "Add to databases" : "Save to databases"
+                }
+                headingId={
+                  isCreateMode
+                    ? "create-artist-db-sources-heading"
+                    : "update-artist-db-sources-heading"
+                }
+                idPrefix={
+                  isCreateMode
+                    ? "create-artist-db-source"
+                    : "update-artist-db-source"
+                }
                 activeDbSource={primaryDbSource}
                 checkedSources={checkedDbSources}
                 onToggle={handleToggleDbSource}
@@ -479,8 +520,8 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = ({
             </>
           )
         }
-        confirmLabel="Save artist"
-        cancelLabel="Back to edit"
+        confirmLabel={isCreateMode ? "Create artist" : "Save artist"}
+        cancelLabel={isCreateMode ? "Back to form" : "Back to edit"}
         isBusy={isSubmitting}
         errorMessage={submitError}
         onConfirm={handleConfirmSave}
@@ -492,7 +533,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = ({
 
 export default ArtistUpsertForm;
 
-type UpdateArtistOutcome =
+type UpsertArtistOutcome =
   | {
       source: DbSource;
       status: "fulfilled";
@@ -555,20 +596,105 @@ const withSharedAltNameIds = (
   altNames: applySharedAltNameIds(input.altNames, sharedAltNameIds),
 });
 
-const updateArtistAcrossDbSources = async (
-  updateInput: UpdateArtistInput,
+const withSharedArtistId = (
+  input: CreateArtistInput,
+  sharedArtistId: string | undefined,
+): CreateArtistInput => ({
+  ...input,
+  artist:
+    sharedArtistId === undefined
+      ? input.artist
+      : { ...input.artist, artistId: sharedArtistId },
+});
+
+const withSharedCreateInput = (
+  createInput: CreateArtistInput,
+  sharedArtistId: string | undefined,
+  sharedAltNameIds: AltNameIdMap | undefined,
+): CreateArtistInput =>
+  withSharedArtistId(
+    {
+      ...createInput,
+      altNames: applySharedAltNameIds(createInput.altNames, sharedAltNameIds),
+    },
+    sharedArtistId,
+  );
+
+const createArtistAcrossDbSources = async (
+  createInput: CreateArtistInput,
   targets: ReadonlySet<DbSource>,
   primaryDbSource: DbSource,
+  createArtist: CreateArtist,
 ): Promise<{
   artist: ArtistByIdResult | undefined;
-  outcomes: UpdateArtistOutcome[];
+  outcomes: UpsertArtistOutcome[];
 }> => {
   const orderedTargets = [
     primaryDbSource,
     ...Array.from(targets).filter((source) => source !== primaryDbSource),
   ];
 
-  const outcomes: UpdateArtistOutcome[] = [];
+  const outcomes: UpsertArtistOutcome[] = [];
+  let createdArtist: ArtistByIdResult | undefined;
+  let sharedArtistId: string | undefined;
+  let sharedAltNameIds: AltNameIdMap | undefined;
+
+  for (const source of orderedTargets) {
+    const input = withSharedCreateInput(
+      createInput,
+      sharedArtistId,
+      sharedAltNameIds,
+    );
+
+    try {
+      const result = await createArtist(input, source);
+      createdArtist = createdArtist ?? result.artist;
+      sharedArtistId ??= result.artist.artistId;
+      sharedAltNameIds ??= buildArtistAltNameIdsMap(
+        createInput.altNames,
+        result.artist.altNames,
+      );
+
+      outcomes.push({
+        source,
+        status: "fulfilled",
+        artist: result.artist,
+        notifications: result.notifications,
+      });
+    } catch (reason: unknown) {
+      outcomes.push({
+        source,
+        status: "rejected",
+        reason,
+      });
+
+      if (createdArtist === undefined) {
+        break;
+      }
+    }
+  }
+
+  return {
+    artist: createdArtist,
+    outcomes,
+  };
+};
+
+const updateArtistAcrossDbSources = async (
+  updateInput: UpdateArtistInput,
+  targets: ReadonlySet<DbSource>,
+  primaryDbSource: DbSource,
+  updateArtist: UpdateArtist,
+): Promise<{
+  artist: ArtistByIdResult | undefined;
+  outcomes: UpsertArtistOutcome[];
+}> => {
+  const orderedTargets = [
+    primaryDbSource,
+    ...Array.from(targets).filter((source) => source !== primaryDbSource),
+  ];
+
+  const outcomes: UpsertArtistOutcome[] = [];
   let updatedArtist: ArtistByIdResult | undefined;
   let sharedAltNameIds: AltNameIdMap | undefined;
 
@@ -576,7 +702,7 @@ const updateArtistAcrossDbSources = async (
     const input = withSharedAltNameIds(updateInput, sharedAltNameIds);
 
     try {
-      const result = await api.updateArtist(input, source);
+      const result = await updateArtist(input, source);
       updatedArtist = updatedArtist ?? result.artist;
 
       sharedAltNameIds ??= buildArtistAltNameIdsMap(
@@ -609,8 +735,9 @@ const updateArtistAcrossDbSources = async (
   };
 };
 
-const buildUpdateArtistFeedback = (
-  outcomes: UpdateArtistOutcome[],
+const buildUpsertArtistFeedback = (
+  outcomes: UpsertArtistOutcome[],
+  mode: "create" | "update",
 ): FormFeedback => {
   const notifications: FeedbackNotifications = [];
   const errors: FeedbackErrors = [];
@@ -621,11 +748,11 @@ const buildUpdateArtistFeedback = (
         ...outcome.notifications.map((notification) => ({ notification })),
       );
     } else {
-      const errorMessage = `Failed to update artist in ${dbSourceLabel(outcome.source)}`;
+      const errorMessage = `Failed to ${mode} artist in ${dbSourceLabel(outcome.source)}`;
       console.error(errorMessage, outcome.reason);
 
       errors.push({
-        message: `${errorMessage}: ${formatUpdateArtistError(outcome.reason)}`,
+        message: `${errorMessage}: ${formatUpsertArtistError(outcome.reason, mode)}`,
       });
     }
   }
@@ -633,8 +760,11 @@ const buildUpdateArtistFeedback = (
   return { notifications, errors };
 };
 
-const formatUpdateArtistError = (reason: unknown): string =>
-  reason instanceof Error ? reason.message : "Failed to update artist";
+const formatUpsertArtistError = (
+  reason: unknown,
+  mode: "create" | "update",
+): string =>
+  reason instanceof Error ? reason.message : `Failed to ${mode} artist`;
 
 const ARTIST_TYPE_VALUES = Object.values(ArtistType);
 

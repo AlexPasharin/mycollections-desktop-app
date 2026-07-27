@@ -2,6 +2,7 @@ import { useState, type FC } from "react";
 
 import AllArtistsList from "./AllArtistsList";
 import ArtistQuery from "./ArtistQuery";
+import CreateArtist from "./CreateArtist";
 
 import api from "../api";
 
@@ -10,13 +11,15 @@ import Tabs from "@/app/components/Tabs";
 import { DEFAULT_DB_SOURCE, type DbSource } from "@/db/db-source";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
-type MainTab = "query" | "list";
+type MainTab = "query" | "list" | "createArtist";
 
 /** Stable ids for this tablist (single Main window view per document). */
 const QUERY_TAB_ID = "main-query-tab";
 const QUERY_PANEL_ID = "main-query-panel";
 const LIST_TAB_ID = "main-list-tab";
 const LIST_PANEL_ID = "main-list-panel";
+const CREATE_ARTIST_TAB_ID = "main-create-artist-tab";
+const CREATE_ARTIST_PANEL_ID = "main-create-artist-panel";
 
 const MainWindowWrapper: FC = () => {
   useDocumentTitle("My Collections - Main Window");
@@ -53,7 +56,7 @@ const MainWindowWrapper: FC = () => {
       </header>
 
       <Tabs
-        ariaLabel="Find artist or show all artists"
+        ariaLabel="Find artist, show all artists, or create an artist"
         activeTab={activeTab}
         onTabChange={setActiveTab}
         tabs={[
@@ -75,6 +78,13 @@ const MainWindowWrapper: FC = () => {
                 <AllArtistsList dbSource={dbSource} />
               </>
             ),
+          },
+          {
+            id: "createArtist",
+            tabId: CREATE_ARTIST_TAB_ID,
+            panelId: CREATE_ARTIST_PANEL_ID,
+            label: "Create artist",
+            children: <CreateArtist primaryDbSource={dbSource} />,
           },
         ]}
       />

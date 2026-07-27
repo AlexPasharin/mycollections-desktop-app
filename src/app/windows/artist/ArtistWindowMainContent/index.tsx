@@ -3,8 +3,10 @@ import { useEffect, useRef, useState, type FC } from "react";
 import ArtistAddEntryForm from "./ArtistAddEntryForm";
 import ArtistEntriesSearch from "./ArtistEntriesSearch";
 import ArtistInfo from "./ArtistInfo";
-import ArtistUpsertForm from "./ArtistUpsertForm";
 
+import api from "../api";
+
+import ArtistUpsertForm from "@/app/components/ArtistUpsertForm";
 import FeedbackSection from "@/app/components/FeedbackSection";
 import Tabs from "@/app/components/Tabs";
 import type { UpsertEntryFormPersistedState } from "@/app/components/UpsertEntryForm/upsertEntryFormUtils/formValues";
@@ -127,10 +129,12 @@ const ArtistWindowMainContent: FC<ArtistWindowMainContentProps> = ({
             label: "Update artist",
             children: (
               <ArtistUpsertForm
+                mode="update"
                 artist={artist}
                 primaryDbSource={primaryDbSource}
+                updateArtist={api.updateArtist}
                 onClearFeedback={handleClearUpdateArtistFeedback}
-                onArtistUpdated={handleArtistUpdated}
+                onArtistSaved={handleArtistUpdated}
               />
             ),
           },

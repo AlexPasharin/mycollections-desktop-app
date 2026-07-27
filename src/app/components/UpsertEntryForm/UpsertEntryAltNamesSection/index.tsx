@@ -31,7 +31,7 @@ const UpsertEntryAltNamesSection: FC<UpsertEntryAltNamesSectionProps> = ({
 
     {altNames.length > 0 && (
       <ul
-        className="mb-3 flex flex-col gap-[0.55rem]"
+        className="mb-3 flex flex-col gap-[0.55rem] p-0"
         aria-label="Alternative names"
       >
         {altNames.map((row, index) => {

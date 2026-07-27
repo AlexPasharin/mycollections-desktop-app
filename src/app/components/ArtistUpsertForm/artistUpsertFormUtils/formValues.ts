@@ -62,7 +62,7 @@ export const initialArtistUpsertFormDraft = (
         name,
       })) ?? [],
     valid: true,
-    validationFn: validateArtistAltNames(artist?.name ?? ""),
+    validationFn: validateArtistAltNames,
     errors: [],
     notifications: [],
   },
