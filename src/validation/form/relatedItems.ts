@@ -4,7 +4,7 @@ import type { RelatedItemRelation } from "@/types/common";
 import type {
   FormFieldError,
   FormFieldValidationResult,
-  RelatedItemRow,
+  RelatedOrderedItemRow,
 } from "@/types/form";
 import { strictStringToIntSchema } from "@/validation";
 
@@ -18,17 +18,17 @@ type ValidateRelatedItemsMessages = {
   trimmedRelatedId: (relatedId: string) => string;
 };
 
-type ValidateRelatedItemsConfig<TRow extends RelatedItemRow> = {
+type ValidateRelatedItemsConfig<TRow extends RelatedOrderedItemRow> = {
   getRelatedId: (row: TRow) => string;
   withRelatedId: (row: TRow, relatedId: string) => TRow;
   messages: ValidateRelatedItemsMessages;
 };
 
-type TValidRow<TRow extends RelatedItemRow> = TRow & {
+type TValidRow<TRow extends RelatedOrderedItemRow> = TRow & {
   relation: RelatedItemRelation;
 };
 
-export const validateRelatedItems = <TRow extends RelatedItemRow>(
+export const validateRelatedItems = <TRow extends RelatedOrderedItemRow>(
   rows: TRow[],
   { getRelatedId, withRelatedId, messages }: ValidateRelatedItemsConfig<TRow>,
 ): FormFieldValidationResult<

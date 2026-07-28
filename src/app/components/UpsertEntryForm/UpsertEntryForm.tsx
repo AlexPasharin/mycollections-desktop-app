@@ -24,6 +24,8 @@ import { toUpsertMusicalEntryInput } from "./upsertEntryFormUtils/toUpsertMusica
 import UpsertEntryRelatedEntriesSection from "./UpsertEntryRelatedEntriesSection";
 import UpsertEntryTypesSection from "./UpsertEntryTypesSection";
 
+import FormSectionsDivider from "../Form/FormSectionsDivider";
+
 import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
 import ErrorMessages from "@/app/components/ErrorMessages";
@@ -586,10 +588,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           />
         </div>
 
-        <hr
-          className="mt-7 mb-[0.9rem] border-0 border-t border-black/25"
-          aria-hidden
-        />
+        <FormSectionsDivider />
 
         <UpsertEntryArtistsSection
           artists={form.artists.value}
@@ -602,10 +601,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           onBlur={() => onBlur("artists")}
         />
 
-        <hr
-          className="mt-7 mb-[0.9rem] border-0 border-t border-black/25"
-          aria-hidden
-        />
+        <FormSectionsDivider />
 
         <div className="mb-[0.65rem] flex flex-col gap-[0.35rem]">
           <h2 className="mb-3 text-base leading-snug font-semibold">
@@ -627,10 +623,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           />
         </div>
 
-        <hr
-          className="mt-7 mb-[0.9rem] border-0 border-t border-black/25"
-          aria-hidden
-        />
+        <FormSectionsDivider />
 
         <div className="mb-[0.65rem] flex flex-col gap-[0.35rem]">
           <label
@@ -662,10 +655,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           />
         </div>
 
-        <hr
-          className="mt-7 mb-[0.9rem] border-0 border-t border-black/25"
-          aria-hidden
-        />
+        <FormSectionsDivider />
 
         <AddTagsFormSection
           tags={tags}
@@ -674,10 +664,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           onRemoveTag={removeSelectedTag}
         />
 
-        <hr
-          className="my-[0.9rem] border-0 border-t border-black/25"
-          aria-hidden
-        />
+        <FormSectionsDivider />
 
         <UpsertEntryTypesSection
           allEntryTypes={allEntryTypes}
@@ -686,10 +673,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           onRemoveType={removeSelectedType}
         />
 
-        <hr
-          className="my-[0.9rem] border-0 border-t border-black/25"
-          aria-hidden
-        />
+        <FormSectionsDivider />
 
         <UpsertEntryAltNamesSection
           altNames={form.altNames.value}
@@ -705,10 +689,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           messages={altNamesNotifications}
         />
 
-        <hr
-          className="my-[0.9rem] border-0 border-t border-black/25"
-          aria-hidden
-        />
+        <FormSectionsDivider />
 
         <UpsertEntryRelatedEntriesSection
           relatedEntries={form.relatedEntries.value}
@@ -723,10 +704,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           onBlur={() => onBlur("relatedEntries")}
         />
 
-        <hr
-          className="my-[0.9rem] border-0 border-t border-black/25"
-          aria-hidden
-        />
+        <FormSectionsDivider />
 
         <div className="mt-[0.15rem] flex items-start gap-2">
           <input
@@ -778,10 +756,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           </div>
         )}
 
-        <hr
-          className="my-[0.9rem] border-0 border-t border-black/25"
-          aria-hidden
-        />
+        <FormSectionsDivider />
 
         <div className="mb-[0.65rem] flex flex-col gap-[0.35rem]">
           <label

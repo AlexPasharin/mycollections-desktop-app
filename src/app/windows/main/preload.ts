@@ -3,12 +3,15 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { API } from "./api";
 
 import {
+  CREATE_ARTIST,
   FETCH_ARTISTS,
   OPEN_ARTIST_WINDOW,
   OPEN_LABELS_WINDOW,
   OPEN_TAGS_WINDOW,
   QUERY_ARTIST,
 } from "@/appConstants/ipcEvents";
+import type { DbSource } from "@/db/db-source";
+import type { CreateArtistInput } from "@/types/artists";
 import type { CreateArtistWindowParams } from "@/types/entries";
 import type { CreateLabelsWindowParams } from "@/types/labels";
 import type { CreateTagsWindowParams } from "@/types/tags";
@@ -18,6 +21,8 @@ const api = {
     ipcRenderer.invoke(FETCH_ARTISTS, params, dbSource),
   queryArtists: (query, dbSource) =>
     ipcRenderer.invoke(QUERY_ARTIST, query, dbSource),
+  createArtist: (input: CreateArtistInput, dbSource: DbSource) =>
+    ipcRenderer.invoke(CREATE_ARTIST, input, dbSource),
   openNewArtistWindow: (params: CreateArtistWindowParams) =>
     ipcRenderer.send(OPEN_ARTIST_WINDOW, params),
   openNewTagsWindow: (params: CreateTagsWindowParams) =>

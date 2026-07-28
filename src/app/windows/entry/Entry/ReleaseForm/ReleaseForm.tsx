@@ -44,6 +44,7 @@ import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
 import ErrorMessages from "@/app/components/ErrorMessages";
 import FeedbackSection from "@/app/components/FeedbackSection";
 import AddTagsFormSection from "@/app/components/Form/AddTagsFormSection";
+import FormSectionsDivider from "@/app/components/Form/FormSectionsDivider";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
 import NotificationMessages from "@/app/components/NotificationMessages";
 import api from "@/app/windows/entry/api";
@@ -699,7 +700,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
               primaryDbSource={primaryDbSource}
               onReleaseFetched={tabData.onUseReleaseAsBlueprint}
             />
-            <hr className={styles.sectionDivider} aria-hidden />
+            <FormSectionsDivider />
           </>
         )}
 
@@ -739,10 +740,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           onChange={(value) => setFieldValue("name", value)}
         />
 
-        <hr
-          className={`${styles.sectionDivider} ${styles.sectionDividerMoreSpaceBefore}`}
-          aria-hidden
-        />
+        <FormSectionsDivider />
 
         <div className={styles.field}>
           <h2 className={styles.heading}>Release date</h2>
@@ -761,10 +759,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           />
         </div>
 
-        <hr
-          className={`${styles.sectionDivider} ${styles.sectionDividerMoreSpaceBefore}`}
-          aria-hidden
-        />
+        <FormSectionsDivider />
 
         <div className={styles.field}>
           <label className={styles.heading} htmlFor="add-release-discogs-url">
@@ -793,10 +788,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           />
         </div>
 
-        <hr
-          className={`${styles.sectionDivider} ${styles.sectionDividerMoreSpaceBefore}`}
-          aria-hidden
-        />
+        <FormSectionsDivider />
 
         <ReleaseCountriesSection
           countries={allCountries}
@@ -844,7 +836,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           </button>
         )}
 
-        <hr className={styles.sectionDivider} aria-hidden />
+        <FormSectionsDivider />
 
         <ReleaseFormFormatsSection
           formatInputs={formState.formats.value}
@@ -861,7 +853,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           onBlur={() => onBlur("formats")}
         />
 
-        <hr className={styles.sectionDivider} aria-hidden />
+        <FormSectionsDivider />
 
         <ReleaseCatalogueNumbersSection
           labels={labels}
@@ -878,7 +870,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           onBlurRowColumn={() => onBlur("catalogueNumbers")}
         />
 
-        <hr className={styles.sectionDivider} aria-hidden />
+        <FormSectionsDivider />
 
         <ReleaseMatrixRunoutField
           matrixRunout={formState.matrixRunout.value}
@@ -900,7 +892,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           onBlur={() => onBlur("matrixRunout")}
         />
 
-        <hr className={styles.sectionDivider} aria-hidden />
+        <FormSectionsDivider />
 
         <AddTagsFormSection
           tags={tagsAvailableForReleases}
@@ -909,7 +901,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           onRemoveTag={removeSelectedTag}
         />
 
-        <hr className={styles.sectionDivider} aria-hidden />
+        <FormSectionsDivider />
 
         <ReleaseRelatedReleasesSection
           relatedReleases={formState.relatedReleases.value}
@@ -924,7 +916,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           onBlur={() => onBlur("relatedReleases")}
         />
 
-        <hr className={styles.sectionDivider} aria-hidden />
+        <FormSectionsDivider />
 
         <div className={styles.checkboxRow}>
           <input
@@ -972,7 +964,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           </div>
         )}
 
-        <hr className={styles.sectionDivider} aria-hidden />
+        <FormSectionsDivider />
 
         <div className={styles.field}>
           <label className={styles.heading} htmlFor="add-release-comment">

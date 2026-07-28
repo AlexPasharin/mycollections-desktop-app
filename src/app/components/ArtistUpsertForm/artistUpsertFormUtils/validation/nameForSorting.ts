@@ -12,7 +12,10 @@ export const validateNameForSorting = (
       : [{ notification: "Note: value has been trimmed" }];
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-  if ((form?.["name"] as FormField<string>).value.trim() === trimmed) {
+  const mainNameValue = form?.["name"]?.value as string; // in the form this is applied in this is always a string
+  const mainName = mainNameValue.trim();
+
+  if (mainName && mainName === trimmed) {
     return {
       valid: false,
       value: trimmed,

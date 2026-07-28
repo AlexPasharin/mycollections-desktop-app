@@ -22,7 +22,7 @@ import type { RelatedItemRelation } from "@/types/common";
 import type { CountryListItem } from "@/types/countries";
 import type { GeneralizedDate, GeneralizedDateFromDb } from "@/types/date";
 import type { EntryAltNameInfo, EntryByIdResult } from "@/types/entries";
-import type { FormField, RelatedItemRow } from "@/types/form";
+import type { FormField, RelatedOrderedItemRow } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type {
   JsonParsingErrorData,
@@ -172,7 +172,7 @@ export type ReleaseFormMatrixRunoutDraft = {
 export type ReleaseFormFormatInputs = ReleaseFormFormatInput[];
 export type ReleaseFormCatNumbersInputs = CatalogueNumberRowState[];
 
-export type ReleaseFormRelatedReleaseRow = RelatedItemRow & {
+export type ReleaseFormRelatedReleaseRow = RelatedOrderedItemRow & {
   releaseId: string;
 };
 

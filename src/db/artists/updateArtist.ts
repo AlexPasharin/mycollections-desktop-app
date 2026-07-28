@@ -1,14 +1,19 @@
 import type { Kysely } from "kysely";
 
 import { fetchArtistByIdResult } from "./artistById";
+import { insertRelatedArtists } from "./relatedArtists";
 
 import { applyWithNotificationsFor } from "../client/kysely";
 
-import type { ArtistAltNameInput, UpdateArtist } from "@/types/artists";
+import type {
+  ArtistAltNameInput,
+  ArtistRelatedArtistInput,
+  UpdateArtist,
+} from "@/types/artists";
 import type { DB } from "@/types/db/database";
 
 export const updateArtist: UpdateArtist = async (
-  { artistId, artist, altNames },
+  { artistId, artist, altNames, relatedArtists },
   dbSource,
 ) => {
   const { results: updatedArtist, notifications } =
@@ -20,6 +25,7 @@ export const updateArtist: UpdateArtist = async (
         .execute();
 
       await syncArtistAltNames(trx, artistId, altNames);
+      await syncArtistRelatedArtists(trx, artistId, relatedArtists);
 
       const artistAfterUpdate = await fetchArtistByIdResult(trx, artistId);
 
@@ -90,4 +96,22 @@ const upsertArtistAltName = async (
     .insertInto("alternativeArtistNames")
     .values({ nameId, name, artistId })
     .execute();
+};
+
+const syncArtistRelatedArtists = async (
+  trx: DbTransaction,
+  artistId: string,
+  relatedArtists: ArtistRelatedArtistInput[],
+) => {
+  await trx
+    .deleteFrom("parentArtists")
+    .where((eb) =>
+      eb.or([
+        eb("parentArtistId", "=", artistId),
+        eb("childArtistId", "=", artistId),
+      ]),
+    )
+    .execute();
+
+  await insertRelatedArtists(trx, artistId, relatedArtists);
 };

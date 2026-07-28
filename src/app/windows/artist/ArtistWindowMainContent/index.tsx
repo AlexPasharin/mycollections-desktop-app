@@ -3,8 +3,10 @@ import { useEffect, useRef, useState, type FC } from "react";
 import ArtistAddEntryForm from "./ArtistAddEntryForm";
 import ArtistEntriesSearch from "./ArtistEntriesSearch";
 import ArtistInfo from "./ArtistInfo";
-import ArtistUpsertForm from "./ArtistUpsertForm";
 
+import api from "../api";
+
+import ArtistUpsertForm from "@/app/components/ArtistUpsertForm";
 import FeedbackSection from "@/app/components/FeedbackSection";
 import Tabs from "@/app/components/Tabs";
 import type { UpsertEntryFormPersistedState } from "@/app/components/UpsertEntryForm/upsertEntryFormUtils/formValues";
@@ -40,7 +42,7 @@ const ArtistWindowMainContent: FC<ArtistWindowMainContentProps> = ({
   primaryDbSource,
   onArtistUpdated,
 }) => {
-  const [activeTab, setActiveTab] = useState<ArtistEntriesTab>("searchEntries");
+  const [activeTab, setActiveTab] = useState<ArtistEntriesTab>("updateArtist");
   const [searchEntriesQuery, setSearchEntriesQuery] = useState("");
   const [createEntryFeedback, setCreateEntryFeedback] = useState<FormFeedback>(
     formFeedbackInitialValue,
@@ -70,7 +72,7 @@ const ArtistWindowMainContent: FC<ArtistWindowMainContentProps> = ({
 
   return (
     <main>
-      <ArtistInfo artist={artist} />
+      <ArtistInfo artist={artist} primaryDbSource={primaryDbSource} />
 
       <FeedbackSection
         notificationsId={CREATE_ENTRY_NOTIFICATIONS_ID}
@@ -127,10 +129,12 @@ const ArtistWindowMainContent: FC<ArtistWindowMainContentProps> = ({
             label: "Update artist",
             children: (
               <ArtistUpsertForm
+                mode="update"
                 artist={artist}
                 primaryDbSource={primaryDbSource}
+                updateArtist={api.updateArtist}
                 onClearFeedback={handleClearUpdateArtistFeedback}
-                onArtistUpdated={handleArtistUpdated}
+                onArtistSaved={handleArtistUpdated}
               />
             ),
           },
