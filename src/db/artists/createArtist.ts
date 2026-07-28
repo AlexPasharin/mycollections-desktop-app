@@ -1,11 +1,12 @@
 import { fetchArtistByIdResult } from "./artistById";
+import { insertRelatedArtists } from "./relatedArtists";
 
 import { applyWithNotificationsFor } from "../client/kysely";
 
 import type { CreateArtist } from "@/types/artists";
 
 export const createArtist: CreateArtist = async (
-  { artist, altNames },
+  { artist, altNames, relatedArtists },
   dbSource,
 ) => {
   const { results: createdArtist, notifications } =
@@ -24,6 +25,8 @@ export const createArtist: CreateArtist = async (
           )
           .execute();
       }
+
+      await insertRelatedArtists(trx, artistId, relatedArtists);
 
       const artistAfterCreate = await fetchArtistByIdResult(trx, artistId);
 

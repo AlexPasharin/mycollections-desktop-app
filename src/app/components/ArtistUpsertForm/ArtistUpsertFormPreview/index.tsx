@@ -41,6 +41,19 @@ const ArtistUpsertFormPreview: FC<ArtistUpsertFormPreviewProps> = ({
           </ul>
         )}
       </FormPreviewBlockField>
+      <FormPreviewBlockField label="Related artists">
+        {form.relatedParents.value.length === 0 ? (
+          <p className="whitespace-pre-wrap">{orPlaceholder(null)}</p>
+        ) : (
+          <ul className="mt-[0.2rem] pl-[1.1rem]">
+            {form.relatedParents.value.map((row) => (
+              <li key={row.id}>
+                {orPlaceholder(row.artistId.trim())} — {row.relation}
+              </li>
+            ))}
+          </ul>
+        )}
+      </FormPreviewBlockField>
     </div>
   );
 };

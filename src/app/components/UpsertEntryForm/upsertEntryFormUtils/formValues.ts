@@ -17,7 +17,7 @@ import type { DbSource } from "@/db/db-source";
 import type { RelatedItemRelation } from "@/types/common";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryByIdResult } from "@/types/entries";
-import type { FormField, RelatedItemRow } from "@/types/form";
+import type { FormField, RelatedOrderedItemRow } from "@/types/form";
 import type { TagId } from "@/types/tags";
 import { withNewId } from "@/utils/id";
 import {
@@ -57,7 +57,7 @@ export const defaultArtistRow = (): UpsertEntryArtistRow =>
     isEntriesMainArtist: false,
   });
 
-export type UpsertEntryRelatedEntryRow = RelatedItemRow & {
+export type UpsertEntryRelatedEntryRow = RelatedOrderedItemRow & {
   entryId: string;
 };
 

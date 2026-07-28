@@ -3,10 +3,14 @@ import { type FC, type FormEvent, useEffect, useState } from "react";
 import ArtistUpsertFormPreview from "./ArtistUpsertFormPreview";
 import {
   defaultAltNameRow,
+  defaultRelatedParentRow,
   initialArtistUpsertFormDraft,
   type ArtistUpsertFormDraft,
 } from "./artistUpsertFormUtils/formValues";
 import { toUpsertArtistInput } from "./artistUpsertFormUtils/toUpsertArtistInput";
+import ArtistUpsertRelatedArtistsSection from "./ArtistUpsertRelatedArtistsSection";
+
+import FormSectionsDivider from "../Form/FormSectionsDivider";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
@@ -28,8 +32,10 @@ import type {
   FeedbackErrors,
   FeedbackNotifications,
   FormField,
+  FormRelatedItemRelation,
 } from "@/types/form";
 import { formatArtistTypeLabel } from "@/utils/artist";
+import { omitProperty } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
 
 type ArtistUpsertFormSharedProps = {
@@ -63,6 +69,11 @@ const NAME_FIELD_NOTIFICATIONS_ID = "upsert-artist-name-notifications";
 const NAME_FOR_SORTING_FIELD_ERROR_ID = "upsert-artist-name-for-sorting-error";
 const NAME_FOR_SORTING_FIELD_NOTIFICATIONS_ID =
   "upsert-artist-name-for-sorting-notifications";
+
+type ArtistUpsertFormArrayErrorField = Exclude<
+  keyof ArtistUpsertFormDraft,
+  "relatedParents"
+>;
 
 const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
   const { mode, primaryDbSource, onClearFeedback, onArtistSaved, artist } =
@@ -115,7 +126,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
   };
 
   const clearFieldFeedback = (
-    key: keyof ArtistUpsertFormDraft,
+    key: ArtistUpsertFormArrayErrorField,
     source?: PropertyKey,
   ) => {
     setField(key, (prev) => ({
@@ -175,6 +186,48 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
     );
   };
 
+  const addRelatedParentRow = () => {
+    setFieldValue("relatedParents", (prev) => [
+      ...prev.relatedParents.value,
+      defaultRelatedParentRow(),
+    ]);
+  };
+
+  const removeRelatedParentRow = (rowId: string) => {
+    setField("relatedParents", (prev) => ({
+      ...prev.relatedParents,
+      value: prev.relatedParents.value.filter((row) => row.id !== rowId),
+      errors: omitProperty(prev.relatedParents.errors, rowId),
+    }));
+  };
+
+  const setRelatedParentArtistId = (rowId: string, artistId: string) => {
+    setFieldValue("relatedParents", (prev) =>
+      prev.relatedParents.value.map((row) =>
+        row.id === rowId ? { ...row, artistId } : row,
+      ),
+    );
+  };
+
+  const setRelatedParentRelation = (
+    rowId: string,
+    relation: FormRelatedItemRelation,
+  ) => {
+    setFieldValue("relatedParents", (prev) =>
+      prev.relatedParents.value.map((row) =>
+        row.id === rowId ? { ...row, relation } : row,
+      ),
+    );
+  };
+
+  const clearRelatedParentRowFeedback = (rowId: string) => {
+    setField("relatedParents", (prev) => ({
+      ...prev.relatedParents,
+      errors: omitProperty(prev.relatedParents.errors, rowId),
+      notifications: [],
+    }));
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -188,6 +241,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
       type: validateField("type"),
       partOfQueenFamily: validateField("partOfQueenFamily"),
       altNames: validateField("altNames"),
+      relatedParents: validateField("relatedParents"),
     };
 
     const formIsValid = Object.values(validationResults).every(
@@ -221,6 +275,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
       type: { value: typeValue },
       partOfQueenFamily: { value: partOfQueenFamily },
       altNames: { value: altNames },
+      relatedParents: { value: relatedArtists },
     } = form;
 
     setIsSubmitting(true);
@@ -232,6 +287,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
       type: typeValue,
       partOfQueenFamily,
       altNames,
+      relatedArtists,
     });
 
     const savePromise = isCreateMode
@@ -304,7 +360,10 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
 
   return (
     <div>
-      <form className="flex max-w-2xl flex-col gap-4" onSubmit={handleSubmit}>
+      <form
+        className="box-border rounded-xl border border-black/20 bg-white px-5 py-4 shadow-sm"
+        onSubmit={handleSubmit}
+      >
         <div className="flex flex-col gap-1">
           <label htmlFor="upsert-artist-name" className="font-medium">
             Name
@@ -334,6 +393,8 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
             notifications={nameNotifications}
           />
         </div>
+
+        <FormSectionsDivider />
 
         <div className="flex flex-col gap-1">
           <label
@@ -366,6 +427,8 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
           />
         </div>
 
+        <FormSectionsDivider />
+
         <div className="flex flex-col gap-1">
           <label htmlFor="upsert-artist-type" className="font-medium">
             Type
@@ -390,6 +453,8 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
           </select>
         </div>
 
+        <FormSectionsDivider />
+
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -403,6 +468,8 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
           />
           <span>Part of Queen family</span>
         </label>
+
+        <FormSectionsDivider />
 
         <div>
           <h2 className="mb-3 text-base leading-snug font-semibold">
@@ -473,6 +540,31 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
             Add alternative name
           </button>
         </div>
+
+        <FormSectionsDivider />
+
+        <ArtistUpsertRelatedArtistsSection
+          relatedArtists={form.relatedParents.value}
+          errors={form.relatedParents.errors}
+          notifications={form.relatedParents.notifications}
+          onChangeArtistId={(rowId, artistId) => {
+            setRelatedParentArtistId(rowId, artistId);
+            clearRelatedParentRowFeedback(rowId);
+          }}
+          onChangeRelation={(rowId, relation) => {
+            setRelatedParentRelation(rowId, relation);
+            clearRelatedParentRowFeedback(rowId);
+          }}
+          onAddRow={addRelatedParentRow}
+          onRemoveRow={removeRelatedParentRow}
+          onFocus={(rowId) => {
+            setShowSubmissionValidationError(false);
+            clearRelatedParentRowFeedback(rowId);
+          }}
+          onBlur={() => {
+            onBlur("relatedParents");
+          }}
+        />
 
         {showSubmissionValidationError && (
           <p className="m-0 text-[0.85em] text-[#b42318]" role="alert">

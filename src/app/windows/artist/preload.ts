@@ -8,12 +8,14 @@ import {
   FETCH_TAGS,
   GET_ARTIST_BY_ID,
   UPDATE_ARTIST,
+  OPEN_ARTIST_WINDOW,
   OPEN_ENTRY_WINDOW,
   SEARCH_ARTIST_ENTRIES,
 } from "@/appConstants/ipcEvents";
 import type { DbSource } from "@/db/db-source";
 import type { UpdateArtistInput } from "@/types/artists";
 import type {
+  CreateArtistWindowParams,
   CreateEntryWindowParams,
   CreateMusicalEntryInput,
   SearchArtistEntriesParams,
@@ -35,6 +37,8 @@ const api = {
     ipcRenderer.invoke(CREATE_MUSICAL_ENTRY, input, dbSource),
   openNewEntryWindow: (params: CreateEntryWindowParams) =>
     ipcRenderer.send(OPEN_ENTRY_WINDOW, params),
+  openNewArtistWindow: (params: CreateArtistWindowParams) =>
+    ipcRenderer.send(OPEN_ARTIST_WINDOW, params),
 } as const satisfies API;
 
 contextBridge.exposeInMainWorld("api", api);

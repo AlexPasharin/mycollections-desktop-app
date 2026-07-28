@@ -1,7 +1,10 @@
 import { sql, type Kysely } from "kysely";
 
+import { fetchRelatedArtists } from "./relatedArtists";
+
 import { dbClient } from "../client/kysely";
 
+import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
 import type {
   ArtistAltNameInfo,
   ArtistByIdResult,
@@ -46,7 +49,20 @@ export const fetchArtistByIdResult = async (
     .groupBy(artistTableFields)
     .executeTakeFirst();
 
-  return artist;
+  if (!artist) {
+    return artist;
+  }
+
+  const [parentArtists, childArtists] = await Promise.all([
+    fetchRelatedArtists(db, artistId, PARENT_RELATION),
+    fetchRelatedArtists(db, artistId, CHILD_RELATION),
+  ]);
+
+  return {
+    ...artist,
+    parentArtists,
+    childArtists,
+  };
 };
 
 export const getArtistById: GetArtistById = (artistId, dbSource) =>

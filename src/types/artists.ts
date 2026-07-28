@@ -1,5 +1,7 @@
 import type { Insertable, Updateable } from "kysely";
 
+import type { RelatedItemRelation } from "./common";
+
 import type { DbSource } from "@/db/db-source";
 import type { Artist, ArtistType } from "@/types/db/database";
 
@@ -47,6 +49,11 @@ export type ArtistAltNameInfo = {
   name: string;
 };
 
+export type RelatedArtistItem = {
+  artistId: string;
+  name: string;
+};
+
 export type ArtistByIdResult = {
   artistId: string;
   name: string;
@@ -54,6 +61,8 @@ export type ArtistByIdResult = {
   type: ArtistType;
   partOfQueenFamily: boolean;
   altNames: ArtistAltNameInfo[];
+  parentArtists: RelatedArtistItem[];
+  childArtists: RelatedArtistItem[];
 };
 
 export type GetArtistById = (
@@ -66,10 +75,16 @@ export type ArtistAltNameInput = {
   name: string;
 };
 
+export type ArtistRelatedArtistInput = {
+  relatedArtistId: string;
+  relation: RelatedItemRelation;
+};
+
 export type UpdateArtistInput = {
   artistId: string;
   artist: Omit<Updateable<Artist>, "artistId">;
   altNames: ArtistAltNameInput[];
+  relatedArtists: ArtistRelatedArtistInput[];
 };
 
 export type UpdateArtist = (
@@ -80,6 +95,7 @@ export type UpdateArtist = (
 export type CreateArtistInput = {
   artist: Insertable<Artist>;
   altNames: ArtistAltNameInput[];
+  relatedArtists: ArtistRelatedArtistInput[];
 };
 
 export type CreateArtist = (

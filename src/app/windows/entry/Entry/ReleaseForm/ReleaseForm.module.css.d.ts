@@ -14,8 +14,6 @@ interface CssExports {
   'printedInCountriesCta': string;
   'requiredMark': string;
   'section': string;
-  'sectionDivider': string;
-  'sectionDividerMoreSpaceBefore': string;
   'submissionError': string;
   'submitButton': string;
   'textarea': string;

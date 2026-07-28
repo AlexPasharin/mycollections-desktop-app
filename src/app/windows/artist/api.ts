@@ -1,5 +1,6 @@
 import type { GetArtistById, UpdateArtist } from "@/types/artists";
 import type {
+  CreateArtistWindowParams,
   CreateEntryWindowParams,
   CreateMusicalEntry,
   SearchArtistEntries,
@@ -15,6 +16,7 @@ export type API = {
   fetchEntryTypes: FetchEntryTypes;
   createMusicalEntry: CreateMusicalEntry;
   openNewEntryWindow: (params: CreateEntryWindowParams) => void;
+  openNewArtistWindow: (params: CreateArtistWindowParams) => void;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access

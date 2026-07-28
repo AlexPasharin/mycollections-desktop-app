@@ -11,17 +11,6 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.sectionDivider {
-  border: none;
-  border-top: 1px solid rgba(0, 0, 0, 0.26);
-  margin: 0.9rem 0;
-}
-
-/* Extra gap above the line (after release version / after release date). */
-.sectionDividerMoreSpaceBefore {
-  margin-top: 1.75rem;
-}
-
 .heading {
   font-size: 1em;
   font-weight: 600;
