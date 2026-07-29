@@ -1,7 +1,5 @@
 import { type FC } from "react";
 
-import styles from "./EntryArtists.module.css";
-
 import type { EntryArtistInfo } from "@/types/entries";
 
 type EntryArtistsProps = {
@@ -15,19 +13,23 @@ const EntryArtists: FC<EntryArtistsProps> = ({ artists }) => {
   );
 
   return (
-    <div className={styles.field}>
+    <div className="mb-2 text-[0.95em]">
       {artists.length === 0 ? (
-        <p className={styles.emptyNote}>
+        <p className="m-0 italic">
           (Entry has no artists, please update database)
         </p>
       ) : (
         <>
-          <span className={styles.fieldLabel}>By</span>
+          <span className="mb-1 inline-block font-semibold">By</span>
           {mainArtist && (
-            <p className={styles.mainArtist}>{mainArtist.artistName}</p>
+            <p className="m-0 p-0 text-[1.12em] leading-[1.25] font-bold tracking-[0.01em]">
+              {mainArtist.artistName}
+            </p>
           )}
           {otherArtists.length > 0 && (
-            <ul className={styles.artistsList}>
+            <ul
+              className={`list-none pl-0 ${mainArtist ? "mt-[0.45rem]" : "mt-0"}`}
+            >
               {otherArtists.map((a) => (
                 <li key={`${a.artistId}-${a.artistName}`}>
                   {!!mainArtist && `also featuring: `}
