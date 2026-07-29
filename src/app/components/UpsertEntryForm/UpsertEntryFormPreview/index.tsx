@@ -4,7 +4,7 @@ import type { UpsertEntryFormDraft } from "../upsertEntryFormUtils/formValues";
 
 import FormPreviewField, {
   FormPreviewBlockField,
-} from "@/app/components/FormPreviewField";
+} from "@/app/components/Form/FormPreviewField";
 import type { EntryTypeListItem } from "@/types/entryTypes";
 import type { TagListItem } from "@/types/tags";
 import { nullIfEmpty } from "@/utils/common";

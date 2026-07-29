@@ -2,7 +2,7 @@ import type { FC } from "react";
 
 import api from "../../api";
 
-import ArtistListElement from "@/app/components/Artist";
+import ArtistListElement from "@/app/components/ArtistListElement";
 import type { DbSource } from "@/db/db-source";
 import type { QueriedArtist } from "@/types/artists";
 
