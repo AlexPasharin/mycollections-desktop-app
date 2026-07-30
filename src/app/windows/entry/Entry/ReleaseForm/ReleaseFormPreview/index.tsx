@@ -11,7 +11,7 @@ import {
 
 import FormPreviewField, {
   FormPreviewBlockField,
-} from "@/app/components/FormPreviewField";
+} from "@/app/components/Form/FormPreviewField";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { TagListItem } from "@/types/tags";
 import { nullIfEmpty } from "@/utils/common";

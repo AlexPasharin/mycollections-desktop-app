@@ -4,7 +4,7 @@ import { type ArtistUpsertFormDraft } from "../artistUpsertFormUtils/formValues"
 
 import FormPreviewField, {
   FormPreviewBlockField,
-} from "@/app/components/FormPreviewField";
+} from "@/app/components/Form/FormPreviewField";
 import { formatArtistTypeLabel } from "@/utils/artist";
 import { nullIfEmpty } from "@/utils/common";
 import { orPlaceholder } from "@/utils/form";
