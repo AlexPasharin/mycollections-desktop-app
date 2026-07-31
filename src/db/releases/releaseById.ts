@@ -147,7 +147,9 @@ const getReleaseCountries = (
 /** Parses and validates release catalogue numbers JSON
  * On success returns the validated value; on failure returns the raw JSON and an error message.
  */
-const getReleaseCatNumbers = (catalogueNumbers: unknown) => {
+const getReleaseCatNumbers = (
+  catalogueNumbers: unknown,
+): ReleaseByIdResult["catalogueNumbers"] => {
   const validation = releaseCatNumbersSchema.safeParse(catalogueNumbers);
 
   if (!validation.success) {
@@ -164,7 +166,9 @@ const getReleaseCatNumbers = (catalogueNumbers: unknown) => {
 /** Parses and validates release matrix / runout JSON
  * On success returns the validated value; on failure returns the raw JSON and an error message.
  */
-const getReleaseMatrixRunout = (matrixRunout: unknown) => {
+const getReleaseMatrixRunout = (
+  matrixRunout: unknown,
+): ReleaseByIdResult["matrixRunout"] => {
   const validation = releaseMatrixRunoutSchema.safeParse(matrixRunout);
 
   if (!validation.success) {

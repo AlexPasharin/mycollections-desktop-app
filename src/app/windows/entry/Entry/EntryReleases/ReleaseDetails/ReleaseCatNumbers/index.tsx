@@ -7,10 +7,13 @@ import { DetailField } from "../DetailField";
 import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
 import type { ReleaseByIdResult } from "@/types/releases";
 import { joinStringOrArray } from "@/utils/common";
-import type {
-  CatNumbersNested,
-  CatNumbersProperty,
-  ReleaseCatNumbersSingle,
+import {
+  isReleaseCatNumbersFormatKeysCase,
+  type CatNumbersNested,
+  type CatNumbersProperty,
+  type ReleaseCatNumbersStandardKeysCase,
+  type ReleaseCatNumbersFormatKeysCase,
+  type ReleaseCatNumbersSingle,
 } from "@/validation";
 
 type ReleaseCatNumbersProps = {
@@ -39,10 +42,18 @@ type CatalogueNumbersDisplayed = Exclude<
   null
 >;
 
+const isCatNumbersJsonParsingError = (
+  value: CatalogueNumbersDisplayed,
+): value is Extract<CatalogueNumbersDisplayed, { rawJson: unknown }> =>
+  !Array.isArray(value) &&
+  !isReleaseCatNumbersFormatKeysCase(value) &&
+  "rawJson" in value &&
+  "error" in value;
+
 const ReleaseCatNumbersInner: FC<{
   catalogueNumbers: CatalogueNumbersDisplayed;
 }> = ({ catalogueNumbers }) => {
-  if ("rawJson" in catalogueNumbers) {
+  if (isCatNumbersJsonParsingError(catalogueNumbers)) {
     return (
       <DataWithErrorDisplay
         value={catalogueNumbers.rawJson}
@@ -51,10 +62,33 @@ const ReleaseCatNumbersInner: FC<{
     );
   }
 
-  if (Array.isArray(catalogueNumbers)) {
+  if (isReleaseCatNumbersFormatKeysCase(catalogueNumbers)) {
+    return <FormatKeysCaseBlock value={catalogueNumbers} />;
+  }
+
+  return <StandardCatNumbersShapeBlock value={catalogueNumbers} />;
+};
+
+const FormatKeysCaseBlock: FC<{ value: ReleaseCatNumbersFormatKeysCase }> = ({
+  value,
+}) => (
+  <div className={styles.catNumbersCompound}>
+    {Object.entries(value).map(([formatKey, formatValue]) => (
+      <div key={formatKey}>
+        <span className={styles.detailLabel}>{formatKey}: </span>
+        <StandardCatNumbersShapeBlock value={formatValue} />
+      </div>
+    ))}
+  </div>
+);
+
+const StandardCatNumbersShapeBlock: FC<{
+  value: ReleaseCatNumbersStandardKeysCase;
+}> = ({ value }) => {
+  if (Array.isArray(value)) {
     return (
       <ul className={styles.entriesList}>
-        {catalogueNumbers.map((entry, index) => (
+        {value.map((entry, index) => (
           <li key={index} className={styles.entryItem}>
             <CatNumbersSingle value={entry} />
           </li>
@@ -63,7 +97,7 @@ const ReleaseCatNumbersInner: FC<{
     );
   }
 
-  return <CatNumbersSingle value={catalogueNumbers} />;
+  return <CatNumbersSingle value={value} />;
 };
 
 const CatNumbersSingle: FC<{ value: ReleaseCatNumbersSingle }> = ({

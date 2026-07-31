@@ -38,6 +38,7 @@ import {
   validateReleaseDate,
   validateRequiredTrimmedText,
   type CatNumbersProperty,
+  isReleaseCatNumbersFormatKeysCase,
   type ReleaseCatNumbersSingle,
 } from "@/validation";
 
@@ -296,7 +297,7 @@ export const initialReleaseFormStateValue = ({
       notifications: [],
     },
     catalogueNumbers: {
-      value: catNumbersToFormValue(releaseBlueprint?.catalogueNumbers),
+      value: catNumbersToFormValue(releaseBlueprint?.catalogueNumbers, mode),
       valid: true,
       validationFn: validateReleaseCatNumbers,
       errors: initialReleaseFormFieldErrors.catalogueNumbers,
@@ -496,12 +497,14 @@ const formatsToFormValue = (
 
 const catNumbersToFormValue = (
   catalogueNumbers: ReleaseByIdResult["catalogueNumbers"] | undefined,
+  mode: ReleaseFormTabSharedData["mode"],
 ): ReleaseFormCatNumbersInputs => {
   if (
     catalogueNumbers == null ||
-    isCatNumbersJsonParsingError(catalogueNumbers)
+    isCatNumbersJsonParsingError(catalogueNumbers) ||
+    isReleaseCatNumbersFormatKeysCase(catalogueNumbers)
   ) {
-    return [defaultCatalogueNumberRow()];
+    return mode === "update" ? [] : [defaultCatalogueNumberRow()];
   }
 
   const singles = Array.isArray(catalogueNumbers)
