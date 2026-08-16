@@ -1,5 +1,5 @@
 import type {
-  ReleaseFormCatNumbersInputs,
+  ReleaseFormCatNumbersDraft,
   ReleaseFormCountries,
   ReleaseFormEntry,
   ReleaseFormFormatInputs,
@@ -9,10 +9,14 @@ import type {
   CatalogueNumberRowState,
   CountrySelectionInput,
 } from "./formValues";
+import { parseReleaseCatNumbersJsonInput } from "./validation/catalogueNumbersJsonInput";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { RelatedItemRelation } from "@/types/common";
-import type { MusicalReleaseRelatedReleaseInput } from "@/types/releases";
+import type {
+  MusicalReleaseRelatedReleaseInput,
+  ReleaseByIdResultCatalogueNumbers,
+} from "@/types/releases";
 import type { TagId } from "@/types/tags";
 import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
@@ -24,7 +28,7 @@ type ToUpsertMusicalReleaseInputArgs = {
   discogsUrl: string;
   countries: ReleaseFormCountries;
   formats: ReleaseFormFormatInputs;
-  catalogueNumbers: ReleaseFormCatNumbersInputs;
+  catalogueNumbers: ReleaseFormCatNumbersDraft;
   matrixRunout: ReleaseFormMatrixRunoutDraft;
   selectedTags: Set<TagId>;
   partOfQueenCollection: boolean;
@@ -136,24 +140,21 @@ const toCodeNamesJson = (
 ): string | string[] | null =>
   singleOrArrayOrNull(rows.map((row) => row.codeName));
 
-/**
- * Maps the form's catalogue-number rows to the jsonb shape: `null` when there
- * are no rows (or every row is empty), a single object for one row, or an
- * array for many. Each row picks `label` / `labels` keys based on count, and
- * its cat-number side is shaped by `row.shape`:
- *
- * - "flat" rows pick `cat_number` / `cat_numbers: string | string[]`, omitting
- *   the cat-number side entirely when no values are filled in;
- * - "europeUk" rows always emit `cat_numbers: { "in Europe", "in UK" }` (both
- *   sides guaranteed non-empty by the validator).
- *
- * Rows that would produce `{}` are dropped. The form does not produce the
- * CD/slipcase nested variant.
- */
-export const toReleaseCatNumbersJson = (rows: ReleaseFormCatNumbersInputs) =>
-  singleOrArrayOrNull(
-    rows.map(catNumberRowToJson).filter((row) => Object.keys(row).length > 0),
+export const toReleaseCatNumbersJson = (
+  draft: ReleaseFormCatNumbersDraft,
+):
+  | Extract<ReleaseByIdResultCatalogueNumbers, { type: string }>["value"]
+  | null => {
+  if (draft.activeTab === "json") {
+    return parseReleaseCatNumbersJsonInput(draft.value)?.value ?? null;
+  }
+
+  return singleOrArrayOrNull(
+    draft.rows
+      .map(catNumberRowToJson)
+      .filter((row) => Object.keys(row).length > 0),
   );
+};
 
 const catNumberRowToJson = (row: CatalogueNumberRowState) => {
   const labels = collectNonEmptyValues(
@@ -179,14 +180,8 @@ const catNumberRowToJson = (row: CatalogueNumberRowState) => {
     row.ukCatalogueNumberInputValues.map((entry) => entry.value),
   );
 
-  const europeJson = singleOrArrayOrNull(europe);
-  const ukJson = singleOrArrayOrNull(uk);
-
-  if (europeJson === null || ukJson === null) {
-    // Validator forbids this; falling back to labels-only keeps the row
-    // structurally valid against the DB schema if it somehow slips through.
-    return labelEntry;
-  }
+  const europeJson = singleOrArrayOrNull(europe) ?? [];
+  const ukJson = singleOrArrayOrNull(uk) ?? [];
 
   return {
     ...labelEntry,

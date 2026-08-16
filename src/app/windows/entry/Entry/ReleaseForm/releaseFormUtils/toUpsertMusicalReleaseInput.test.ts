@@ -1,6 +1,7 @@
 import type {
   CatalogueNumberRowState,
   CountrySelectionInput,
+  ReleaseFormCatNumbersDraft,
 } from "./formValues";
 import {
   toReleaseCatNumbersJson,
@@ -11,6 +12,16 @@ const country = (codeName: string): CountrySelectionInput => ({
   id: codeName || "empty",
   codeName,
 });
+
+const rowsDraft = (
+  rows: CatalogueNumberRowState[],
+): ReleaseFormCatNumbersDraft => ({
+  activeTab: "rows",
+  rows,
+});
+
+const catNumbersFromRows = (rows: CatalogueNumberRowState[]) =>
+  toReleaseCatNumbersJson(rowsDraft(rows));
 
 const catNumberRow = (
   labels: string[],
@@ -127,15 +138,13 @@ describe("toReleaseCountriesJson", () => {
   });
 });
 
-describe("toReleaseCatNumbersJson", () => {
+describe("catNumbersFromRows", () => {
   it("returns null when there are no rows", () => {
-    expect(toReleaseCatNumbersJson([])).toBeNull();
+    expect(catNumbersFromRows([])).toBeNull();
   });
 
   it("returns a single object for one row with one label and one cat number", () => {
-    expect(
-      toReleaseCatNumbersJson([catNumberRow(["EMI"], ["EMC 3001"])]),
-    ).toEqual({
+    expect(catNumbersFromRows([catNumberRow(["EMI"], ["EMC 3001"])])).toEqual({
       label: "EMI",
       cat_number: "EMC 3001",
     });
@@ -143,7 +152,7 @@ describe("toReleaseCatNumbersJson", () => {
 
   it("uses plural keys when a single row has multiple labels and cat numbers", () => {
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         catNumberRow(["EMI", "Parlophone"], ["EMC 3001", "PCS 7066"]),
       ]),
     ).toEqual({
@@ -154,18 +163,14 @@ describe("toReleaseCatNumbersJson", () => {
 
   it("mixes singular and plural keys independently per side", () => {
     expect(
-      toReleaseCatNumbersJson([
-        catNumberRow(["EMI", "Parlophone"], ["EMC 3001"]),
-      ]),
+      catNumbersFromRows([catNumberRow(["EMI", "Parlophone"], ["EMC 3001"])]),
     ).toEqual({
       labels: ["EMI", "Parlophone"],
       cat_number: "EMC 3001",
     });
 
     expect(
-      toReleaseCatNumbersJson([
-        catNumberRow(["EMI"], ["EMC 3001", "PCS 7066"]),
-      ]),
+      catNumbersFromRows([catNumberRow(["EMI"], ["EMC 3001", "PCS 7066"])]),
     ).toEqual({
       label: "EMI",
       cat_numbers: ["EMC 3001", "PCS 7066"],
@@ -173,49 +178,49 @@ describe("toReleaseCatNumbersJson", () => {
   });
 
   it("omits the label side when a row has no labels", () => {
-    expect(toReleaseCatNumbersJson([catNumberRow([], ["EMC 3001"])])).toEqual({
+    expect(catNumbersFromRows([catNumberRow([], ["EMC 3001"])])).toEqual({
       cat_number: "EMC 3001",
     });
   });
 
   it("omits the label side when a row has no labels but multiple cat numbers", () => {
     expect(
-      toReleaseCatNumbersJson([catNumberRow([], ["EMC 3001", "PCS 7066"])]),
+      catNumbersFromRows([catNumberRow([], ["EMC 3001", "PCS 7066"])]),
     ).toEqual({ cat_numbers: ["EMC 3001", "PCS 7066"] });
   });
 
   it("omits the cat-number side when a row has no cat numbers", () => {
-    expect(toReleaseCatNumbersJson([catNumberRow(["EMI"], [])])).toEqual({
+    expect(catNumbersFromRows([catNumberRow(["EMI"], [])])).toEqual({
       label: "EMI",
     });
   });
 
   it("omits the cat-number side when a row has no cat numbers but multiple labels", () => {
     expect(
-      toReleaseCatNumbersJson([catNumberRow(["EMI", "Parlophone"], [])]),
+      catNumbersFromRows([catNumberRow(["EMI", "Parlophone"], [])]),
     ).toEqual({ labels: ["EMI", "Parlophone"] });
   });
 
   it("returns null for a single row with no labels and no cat numbers", () => {
-    expect(toReleaseCatNumbersJson([catNumberRow([], [])])).toBeNull();
+    expect(catNumbersFromRows([catNumberRow([], [])])).toBeNull();
   });
 
   it("returns null when every row is empty", () => {
     expect(
-      toReleaseCatNumbersJson([catNumberRow([], []), catNumberRow([], [])]),
+      catNumbersFromRows([catNumberRow([], []), catNumberRow([], [])]),
     ).toBeNull();
   });
 
   it("drops empty rows when mixed with non-empty ones", () => {
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         catNumberRow([], []),
         catNumberRow(["EMI"], ["EMC 3001"]),
       ]),
     ).toEqual({ label: "EMI", cat_number: "EMC 3001" });
 
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         catNumberRow(["EMI"], ["EMC 3001"]),
         catNumberRow([], []),
         catNumberRow(["Parlophone"], ["PCS 7066"]),
@@ -228,7 +233,7 @@ describe("toReleaseCatNumbersJson", () => {
 
   it("returns an array of objects when there are multiple rows", () => {
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         catNumberRow(["EMI"], ["EMC 3001"]),
         catNumberRow(["Parlophone"], ["PCS 7066"]),
       ]),
@@ -240,7 +245,7 @@ describe("toReleaseCatNumbersJson", () => {
 
   it("picks singular and plural keys per row independently across rows", () => {
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         catNumberRow(["EMI", "Parlophone"], ["EMC 3001", "PCS 7066"]),
         catNumberRow(["Capitol"], ["SMAS 11163"]),
       ]),
@@ -255,7 +260,7 @@ describe("toReleaseCatNumbersJson", () => {
 
   it("supports rows with only labels or only cat numbers in a multi-row result", () => {
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         catNumberRow(["EMI", "Parlophone"], []),
         catNumberRow([], ["EMC 3001", "PCS 7066"]),
         catNumberRow(["Capitol"], ["SMAS 11163"]),
@@ -269,7 +274,7 @@ describe("toReleaseCatNumbersJson", () => {
 
   it("supports mixed singular and plural sides across rows", () => {
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         catNumberRow(["EMI", "Parlophone"], ["EMC 3001"]),
         catNumberRow(["Capitol"], ["SMAS 11163", "ST 11163"]),
       ]),
@@ -281,7 +286,7 @@ describe("toReleaseCatNumbersJson", () => {
 
   it("preserves the order of rows", () => {
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         catNumberRow(["B"], ["2"]),
         catNumberRow(["A"], ["1"]),
         catNumberRow(["C"], ["3"]),
@@ -294,32 +299,30 @@ describe("toReleaseCatNumbersJson", () => {
   });
 
   it("drops empty-string label inputs while keeping filled cat numbers", () => {
-    expect(toReleaseCatNumbersJson([catNumberRow([""], ["EMC 3001"])])).toEqual(
-      { cat_number: "EMC 3001" },
-    );
+    expect(catNumbersFromRows([catNumberRow([""], ["EMC 3001"])])).toEqual({
+      cat_number: "EMC 3001",
+    });
   });
 
   it("drops empty-string catalogue-number inputs while keeping filled labels", () => {
-    expect(toReleaseCatNumbersJson([catNumberRow(["EMI"], [""])])).toEqual({
+    expect(catNumbersFromRows([catNumberRow(["EMI"], [""])])).toEqual({
       label: "EMI",
     });
   });
 
   it("trims values and skips entries that are whitespace-only", () => {
     expect(
-      toReleaseCatNumbersJson([
-        catNumberRow(["  EMI  ", "   "], ["EMC 3001", " "]),
-      ]),
+      catNumbersFromRows([catNumberRow(["  EMI  ", "   "], ["EMC 3001", " "])]),
     ).toEqual({ label: "EMI", cat_number: "EMC 3001" });
   });
 
   it("drops a row whose inputs are all empty strings", () => {
-    expect(toReleaseCatNumbersJson([catNumberRow([""], [""])])).toBeNull();
+    expect(catNumbersFromRows([catNumberRow([""], [""])])).toBeNull();
   });
 
   it("preserves the order of labels and cat numbers within a row", () => {
     expect(
-      toReleaseCatNumbersJson([catNumberRow(["C", "A", "B"], ["3", "1", "2"])]),
+      catNumbersFromRows([catNumberRow(["C", "A", "B"], ["3", "1", "2"])]),
     ).toEqual({
       labels: ["C", "A", "B"],
       cat_numbers: ["3", "1", "2"],
@@ -328,7 +331,7 @@ describe("toReleaseCatNumbersJson", () => {
 
   it("emits cat_numbers as an in-Europe/in-UK object for a single europeUk row with one value per side", () => {
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         europeUkCatNumberRow(["EMI"], ["EMC 3001"], ["PCS 7066"]),
       ]),
     ).toEqual({
@@ -339,7 +342,7 @@ describe("toReleaseCatNumbersJson", () => {
 
   it("uses arrays inside the in-Europe/in-UK object when a side has multiple values", () => {
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         europeUkCatNumberRow(
           ["EMI", "Parlophone"],
           ["EMC 3001", "EMC 3002"],
@@ -357,7 +360,7 @@ describe("toReleaseCatNumbersJson", () => {
 
   it("mixes a single value on one side and multiple on the other inside the regions object", () => {
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         europeUkCatNumberRow(["EMI"], ["EMC 3001"], ["PCS 7066", "PCS 7067"]),
       ]),
     ).toEqual({
@@ -371,7 +374,7 @@ describe("toReleaseCatNumbersJson", () => {
 
   it("omits the label side of a europeUk row when there are no labels", () => {
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         europeUkCatNumberRow([], ["EMC 3001"], ["PCS 7066"]),
       ]),
     ).toEqual({
@@ -381,7 +384,7 @@ describe("toReleaseCatNumbersJson", () => {
 
   it("supports mixing flat and europeUk rows in the same submission", () => {
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         catNumberRow(["Capitol"], ["SMAS 11163"]),
         europeUkCatNumberRow(["EMI"], ["EMC 3001"], ["PCS 7066"]),
       ]),
@@ -396,7 +399,7 @@ describe("toReleaseCatNumbersJson", () => {
 
   it("preserves order across mixed flat and europeUk rows", () => {
     expect(
-      toReleaseCatNumbersJson([
+      catNumbersFromRows([
         europeUkCatNumberRow(["EMI"], ["EMC 3001"], ["PCS 7066"]),
         catNumberRow(["Capitol"], ["SMAS 11163"]),
         europeUkCatNumberRow(

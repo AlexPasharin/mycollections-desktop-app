@@ -4,10 +4,8 @@ import EntryArtists from "./EntryArtists";
 import EntryDetailsPanel from "./EntryDetailsPanel";
 import EntryReleases from "./EntryReleases";
 import ReleaseForm from "./ReleaseForm";
-import {
-  type ReleaseFormState,
-  type ReleaseFormTabSharedData,
-} from "./ReleaseForm/releaseFormUtils/formValues";
+import { type ReleaseFormState } from "./ReleaseForm/releaseFormUtils/formValues";
+import type { ReleaseFormTabSharedData } from "./types";
 
 import FeedbackSection from "@/app/components/FeedbackSection";
 import Tabs from "@/app/components/Tabs";

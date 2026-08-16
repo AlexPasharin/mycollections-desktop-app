@@ -2,19 +2,12 @@ import type { FC } from "react";
 
 import styles from "./ReleaseCatNumbers.module.css";
 
-import { DetailField } from "../DetailField";
-
 import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
-import type { ReleaseByIdResult } from "@/types/releases";
+import type { ReleaseByIdResultCatalogueNumbers } from "@/types/releases";
 import { joinStringOrArray } from "@/utils/common";
-import type {
-  CatNumbersNested,
-  CatNumbersProperty,
-  ReleaseCatNumbersSingle,
-} from "@/validation";
 
 type ReleaseCatNumbersProps = {
-  catalogueNumbers: ReleaseByIdResult["catalogueNumbers"];
+  catalogueNumbers: ReleaseByIdResultCatalogueNumbers;
 };
 
 const ReleaseCatNumbers: FC<ReleaseCatNumbersProps> = ({
@@ -27,119 +20,96 @@ const ReleaseCatNumbers: FC<ReleaseCatNumbersProps> = ({
   return (
     <div className={styles.detailBlock}>
       <span className={styles.detailLabel}>Catalogue numbers:</span>
-      <ReleaseCatNumbersInner catalogueNumbers={catalogueNumbers} />
+      <div
+        className={styles.objectPanel}
+        role="region"
+        aria-label="Catalogue numbers structure"
+      >
+        <ReleaseCatNumbersInner catalogueNumbers={catalogueNumbers} />
+      </div>
     </div>
   );
 };
 
 export default ReleaseCatNumbers;
 
-type CatalogueNumbersDisplayed = Exclude<
-  ReleaseByIdResult["catalogueNumbers"],
-  null
->;
+type ReleaseCatNumberPropertyValue =
+  | string
+  | {
+      [k: string]: ReleaseCatNumberGeneral;
+    };
+
+type ReleaseCatNumberGeneral =
+  | ReleaseCatNumberPropertyValue
+  | ReleaseCatNumberPropertyValue[];
 
 const ReleaseCatNumbersInner: FC<{
-  catalogueNumbers: CatalogueNumbersDisplayed;
+  catalogueNumbers: Exclude<ReleaseByIdResultCatalogueNumbers, null>;
 }> = ({ catalogueNumbers }) => {
-  if ("rawJson" in catalogueNumbers) {
+  if (!("type" in catalogueNumbers)) {
     return (
-      <DataWithErrorDisplay
-        value={catalogueNumbers.rawJson}
-        error={catalogueNumbers.error}
-      />
+      <div className={styles.parseErrorShell}>
+        <DataWithErrorDisplay
+          value={catalogueNumbers.rawJson}
+          error={catalogueNumbers.error}
+        />
+      </div>
     );
   }
 
-  if (Array.isArray(catalogueNumbers)) {
+  return (
+    <ReleaseCatNumbersGeneralBlock value={catalogueNumbers.value} depth={0} />
+  );
+};
+
+const ReleaseCatNumbersGeneralBlock: FC<{
+  value: ReleaseCatNumberGeneral;
+  depth: number;
+}> = ({ value, depth }) => {
+  if (typeof value === "string" || isStringArray(value)) {
+    return <span className={styles.leafValue}>{joinStringOrArray(value)}</span>;
+  }
+
+  if (Array.isArray(value)) {
     return (
       <ul className={styles.entriesList}>
-        {catalogueNumbers.map((entry, index) => (
+        {value.map((entry, index) => (
           <li key={index} className={styles.entryItem}>
-            <CatNumbersSingle value={entry} />
+            <ReleaseCatNumbersGeneralBlock value={entry} depth={depth} />
           </li>
         ))}
       </ul>
     );
   }
 
-  return <CatNumbersSingle value={catalogueNumbers} />;
-};
-
-const CatNumbersSingle: FC<{ value: ReleaseCatNumbersSingle }> = ({
-  value,
-}) => (
-  <div className={styles.catNumbersSingle}>
-    {"label" in value && <DetailField label="Label">{value.label}</DetailField>}
-    {"labels" in value && (
-      <DetailField label="Labels">
-        {joinStringOrArray(value.labels)}
-      </DetailField>
-    )}
-    {"cat_number" in value && (
-      <DetailField label="Cat. number">{value.cat_number}</DetailField>
-    )}
-    {"cat_numbers" in value && (
-      <DetailField label="Cat. numbers">
-        <CatNumbersPropertyBlock value={value.cat_numbers} />
-      </DetailField>
-    )}
-  </div>
-);
-
-const CatNumbersPropertyBlock: FC<{ value: CatNumbersProperty }> = ({
-  value,
-}) => {
-  if (typeof value === "string" || Array.isArray(value)) {
-    return joinStringOrArray(value);
-  }
-
-  if ("in UK" in value) {
-    return (
-      <div className={styles.nestedRegions}>
-        <DetailField label="In Europe">
-          {joinStringOrArray(value["in Europe"])}
-        </DetailField>
-        <DetailField label="In UK">
-          {joinStringOrArray(value["in UK"])}
-        </DetailField>
-      </div>
-    );
-  }
-
-  if ("CD" in value) {
-    const { CD, slipcase } = value;
-
-    return (
-      <div className={styles.catNumbersCompound}>
-        <div>
-          <span className={styles.detailLabel}>CD: </span>
-          <CatNumbersNestedBlock value={CD} />
-        </div>
-        <div>
-          <span className={styles.detailLabel}>Slipcase: </span>
-          <CatNumbersNestedBlock value={slipcase} />
-        </div>
-      </div>
-    );
-  }
-
-  return null;
-};
-
-const CatNumbersNestedBlock: FC<{ value: CatNumbersNested }> = ({ value }) => {
-  if (typeof value === "string" || Array.isArray(value)) {
-    return joinStringOrArray(value);
-  }
+  const objectClassName = depth === 0 ? styles.objectRoot : styles.nestedBlock;
 
   return (
-    <div className={styles.nestedRegions}>
-      <DetailField label="In Europe">
-        {joinStringOrArray(value["in Europe"])}
-      </DetailField>
-      <DetailField label="In UK">
-        {joinStringOrArray(value["in UK"])}
-      </DetailField>
+    <div className={objectClassName}>
+      {Object.entries(value).map(([key, nestedValue]) => (
+        <div key={key} className={styles.kvRow}>
+          <div className={styles.kvKey}>{prettifyCatNumberKey(key)}</div>
+          <div className={styles.kvValue}>
+            <ReleaseCatNumbersGeneralBlock
+              value={nestedValue}
+              depth={depth + 1}
+            />
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
+
+const isStringArray = (value: ReleaseCatNumberGeneral) =>
+  Array.isArray(value) && value.every((item) => typeof item === "string");
+
+const CAT_NUMBER_KEY_LABELS: Record<string, string> = {
+  label: "Label",
+  labels: "Labels",
+  cat_number: "Cat. number",
+  cat_numbers: "Cat. numbers",
+};
+
+const prettifyCatNumberKey = (key: string): string =>
+  CAT_NUMBER_KEY_LABELS[key] ?? key;

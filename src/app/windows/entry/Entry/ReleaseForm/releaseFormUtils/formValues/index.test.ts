@@ -1,10 +1,10 @@
-import {
-  initialReleaseFormStateValue,
-  type ReleaseFormEntry,
-} from "./formValues";
-import { toReleaseCountriesJson } from "./toUpsertMusicalReleaseInput";
+import type { ReleaseFormEntry } from "./entry";
+import { initialReleaseFormStateValue } from "./formState";
+
+import { toReleaseCountriesJson } from "../toUpsertMusicalReleaseInput";
 
 import type { ReleaseByIdResult } from "@/types/releases";
+import { formatJson } from "@/utils/common";
 
 const entry: ReleaseFormEntry = {
   entryId: "entry-1",
@@ -51,8 +51,11 @@ const release: ReleaseByIdResult = {
     "printed in": "DE",
   },
   catalogueNumbers: {
-    label: "EMI",
-    cat_number: "EMC 1234",
+    value: {
+      label: "EMI",
+      cat_number: "EMC 1234",
+    },
+    type: "simple",
   },
   matrixRunout: { SideA: "ABC-1", SideB: "ABC-2" },
   comment: "Nice copy",
@@ -116,7 +119,7 @@ describe("initialReleaseFormStateValue", () => {
       "printed in": "DE",
     });
     expect(draft.matrixRunout.value).toEqual({
-      value: JSON.stringify(release.matrixRunout, null, 4),
+      value: formatJson(release.matrixRunout),
       treatAsText: false,
     });
     expect(draft.relatedReleases.value).toEqual([
@@ -129,5 +132,102 @@ describe("initialReleaseFormStateValue", () => {
         relation: "child",
       }),
     ]);
+    expect(draft.catalogueNumbers.value).toEqual({
+      activeTab: "rows",
+      rows: [
+        expect.objectContaining({
+          shape: "flat",
+          labelInputValues: [expect.objectContaining({ name: "EMI" })],
+          catalogueNumberInputValues: [
+            expect.objectContaining({ value: "EMC 1234" }),
+          ],
+        }),
+      ],
+    });
+  });
+
+  it("locks catalogue numbers to JSON input in update mode for format-keys shape", () => {
+    const draft = initialReleaseFormStateValue({
+      entry,
+      allFormats,
+      allCountries,
+      releaseBlueprint: {
+        ...release,
+        catalogueNumbers: {
+          value: {
+            CD1: { cat_number: "111" },
+            CD2: { cat_number: "222" },
+          },
+          type: "complex",
+        },
+      },
+      mode: "update",
+    });
+
+    expect(draft.catalogueNumbers.value).toEqual({
+      activeTab: "json",
+      value: formatJson({
+        CD1: { cat_number: "111" },
+        CD2: { cat_number: "222" },
+      }),
+    });
+  });
+
+  it("locks catalogue numbers to JSON input in update mode for CD/slipcase shape", () => {
+    const draft = initialReleaseFormStateValue({
+      entry,
+      allFormats,
+      allCountries,
+      releaseBlueprint: {
+        ...release,
+        catalogueNumbers: {
+          value: {
+            label: "EMI",
+            cat_numbers: {
+              CD: "EMCD 1",
+              slipcase: "EMSL 1",
+            },
+          },
+          type: "complex",
+        },
+      },
+      mode: "update",
+    });
+
+    expect(draft.catalogueNumbers.value).toEqual({
+      activeTab: "json",
+      value: formatJson({
+        label: "EMI",
+        cat_numbers: {
+          CD: "EMCD 1",
+          slipcase: "EMSL 1",
+        },
+      }),
+    });
+  });
+
+  it("allows row UI toggle in create mode for format-keys blueprint", () => {
+    const draft = initialReleaseFormStateValue({
+      entry,
+      allFormats,
+      allCountries,
+      releaseBlueprint: {
+        ...release,
+        catalogueNumbers: {
+          value: {
+            CD1: { cat_number: "111" },
+          },
+          type: "complex",
+        },
+      },
+      mode: "create",
+    });
+
+    expect(draft.catalogueNumbers.value).toEqual({
+      activeTab: "json",
+      value: formatJson({
+        CD1: { cat_number: "111" },
+      }),
+    });
   });
 });

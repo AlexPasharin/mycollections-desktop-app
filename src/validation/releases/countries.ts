@@ -1,19 +1,19 @@
 import { z } from "zod";
 
-import { stringOrNonEmptyArraySchema } from "../common";
+import { atLeastOneStringSchema } from "../common";
 
 const countriesObjectSchema = z.strictObject({
-  "made in": stringOrNonEmptyArraySchema,
-  "printed in": stringOrNonEmptyArraySchema,
+  "made in": atLeastOneStringSchema,
+  "printed in": atLeastOneStringSchema,
 });
 
 const countriesBasicSchema = z.union([
-  stringOrNonEmptyArraySchema,
+  atLeastOneStringSchema,
   countriesObjectSchema,
 ]);
 
 const slipcasePropertySchema = z.strictObject({
-  "printed in": stringOrNonEmptyArraySchema,
+  "printed in": atLeastOneStringSchema,
 });
 
 // See documentation/database/validation_functions/release_countries_jsonb_validation.md for documentation on the validation logic
