@@ -1,5 +1,7 @@
 import { core, z } from "zod";
 
+import { checkSequentialStringsSuffixNumberingValidity } from "../common";
+
 const appendChildIssues = (
   ctx: core.$RefinementCtx<unknown>,
   issues: readonly core.$ZodIssue[],
@@ -129,33 +131,6 @@ const validateVinylMatrixRunoutKeys = (vinylCaseKeys: string[]): boolean => {
   return max - min + 1 === distinctCodes.length;
 };
 
-/** Mirrors `check_digital_matrix_runout_keys` postgres function */
-const checkDigitalMatrixRunoutKeys = (keys: string[]): boolean => {
-  if (keys.length === 0) {
-    return true;
-  }
-
-  const numbers = keys.map((k) => {
-    const m = k.match(/^(CD|DVD|BD|4HD_BD)(\d*)$/);
-
-    return m?.[2] ?? "";
-  });
-
-  // if key does not contain a number, it must be a single key
-  if (numbers.some((n) => n === "")) {
-    return keys.length === 1;
-  }
-
-  // otherwise numbers must be sequential, starting from 1, but not just only 1
-  if (numbers.every((n) => n !== "1") || numbers.length === 1) {
-    return false;
-  }
-
-  const max = Math.max(...numbers.map((n) => Number.parseInt(n, 10)));
-
-  return max === numbers.length;
-};
-
 /** Mirrors `validate_digital_keys` postgres function */
 const validateDigitalMatrixRunoutKeys = (
   digitalCaseKeys: string[],
@@ -178,10 +153,10 @@ const validateDigitalMatrixRunoutKeys = (
   }
 
   return (
-    checkDigitalMatrixRunoutKeys(cdKeys) &&
-    checkDigitalMatrixRunoutKeys(dvdKeys) &&
-    checkDigitalMatrixRunoutKeys(bdKeys) &&
-    checkDigitalMatrixRunoutKeys(hdBdKeys)
+    checkSequentialStringsSuffixNumberingValidity(cdKeys) &&
+    checkSequentialStringsSuffixNumberingValidity(dvdKeys) &&
+    checkSequentialStringsSuffixNumberingValidity(bdKeys) &&
+    checkSequentialStringsSuffixNumberingValidity(hdBdKeys)
   );
 };
 

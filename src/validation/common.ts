@@ -59,10 +59,59 @@ export const coercedIntSchema = z.union([
   stringToIntSchema,
 ]);
 
-export const stringOrNonEmptyArraySchema = z.union([
-  z.string(),
-  z.array(z.string()).nonempty(),
+export const nonEmptyStringSchema = z
+  .string()
+  .trim()
+  .min(1, "Must be a non-empty string");
+
+export const nonEmptyStringArraySchema = z
+  .array(nonEmptyStringSchema)
+  .nonempty();
+
+export const atLeastOneStringSchema = z.union([
+  nonEmptyStringSchema,
+  nonEmptyStringArraySchema,
 ]);
 
 export const errorSetToMessages = (set?: Set<string>) =>
   set && set.size > 0 ? Array.from(set, (message) => ({ message })) : undefined;
+
+/** Mirrors `check_numbered_format_keys` postgres function
+ * Checks if the given array of strings represents a valid numbering with respect to number suffixes.
+ * A valid numbering is either a single string without a numeric suffix (e.g. ["CD"]),
+ * or a sequence of two or more strings whose trailing digits run 1..n with no gaps (e.g. ["CD1", "CD2"]).
+ * Use case example: ["CD1", "CD2", "CD3"] is valid; ["CD1"] alone is not.
+ */
+export const checkSequentialStringsSuffixNumberingValidity = (
+  strs: string[],
+): boolean => {
+  if (strs.length === 0) {
+    return true;
+  }
+
+  const numbers = strs.map((k) => {
+    const m = k.match(/(\d+)$/); // extract the longest suffix with digits only, if exists
+
+    return m?.[1] ?? "";
+  });
+
+  // if there is only one string, it must not have a numeric suffix
+  if (strs.length === 1) {
+    return numbers[0] === "";
+  }
+
+  // otherwise all strings must have a numeric suffix
+  if (numbers.some((n) => n === "")) {
+    return false;
+  }
+
+  // one of the suffixes must be 1
+  if (numbers.every((n) => n !== "1")) {
+    return false;
+  }
+
+  // all suffixes must be sequential, starting from 1
+  const max = Math.max(...numbers.map((n) => Number.parseInt(n, 10)));
+
+  return max === numbers.length;
+};

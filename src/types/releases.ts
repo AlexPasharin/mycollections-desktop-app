@@ -59,6 +59,10 @@ export type RelatedReleaseItem = {
   artists: RelatedReleaseArtist[];
 };
 
+export type ReleaseByIdResultCatalogueNumbers =
+  | ReleaseCatNumbers
+  | JsonParsingErrorData;
+
 export type ReleaseByIdResult = Omit<
   Selectable<MusicalRelease>,
   | "countries"
@@ -72,7 +76,7 @@ export type ReleaseByIdResult = Omit<
   formats: ReleaseFormatOfReleaseItem[];
   alternativeName: EntryAltNameInfo | null;
   countries: ReleaseCountries | JsonParsingErrorData;
-  catalogueNumbers: ReleaseCatNumbers | JsonParsingErrorData;
+  catalogueNumbers: ReleaseByIdResultCatalogueNumbers;
   matrixRunout: ReleaseMatrixRunout | JsonParsingErrorData;
   parentReleases: RelatedReleaseItem[];
   childReleases: RelatedReleaseItem[];

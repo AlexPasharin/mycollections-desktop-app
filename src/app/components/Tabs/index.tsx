@@ -11,7 +11,7 @@ export type TabItem<T extends string> = {
 export type TabsProps<T extends string> = {
   ariaLabel: string;
   activeTab: T;
-  onTabChange: (tab: T) => void;
+  onTabChange: (tabId: T) => void;
   tabs: TabItem<T>[];
 };
 
@@ -35,6 +35,7 @@ const Tabs = <T extends string>({
             type="button"
             id={tab.tabId}
             role="tab"
+            disabled={isActive}
             aria-selected={isActive}
             aria-controls={tab.panelId}
             className={
@@ -42,7 +43,11 @@ const Tabs = <T extends string>({
                 ? `${tabBaseClassName} border-b-[currentColor] font-semibold text-[#111]`
                 : `${tabBaseClassName} border-b-transparent [font-weight:inherit]`
             }
-            onClick={() => onTabChange(tab.id)}
+            onClick={() => {
+              if (!isActive) {
+                onTabChange(tab.id);
+              }
+            }}
           >
             {tab.label}
           </button>

@@ -62,8 +62,8 @@ export const duplicateIndicesByKey = <T, K extends keyof T>(
   return indicesOfDuplicates;
 };
 
-export const flattenStringOrArray = (value: string | string[]): string[] =>
-  typeof value === "string" ? [value] : value;
+export const valueToArray = <T>(value: T | T[]): T[] =>
+  Array.isArray(value) ? value : [value];
 
 export const joinStringOrArray = (value: string | string[]): string =>
   Array.isArray(value) ? value.join(", ") : value;
@@ -97,3 +97,6 @@ export const matchesTrimmedCaseInsensitiveSubstring = (
   text: string,
   query: string,
 ): boolean => text.toLowerCase().includes(query.trim().toLowerCase());
+
+export const isObject = (value: unknown) =>
+  typeof value === "object" && value !== null;

@@ -1,9 +1,10 @@
-import { parse as parseYaml } from "yaml";
 import { z } from "zod";
 
 import type { ReleaseFormMatrixRunoutDraft } from "../formValues";
 
 import type { FormFieldValidationResult } from "@/types/form";
+import { formatJson } from "@/utils/common";
+import { parseYAML } from "@/utils/parsing";
 import { releaseMatrixRunoutSchema } from "@/validation";
 
 export const validateReleaseMatrixRunout = (
@@ -33,7 +34,7 @@ export const validateReleaseMatrixRunout = (
   let prettifiedNotification: [{ notification: string }] | undefined;
 
   if (isJsonObject) {
-    const prettified = JSON.stringify(parsed, null, 4);
+    const prettified = formatJson(parsed) ?? "";
 
     if (prettified !== value.value) {
       formValue = { ...value, value: prettified };
@@ -81,18 +82,9 @@ const matrixRunoutInputSchema = z
       return value;
     }
 
-    let parsed: unknown;
+    const yamlParsingResult = parseYAML(value);
 
-    try {
-      // YAML requires whitespace after `:` to form a mapping (otherwise `CD:hello`
-      // parses as the plain scalar `"CD:hello"`). For matrix/runout, the user
-      // always wants colons to separate keys from values, so we normalize unquoted
-      // colons before parsing. `failsafe` keeps every unquoted scalar as a string,
-      // so tokens like `null`, `true`, `12345` stay as their literal form.
-      parsed = parseYaml(ensureSpaceAfterColonOutsideQuotes(value), {
-        schema: "failsafe",
-      }) as unknown;
-    } catch {
+    if (!yamlParsingResult) {
       ctx.addIssue({
         code: "custom",
         message:
@@ -101,6 +93,8 @@ const matrixRunoutInputSchema = z
 
       return z.NEVER;
     }
+
+    const { parsed } = yamlParsingResult;
 
     if (parsed === null || typeof parsed !== "object") {
       ctx.addIssue({
@@ -114,49 +108,3 @@ const matrixRunoutInputSchema = z
 
     return parsed;
   });
-
-/**
- * Inserts a space after any `:` that is not already followed by whitespace,
- * unless that `:` occurs inside a single- or double-quoted YAML string. This
- * makes inputs like `CD:hello` or `{Side A:ABC,Side B:DEF}` parse as mappings.
- */
-const ensureSpaceAfterColonOutsideQuotes = (input: string): string => {
-  let out = "";
-  let inDouble = false;
-  let inSingle = false;
-  let escapeNext = false;
-
-  for (let i = 0; i < input.length; i++) {
-    const ch = input.charAt(i);
-
-    if (escapeNext) {
-      out += ch;
-      escapeNext = false;
-      continue;
-    }
-
-    if (inDouble && ch === "\\") {
-      out += ch;
-      escapeNext = true;
-      continue;
-    }
-
-    if (!inSingle && ch === '"') {
-      inDouble = !inDouble;
-    } else if (!inDouble && ch === "'") {
-      inSingle = !inSingle;
-    }
-
-    out += ch;
-
-    if (ch === ":" && !inDouble && !inSingle) {
-      const next = input.charAt(i + 1);
-
-      if (next !== "" && !/\s/.test(next)) {
-        out += " ";
-      }
-    }
-  }
-
-  return out;
-};
