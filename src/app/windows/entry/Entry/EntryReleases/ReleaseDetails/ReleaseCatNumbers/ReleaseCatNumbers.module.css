@@ -4,11 +4,58 @@
 
 .detailBlock .detailLabel {
   display: block;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
 }
 
 .detailLabel {
   font-weight: 600;
+}
+
+.parseErrorShell {
+  margin-top: 0.15rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid #e8c4c4;
+  border-left-width: 4px;
+  border-left-color: #c62828;
+  background: #fff8f8;
+}
+
+.parseErrorShell :global(pre) {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.objectPanel {
+  margin-top: 0.15rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid #e8e8e8;
+  background: #f8f9fa;
+}
+
+.objectRoot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.nestedBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+  padding-left: 0.65rem;
+  border-left: 2px solid #d0d7de;
+}
+
+.leafValue {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .entriesList {
@@ -20,28 +67,30 @@
   margin: 0.35rem 0;
 }
 
-.catNumbersSingle {
-  margin-top: 0.35rem;
-  padding-left: 0.65rem;
-  border-left: 2px solid #ddd;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+.kvRow {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, max-content) 1fr;
+  gap: 0.5rem 0.75rem;
+  align-items: start;
 }
 
-.catNumbersCompound {
-  margin-top: 0.35rem;
-  margin-left: 0.65rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
+@media (max-width: 520px) {
+  .kvRow {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
 }
 
-.nestedRegions {
-  margin-top: 0.35rem;
-  padding-left: 0.65rem;
-  border-left: 2px solid #ddd;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+.kvKey {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  line-height: 1.35;
+}
+
+.kvValue {
+  min-width: 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
 }

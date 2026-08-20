@@ -1,5 +1,5 @@
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
-import type { FormFieldError } from "@/types/form";
+import type { FeedbackErrors, FormFieldError } from "@/types/form";
 import { omitProperty } from "@/utils/common";
 
 export type FormatField =
@@ -44,6 +44,11 @@ export type ReleaseFormCatNumbersErrors = Record<
   ReleaseFormCatalogueNumberRowErrors
 >;
 
+export type ReleaseFormCatNumbersFieldErrors = {
+  rows: ReleaseFormCatNumbersErrors;
+  jsonInput: FeedbackErrors;
+};
+
 export type RelatedReleaseRowId = string;
 
 export type ReleaseFormRelatedReleasesErrors = Record<
@@ -69,7 +74,7 @@ export const initialReleaseFormFieldErrors = {
     printedIn: emptyMutableCountriesSubsectionErrors(),
   },
   formats: {},
-  catalogueNumbers: {},
+  catalogueNumbers: { rows: {}, jsonInput: [] },
   matrixRunout: [],
   selectedTags: [],
   partOfQueenCollection: [],
@@ -111,6 +116,7 @@ export type ReleaseFormInputFieldKey =
   | "discogsUrl"
   | "comment"
   | "conditionProblems"
+  | "catalogueNumbers"
   | "matrixRunout"
   | "relationToQueen"
   | ReleaseDateFieldErrorSource

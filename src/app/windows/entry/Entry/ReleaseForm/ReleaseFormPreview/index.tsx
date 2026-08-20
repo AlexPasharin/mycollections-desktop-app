@@ -14,7 +14,7 @@ import FormPreviewField, {
 } from "@/app/components/Form/FormPreviewField";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { TagListItem } from "@/types/tags";
-import { nullIfEmpty } from "@/utils/common";
+import { formatJson, nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
 import { orPlaceholder } from "@/utils/form";
 
@@ -150,6 +150,6 @@ type JsonFieldProps = {
 
 const JsonField: FC<JsonFieldProps> = ({ label, value }) => (
   <FormPreviewBlockField label={label}>
-    <pre className={styles.jsonBlock}>{JSON.stringify(value, null, 2)}</pre>
+    <pre className={styles.jsonBlock}>{formatJson(value)}</pre>
   </FormPreviewBlockField>
 );

@@ -1,4 +1,4 @@
-import { flattenStringOrArray } from "@/utils/common";
+import { valueToArray } from "@/utils/common";
 import type { CountriesBasic, ReleaseCountries } from "@/validation";
 
 /** Country codes from validated release `countries` JSON, deduplicated. */
@@ -13,7 +13,7 @@ export const collectReleaseCountryCodes = (
     typeof data === "object" && "CD" in data
       ? [
           ...collectFromCountriesBasic(data.CD),
-          ...flattenStringOrArray(data.slipcase["printed in"]),
+          ...valueToArray(data.slipcase["printed in"]),
         ]
       : collectFromCountriesBasic(data);
 
@@ -22,12 +22,12 @@ export const collectReleaseCountryCodes = (
 
 const collectFromCountriesBasic = (basic: CountriesBasic): string[] => {
   if (typeof basic === "string" || Array.isArray(basic)) {
-    return flattenStringOrArray(basic);
+    return valueToArray(basic);
   }
 
   return [
-    ...flattenStringOrArray(basic["made in"]),
-    ...flattenStringOrArray(basic["printed in"]),
+    ...valueToArray(basic["made in"]),
+    ...valueToArray(basic["printed in"]),
   ];
 };
 

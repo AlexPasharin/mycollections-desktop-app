@@ -31,13 +31,16 @@ import {
   emptyCountrySelection,
   type ReleaseFormState,
   type ReleaseFormEntry,
-  type ReleaseFormTabUpdateModeSharedData,
-  type ReleaseFormTabCreateModeSharedData,
 } from "./releaseFormUtils/formValues";
 import { toUpsertMusicalReleaseInput } from "./releaseFormUtils/toUpsertMusicalReleaseInput";
 import ReleaseMatrixRunoutField from "./ReleaseMatrixRunoutField";
 import ReleaseNameField from "./ReleaseNameField";
 import ReleaseRelatedReleasesSection from "./ReleaseRelatedReleasesSection";
+
+import type {
+  ReleaseFormTabCreateModeSharedData,
+  ReleaseFormTabUpdateModeSharedData,
+} from "../types";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
@@ -193,7 +196,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       const { catNumberRowId, field, inputValueId } = key;
 
       setField("catalogueNumbers", (prev) => {
-        const catalogueNumbersErrors = prev.catalogueNumbers.errors;
+        const catalogueNumbersErrors = prev.catalogueNumbers.errors.rows;
         const rowErrors = catalogueNumbersErrors[catNumberRowId];
 
         if (!rowErrors) {
@@ -210,8 +213,11 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
         return {
           ...prev.catalogueNumbers,
           errors: {
-            ...catalogueNumbersErrors,
-            [catNumberRowId]: nextRowErrors,
+            ...prev.catalogueNumbers.errors,
+            rows: {
+              ...catalogueNumbersErrors,
+              [catNumberRowId]: nextRowErrors,
+            },
           },
         };
       });
@@ -257,6 +263,16 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       setField("relatedReleases", (prev) => ({
         ...prev.relatedReleases,
         errors: omitProperty(prev.relatedReleases.errors, relatedReleaseRowId),
+        notifications: [],
+      }));
+
+      return;
+    }
+
+    if (key === "catalogueNumbers") {
+      setField("catalogueNumbers", (prev) => ({
+        ...prev.catalogueNumbers,
+        errors: initialReleaseFormFieldErrors.catalogueNumbers,
         notifications: [],
       }));
 
@@ -326,18 +342,37 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   };
 
   const addCatalogueNumbersRow = () => {
-    setFieldValue("catalogueNumbers", (prev) => [
-      ...prev.catalogueNumbers.value,
-      defaultCatalogueNumberRow(),
-    ]);
+    setFieldValue("catalogueNumbers", (prev) =>
+      prev.catalogueNumbers.value.activeTab === "json"
+        ? prev.catalogueNumbers.value
+        : {
+            ...prev.catalogueNumbers.value,
+            rows: [
+              ...prev.catalogueNumbers.value.rows,
+              defaultCatalogueNumberRow(),
+            ],
+          },
+    );
   };
 
   const removeCatalogueNumbersRow = (rowId: string) => {
-    setField("catalogueNumbers", (prev) => ({
-      ...prev.catalogueNumbers,
-      value: prev.catalogueNumbers.value.filter((row) => row.id !== rowId),
-      errors: omitProperty(prev.catalogueNumbers.errors, rowId),
-    }));
+    setField("catalogueNumbers", (prev) =>
+      prev.catalogueNumbers.value.activeTab === "json"
+        ? prev.catalogueNumbers
+        : {
+            ...prev.catalogueNumbers,
+            value: {
+              ...prev.catalogueNumbers.value,
+              rows: prev.catalogueNumbers.value.rows.filter(
+                (row) => row.id !== rowId,
+              ),
+            },
+            errors: {
+              ...prev.catalogueNumbers.errors,
+              rows: omitProperty(prev.catalogueNumbers.errors.rows, rowId),
+            },
+          },
+    );
   };
 
   const addSelectedTag = (tagId: string) => {
@@ -864,10 +899,13 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             )
           }
           errors={formState.catalogueNumbers.errors}
+          notifications={formState.catalogueNumbers.notifications}
           addCatalogueNumbersRow={addCatalogueNumbersRow}
           removeCatalogueNumbersRow={removeCatalogueNumbersRow}
           onFieldFocus={onFocus}
           onBlurRowColumn={() => onBlur("catalogueNumbers")}
+          onJsonInputFocus={() => onFocus("catalogueNumbers")}
+          onJsonInputBlur={() => onBlur("catalogueNumbers")}
         />
 
         <FormSectionsDivider />

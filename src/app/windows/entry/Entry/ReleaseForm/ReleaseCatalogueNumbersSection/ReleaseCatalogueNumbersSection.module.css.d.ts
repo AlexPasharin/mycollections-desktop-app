@@ -3,6 +3,9 @@
 interface CssExports {
   'addAnotherRow': string;
   'heading': string;
+  'jsonField': string;
+  'jsonLabel': string;
+  'jsonTextarea': string;
   'section': string;
 }
 export const cssExports: CssExports;
