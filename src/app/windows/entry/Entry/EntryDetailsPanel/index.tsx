@@ -1,7 +1,5 @@
 import { type FC } from "react";
 
-import styles from "./EntryDetailsPanel.module.css";
-
 import api from "../../api";
 
 import CopyTextCta from "@/app/components/CopyTextCta";
@@ -15,6 +13,12 @@ type EntryDetailsPanelProps = {
   entry: EntryByIdResult;
   primaryDbSource: DbSource;
 };
+
+const fieldClassName = "m-0 mb-2 text-[0.95em]";
+
+const fieldLabelClassName = "font-semibold";
+
+const itemsListClassName = "m-0 mt-1 list-none pl-0";
 
 const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({
   entry,
@@ -34,18 +38,18 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({
   } = entry;
 
   return (
-    <div className={styles.entryPanel}>
-      <div className={styles.field}>
+    <div className="mb-4 max-w-[42rem] rounded-md border border-black px-4 py-3">
+      <div className={fieldClassName}>
         {types.length > 0 ? (
-          <ul className={styles.typesList}>
+          <ul className={itemsListClassName}>
             {types.map(({ entryTypeId, name }) => (
-              <li key={entryTypeId} className={styles.typesListItem}>
+              <li key={entryTypeId} className="my-1">
                 {name}
               </li>
             ))}
           </ul>
         ) : (
-          <p className={styles.italicNote}>
+          <p className="m-0 italic">
             (Types of this entry are not known, please update types of this
             entry in the database)
           </p>
@@ -53,14 +57,14 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({
       </div>
 
       {altNames.length > 0 && (
-        <p className={styles.field}>
-          <span className={styles.fieldLabel}>Also known as: </span>
+        <p className={fieldClassName}>
+          <span className={fieldLabelClassName}>Also known as: </span>
           {altNames.map(({ name }) => name).join(", ")}
         </p>
       )}
 
-      <div className={styles.field}>
-        <span className={styles.fieldLabel}>Original release date: </span>
+      <div className={fieldClassName}>
+        <span className={fieldLabelClassName}>Original release date: </span>
         {originalReleaseDate === null ? (
           "(Unknown)"
         ) : "error" in originalReleaseDate ? (
@@ -74,8 +78,8 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({
       </div>
 
       {discogsUrl && (
-        <p className={styles.field}>
-          <span className={styles.fieldLabel}>Discogs url: </span>
+        <p className={fieldClassName}>
+          <span className={fieldLabelClassName}>Discogs url: </span>
           <a href={discogsUrl} target="_blank" rel="noreferrer">
             {discogsUrl}
           </a>
@@ -83,26 +87,26 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({
       )}
 
       {partOfQueenCollection && (
-        <p className={styles.field}>
-          <span className={styles.fieldLabelItalic}>
+        <p className={fieldClassName}>
+          <span className={`${fieldLabelClassName} italic`}>
             Part of Queen collection
           </span>
         </p>
       )}
 
       {relationToQueen && (
-        <p className={styles.field}>
-          <span className={styles.fieldLabel}>Relation to Queen: </span>
+        <p className={fieldClassName}>
+          <span className={fieldLabelClassName}>Relation to Queen: </span>
           {relationToQueen}
         </p>
       )}
 
       {tags.length > 0 && (
-        <div className={styles.field}>
-          <span className={styles.fieldLabel}>Tags:</span>
-          <ul className={styles.typesList}>
+        <div className={fieldClassName}>
+          <span className={fieldLabelClassName}>Tags:</span>
+          <ul className={itemsListClassName}>
             {tags.map(({ tagId, tag }) => (
-              <li key={tagId} className={styles.tagsListItem}>
+              <li key={tagId} className="my-1 italic">
                 {tag}
               </li>
             ))}
@@ -112,7 +116,9 @@ const EntryDetailsPanel: FC<EntryDetailsPanelProps> = ({
 
       {comment && (
         <div>
-          <p className={styles.comment}>{comment}</p>
+          <p className="m-0 mt-2 rounded-sm bg-[#f5f5f5] px-[0.65rem] py-2 text-[0.95em] whitespace-pre-wrap">
+            {comment}
+          </p>
         </div>
       )}
 

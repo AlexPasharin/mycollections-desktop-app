@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FC } from "react";
 
-import styles from "./EntryReleases.module.css";
 import EntryReleasesList from "./EntryReleasesList";
 
 import api from "../../api";
@@ -39,6 +38,26 @@ const CREATE_ERRORS_ID = "entry-releases-create-errors";
 const UPDATE_NOTIFICATIONS_ID = "entry-releases-update-notifications";
 const UPDATE_ERRORS_ID = "entry-releases-update-errors";
 const DELETE_ERRORS_ID = "entry-releases-delete-errors";
+
+const panelClassName = "mt-3 max-w-[42rem]";
+const fieldClassName = "m-0 text-[0.95em]";
+const sectionTitleClassName = "m-0 mb-3";
+const emptyStateClassName = "text-xl font-bold";
+const createNotificationClassName =
+  "mb-3 flex items-start justify-between gap-3 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2";
+const createNotificationDismissClassName =
+  "m-0 shrink-0 cursor-pointer rounded border border-emerald-300 bg-transparent px-[0.55rem] py-[0.2rem] text-[0.85em] font-medium text-green-950 transition-[background,color,border-color] duration-150 hover:border-green-950 hover:bg-green-950 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-950";
+const createErrorClassName =
+  "mb-3 flex items-start justify-between gap-3 rounded-md border border-red-300 bg-red-50 px-3 py-2";
+const createErrorDismissClassName =
+  "m-0 shrink-0 cursor-pointer rounded border border-red-300 bg-transparent px-[0.55rem] py-[0.2rem] text-[0.85em] font-medium text-red-800 transition-[background,color,border-color] duration-150 hover:border-red-800 hover:bg-red-800 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-800";
+const deletedNotificationClassName =
+  "mt-3 flex items-center justify-between gap-3 rounded-md border border-emerald-300 bg-emerald-100 px-3 py-2 text-[0.92rem] text-green-950";
+const deletedNotificationTextClassName = "min-w-0 flex-1";
+const deletedNotificationDismissClassName = createNotificationDismissClassName;
+const focusedReleaseCtaClassName = "mb-6 text-[0.92rem] text-[#444]";
+const focusedReleaseCtaButtonClassName =
+  "m-0 cursor-pointer border-none bg-transparent p-0 text-inherit text-[#1a5fb4] underline hover:text-[#0d3d82] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a5fb4]";
 
 const EntryReleases: FC<EntryReleasesProps> = ({
   entry,
@@ -140,12 +159,12 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   };
 
   if (loading || countriesLoading) {
-    return <p className={styles.emptyState}>Loading releases&hellip;</p>;
+    return <p className={emptyStateClassName}>Loading releases&hellip;</p>;
   }
 
   if (loadFailed || countriesLoadFailed) {
     return (
-      <p className={styles.emptyState}>
+      <p className={emptyStateClassName}>
         Could not load releases or related data.
       </p>
     );
@@ -158,14 +177,14 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   }));
 
   const createNotificationBanner = createNotifications.length > 0 && (
-    <div className={styles.createNotification} role="status">
+    <div className={createNotificationClassName} role="status">
       <NotificationMessages
         id={CREATE_NOTIFICATIONS_ID}
         messages={createNotifications}
       />
       <button
         type="button"
-        className={styles.createNotificationDismiss}
+        className={createNotificationDismissClassName}
         onClick={onDismissCreateNotifications}
         aria-label="Dismiss notifications"
       >
@@ -177,11 +196,11 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   const createErrors = latestCreatedErrors.map((message) => ({ message }));
 
   const createErrorBanner = createErrors.length > 0 && (
-    <div className={styles.createError}>
+    <div className={createErrorClassName}>
       <ErrorMessages id={CREATE_ERRORS_ID} messages={createErrors} />
       <button
         type="button"
-        className={styles.createErrorDismiss}
+        className={createErrorDismissClassName}
         onClick={onDismissCreatedErrors}
         aria-label="Dismiss errors"
       >
@@ -195,14 +214,14 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   }));
 
   const updateNotificationBanner = updateNotifications.length > 0 && (
-    <div className={styles.createNotification} role="status">
+    <div className={createNotificationClassName} role="status">
       <NotificationMessages
         id={UPDATE_NOTIFICATIONS_ID}
         messages={updateNotifications}
       />
       <button
         type="button"
-        className={styles.createNotificationDismiss}
+        className={createNotificationDismissClassName}
         onClick={onDismissUpdateNotifications}
         aria-label="Dismiss update notifications"
       >
@@ -214,11 +233,11 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   const updateErrors = latestUpdatedErrors.map((message) => ({ message }));
 
   const updateErrorBanner = updateErrors.length > 0 && (
-    <div className={styles.createError}>
+    <div className={createErrorClassName}>
       <ErrorMessages id={UPDATE_ERRORS_ID} messages={updateErrors} />
       <button
         type="button"
-        className={styles.createErrorDismiss}
+        className={createErrorDismissClassName}
         onClick={onDismissUpdatedErrors}
         aria-label="Dismiss update errors"
       >
@@ -230,11 +249,11 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   const deleteErrors = latestDeletedErrors.map((message) => ({ message }));
 
   const deleteErrorBanner = deleteErrors.length > 0 && (
-    <div className={styles.createError}>
+    <div className={createErrorClassName}>
       <ErrorMessages id={DELETE_ERRORS_ID} messages={deleteErrors} />
       <button
         type="button"
-        className={styles.createErrorDismiss}
+        className={createErrorDismissClassName}
         onClick={dismissDeletedErrors}
         aria-label="Dismiss delete errors"
       >
@@ -245,13 +264,13 @@ const EntryReleases: FC<EntryReleasesProps> = ({
 
   const deletedNotification = !!recentlyDeletedVersion &&
     latestDeletedErrors.length === 0 && (
-      <div className={styles.deletedNotification} role="status">
-        <span className={styles.deletedNotificationText}>
+      <div className={deletedNotificationClassName} role="status">
+        <span className={deletedNotificationTextClassName}>
           Release &quot;{recentlyDeletedVersion}&quot; was deleted successfully.
         </span>
         <button
           type="button"
-          className={styles.deletedNotificationDismiss}
+          className={deletedNotificationDismissClassName}
           onClick={dismissDeletedNotification}
           aria-label="Dismiss notification"
         >
@@ -263,7 +282,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   if (!isFocusedReleaseView && (!releases || releases.length === 0)) {
     return (
       <>
-        <p className={styles.emptyState}>
+        <p className={emptyStateClassName}>
           This entry has no releases in collection
         </p>
         {createErrorBanner}
@@ -277,29 +296,29 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   }
 
   return (
-    <div className={styles.panel}>
+    <div className={panelClassName}>
       {createErrorBanner}
       {createNotificationBanner}
       {updateErrorBanner}
       {updateNotificationBanner}
       {deleteErrorBanner}
       {isFocusedReleaseView ? (
-        <div className={styles.focusedReleaseCta}>
+        <div className={focusedReleaseCtaClassName}>
           <p className="mb-2 text-xl font-bold">
             Note! Showing only selected release&apos;s details.
           </p>
           <button
             type="button"
-            className={styles.focusedReleaseCtaButton}
+            className={focusedReleaseCtaButtonClassName}
             onClick={onShowFullEntryWindow}
           >
             Click here to see full entry&apos;s window content
           </button>
         </div>
       ) : (
-        <h2 className={styles.sectionTitle}>Releases in collection: </h2>
+        <h2 className={sectionTitleClassName}>Releases in collection: </h2>
       )}
-      <div className={styles.field}>
+      <div className={fieldClassName}>
         <EntryReleasesList
           entry={entry}
           primaryDbSource={primaryDbSource}
