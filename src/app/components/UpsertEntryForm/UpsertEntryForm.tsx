@@ -52,6 +52,7 @@ import type {
 import type { TagListItem } from "@/types/tags";
 import { isDateInputFieldKey, omitProperty } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
+import { getNextOrderNumber } from "@/utils/relatedItems";
 
 type UpsertEntryFormSharedProps = {
   primaryDbSource: DbSource;
@@ -361,7 +362,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
   const addRelatedEntryRow = () => {
     setFieldValue("relatedEntries", (prev) => [
       ...prev.relatedEntries.value,
-      defaultRelatedEntryRow(),
+      defaultRelatedEntryRow(getNextOrderNumber(prev.relatedEntries.value)),
     ]);
   };
 

@@ -64,6 +64,7 @@ import type {
 import type { TagListItem } from "@/types/tags";
 import { isDateInputFieldKey, omitProperty } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
+import { getNextOrderNumber } from "@/utils/relatedItems";
 
 export type ReleaseFormTabData =
   | (ReleaseFormTabCreateModeSharedData & {
@@ -393,7 +394,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   const addRelatedReleaseRow = () => {
     setFieldValue("relatedReleases", (prev) => [
       ...prev.relatedReleases.value,
-      defaultRelatedReleaseRow(),
+      defaultRelatedReleaseRow(getNextOrderNumber(prev.relatedReleases.value)),
     ]);
   };
 

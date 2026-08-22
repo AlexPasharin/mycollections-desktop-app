@@ -59,8 +59,8 @@ const ENTRY_RELATED_ITEMS_LABELS: RelatedItemsFormSectionLabels = {
   listAriaLabel: "Related entries",
   relatedIdLabel: "Entry ID",
   relatedIdPlaceholder: "Entry ID",
-  removeItemAriaLabel: (index) => `Remove related entry ${index + 1}`,
-  addRowButtonLabel: "Add related entry",
+  removeItemAriaLabel: (orderNumber) => `Remove child entry ${orderNumber}`,
+  addRowButtonLabel: "Add child entry",
   notificationsId: "upsert-entry-related-entries-notifications",
   rowIdPrefix: "upsert-entry-related-entry",
 };

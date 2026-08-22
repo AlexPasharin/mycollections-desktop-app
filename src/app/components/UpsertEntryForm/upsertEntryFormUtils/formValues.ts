@@ -65,11 +65,14 @@ export type ValidUpsertEntryRelatedEntryRow = UpsertEntryRelatedEntryRow & {
   relation: RelatedItemRelation;
 };
 
-export const defaultRelatedEntryRow = (): UpsertEntryRelatedEntryRow =>
+export const defaultRelatedEntryRow = (
+  childEntryOrderNumber: number | null,
+): UpsertEntryRelatedEntryRow =>
   withNewId({
     entryId: "",
     relation: "child",
-    orderNumber: "",
+    orderNumber:
+      childEntryOrderNumber === null ? "" : String(childEntryOrderNumber),
   });
 
 export type UpsertEntryFormDraft = {

@@ -57,8 +57,8 @@ const RELEASE_RELATED_ITEMS_LABELS: RelatedItemsFormSectionLabels = {
   listAriaLabel: "Related releases",
   relatedIdLabel: "Release ID",
   relatedIdPlaceholder: "Release ID",
-  removeItemAriaLabel: (index) => `Remove related release ${index + 1}`,
-  addRowButtonLabel: "Add related release",
+  removeItemAriaLabel: (orderNumber) => `Remove child release ${orderNumber}`,
+  addRowButtonLabel: "Add child release",
   notificationsId: "add-release-related-releases-notifications",
   rowIdPrefix: "add-release-related-release",
 };

@@ -13,7 +13,7 @@ export type RelatedItemsFormSectionLabels = {
   listAriaLabel: string;
   relatedIdLabel: string;
   relatedIdPlaceholder: string;
-  removeItemAriaLabel: (index: number) => string;
+  removeItemAriaLabel: (orderNumber: string) => string;
   addRowButtonLabel: string;
   notificationsId: string;
   rowIdPrefix: string;
@@ -56,6 +56,11 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
       {labels.sectionTitle}
     </h2>
 
+    <p className="italic">
+      Note: Parent relations are not editable. Use form for the corresponding
+      parent item to edit them.
+    </p>
+
     {rows.length > 0 && (
       <div
         className={`${relatedItemsGridClassName} mb-3 gap-y-[0.55rem]`}
@@ -81,7 +86,7 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
           const relatedIdInputId = `${labels.rowIdPrefix}-id-${row.id}`;
           const relationSelectId = `${labels.rowIdPrefix}-relation-${row.id}`;
           const orderNumberInputId = `${labels.rowIdPrefix}-order-number-${row.id}`;
-          const removeAriaLabel = labels.removeItemAriaLabel(index);
+          const removeAriaLabel = labels.removeItemAriaLabel(row.orderNumber);
           const rowLabelSuffix = ` ${index + 1}`;
 
           return (
@@ -92,7 +97,7 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
             >
               <input
                 id={relatedIdInputId}
-                className="w-full max-w-full min-w-0 px-2 py-[0.35rem] text-base"
+                className="w-full max-w-full min-w-0 px-2 pr-0 pl-[0.35rem] text-base"
                 type="text"
                 value={getRelatedId(row)}
                 placeholder={labels.relatedIdPlaceholder}
@@ -106,6 +111,7 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
                 onBlur={onBlur}
                 autoComplete="off"
                 spellCheck={false}
+                disabled={row.relation === PARENT_RELATION}
               />
               <select
                 id={relationSelectId}
@@ -124,6 +130,7 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
                 }}
                 onBlur={onBlur}
                 aria-invalid={hasErrors}
+                disabled={true}
                 aria-describedby={hasErrors ? errorId : undefined}
               >
                 <option value={PARENT_RELATION}>Parent</option>
@@ -146,18 +153,21 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
                 onBlur={onBlur}
                 aria-invalid={hasErrors}
                 aria-describedby={hasErrors ? errorId : undefined}
+                disabled={row.relation === PARENT_RELATION}
               />
-              <button
-                type="button"
-                className="col-start-5 inline-flex h-[1.85rem] shrink-0 cursor-pointer items-center justify-center rounded-[0.2rem] border-none bg-transparent p-0 text-[1.05rem] leading-none text-[#a40000] hover:bg-[rgba(164,0,0,0.08)] hover:text-[#7a0000] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#1a5fb4]"
-                aria-label={removeAriaLabel}
-                title={removeAriaLabel}
-                onClick={() => {
-                  onRemoveRow(row.id);
-                }}
-              >
-                <span aria-hidden="true">❌</span>
-              </button>
+              {row.relation === CHILD_RELATION && (
+                <button
+                  type="button"
+                  className="col-start-5 inline-flex h-[1.85rem] shrink-0 cursor-pointer items-center justify-center rounded-[0.2rem] border-none bg-transparent p-0 text-[1.05rem] leading-none text-[#a40000] hover:bg-[rgba(164,0,0,0.08)] hover:text-[#7a0000] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#1a5fb4]"
+                  aria-label={removeAriaLabel}
+                  title={removeAriaLabel}
+                  onClick={() => {
+                    onRemoveRow(row.id);
+                  }}
+                >
+                  <span aria-hidden="true">❌</span>
+                </button>
+              )}
               {hasErrors && (
                 <div className="col-span-5">
                   <ErrorMessages id={errorId} messages={rowErrors} />

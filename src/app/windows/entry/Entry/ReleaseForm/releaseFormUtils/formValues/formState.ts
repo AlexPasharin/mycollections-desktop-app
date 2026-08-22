@@ -74,6 +74,15 @@ export type ReleaseFormState = {
   dbSources: FormField<ReadonlySet<DbSource>>;
 };
 
+type InitialReleaseFormStateValueArgs = {
+  entry: ReleaseFormEntry;
+  allFormats: ReleasesFormatListItem[];
+  allCountries: CountryListItem[];
+  releaseBlueprint?: ReleaseByIdResult | undefined;
+  dbSources?: ReadonlySet<DbSource> | undefined;
+  mode: ReleaseFormTabMode;
+};
+
 export const initialReleaseFormStateValue = ({
   entry,
   allFormats,
@@ -81,14 +90,7 @@ export const initialReleaseFormStateValue = ({
   releaseBlueprint,
   dbSources,
   mode,
-}: {
-  entry: ReleaseFormEntry;
-  allFormats: ReleasesFormatListItem[];
-  allCountries: CountryListItem[];
-  releaseBlueprint?: ReleaseByIdResult | undefined;
-  dbSources?: ReadonlySet<DbSource> | undefined;
-  mode: ReleaseFormTabMode;
-}): ReleaseFormState => ({
+}: InitialReleaseFormStateValueArgs): ReleaseFormState => ({
   releaseVersion: {
     value: releaseBlueprint?.releaseVersion ?? "",
     valid: true,
