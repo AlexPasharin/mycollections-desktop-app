@@ -34,6 +34,7 @@ import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput"
 import NotificationMessages from "@/app/components/NotificationMessages";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
+import type { RelatedItemRelation } from "@/types/common";
 import type {
   CreateMusicalEntry,
   CreateMusicalEntryInput,
@@ -47,7 +48,6 @@ import type {
   FormFeedback,
   FeedbackErrors,
   FeedbackNotifications,
-  FormRelatedItemRelation,
 } from "@/types/form";
 import type { TagListItem } from "@/types/tags";
 import { isDateInputFieldKey, omitProperty } from "@/utils/common";
@@ -383,7 +383,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
 
   const setRelatedEntryRelation = (
     rowId: string,
-    relation: FormRelatedItemRelation,
+    relation: RelatedItemRelation,
   ) => {
     setFieldValue("relatedEntries", (prev) =>
       prev.relatedEntries.value.map((row) =>
@@ -497,13 +497,14 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           mode,
         );
 
-        setIsConfirmOpen(false);
-
         if (savedEntry) {
           onEntrySaved(savedEntry, { notifications, errors });
-        } else if (errors.length > 0) {
-          setSubmitError(errors.map((error) => error.message).join("\n"));
+          setIsConfirmOpen(false);
+
+          return;
         }
+
+        setSubmitError(errors.map((error) => error.message).join("\n"));
       })
       .catch((error: unknown) => {
         const errorMessage = `Failed to ${mode} musical entry`;

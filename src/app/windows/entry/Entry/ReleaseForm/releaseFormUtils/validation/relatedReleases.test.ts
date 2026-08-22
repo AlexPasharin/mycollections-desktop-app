@@ -2,10 +2,12 @@ import { validateRelatedReleases } from "./relatedReleases";
 
 import type { ReleaseFormRelatedReleaseRow } from "../formValues";
 
+import type { RelatedItemRelation } from "@/types/common";
+
 const relatedReleaseRow = (
   id: string,
   releaseId: string,
-  relation: ReleaseFormRelatedReleaseRow["relation"],
+  relation: RelatedItemRelation,
   orderNumber: string,
 ): ReleaseFormRelatedReleaseRow => ({
   id,
@@ -70,27 +72,6 @@ describe("validateRelatedReleases", () => {
     });
   });
 
-  it("requires a parent or child relation on every row", () => {
-    const rows = [
-      relatedReleaseRow("row-1", parentReleaseId, "", "1"),
-      relatedReleaseRow("row-2", childReleaseId, "parent", "2"),
-    ];
-
-    const result = validateRelatedReleases(rows);
-
-    expect(result.valid).toBe(false);
-
-    if (result.valid) {
-      return;
-    }
-
-    expect(result.errorMessages).toEqual({
-      "row-1": [
-        { message: "Choose whether this release is a parent or a child." },
-      ],
-    });
-  });
-
   it("requires a valid uuid release id on every row", () => {
     const result = validateRelatedReleases([
       relatedReleaseRow("row-1", "", "parent", "1"),
@@ -106,25 +87,6 @@ describe("validateRelatedReleases", () => {
     expect(result.errorMessages).toEqual({
       "row-1": [{ message: "Release ID must be a valid UUID." }],
       "row-2": [{ message: "Release ID must be a valid UUID." }],
-    });
-  });
-
-  it("reports both relation and release id errors on the same row", () => {
-    const result = validateRelatedReleases([
-      relatedReleaseRow("row-1", "not-a-uuid", "", "2"),
-    ]);
-
-    expect(result.valid).toBe(false);
-
-    if (result.valid) {
-      return;
-    }
-
-    expect(result.errorMessages).toEqual({
-      "row-1": [
-        { message: "Choose whether this release is a parent or a child." },
-        { message: "Release ID must be a valid UUID." },
-      ],
     });
   });
 

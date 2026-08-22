@@ -1,12 +1,10 @@
+import type { ArtistUpsertRelatedArtistRow } from "../../artistUpsertFormUtils/formValues";
+
 import ErrorMessages from "@/app/components/ErrorMessages";
 import NotificationMessages from "@/app/components/NotificationMessages";
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
-import type {
-  FeedbackNotifications,
-  FormFieldError,
-  FormRelatedItemRelation,
-  RelatedItemRow,
-} from "@/types/form";
+import type { RelatedItemRelation } from "@/types/common";
+import type { FeedbackNotifications, FormFieldError } from "@/types/form";
 
 export type RelatedArtistsFormSectionLabels = {
   sectionTitle: string;
@@ -19,14 +17,14 @@ export type RelatedArtistsFormSectionLabels = {
   rowIdPrefix: string;
 };
 
-type RelatedArtistsFormSectionProps<TRow extends RelatedItemRow> = {
-  rows: TRow[];
-  getRelatedId: (row: TRow) => string;
+type RelatedArtistsFormSectionProps = {
+  rows: ArtistUpsertRelatedArtistRow[];
+  getRelatedId: (row: ArtistUpsertRelatedArtistRow) => string;
   errors: Record<string, FormFieldError[]>;
   notifications: FeedbackNotifications;
   labels: RelatedArtistsFormSectionLabels;
   onChangeRelatedId: (rowId: string, relatedId: string) => void;
-  onChangeRelation: (rowId: string, relation: FormRelatedItemRelation) => void;
+  onChangeRelation: (rowId: string, relation: RelatedItemRelation) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
   onFocus: (rowId: string) => void;
@@ -36,7 +34,7 @@ type RelatedArtistsFormSectionProps<TRow extends RelatedItemRow> = {
 const relatedArtistsGridClassName =
   "grid w-fit max-w-full grid-cols-[32ch_6rem_1rem_1.85rem] items-center gap-x-3";
 
-const RelatedArtistsFormSection = <TRow extends RelatedItemRow>({
+const RelatedArtistsFormSection = ({
   rows,
   getRelatedId,
   errors,
@@ -48,7 +46,7 @@ const RelatedArtistsFormSection = <TRow extends RelatedItemRow>({
   onRemoveRow,
   onFocus,
   onBlur,
-}: RelatedArtistsFormSectionProps<TRow>) => (
+}: RelatedArtistsFormSectionProps) => (
   <div className="mt-0 mb-[0.65rem]">
     <h2 className="mb-3 text-base leading-snug font-semibold">
       {labels.sectionTitle}
@@ -110,7 +108,7 @@ const RelatedArtistsFormSection = <TRow extends RelatedItemRow>({
                   onChangeRelation(
                     row.id,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                    e.target.value as FormRelatedItemRelation, // we know that this is safe by construction
+                    e.target.value as RelatedItemRelation, // we know that this is safe by construction
                   );
                 }}
                 onFocus={() => {

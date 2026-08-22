@@ -41,7 +41,6 @@ export const validateRelatedItems = <TRow extends RelatedOrderedItemRow>(
   const notifications = [];
   let valid = true;
 
-  const missingRelationError = { message: messages.missingRelation };
   const invalidRelatedIdError = { message: messages.invalidRelatedId };
   const invalidOrderNumberError = {
     message:
@@ -51,10 +50,6 @@ export const validateRelatedItems = <TRow extends RelatedOrderedItemRow>(
   for (const row of rows) {
     const rowErrors = [];
     const trimmedRelatedId = getRelatedId(row).trim();
-
-    if (row.relation === "") {
-      rowErrors.push(missingRelationError);
-    }
 
     if (!isValidUuid(trimmedRelatedId)) {
       rowErrors.push(invalidRelatedIdError);

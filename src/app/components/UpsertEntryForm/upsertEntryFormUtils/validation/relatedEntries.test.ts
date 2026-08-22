@@ -2,10 +2,12 @@ import { validateRelatedEntries } from "./relatedEntries";
 
 import type { UpsertEntryRelatedEntryRow } from "../formValues";
 
+import type { RelatedItemRelation } from "@/types/common";
+
 const relatedEntryRow = (
   id: string,
   entryId: string,
-  relation: UpsertEntryRelatedEntryRow["relation"],
+  relation: RelatedItemRelation,
   orderNumber: string,
 ): UpsertEntryRelatedEntryRow => ({
   id,
@@ -51,7 +53,7 @@ describe("validateRelatedEntries", () => {
 
   it("reports missing relations and invalid entry ids per row", () => {
     const result = validateRelatedEntries([
-      relatedEntryRow("row-1", "not-a-uuid", "", "1"),
+      relatedEntryRow("row-1", "not-a-uuid", "child", "1"),
       relatedEntryRow("row-2", childEntryId, "parent", "2"),
     ]);
 
@@ -62,10 +64,7 @@ describe("validateRelatedEntries", () => {
     }
 
     expect(result.errorMessages).toEqual({
-      "row-1": [
-        { message: "Choose whether this entry is a parent or a child." },
-        { message: "Entry ID must be a valid UUID." },
-      ],
+      "row-1": [{ message: "Entry ID must be a valid UUID." }],
     });
   });
 

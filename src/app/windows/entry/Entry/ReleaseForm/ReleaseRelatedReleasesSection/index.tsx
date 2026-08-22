@@ -6,17 +6,15 @@ import type { ReleaseFormRelatedReleaseRow } from "../releaseFormUtils/formValue
 import RelatedItemsFormSection, {
   type RelatedItemsFormSectionLabels,
 } from "@/app/components/RelatedItemsFormSection";
-import type {
-  FeedbackNotifications,
-  FormRelatedItemRelation,
-} from "@/types/form";
+import type { RelatedItemRelation } from "@/types/common";
+import type { FeedbackNotifications } from "@/types/form";
 
 type ReleaseRelatedReleasesSectionProps = {
   relatedReleases: ReleaseFormRelatedReleaseRow[];
   errors: ReleaseFormRelatedReleasesErrors;
   notifications: FeedbackNotifications;
   onChangeReleaseId: (rowId: string, releaseId: string) => void;
-  onChangeRelation: (rowId: string, relation: FormRelatedItemRelation) => void;
+  onChangeRelation: (rowId: string, relation: RelatedItemRelation) => void;
   onChangeOrderNumber: (rowId: string, orderNumber: string) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;

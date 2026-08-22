@@ -18,7 +18,9 @@ export type ArtistUpsertAltNameRow = {
   name: string;
 };
 
-export type ArtistUpsertRelatedArtistRow = RelatedItemRow & {
+export type ArtistUpsertRelatedArtistRow = RelatedItemRow<
+  RelatedItemRelation | ""
+> & {
   artistId: string;
 };
 

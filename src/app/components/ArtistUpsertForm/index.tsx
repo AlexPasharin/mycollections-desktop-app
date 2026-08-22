@@ -26,13 +26,13 @@ import type {
   UpdateArtist,
   UpdateArtistInput,
 } from "@/types/artists";
+import type { RelatedItemRelation } from "@/types/common";
 import { ArtistType } from "@/types/db/database";
 import type {
   FormFeedback,
   FeedbackErrors,
   FeedbackNotifications,
   FormField,
-  FormRelatedItemRelation,
 } from "@/types/form";
 import { formatArtistTypeLabel } from "@/utils/artist";
 import { omitProperty } from "@/utils/common";
@@ -211,7 +211,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
 
   const setRelatedParentRelation = (
     rowId: string,
-    relation: FormRelatedItemRelation,
+    relation: RelatedItemRelation | "",
   ) => {
     setFieldValue("relatedParents", (prev) =>
       prev.relatedParents.value.map((row) =>

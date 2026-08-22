@@ -1,10 +1,10 @@
 import ErrorMessages from "@/app/components/ErrorMessages";
 import NotificationMessages from "@/app/components/NotificationMessages";
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
+import type { RelatedItemRelation } from "@/types/common";
 import type {
   FeedbackNotifications,
   FormFieldError,
-  FormRelatedItemRelation,
   RelatedOrderedItemRow,
 } from "@/types/form";
 
@@ -26,7 +26,7 @@ type RelatedItemsFormSectionProps<TRow extends RelatedOrderedItemRow> = {
   notifications: FeedbackNotifications;
   labels: RelatedItemsFormSectionLabels;
   onChangeRelatedId: (rowId: string, relatedId: string) => void;
-  onChangeRelation: (rowId: string, relation: FormRelatedItemRelation) => void;
+  onChangeRelation: (rowId: string, relation: RelatedItemRelation) => void;
   onChangeOrderNumber: (rowId: string, orderNumber: string) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
@@ -116,7 +116,7 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
                   onChangeRelation(
                     row.id,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                    e.target.value as FormRelatedItemRelation, // we know that this is safe by construction
+                    e.target.value as RelatedItemRelation, // we know that this is safe by construction
                   );
                 }}
                 onFocus={() => {
@@ -126,7 +126,6 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
                 aria-invalid={hasErrors}
                 aria-describedby={hasErrors ? errorId : undefined}
               >
-                <option value=""></option>
                 <option value={PARENT_RELATION}>Parent</option>
                 <option value={CHILD_RELATION}>Child</option>
               </select>

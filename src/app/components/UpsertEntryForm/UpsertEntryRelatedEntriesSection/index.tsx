@@ -6,17 +6,15 @@ import type { UpsertEntryRelatedEntryRow } from "../upsertEntryFormUtils/formVal
 import RelatedItemsFormSection, {
   type RelatedItemsFormSectionLabels,
 } from "@/app/components/RelatedItemsFormSection";
-import type {
-  FeedbackNotifications,
-  FormRelatedItemRelation,
-} from "@/types/form";
+import type { RelatedItemRelation } from "@/types/common";
+import type { FeedbackNotifications } from "@/types/form";
 
 type UpsertEntryRelatedEntriesSectionProps = {
   relatedEntries: UpsertEntryRelatedEntryRow[];
   errors: UpsertEntryRelatedEntriesErrors;
   notifications: FeedbackNotifications;
   onChangeEntryId: (rowId: string, entryId: string) => void;
-  onChangeRelation: (rowId: string, relation: FormRelatedItemRelation) => void;
+  onChangeRelation: (rowId: string, relation: RelatedItemRelation) => void;
   onChangeOrderNumber: (rowId: string, orderNumber: string) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;

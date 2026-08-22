@@ -15,7 +15,7 @@ export type ValidReleaseFormRelatedReleaseRow = ReleaseFormRelatedReleaseRow & {
 export const defaultRelatedReleaseRow = (): ReleaseFormRelatedReleaseRow =>
   withNewId({
     releaseId: "",
-    relation: "",
+    relation: "child",
     orderNumber: "",
   });
 

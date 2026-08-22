@@ -68,7 +68,7 @@ export type ValidUpsertEntryRelatedEntryRow = UpsertEntryRelatedEntryRow & {
 export const defaultRelatedEntryRow = (): UpsertEntryRelatedEntryRow =>
   withNewId({
     entryId: "",
-    relation: "",
+    relation: "child",
     orderNumber: "",
   });
 
