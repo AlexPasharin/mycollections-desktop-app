@@ -263,7 +263,12 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
 
       setField("relatedReleases", (prev) => ({
         ...prev.relatedReleases,
-        errors: omitProperty(prev.relatedReleases.errors, relatedReleaseRowId),
+        errors: prev.relatedReleases.errors.filter(
+          (error) =>
+            error.sources &&
+            error.sources.length > 0 &&
+            !error.sources.includes(relatedReleaseRowId),
+        ),
         notifications: [],
       }));
 
@@ -402,7 +407,15 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
     setField("relatedReleases", (prev) => ({
       ...prev.relatedReleases,
       value: prev.relatedReleases.value.filter((row) => row.id !== rowId),
-      errors: omitProperty(prev.relatedReleases.errors, rowId),
+      errors: prev.relatedReleases.errors
+        .filter(
+          (error) =>
+            !error.sources?.includes(rowId) || error.sources.length > 1,
+        )
+        .map((error) => ({
+          ...error,
+          sources: error.sources?.filter((source) => source !== rowId),
+        })),
     }));
   };
 

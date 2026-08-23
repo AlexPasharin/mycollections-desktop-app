@@ -193,9 +193,15 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     }
 
     if (isRelatedEntriesInputFieldKey(key)) {
+      const { relatedEntryRowId } = key;
       setField("relatedEntries", (prev) => ({
         ...prev.relatedEntries,
-        errors: omitProperty(prev.relatedEntries.errors, key.relatedEntryRowId),
+        errors: prev.relatedEntries.errors.filter(
+          (error) =>
+            error.sources &&
+            error.sources.length > 0 &&
+            !error.sources.includes(relatedEntryRowId),
+        ),
         notifications: [],
       }));
 
@@ -370,7 +376,15 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     setField("relatedEntries", (prev) => ({
       ...prev.relatedEntries,
       value: prev.relatedEntries.value.filter((row) => row.id !== rowId),
-      errors: omitProperty(prev.relatedEntries.errors, rowId),
+      errors: prev.relatedEntries.errors
+        .filter(
+          (error) =>
+            !error.sources?.includes(rowId) || error.sources.length > 1,
+        )
+        .map((error) => ({
+          ...error,
+          sources: error.sources?.filter((source) => source !== rowId),
+        })),
     }));
   };
 

@@ -5,10 +5,12 @@ import type {
 } from "../formValues";
 
 import type { FormFieldValidationResult } from "@/types/form";
-import { validateRelatedItems } from "@/validation";
+import {
+  validateRelatedItems,
+  type ValidateRelatedItemsMessages,
+} from "@/validation";
 
-const relatedReleaseMessages = {
-  missingRelation: "Choose whether this release is a parent or a child.",
+const relatedReleaseMessages: ValidateRelatedItemsMessages = {
   invalidRelatedId: "Release ID must be a valid UUID.",
   trimmedRelatedId: (releaseId: string) =>
     `Note: release ID "${releaseId}" has been trimmed`,

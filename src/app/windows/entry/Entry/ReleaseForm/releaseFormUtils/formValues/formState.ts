@@ -23,7 +23,6 @@ import {
   type ReleaseFormCatNumbersFieldErrors,
   type ReleaseFormCountriesErrors,
   type ReleaseFormFormatErrors,
-  type ReleaseFormRelatedReleasesErrors,
 } from "../errorMessages";
 import {
   validateDiscogsUrl,
@@ -38,7 +37,7 @@ import type { GeneralizedDateFormInputValue } from "@/app/components/Generalized
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES } from "@/db/db-source-options";
 import type { CountryListItem } from "@/types/countries";
-import type { FormField } from "@/types/form";
+import type { FormField, FormFieldError } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { ReleaseByIdResult } from "@/types/releases";
 import type { TagId } from "@/types/tags";
@@ -68,7 +67,7 @@ export type ReleaseFormState = {
   conditionProblems: FormField<string>;
   relatedReleases: FormField<
     ReleaseFormRelatedReleaseRow[],
-    ReleaseFormRelatedReleasesErrors,
+    FormFieldError[],
     ValidReleaseFormRelatedReleaseRow[]
   >;
   dbSources: FormField<ReadonlySet<DbSource>>;
