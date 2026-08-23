@@ -8,8 +8,6 @@ export type UpsertEntryAltNamesErrors = Record<
   FormFieldError[]
 >;
 
-export type UpsertEntryRelatedEntriesErrors = FormFieldError[];
-
 export type UpsertEntryArtistsErrors = Record<string, FormFieldError[]>;
 
 export type UpsertEntryArtistFieldSource =

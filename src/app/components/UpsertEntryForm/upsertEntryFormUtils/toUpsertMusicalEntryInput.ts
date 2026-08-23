@@ -5,7 +5,6 @@ import type {
 } from "./formValues";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
-import type { RelatedItemRelation } from "@/types/common";
 import type {
   MusicalEntryArtistInput,
   MusicalEntryRelatedEntryInput,
@@ -90,10 +89,6 @@ export const toRelatedEntriesFromForm = (
 ): MusicalEntryRelatedEntryInput[] =>
   rows.map(({ entryId, relation, orderNumber }) => ({
     relatedEntryId: entryId,
-
-    // The form validator guarantees the relation is valid before saving.
-    // TODO: improve this mechanism
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    relation: relation as RelatedItemRelation,
+    relation,
     childEntryOrderNumber: parseInt(orderNumber, 10), // orderNumber is guaranteed to be a positive integer by the form validator
   }));

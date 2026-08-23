@@ -12,7 +12,6 @@ import type {
 import { parseReleaseCatNumbersJsonInput } from "./validation/catalogueNumbersJsonInput";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
-import type { RelatedItemRelation } from "@/types/common";
 import type {
   MusicalReleaseRelatedReleaseInput,
   ReleaseByIdResultCatalogueNumbers,
@@ -65,11 +64,7 @@ export const toRelatedReleasesFromForm = (
 ): MusicalReleaseRelatedReleaseInput[] =>
   rows.map(({ releaseId, relation, orderNumber }) => ({
     relatedReleaseId: releaseId,
-
-    // assertion is safe because the form validator guarantees the relation is valid
-    // TODO: improve this mechanism
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    relation: relation as RelatedItemRelation,
+    relation,
     childReleaseOrderNumber: parseInt(orderNumber, 10), // orderNumber is guaranteed to be a positive integer by the form validator
   }));
 

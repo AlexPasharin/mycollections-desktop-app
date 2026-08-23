@@ -51,8 +51,6 @@ export type ReleaseFormCatNumbersFieldErrors = {
 
 export type RelatedReleaseRowId = string;
 
-export type ReleaseFormRelatedReleasesErrors = FormFieldError[];
-
 export const emptyMutableCountriesSubsectionErrors =
   (): ReleaseFormCountriesSubsectionErrors => ({
     countrySelectErrorMessages: {},

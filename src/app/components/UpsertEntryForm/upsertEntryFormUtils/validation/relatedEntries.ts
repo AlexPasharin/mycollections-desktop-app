@@ -1,10 +1,9 @@
-import type { UpsertEntryRelatedEntriesErrors } from "../errorMessages";
 import type {
   UpsertEntryRelatedEntryRow,
   ValidUpsertEntryRelatedEntryRow,
 } from "../formValues";
 
-import type { FormFieldValidationResult } from "@/types/form";
+import type { FormFieldError, FormFieldValidationResult } from "@/types/form";
 import {
   validateRelatedItems,
   type ValidateRelatedItemsMessages,
@@ -21,7 +20,7 @@ export const validateRelatedEntries = (
   rows: UpsertEntryRelatedEntryRow[],
 ): FormFieldValidationResult<
   ValidUpsertEntryRelatedEntryRow[],
-  UpsertEntryRelatedEntriesErrors,
+  FormFieldError[],
   UpsertEntryRelatedEntryRow[]
 > =>
   validateRelatedItems<UpsertEntryRelatedEntryRow>(rows, {

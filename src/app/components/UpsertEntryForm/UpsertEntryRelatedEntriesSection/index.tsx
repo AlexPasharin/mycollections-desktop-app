@@ -1,17 +1,16 @@
 import type { FC } from "react";
 
-import type { UpsertEntryRelatedEntriesErrors } from "../upsertEntryFormUtils/errorMessages";
 import type { UpsertEntryRelatedEntryRow } from "../upsertEntryFormUtils/formValues";
 
 import RelatedItemsFormSection, {
   type RelatedItemsFormSectionLabels,
 } from "@/app/components/RelatedItemsFormSection";
 import type { RelatedItemRelation } from "@/types/common";
-import type { FeedbackNotifications } from "@/types/form";
+import type { FeedbackNotifications, FormFieldError } from "@/types/form";
 
 type UpsertEntryRelatedEntriesSectionProps = {
   relatedEntries: UpsertEntryRelatedEntryRow[];
-  errors: UpsertEntryRelatedEntriesErrors;
+  errors: FormFieldError[];
   notifications: FeedbackNotifications;
   onChangeEntryId: (rowId: string, entryId: string) => void;
   onChangeRelation: (rowId: string, relation: RelatedItemRelation) => void;

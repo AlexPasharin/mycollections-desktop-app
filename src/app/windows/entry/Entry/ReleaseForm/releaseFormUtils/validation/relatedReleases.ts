@@ -1,10 +1,9 @@
-import type { ReleaseFormRelatedReleasesErrors } from "../errorMessages";
 import type {
   ReleaseFormRelatedReleaseRow,
   ValidReleaseFormRelatedReleaseRow,
 } from "../formValues";
 
-import type { FormFieldValidationResult } from "@/types/form";
+import type { FormFieldError, FormFieldValidationResult } from "@/types/form";
 import {
   validateRelatedItems,
   type ValidateRelatedItemsMessages,
@@ -20,7 +19,7 @@ export const validateRelatedReleases = (
   rows: ReleaseFormRelatedReleaseRow[],
 ): FormFieldValidationResult<
   ValidReleaseFormRelatedReleaseRow[],
-  ReleaseFormRelatedReleasesErrors,
+  FormFieldError[],
   ReleaseFormRelatedReleaseRow[]
 > =>
   validateRelatedItems<ReleaseFormRelatedReleaseRow>(rows, {
