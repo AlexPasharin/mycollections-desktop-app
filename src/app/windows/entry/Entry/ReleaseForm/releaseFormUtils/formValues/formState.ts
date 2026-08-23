@@ -194,10 +194,13 @@ export const initialReleaseFormStateValue = ({
     notifications: [],
   },
   relatedReleases: {
-    value: relatedReleasesToFormValue(
-      releaseBlueprint?.parentReleases,
-      releaseBlueprint?.childReleases,
-    ),
+    value:
+      mode === "create"
+        ? []
+        : relatedReleasesToFormValue(
+            releaseBlueprint?.parentReleases,
+            releaseBlueprint?.childReleases,
+          ),
     valid: true,
     validationFn: validateRelatedReleases,
     errors: initialReleaseFormFieldErrors.relatedReleases,

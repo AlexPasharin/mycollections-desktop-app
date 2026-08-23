@@ -88,8 +88,8 @@ const ReleaseFormBlueprintLoader: FC<ReleaseFormBlueprintLoaderProps> = ({
         Populate from an existing release
       </label>
       <p className="m-0 text-[0.9em] text-[#555]">
-        Paste a release ID to fill the form with that release&apos;s data. Name
-        and Discogs URL are not copied.
+        Paste a release ID to fill the form with that release&apos;s data. Name,
+        discogs URL and related releases are not copied.
       </p>
       <div className="mt-[0.15rem] flex flex-wrap items-center gap-2">
         <input
