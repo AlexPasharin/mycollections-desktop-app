@@ -6,18 +6,15 @@ import RelatedArtistsFormSection, {
 
 import type { ArtistUpsertRelatedArtistRow } from "../artistUpsertFormUtils/formValues";
 
-import type {
-  FeedbackNotifications,
-  FormFieldError,
-  FormRelatedItemRelation,
-} from "@/types/form";
+import type { RelatedItemRelation } from "@/types/common";
+import type { FeedbackNotifications, FormFieldError } from "@/types/form";
 
 type ArtistUpsertRelatedArtistsSectionProps = {
   relatedArtists: ArtistUpsertRelatedArtistRow[];
   errors: Record<string, FormFieldError[]>;
   notifications: FeedbackNotifications;
   onChangeArtistId: (rowId: string, artistId: string) => void;
-  onChangeRelation: (rowId: string, relation: FormRelatedItemRelation) => void;
+  onChangeRelation: (rowId: string, relation: RelatedItemRelation | "") => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
   onFocus: (rowId: string) => void;

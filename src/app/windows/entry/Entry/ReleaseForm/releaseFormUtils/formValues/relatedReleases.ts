@@ -12,11 +12,14 @@ export type ValidReleaseFormRelatedReleaseRow = ReleaseFormRelatedReleaseRow & {
   relation: RelatedItemRelation;
 };
 
-export const defaultRelatedReleaseRow = (): ReleaseFormRelatedReleaseRow =>
+export const defaultRelatedReleaseRow = (
+  childReleaseOrderNumber: number | null,
+): ReleaseFormRelatedReleaseRow =>
   withNewId({
     releaseId: "",
-    relation: "",
-    orderNumber: "",
+    relation: "child",
+    orderNumber:
+      childReleaseOrderNumber === null ? "" : String(childReleaseOrderNumber),
   });
 
 export const relatedReleasesToFormValue = (

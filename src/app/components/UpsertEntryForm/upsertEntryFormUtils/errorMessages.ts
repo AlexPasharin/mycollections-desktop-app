@@ -8,8 +8,6 @@ export type UpsertEntryAltNamesErrors = Record<
   FormFieldError[]
 >;
 
-export type UpsertEntryRelatedEntriesErrors = Record<string, FormFieldError[]>;
-
 export type UpsertEntryArtistsErrors = Record<string, FormFieldError[]>;
 
 export type UpsertEntryArtistFieldSource =
@@ -26,7 +24,7 @@ export const initialUpsertEntryFormFieldErrors = {
   selectedTypes: [],
   artists: {},
   altNames: {},
-  relatedEntries: {},
+  relatedEntries: [],
   partOfQueenCollection: [],
   relationToQueen: [],
 };

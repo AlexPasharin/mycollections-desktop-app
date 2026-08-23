@@ -53,8 +53,8 @@ import NotificationMessages from "@/app/components/NotificationMessages";
 import api from "@/app/windows/entry/api";
 import type { DbSource } from "@/db/db-source";
 import { dbSourceLabel } from "@/db/db-source-options";
+import type { RelatedItemRelation } from "@/types/common";
 import type { CountryListItem } from "@/types/countries";
-import type { FormRelatedItemRelation } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
 import type {
@@ -64,6 +64,7 @@ import type {
 import type { TagListItem } from "@/types/tags";
 import { isDateInputFieldKey, omitProperty } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
+import { getNextOrderNumber } from "@/utils/relatedItems";
 
 export type ReleaseFormTabData =
   | (ReleaseFormTabCreateModeSharedData & {
@@ -262,7 +263,12 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
 
       setField("relatedReleases", (prev) => ({
         ...prev.relatedReleases,
-        errors: omitProperty(prev.relatedReleases.errors, relatedReleaseRowId),
+        errors: prev.relatedReleases.errors.filter(
+          (error) =>
+            error.sources &&
+            error.sources.length > 0 &&
+            !error.sources.includes(relatedReleaseRowId),
+        ),
         notifications: [],
       }));
 
@@ -393,7 +399,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   const addRelatedReleaseRow = () => {
     setFieldValue("relatedReleases", (prev) => [
       ...prev.relatedReleases.value,
-      defaultRelatedReleaseRow(),
+      defaultRelatedReleaseRow(getNextOrderNumber(prev.relatedReleases.value)),
     ]);
   };
 
@@ -401,7 +407,15 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
     setField("relatedReleases", (prev) => ({
       ...prev.relatedReleases,
       value: prev.relatedReleases.value.filter((row) => row.id !== rowId),
-      errors: omitProperty(prev.relatedReleases.errors, rowId),
+      errors: prev.relatedReleases.errors
+        .filter(
+          (error) =>
+            !error.sources?.includes(rowId) || error.sources.length > 1,
+        )
+        .map((error) => ({
+          ...error,
+          sources: error.sources?.filter((source) => source !== rowId),
+        })),
     }));
   };
 
@@ -415,7 +429,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
 
   const setRelatedReleaseRelation = (
     rowId: string,
-    relation: FormRelatedItemRelation,
+    relation: RelatedItemRelation,
   ) => {
     setFieldValue("relatedReleases", (prev) =>
       prev.relatedReleases.value.map((row) =>

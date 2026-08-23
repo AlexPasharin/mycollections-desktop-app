@@ -34,6 +34,7 @@ import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput"
 import NotificationMessages from "@/app/components/NotificationMessages";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
+import type { RelatedItemRelation } from "@/types/common";
 import type {
   CreateMusicalEntry,
   CreateMusicalEntryInput,
@@ -47,11 +48,11 @@ import type {
   FormFeedback,
   FeedbackErrors,
   FeedbackNotifications,
-  FormRelatedItemRelation,
 } from "@/types/form";
 import type { TagListItem } from "@/types/tags";
 import { isDateInputFieldKey, omitProperty } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
+import { getNextOrderNumber } from "@/utils/relatedItems";
 
 type UpsertEntryFormSharedProps = {
   primaryDbSource: DbSource;
@@ -192,9 +193,15 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     }
 
     if (isRelatedEntriesInputFieldKey(key)) {
+      const { relatedEntryRowId } = key;
       setField("relatedEntries", (prev) => ({
         ...prev.relatedEntries,
-        errors: omitProperty(prev.relatedEntries.errors, key.relatedEntryRowId),
+        errors: prev.relatedEntries.errors.filter(
+          (error) =>
+            error.sources &&
+            error.sources.length > 0 &&
+            !error.sources.includes(relatedEntryRowId),
+        ),
         notifications: [],
       }));
 
@@ -361,7 +368,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
   const addRelatedEntryRow = () => {
     setFieldValue("relatedEntries", (prev) => [
       ...prev.relatedEntries.value,
-      defaultRelatedEntryRow(),
+      defaultRelatedEntryRow(getNextOrderNumber(prev.relatedEntries.value)),
     ]);
   };
 
@@ -369,7 +376,15 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     setField("relatedEntries", (prev) => ({
       ...prev.relatedEntries,
       value: prev.relatedEntries.value.filter((row) => row.id !== rowId),
-      errors: omitProperty(prev.relatedEntries.errors, rowId),
+      errors: prev.relatedEntries.errors
+        .filter(
+          (error) =>
+            !error.sources?.includes(rowId) || error.sources.length > 1,
+        )
+        .map((error) => ({
+          ...error,
+          sources: error.sources?.filter((source) => source !== rowId),
+        })),
     }));
   };
 
@@ -383,7 +398,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
 
   const setRelatedEntryRelation = (
     rowId: string,
-    relation: FormRelatedItemRelation,
+    relation: RelatedItemRelation,
   ) => {
     setFieldValue("relatedEntries", (prev) =>
       prev.relatedEntries.value.map((row) =>
@@ -497,13 +512,14 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           mode,
         );
 
-        setIsConfirmOpen(false);
-
         if (savedEntry) {
           onEntrySaved(savedEntry, { notifications, errors });
-        } else if (errors.length > 0) {
-          setSubmitError(errors.map((error) => error.message).join("\n"));
+          setIsConfirmOpen(false);
+
+          return;
         }
+
+        setSubmitError(errors.map((error) => error.message).join("\n"));
       })
       .catch((error: unknown) => {
         const errorMessage = `Failed to ${mode} musical entry`;

@@ -1,18 +1,17 @@
 import { validate as isValidUuid } from "uuid";
 
-import type { RelatedItemRelation } from "@/types/common";
 import type {
   FormFieldError,
   FormFieldValidationResult,
   RelatedOrderedItemRow,
 } from "@/types/form";
+import { isChildReleasesOrderNumbersSequential } from "@/utils/relatedItems";
 import { strictStringToIntSchema } from "@/validation";
 
 const DEFAULT_INVALID_ORDER_NUMBER_MESSAGE =
   "Child order number must be an integer greater than 0.";
 
-type ValidateRelatedItemsMessages = {
-  missingRelation: string;
+export type ValidateRelatedItemsMessages = {
   invalidRelatedId: string;
   invalidOrderNumber?: string;
   trimmedRelatedId: (relatedId: string) => string;
@@ -24,79 +23,85 @@ type ValidateRelatedItemsConfig<TRow extends RelatedOrderedItemRow> = {
   messages: ValidateRelatedItemsMessages;
 };
 
-type TValidRow<TRow extends RelatedOrderedItemRow> = TRow & {
-  relation: RelatedItemRelation;
-};
-
 export const validateRelatedItems = <TRow extends RelatedOrderedItemRow>(
   rows: TRow[],
   { getRelatedId, withRelatedId, messages }: ValidateRelatedItemsConfig<TRow>,
-): FormFieldValidationResult<
-  TValidRow<TRow>[],
-  Record<string, FormFieldError[]>,
-  TRow[]
-> => {
-  const errors: Record<string, FormFieldError[]> = {};
+): FormFieldValidationResult<TRow[], FormFieldError[]> => {
+  const errorMessages: FormFieldError[] = [];
   const validatedRows: TRow[] = [];
   const notifications = [];
-  let valid = true;
 
-  const missingRelationError = { message: messages.missingRelation };
-  const invalidRelatedIdError = { message: messages.invalidRelatedId };
-  const invalidOrderNumberError = {
-    message:
-      messages.invalidOrderNumber ?? DEFAULT_INVALID_ORDER_NUMBER_MESSAGE,
-  };
+  const usedUuids = new Map<string, string[]>();
 
   for (const row of rows) {
-    const rowErrors = [];
-    const trimmedRelatedId = getRelatedId(row).trim();
-
-    if (row.relation === "") {
-      rowErrors.push(missingRelationError);
-    }
+    const rowId = row.id;
+    const relatedId = getRelatedId(row);
+    const trimmedRelatedId = relatedId.trim();
 
     if (!isValidUuid(trimmedRelatedId)) {
-      rowErrors.push(invalidRelatedIdError);
+      errorMessages.push({
+        message: messages.invalidRelatedId,
+        sources: [rowId],
+      });
     }
+
+    usedUuids.set(trimmedRelatedId, [
+      ...(usedUuids.get(trimmedRelatedId) ?? []),
+      rowId,
+    ]);
 
     const parsedOrderNumber = strictStringToIntSchema.safeParse(
       row.orderNumber.trim(),
     );
 
     if (!parsedOrderNumber.success || parsedOrderNumber.data <= 0) {
-      rowErrors.push(invalidOrderNumberError);
-    }
-
-    if (rowErrors.length > 0) {
-      valid = false;
-      errors[row.id] = rowErrors;
+      errorMessages.push({
+        message:
+          messages.invalidOrderNumber ?? DEFAULT_INVALID_ORDER_NUMBER_MESSAGE,
+        sources: [rowId],
+      });
     }
 
     validatedRows.push(withRelatedId(row, trimmedRelatedId));
 
-    if (trimmedRelatedId !== getRelatedId(row)) {
+    if (trimmedRelatedId !== relatedId) {
       notifications.push({
         notification: messages.trimmedRelatedId(trimmedRelatedId),
       });
     }
   }
 
+  for (const [relatedId, rowIds] of usedUuids.entries()) {
+    if (rowIds.length > 1) {
+      errorMessages.push({
+        message: `Duplicate uuid "${relatedId}" used by multiple rows.`,
+        sources: rowIds,
+      });
+    }
+  }
+
+  const isSequential = isChildReleasesOrderNumbersSequential(validatedRows);
+
+  if (!isSequential) {
+    errorMessages.push({
+      message: "Child order numbers must be sequential starting from 1.",
+    });
+  }
+
+  const valid = errorMessages.length === 0;
+
   if (!valid) {
     return {
       valid: false,
       value: validatedRows,
-      errorMessages: errors,
+      errorMessages,
       notifications: notifications.length > 0 ? notifications : undefined,
     };
   }
 
   return {
     valid: true,
-
-    // Relation is verified above for every row when valid is true.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    value: validatedRows as unknown as TValidRow<TRow>[],
+    value: validatedRows,
     notifications: notifications.length > 0 ? notifications : undefined,
   };
 };

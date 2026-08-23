@@ -51,11 +51,6 @@ export type ReleaseFormCatNumbersFieldErrors = {
 
 export type RelatedReleaseRowId = string;
 
-export type ReleaseFormRelatedReleasesErrors = Record<
-  RelatedReleaseRowId,
-  FormFieldError[]
->;
-
 export const emptyMutableCountriesSubsectionErrors =
   (): ReleaseFormCountriesSubsectionErrors => ({
     countrySelectErrorMessages: {},
@@ -79,7 +74,7 @@ export const initialReleaseFormFieldErrors = {
   selectedTags: [],
   partOfQueenCollection: [],
   relationToQueen: [],
-  relatedReleases: {},
+  relatedReleases: [],
   dbSources: [],
 };
 

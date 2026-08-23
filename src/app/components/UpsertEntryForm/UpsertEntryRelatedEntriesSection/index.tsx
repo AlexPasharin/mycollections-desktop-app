@@ -1,22 +1,19 @@
 import type { FC } from "react";
 
-import type { UpsertEntryRelatedEntriesErrors } from "../upsertEntryFormUtils/errorMessages";
 import type { UpsertEntryRelatedEntryRow } from "../upsertEntryFormUtils/formValues";
 
 import RelatedItemsFormSection, {
   type RelatedItemsFormSectionLabels,
 } from "@/app/components/RelatedItemsFormSection";
-import type {
-  FeedbackNotifications,
-  FormRelatedItemRelation,
-} from "@/types/form";
+import type { RelatedItemRelation } from "@/types/common";
+import type { FeedbackNotifications, FormFieldError } from "@/types/form";
 
 type UpsertEntryRelatedEntriesSectionProps = {
   relatedEntries: UpsertEntryRelatedEntryRow[];
-  errors: UpsertEntryRelatedEntriesErrors;
+  errors: FormFieldError[];
   notifications: FeedbackNotifications;
   onChangeEntryId: (rowId: string, entryId: string) => void;
-  onChangeRelation: (rowId: string, relation: FormRelatedItemRelation) => void;
+  onChangeRelation: (rowId: string, relation: RelatedItemRelation) => void;
   onChangeOrderNumber: (rowId: string, orderNumber: string) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
@@ -61,8 +58,8 @@ const ENTRY_RELATED_ITEMS_LABELS: RelatedItemsFormSectionLabels = {
   listAriaLabel: "Related entries",
   relatedIdLabel: "Entry ID",
   relatedIdPlaceholder: "Entry ID",
-  removeItemAriaLabel: (index) => `Remove related entry ${index + 1}`,
-  addRowButtonLabel: "Add related entry",
+  removeItemAriaLabel: (orderNumber) => `Remove child entry ${orderNumber}`,
+  addRowButtonLabel: "Add child entry",
   notificationsId: "upsert-entry-related-entries-notifications",
   rowIdPrefix: "upsert-entry-related-entry",
 };

@@ -54,12 +54,9 @@ export type FormFeedback = {
   notifications: FeedbackNotifications;
   errors: FeedbackErrors;
 };
-
-export type FormRelatedItemRelation = RelatedItemRelation | "";
-
-export type RelatedItemRow = {
+export type RelatedItemRow<Relation extends string = RelatedItemRelation> = {
   id: string;
-  relation: FormRelatedItemRelation;
+  relation: Relation;
 };
 
 export type RelatedOrderedItemRow = RelatedItemRow & {
