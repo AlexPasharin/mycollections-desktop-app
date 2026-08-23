@@ -21,8 +21,8 @@ const INVALID_OBJECT_KEYS_MESSAGE =
 const INVALID_VINYL_MATRIX_RUNOUT_KEYS_MESSAGE =
   "Invalid vinyl matrix/runout keys (see documentation for allowed combinations).";
 
-const INVALID_DIGITAL_MATRIX_RUNOUT_VALUE_MESSAGE =
-  "Invalid digital matrix/runout value (see documentation for allowed values).";
+const INVALID_MIXED_MATRIX_RUNOUT_VALUE_MESSAGE =
+  "Invalid mixed matrix/runout value (see documentation for allowed values).";
 
 /** String, or arbitrarily nested string-keyed objects whose leaves are all strings. */
 export type StringLeafJson = string | { [key: string]: StringLeafJson };
@@ -31,8 +31,11 @@ const stringLeafJsonSchema: z.ZodType<StringLeafJson> = z.lazy(() =>
   z.union([z.string(), z.record(z.string(), stringLeafJsonSchema)]),
 );
 
-/** Allowed digital-format keys (matches extract_matrix_runout_jsonb_obj_keys). */
-const DIGITAL_KEY_REGEX = /^(?:(?:CD|DVD|BD|4HD_BD)(?:[1-9]\d*)?|LP|3'CD)$/;
+/** Allowed mixed-case format keys (matches extract_matrix_runout_jsonb_obj_keys).
+ * "BD-A" has to be listed before "BD", so that "BD-A" is not matched as "BD" followed by an invalid suffix. */
+const MIXED_KEY_REGEX = /^(?:CD|DVD|BD-A|BD|4HD_BD|3'CD|LP)(?:[1-9]\d*)?$/;
+
+const LP_KEY_REGEX = /^LP(?:[1-9]\d*)?$/;
 
 const mirroredCaseSchema = z.strictObject({
   mirrored: z.string(),
@@ -51,7 +54,7 @@ const vinylKeyValueSchema = z.union([z.string(), etchedObjectSchema], {
 
 const classifyMatrixRunoutKey = (
   key: string,
-): "mirrored" | "vinyl" | "digital" | null => {
+): "mirrored" | "vinyl" | "mixed" | null => {
   if (key === "mirrored" || key === "normal") {
     return "mirrored";
   }
@@ -65,8 +68,8 @@ const classifyMatrixRunoutKey = (
     return "vinyl";
   }
 
-  if (DIGITAL_KEY_REGEX.test(key)) {
-    return "digital";
+  if (MIXED_KEY_REGEX.test(key)) {
+    return "mixed";
   }
 
   return null;
@@ -131,32 +134,23 @@ const validateVinylMatrixRunoutKeys = (vinylCaseKeys: string[]): boolean => {
   return max - min + 1 === distinctCodes.length;
 };
 
-/** Mirrors `validate_digital_keys` postgres function */
-const validateDigitalMatrixRunoutKeys = (
-  digitalCaseKeys: string[],
-): boolean => {
-  const cdKeys: string[] = [];
-  const dvdKeys: string[] = [];
-  const bdKeys: string[] = [];
-  const hdBdKeys: string[] = [];
+/** Mirrors `validate_format_keys` postgres function */
+const validateMixedMatrixRunoutKeys = (mixedCaseKeys: string[]): boolean => {
+  const keysByFormatPrefix = new Map<string, string[]>();
 
-  for (const key of digitalCaseKeys) {
-    if (/^CD\d*$/.test(key)) {
-      cdKeys.push(key);
-    } else if (/^DVD\d*$/.test(key)) {
-      dvdKeys.push(key);
-    } else if (/^BD\d*$/.test(key)) {
-      bdKeys.push(key);
-    } else if (/^4HD_BD\d*$/.test(key)) {
-      hdBdKeys.push(key);
+  for (const key of mixedCaseKeys) {
+    const formatPrefix = key.replace(/\d+$/, "");
+    const formatKeys = keysByFormatPrefix.get(formatPrefix);
+
+    if (formatKeys) {
+      formatKeys.push(key);
+    } else {
+      keysByFormatPrefix.set(formatPrefix, [key]);
     }
   }
 
-  return (
-    checkSequentialStringsSuffixNumberingValidity(cdKeys) &&
-    checkSequentialStringsSuffixNumberingValidity(dvdKeys) &&
-    checkSequentialStringsSuffixNumberingValidity(bdKeys) &&
-    checkSequentialStringsSuffixNumberingValidity(hdBdKeys)
+  return Array.from(keysByFormatPrefix.values()).every(
+    checkSequentialStringsSuffixNumberingValidity,
   );
 };
 
@@ -173,28 +167,29 @@ const vinylCaseSchema = z
     }
   });
 
-const digitalNonLpValueSchema = z.union([z.string(), mirroredCaseSchema], {
-  message: INVALID_DIGITAL_MATRIX_RUNOUT_VALUE_MESSAGE,
+const mixedNonLpValueSchema = z.union([z.string(), mirroredCaseSchema], {
+  message: INVALID_MIXED_MATRIX_RUNOUT_VALUE_MESSAGE,
 });
 
-const digitalCaseSchema = z
+const mixedCaseSchema = z
   .record(z.string(), stringLeafJsonSchema)
   .superRefine((obj, ctx) => {
     const keys = Object.keys(obj);
 
-    if (!validateDigitalMatrixRunoutKeys(keys)) {
+    if (!validateMixedMatrixRunoutKeys(keys)) {
       ctx.addIssue({
         code: "custom",
         message:
-          "Invalid digital matrix/runout keys (CD/DVD/BD/4HD_BD numbering rules).",
+          "Invalid mixed matrix/runout keys (format key numbering rules).",
       });
 
       return;
     }
 
     for (const [key, value] of Object.entries(obj)) {
-      const valueSchema =
-        key === "LP" ? vinylCaseSchema : digitalNonLpValueSchema;
+      const valueSchema = LP_KEY_REGEX.test(key)
+        ? vinylCaseSchema
+        : mixedNonLpValueSchema;
 
       const r = valueSchema.safeParse(value);
 
@@ -211,7 +206,7 @@ const matrixRunoutObjectSchema = z
 
     let hasMirrored = false;
     let hasVinyl = false;
-    let hasDigital = false;
+    let hasMixed = false;
 
     for (const key of keys) {
       const category = classifyMatrixRunoutKey(key);
@@ -230,12 +225,12 @@ const matrixRunoutObjectSchema = z
       } else if (category === "vinyl") {
         hasVinyl = true;
       } else {
-        hasDigital = true;
+        hasMixed = true;
       }
     }
 
     const mask =
-      (hasMirrored ? 1 : 0) + (hasVinyl ? 2 : 0) + (hasDigital ? 4 : 0);
+      (hasMirrored ? 1 : 0) + (hasVinyl ? 2 : 0) + (hasMixed ? 4 : 0);
 
     const schema =
       mask === 1
@@ -243,7 +238,7 @@ const matrixRunoutObjectSchema = z
         : mask === 2
           ? vinylCaseSchema
           : mask === 4
-            ? digitalCaseSchema
+            ? mixedCaseSchema
             : null;
 
     if (schema) {
@@ -270,5 +265,3 @@ export const releaseMatrixRunoutSchema = z.union([
 ]);
 
 export type ReleaseMatrixRunout = z.infer<typeof releaseMatrixRunoutSchema>;
-export type MatrixRunoutVinylCase = z.infer<typeof vinylCaseSchema>;
-export type MatrixRunoutDigitalCase = z.infer<typeof digitalCaseSchema>;
