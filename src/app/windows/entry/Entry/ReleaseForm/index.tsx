@@ -25,6 +25,7 @@ type ReleaseFormWrapperProps = Omit<
   referenceDataLoading: boolean;
   referenceDataLoadFailed: boolean;
   tags: TagListItem[];
+  setAddReleaseMode: () => void;
 };
 
 const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
@@ -40,6 +41,7 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
     allCountries,
     primaryDbSource,
     labels,
+    setAddReleaseMode,
   } = props;
 
   const tagsAvailableForReleases = useMemo(
@@ -121,6 +123,7 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
       setFormState={setFormState}
       tagsAvailableForReleases={tagsAvailableForReleases}
       tabData={tabData}
+      setAddReleaseMode={setAddReleaseMode}
     />
   );
 };

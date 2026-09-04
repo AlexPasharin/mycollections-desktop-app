@@ -81,6 +81,10 @@ export type ReleaseFormTabData =
         notifications: string[],
         errors: string[],
       ) => void;
+      onUseReleaseAsBlueprint: (
+        releaseBlueprint: ReleaseByIdResult,
+        releaseId?: string,
+      ) => void;
     });
 
 export type ReleaseFormProps = {
@@ -94,6 +98,7 @@ export type ReleaseFormProps = {
   setFormState: Dispatch<SetStateAction<ReleaseFormState>>;
   onClearFormState: () => void;
   tabData: ReleaseFormTabData;
+  setAddReleaseMode: () => void;
 };
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
@@ -120,6 +125,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   formState,
   setFormState,
   tabData,
+  setAddReleaseMode,
 }) => {
   const isUpdateMode = tabData.mode === "update";
 
@@ -543,6 +549,8 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       return;
     }
 
+    console.info("releaseId", tabData.releaseId);
+
     const validationResults = {
       releaseVersion: validateField("releaseVersion"),
       discogsUrl: validateField("discogsUrl"),
@@ -640,7 +648,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
     ];
     const savePromise = isUpdateMode
       ? updateReleasesAcrossDbSources(
-          tabData.releaseBlueprint.releaseId,
+          tabData.releaseId,
           upsertInput,
           orderedTargets,
         )
@@ -730,28 +738,33 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       ? RELEASE_VERSION_FIELD_NOTIFICATIONS_ID
       : null,
   ]
-    .filter((id): id is string => id !== null)
+    .filter((id) => id !== null)
     .join(" ");
 
   const discogsUrlDescribedByIds = [
     hasDiscogsUrlErrors ? DISCOGS_URL_FIELD_ERROR_ID : null,
     hasDiscogsUrlNotifications ? DISCOGS_URL_FIELD_NOTIFICATIONS_ID : null,
   ]
-    .filter((id): id is string => id !== null)
+    .filter((id) => id !== null)
     .join(" ");
 
   return (
     <div className={styles.section}>
       <form className={styles.form} onSubmit={handleSubmit}>
-        {!isUpdateMode && (
-          <>
-            <ReleaseFormBlueprintLoader
-              primaryDbSource={primaryDbSource}
-              onReleaseFetched={tabData.onUseReleaseAsBlueprint}
-            />
-            <FormSectionsDivider />
-          </>
+        {isUpdateMode && (
+          <button
+            type="button"
+            className={`${styles.cancelButton} mb-4`}
+            onClick={setAddReleaseMode}
+          >
+            Back to &quot;create new release&quot; mode
+          </button>
         )}
+        <ReleaseFormBlueprintLoader
+          primaryDbSource={primaryDbSource}
+          onReleaseFetched={tabData.onUseReleaseAsBlueprint}
+        />
+        <FormSectionsDivider />
 
         <div className={styles.field}>
           <label className={styles.heading} htmlFor="add-release-version">
