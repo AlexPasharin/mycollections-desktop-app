@@ -166,7 +166,9 @@ export const initialReleaseFormStateValue = ({
   },
   partOfQueenCollection: {
     value:
-      releaseBlueprint?.partOfQueenCollection ?? entry.partOfQueenCollection,
+      (entry.partOfQueenCollection ||
+        releaseBlueprint?.partOfQueenCollection) ??
+      false,
     valid: true,
     validationFn: validatePassThrough,
     errors: initialReleaseFormFieldErrors.partOfQueenCollection,

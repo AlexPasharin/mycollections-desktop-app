@@ -2,9 +2,7 @@
 // Please do not change this file!
 interface CssExports {
   'flagsSuffix': string;
-  'jsonBlock': string;
   'list': string;
-  'multiline': string;
   'preview': string;
 }
 export const cssExports: CssExports;

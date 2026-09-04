@@ -10,13 +10,12 @@ import {
 } from "../releaseFormUtils/toUpsertMusicalReleaseInput";
 
 import FormPreviewField, {
-  FormPreviewBlockField,
+  JsonField,
 } from "@/app/components/Form/FormPreviewField";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { TagListItem } from "@/types/tags";
-import { formatJson, nullIfEmpty } from "@/utils/common";
+import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
-import { orPlaceholder } from "@/utils/form";
 
 type ReleaseFormPreviewProps = {
   formState: ReleaseFormState;
@@ -63,20 +62,16 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
       <FormPreviewField label="Name">
         {formState.name.value.name}
       </FormPreviewField>
-      <FormPreviewField label="Release date">
-        {orPlaceholder(releaseDate)}
-      </FormPreviewField>
+      <FormPreviewField label="Release date">{releaseDate}</FormPreviewField>
       <FormPreviewField label="Discogs URL">
-        {discogsUrl === null ? (
-          orPlaceholder(discogsUrl)
-        ) : (
+        {discogsUrl === null ? null : (
           <a href={discogsUrl} target="_blank" rel="noreferrer">
             {discogsUrl}
           </a>
         )}
       </FormPreviewField>
-      <FormPreviewBlockField label="Formats">
-        {formats.length > 0 ? (
+      <FormPreviewField label="Formats">
+        {formats.length ? (
           <ul className={styles.list}>
             {formats.map((row) => {
               const shortName =
@@ -98,22 +93,16 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
               );
             })}
           </ul>
-        ) : (
-          orPlaceholder(null)
-        )}
-      </FormPreviewBlockField>
+        ) : null}
+      </FormPreviewField>
       <JsonField label="Countries" value={countriesJson} />
       <JsonField label="Catalogue numbers" value={catNumbersJson} />
       <JsonField label="Matrix / runout" value={matrixRunoutJson} />
       <FormPreviewField label="Tags">
-        {orPlaceholder(
-          selectedTagNames.length === 0 ? null : selectedTagNames.join(", "),
-        )}
+        {selectedTagNames.join(", ")}
       </FormPreviewField>
-      <FormPreviewBlockField label="Related releases">
-        {relatedReleases.length === 0 ? (
-          orPlaceholder(null)
-        ) : (
+      <FormPreviewField label="Related releases">
+        {relatedReleases.length === 0 ? null : (
           <ul className={styles.list}>
             {relatedReleases.map((row) => (
               <li key={row.id}>
@@ -124,32 +113,15 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
             ))}
           </ul>
         )}
-      </FormPreviewBlockField>
+      </FormPreviewField>
       <FormPreviewField label="Part of Queen collection">
         {formState.partOfQueenCollection.value ? "Yes" : "No"}
       </FormPreviewField>
-      <FormPreviewBlockField label="Relation to Queen">
-        <p className={styles.multiline}>{orPlaceholder(relationToQueen)}</p>
-      </FormPreviewBlockField>
-      <FormPreviewBlockField label="Comment">
-        <p className={styles.multiline}>{orPlaceholder(comment)}</p>
-      </FormPreviewBlockField>
-      <FormPreviewBlockField label="Condition problems">
-        <p className={styles.multiline}>{orPlaceholder(conditionProblems)}</p>
-      </FormPreviewBlockField>
+      <JsonField label="Relation to Queen" value={relationToQueen} />
+      <JsonField label="Comment" value={comment} />
+      <JsonField label="Condition problems" value={conditionProblems} />
     </div>
   );
 };
 
 export default ReleaseFormPreview;
-
-type JsonFieldProps = {
-  label: string;
-  value: unknown;
-};
-
-const JsonField: FC<JsonFieldProps> = ({ label, value }) => (
-  <FormPreviewBlockField label={label}>
-    <pre className={styles.jsonBlock}>{formatJson(value)}</pre>
-  </FormPreviewBlockField>
-);

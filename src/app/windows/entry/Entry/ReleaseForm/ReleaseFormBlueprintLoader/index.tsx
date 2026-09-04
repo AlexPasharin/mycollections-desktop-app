@@ -7,7 +7,7 @@ import type { ReleaseByIdResult } from "@/types/releases";
 
 type ReleaseFormBlueprintLoaderProps = {
   primaryDbSource: DbSource;
-  onReleaseFetched: (release: ReleaseByIdResult) => void;
+  onReleaseFetched: (release: ReleaseByIdResult, releaseId?: string) => void;
 };
 
 const RELEASE_ID_INPUT_ID = "add-release-blueprint-release-id";

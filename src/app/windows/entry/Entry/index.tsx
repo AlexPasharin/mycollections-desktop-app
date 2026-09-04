@@ -74,11 +74,11 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
   );
   const isFocusedReleaseView = focusedReleaseId !== null;
   const [activeTab, setActiveTab] = useState<EntryTab>(
-    entryTabInitialState("releaseUpsertForm"),
+    entryTabInitialState("releases"),
   );
 
   const [tags, setTags] = useState<TagListItem[]>([]);
-  const [tagsLoading, setTagsLoading] = useState(false);
+  const [tagsLoading, setTagsLoading] = useState(true);
   const [tagsLoadFailed, setTagsLoadFailed] = useState(false);
 
   const [releaseFormState, setReleaseFormState] =
@@ -88,19 +88,17 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
   const [allFormats, setAllFormats] = useState<ReleasesFormatListItem[]>([]);
   const [labels, setLabels] = useState<LabelListItem[]>([]);
   const [addReleaseReferenceDataLoading, setAddReleaseReferenceDataLoading] =
-    useState(false);
+    useState(true);
   const [
     addReleaseReferenceDataLoadFailed,
     setAddReleaseReferenceDataLoadFailed,
   ] = useState(false);
   const addReleaseReferenceDataDbSourceRef = useRef<DbSource | null>(null);
-  const fetchAddReleaseReferenceDataTokenRef = useRef(0);
 
   const [allCountries, setAllCountries] = useState<CountryListItem[]>([]);
-  const [countriesLoading, setCountriesLoading] = useState(false);
+  const [countriesLoading, setCountriesLoading] = useState(true);
   const [countriesLoadFailed, setCountriesLoadFailed] = useState(false);
   const countriesDbSourceRef = useRef<DbSource | null>(null);
-  const fetchCountriesTokenRef = useRef(0);
 
   const [latestUpdateEntryFeedback, setLatestUpdateEntryFeedback] =
     useState<FormFeedback>(formFeedbackInitialValue);
@@ -129,6 +127,10 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
 
   const handleTabChange = (tabId: EntryTabId) => {
     setActiveTab(entryTabInitialState(tabId));
+
+    if (tabId === "releaseUpsertForm") {
+      setReleaseFormState(null);
+    }
   };
 
   const handleReleaseCreated = (
@@ -177,6 +179,7 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
       id: "releaseUpsertForm",
       data: {
         mode: "update",
+        releaseId: release.releaseId,
         releaseBlueprint: release,
         dbSources,
       },
@@ -187,25 +190,44 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
     const dbSources = releaseFormState?.dbSources.value;
 
     setReleaseFormState(null);
-    setActiveTab({
-      id: "releaseUpsertForm",
-      data: {
-        mode: "create",
-        releaseBlueprint,
-        dbSources,
-      },
+    setActiveTab((tab) => {
+      const mode = tab.data?.mode ?? "create";
+
+      if (mode === "create") {
+        return {
+          id: "releaseUpsertForm",
+          data: {
+            mode,
+            releaseBlueprint,
+            dbSources,
+          },
+        };
+      }
+
+      return {
+        id: "releaseUpsertForm",
+        data: {
+          mode,
+          releaseId: tab.data?.releaseId ?? releaseBlueprint.releaseId,
+          releaseBlueprint,
+          dbSources,
+        },
+      };
     });
   };
 
   useEffect(() => {
     setReleaseFormState(null);
     setActiveTab((tab) => entryTabInitialState(tab.id));
-    setTags([]);
+
     setTagsLoadFailed(false);
     tagsDbSourceRef.current = null;
+
+    setTags([]);
     setAllFormats([]);
     setLabels([]);
     setAllCountries([]);
+
     setCountriesLoadFailed(false);
     countriesDbSourceRef.current = null;
     setAddReleaseReferenceDataLoadFailed(false);
@@ -213,7 +235,6 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
     editEntryDraftRef.current = null;
   }, [entry.entryId]);
 
-  const fetchTagsTokenRef = useRef(0);
   const tagsDbSourceRef = useRef<DbSource | null>(null);
 
   useEffect(() => {
@@ -224,34 +245,39 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
       return;
     }
 
-    const token = ++fetchTagsTokenRef.current;
+    let cancelled = false;
     setTagsLoading(true);
     setTagsLoadFailed(false);
 
     api
       .fetchTags(primaryDbSource)
       .then((tagsData) => {
-        if (token !== fetchTagsTokenRef.current) {
+        if (cancelled) {
           return;
         }
 
         setTags(tagsData);
         tagsDbSourceRef.current = primaryDbSource;
-        setTagsLoading(false);
       })
       .catch((error: unknown) => {
         console.error("Error fetching tags", error);
 
-        if (token !== fetchTagsTokenRef.current) {
+        if (cancelled) {
           return;
         }
 
         setTagsLoadFailed(true);
+      })
+      .finally(() => {
+        if (cancelled) {
+          return;
+        }
+
         setTagsLoading(false);
       });
 
     return () => {
-      fetchTagsTokenRef.current += 1;
+      cancelled = true;
     };
   }, [activeTabId, primaryDbSource]);
 
@@ -263,34 +289,39 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
       return;
     }
 
-    const token = ++fetchCountriesTokenRef.current;
+    let cancelled = false;
     setCountriesLoading(true);
     setCountriesLoadFailed(false);
 
     api
       .fetchCountries(primaryDbSource)
       .then((countriesData) => {
-        if (token !== fetchCountriesTokenRef.current) {
+        if (cancelled) {
           return;
         }
 
         setAllCountries(countriesData);
         countriesDbSourceRef.current = primaryDbSource;
-        setCountriesLoading(false);
       })
       .catch((error: unknown) => {
         console.error("Error fetching countries", error);
 
-        if (token !== fetchCountriesTokenRef.current) {
+        if (cancelled) {
           return;
         }
 
         setCountriesLoadFailed(true);
+      })
+      .finally(() => {
+        if (cancelled) {
+          return;
+        }
+
         setCountriesLoading(false);
       });
 
     return () => {
-      fetchCountriesTokenRef.current += 1;
+      cancelled = true;
     };
   }, [activeTabId, primaryDbSource]);
 
@@ -302,7 +333,7 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
       return;
     }
 
-    const token = ++fetchAddReleaseReferenceDataTokenRef.current;
+    let cancelled = false;
     setAddReleaseReferenceDataLoading(true);
     setAddReleaseReferenceDataLoadFailed(false);
 
@@ -311,7 +342,7 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
       api.fetchLabels(primaryDbSource),
     ])
       .then(([formatsData, labelsData]) => {
-        if (token !== fetchAddReleaseReferenceDataTokenRef.current) {
+        if (cancelled) {
           return;
         }
 
@@ -322,14 +353,14 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
       .catch((error: unknown) => {
         console.error("Error fetching release formats or labels", error);
 
-        if (token !== fetchAddReleaseReferenceDataTokenRef.current) {
+        if (cancelled) {
           return;
         }
 
         setAddReleaseReferenceDataLoadFailed(true);
       })
       .finally(() => {
-        if (token !== fetchAddReleaseReferenceDataTokenRef.current) {
+        if (cancelled) {
           return;
         }
 
@@ -337,7 +368,7 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
       });
 
     return () => {
-      fetchAddReleaseReferenceDataTokenRef.current += 1;
+      cancelled = true;
     };
   }, [activeTabId, primaryDbSource]);
 
@@ -427,11 +458,13 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
                   }
                   formState={releaseFormState}
                   onFormStateChange={setReleaseFormState}
+                  setAddReleaseMode={() => handleTabChange("releaseUpsertForm")}
                   tabData={
                     isReleaseFormUpdateMode
                       ? {
                           ...releaseFormTabData,
                           onReleaseUpdated: handleReleaseUpdated,
+                          onUseReleaseAsBlueprint: handleUseReleaseAsBlueprint,
                         }
                       : {
                           ...(releaseFormTabData ??

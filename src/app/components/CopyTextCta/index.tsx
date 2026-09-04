@@ -57,7 +57,7 @@ const CopyTextCta: FC<CopyTextCtaProps> = ({
 
       <FeedbackSection
         feedback={feedback}
-        successMessage={successMessage}
+        successMessage={`${successMessage} ${text}`}
         errorMessage={errorMessage}
       />
     </div>
