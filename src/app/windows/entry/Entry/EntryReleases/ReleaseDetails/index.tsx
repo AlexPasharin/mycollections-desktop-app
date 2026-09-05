@@ -2,7 +2,6 @@ import { type FC, type PropsWithChildren } from "react";
 
 import ReleaseCatNumbers from "./ReleaseCatNumbers";
 import ReleaseCountries from "./ReleaseCountries";
-import styles from "./ReleaseDetails.module.css";
 import ReleaseFormatItem from "./ReleaseFormatItem";
 import ReleaseMatrixRunout from "./ReleaseMatrixRunout";
 
@@ -26,6 +25,10 @@ type ReleaseDetailsProps = {
   onEdit: (release: ReleaseByIdResult) => void;
   onUseAsBlueprint: (releaseBlueprint: ReleaseByIdResult) => void;
 };
+
+const detailFieldClassName = "m-0 mb-[0.45rem]";
+const detailBlockClassName = "m-0 mb-[0.55rem]";
+const detailBlockLabelClassName = "mb-1 block font-semibold";
 
 const ReleaseDetails: FC<ReleaseDetailsProps> = ({
   entry,
@@ -55,7 +58,7 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
   } = release;
 
   return (
-    <div className={styles.releaseDetails}>
+    <div className="pt-[0.65rem] text-[0.92em]">
       <DetailLabeledField label="Version">{releaseVersion}</DetailLabeledField>
       <DetailLabeledField label="Release date">
         {releaseDate === null ? (
@@ -75,11 +78,11 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
         </DetailLabeledField>
       )}
       {formats.length > 0 && (
-        <div className={styles.detailBlock}>
-          <span className={styles.detailLabel}>
+        <div className={detailBlockClassName}>
+          <span className={detailBlockLabelClassName}>
             {formats.length === 1 ? "Format:" : "Formats:"}
           </span>
-          <ul className={styles.formatsList}>
+          <ul className="m-0 mt-1 list-none pl-0">
             {formats.map((format) => (
               <ReleaseFormatItem key={format.id} format={format} />
             ))}
@@ -94,11 +97,11 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
         </DetailLabeledField>
       )}
       {tags.length > 0 && (
-        <div className={styles.detailBlock}>
-          <span className={styles.detailLabel}>Tags:</span>
-          <ul className={styles.tagsList}>
+        <div className={detailBlockClassName}>
+          <span className={detailBlockLabelClassName}>Tags:</span>
+          <ul className="m-0 mt-1 list-none pl-0">
             {tags.map(({ tagId, tag }) => (
-              <li key={tagId} className={styles.tagsListItem}>
+              <li key={tagId} className="m-0 my-1 italic">
                 {tag}
               </li>
             ))}
@@ -110,10 +113,8 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
         allCountries={allCountries}
       />
       {partOfQueenCollection && !entry.partOfQueenCollection && (
-        <p className={styles.detailField}>
-          <span className={styles.detailLabelItalic}>
-            Part of Queen collection
-          </span>
+        <p className={detailFieldClassName}>
+          <span className="font-semibold italic">Part of Queen collection</span>
         </p>
       )}
       {relationToQueen && (
@@ -137,10 +138,10 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
         primaryDbSource={primaryDbSource}
       />
       {showReleaseActions && (
-        <div className={styles.detailsActions}>
+        <div className="mt-4 flex flex-wrap gap-[0.55rem] border-t border-[#e0dcf5] pt-[0.85rem]">
           <button
             type="button"
-            className={styles.detailsActionButton}
+            className="m-0 cursor-pointer rounded-md border border-indigo-600 bg-indigo-600 px-[0.85rem] py-[0.45rem] text-[0.92em] font-medium text-white transition-[background-color,border-color,color] duration-150 [font:inherit] hover:border-indigo-700 hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
             onClick={() => onEdit(release)}
             aria-label={`Edit release ${releaseVersion}`}
           >
@@ -148,7 +149,7 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
           </button>
           <button
             type="button"
-            className={styles.detailsActionButtonSecondary}
+            className="m-0 cursor-pointer rounded-md border border-indigo-200 bg-indigo-50 px-[0.85rem] py-[0.45rem] text-[0.92em] font-medium text-indigo-800 transition-[background-color,border-color,color] duration-150 [font:inherit] hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
             onClick={() => onUseAsBlueprint(release)}
             aria-label={`Use release ${releaseVersion} as a blueprint to add a new release`}
           >
@@ -176,8 +177,8 @@ const DetailLabeledField: FC<DetailLabeledFieldProps> = ({
   label,
   children,
 }) => (
-  <p className={styles.detailField}>
-    <span className={styles.detailLabel}>{label}: </span>
+  <p className={detailFieldClassName}>
+    <span className="font-semibold">{label}: </span>
     {children}
   </p>
 );
@@ -206,7 +207,7 @@ const RelatedReleases: FC<RelatedReleasesProps> = ({
   };
 
   return (
-    <div className={styles.relatedReleases}>
+    <div className="mt-[0.85rem] border-t border-[#e0dcf5] pt-[0.85rem] text-[0.92em]">
       {parentReleases.length > 0 && (
         <RelatedReleasesSection
           label="Parent releases:"
@@ -236,14 +237,14 @@ const RelatedReleasesSection: FC<RelatedReleasesSectionProps> = ({
   releases,
   onReleaseSelect,
 }) => (
-  <div className={styles.relatedReleasesSection}>
-    <span className={styles.relatedReleasesLabel}>{label}</span>
-    <ul className={styles.relatedReleasesList}>
+  <div className="[&+&]:mt-[0.65rem]">
+    <span className="mb-1 block font-semibold">{label}</span>
+    <ul className="m-0 list-none pl-0 [&>li+li]:mt-[0.2rem]">
       {releases.map((relatedRelease) => (
         <li key={relatedRelease.releaseId}>
           <button
             type="button"
-            className={styles.relatedReleaseLink}
+            className="m-0 cursor-pointer border-none bg-transparent p-0 text-left text-[#1a5fb4] underline [font:inherit] hover:text-[#0d3d82] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a5fb4]"
             onClick={() => onReleaseSelect(relatedRelease)}
           >
             {formatRelatedReleaseLabel(relatedRelease)}

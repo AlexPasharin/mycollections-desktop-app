@@ -1,7 +1,5 @@
 import { type FC } from "react";
 
-import styles from "./EntryReleasesList.module.css";
-
 import EntryRelease from "../EntryRelease";
 
 import type { DbSource } from "@/db/db-source";
@@ -56,7 +54,7 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
       }));
 
   return (
-    <ul className={styles.releasesList}>
+    <ul className="m-0 mt-1 flex list-none flex-col gap-1 pl-0">
       {items.map(({ releaseId, row }) => (
         <EntryRelease
           key={releaseId}
