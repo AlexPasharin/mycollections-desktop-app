@@ -1,7 +1,5 @@
 import type { FC } from "react";
 
-import styles from "./ReleaseFormFormatBlock.module.css";
-
 import type {
   FormatField,
   ReleaseFormFormatInputFieldKey,
@@ -28,6 +26,11 @@ type ReleaseFormFormatBlockProps = {
   onFieldFocus: (key: ReleaseFormFormatInputFieldKey) => void;
   onBlur: () => void;
 };
+
+const labelClassName = "text-[0.92em] font-semibold";
+const inputClassName = "box-border w-full min-w-0 px-2 py-[0.35rem] text-[1em]";
+const checkboxRowClassName = "flex flex-row items-center gap-2";
+const checkboxLabelClassName = "m-0 text-[0.92em] font-medium";
 
 const formatFieldSource = (rowId: string, field: FormatField) => ({
   formatRowId: rowId,
@@ -60,17 +63,17 @@ const ReleaseFormFormatBlock: FC<ReleaseFormFormatBlockProps> = ({
 
   return (
     <div role="group" aria-label={`Format ${rowIndex + 1}`}>
-      <div className={styles.inlineRow}>
-        <div className={styles.segment}>
+      <div className="mb-[0.65rem] flex w-full min-w-0 flex-row flex-nowrap items-end gap-[0.65rem]">
+        <div className="flex min-w-0 flex-[1_1_0] flex-col gap-[0.35rem]">
           <label
-            className={styles.label}
+            className={labelClassName}
             htmlFor={`add-release-format${suffix}`}
           >
             Format
           </label>
           <select
             id={`add-release-format${suffix}`}
-            className={styles.input}
+            className={inputClassName}
             value={row.formatId}
             aria-invalid={fieldInvalid("formatId")}
             aria-describedby={
@@ -88,16 +91,16 @@ const ReleaseFormFormatBlock: FC<ReleaseFormFormatBlockProps> = ({
             ))}
           </select>
         </div>
-        <div className={styles.segmentAmount}>
+        <div className="flex w-[5.5rem] shrink-0 flex-col gap-[0.35rem]">
           <label
-            className={styles.label}
+            className={labelClassName}
             htmlFor={`add-release-format-amount${suffix}`}
           >
             Amount
           </label>
           <input
             id={`add-release-format-amount${suffix}`}
-            className={styles.input}
+            className={inputClassName}
             type="number"
             min={1}
             step={1}
@@ -114,8 +117,8 @@ const ReleaseFormFormatBlock: FC<ReleaseFormFormatBlockProps> = ({
         </div>
       </div>
 
-      <div className={styles.checkboxesRow}>
-        <div className={styles.checkboxRow}>
+      <div className="flex flex-row flex-wrap items-center gap-4">
+        <div className={checkboxRowClassName}>
           <input
             id={`add-release-picture-sleeve${suffix}`}
             type="checkbox"
@@ -132,14 +135,14 @@ const ReleaseFormFormatBlock: FC<ReleaseFormFormatBlockProps> = ({
             onBlur={onBlur}
           />
           <label
-            className={styles.checkboxLabel}
+            className={checkboxLabelClassName}
             htmlFor={`add-release-picture-sleeve${suffix}`}
           >
             Picture sleeve
           </label>
         </div>
         {showJukeboxHole && (
-          <div className={styles.checkboxRow}>
+          <div className={checkboxRowClassName}>
             <input
               id={`add-release-jukebox-hole${suffix}`}
               type="checkbox"
@@ -155,7 +158,7 @@ const ReleaseFormFormatBlock: FC<ReleaseFormFormatBlockProps> = ({
               onBlur={onBlur}
             />
             <label
-              className={styles.checkboxLabel}
+              className={checkboxLabelClassName}
               htmlFor={`add-release-jukebox-hole${suffix}`}
             >
               Jukebox hole
@@ -166,10 +169,10 @@ const ReleaseFormFormatBlock: FC<ReleaseFormFormatBlockProps> = ({
 
       <ErrorMessages id={rowErrorElementId} messages={formatRowErrors} />
 
-      <div className={styles.removeRow}>
+      <div className="mt-2">
         <button
           type="button"
-          className={styles.removeFormat}
+          className="cursor-pointer border-none bg-transparent px-0 py-1 text-left text-[0.92em] text-[#a40000] underline hover:text-[#7a0000]"
           id={`add-release-remove-format${suffix}`}
           aria-label={`Remove format ${rowIndex + 1}`}
           onClick={onRemoveFormat}

@@ -1,7 +1,5 @@
 import { type FC, type FocusEvent } from "react";
 
-import styles from "./ReleaseMatrixRunoutField.module.css";
-
 import type { ReleaseFormMatrixRunoutDraft } from "../releaseFormUtils/formValues";
 
 import FeedbackSection from "@/app/components/FeedbackSection";
@@ -61,13 +59,20 @@ const ReleaseMatrixRunoutField: FC<ReleaseMatrixRunoutFieldProps> = ({
   };
 
   return (
-    <div className={styles.field} onFocus={handleFocus} onBlur={handleBlur}>
-      <label className={styles.heading} htmlFor="add-release-matrix-runout">
+    <div
+      className="mb-[0.65rem] flex flex-col gap-[0.35rem]"
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+    >
+      <label
+        className="m-0 mb-3 text-[1em] leading-[1.35] font-semibold"
+        htmlFor="add-release-matrix-runout"
+      >
         Matrix / runout
       </label>
       <textarea
         id="add-release-matrix-runout"
-        className={styles.textarea}
+        className="min-h-[4.5rem] resize-y px-2 py-[0.35rem] text-[1em] leading-[1.35] [font:inherit]"
         rows={4}
         value={matrixRunout.value}
         onChange={(e) => onValueChange(e.target.value)}
@@ -75,7 +80,7 @@ const ReleaseMatrixRunoutField: FC<ReleaseMatrixRunoutFieldProps> = ({
         aria-describedby={describedByIds === "" ? undefined : describedByIds}
         autoComplete="off"
       />
-      <div className={styles.checkboxRow}>
+      <div className="mt-[0.15rem] flex items-start gap-2">
         <input
           id="add-release-matrix-runout-plain-text"
           type="checkbox"
@@ -83,7 +88,7 @@ const ReleaseMatrixRunoutField: FC<ReleaseMatrixRunoutFieldProps> = ({
           onChange={(e) => onTreatAsTextChange(e.target.checked)}
         />
         <label
-          className={styles.checkboxLabel}
+          className="m-0 leading-[1.35] font-normal"
           htmlFor="add-release-matrix-runout-plain-text"
         >
           treat as plain text, not json object

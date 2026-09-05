@@ -1,7 +1,5 @@
 import type { FC } from "react";
 
-import styles from "./ReleaseFormPreview.module.css";
-
 import type { ReleaseFormState } from "../releaseFormUtils/formValues";
 import {
   toReleaseCatNumbersJson,
@@ -22,6 +20,8 @@ type ReleaseFormPreviewProps = {
   allFormats: ReleasesFormatListItem[];
   tagsAvailableForReleases: TagListItem[];
 };
+
+const listClassName = "mt-[0.2rem] mb-0 pl-[1.1rem]";
 
 const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
   formState,
@@ -55,7 +55,7 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
   );
 
   return (
-    <div className={styles.preview}>
+    <div className="flex flex-col gap-[0.45rem] text-[0.92em]">
       <FormPreviewField label="Version">
         {formState.releaseVersion.value}
       </FormPreviewField>
@@ -72,7 +72,7 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
       </FormPreviewField>
       <FormPreviewField label="Formats">
         {formats.length ? (
-          <ul className={styles.list}>
+          <ul className={listClassName}>
             {formats.map((row) => {
               const shortName =
                 formatShortNameById.get(row.formatId) ?? "(unknown format)";
@@ -85,7 +85,7 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
                 <li key={row.id}>
                   {shortName} × {row.amount}
                   {flags.length > 0 && (
-                    <span className={styles.flagsSuffix}>
+                    <span className="ml-[0.35rem] text-gray-500">
                       ({flags.join(", ")})
                     </span>
                   )}
@@ -103,7 +103,7 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
       </FormPreviewField>
       <FormPreviewField label="Related releases">
         {relatedReleases.length === 0 ? null : (
-          <ul className={styles.list}>
+          <ul className={listClassName}>
             {relatedReleases.map((row) => (
               <li key={row.id}>
                 {row.releaseId}

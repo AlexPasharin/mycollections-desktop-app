@@ -3,7 +3,6 @@ import { useMemo, type FC } from "react";
 import ReleaseFormFormatBlock, {
   type ReleaseFormFormatRowPatch,
 } from "./ReleaseFormFormatBlock";
-import styles from "./ReleaseFormFormatsSection.module.css";
 
 import type {
   ReleaseFormFormatErrors,
@@ -89,19 +88,20 @@ const ReleaseFormFormatsSection: FC<ReleaseFormFormatsSectionProps> = ({
   const showAddNewFormatRowButton = !hasErrors && !hasEmptyFormatId;
 
   return (
-    <div className={styles.section}>
-      <h2 className={styles.heading}>Formats</h2>
+    <div className="mt-0 mb-[0.65rem]">
+      <h2 className="m-0 mb-3 text-[1em] leading-[1.35] font-semibold">
+        Formats
+      </h2>
 
       {formats.map((formatRow, rowIndex) => (
         <div key={formatRow.id}>
-          {rowIndex > 0 && <hr className={styles.divider} aria-hidden />}
-          <div
-            className={
-              rowIndex === 0
-                ? `${styles.formatBlock} ${styles.formatBlockFirst}`
-                : styles.formatBlock
-            }
-          >
+          {rowIndex > 0 && (
+            <hr
+              className="mt-4 mb-3 border-0 border-t border-black/12"
+              aria-hidden
+            />
+          )}
+          <div className={rowIndex === 0 ? "pt-0 pb-1" : "pt-2 pb-1"}>
             <ReleaseFormFormatBlock
               row={formatRow}
               rowIndex={rowIndex}
@@ -123,7 +123,7 @@ const ReleaseFormFormatsSection: FC<ReleaseFormFormatsSectionProps> = ({
         <button
           type="button"
           id="add-release-add-another-format"
-          className={styles.addAnotherFormat}
+          className="mt-3 cursor-pointer border-none bg-transparent px-0 py-1 text-left text-[0.92em] text-[#1a5fb4] underline hover:text-[#0d3d82]"
           onClick={addFormatRow}
         >
           + Add another format

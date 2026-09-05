@@ -1,6 +1,17 @@
 import type { FC } from "react";
 
-import styles from "../ReleaseCatalogueNumbersRow.module.css";
+import {
+  addAnotherInputValueClassName,
+  columnClassName,
+  columnHeadingClassName,
+  controlWithRemoveClassName,
+  fieldErrorSlotClassName,
+  inputClassName,
+  inputValueBlockClassName,
+  removeCrossClassName,
+  removeCrossInputValueClassName,
+  rowActionsClassName,
+} from "../classNames";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
 import { errorSetToMessages } from "@/validation";
@@ -50,8 +61,8 @@ const CatalogueNumberInputColumn: FC<CatalogueNumberInputColumnProps> = ({
   onInputFocus,
   onInputBlur,
 }) => (
-  <div className={styles.column}>
-    <div className={styles.columnHeading}>{columnHeading}</div>
+  <div className={columnClassName}>
+    <div className={columnHeadingClassName}>{columnHeading}</div>
     {inputValues.map((inputValue, index) => {
       const errorMessages = errorSetToMessages(
         errorMessagesByInputId?.[inputValue.id],
@@ -61,11 +72,11 @@ const CatalogueNumberInputColumn: FC<CatalogueNumberInputColumnProps> = ({
       const hasErrors = errorMessages != null && errorMessages.length > 0;
 
       return (
-        <div key={inputValue.id} className={styles.inputValueBlock}>
-          <div className={styles.controlWithRemove}>
+        <div key={inputValue.id} className={inputValueBlockClassName}>
+          <div className={controlWithRemoveClassName}>
             <input
               id={inputId}
-              className={styles.input}
+              className={inputClassName}
               type="text"
               value={inputValue.value}
               aria-label={`${inputAriaLabel} ${index + 1}`}
@@ -77,13 +88,13 @@ const CatalogueNumberInputColumn: FC<CatalogueNumberInputColumnProps> = ({
               autoComplete="off"
             />
             <div
-              className={styles.removeCrossInputValue}
+              className={removeCrossInputValueClassName}
               aria-hidden={canRemoveAnyInput ? undefined : true}
             >
               {canRemoveAnyInput && (
                 <button
                   type="button"
-                  className={styles.removeCross}
+                  className={removeCrossClassName}
                   aria-label={removeInputAriaLabel}
                   title={removeInputAriaLabel}
                   onClick={() => onRemoveInput(inputValue.id)}
@@ -93,16 +104,16 @@ const CatalogueNumberInputColumn: FC<CatalogueNumberInputColumnProps> = ({
               )}
             </div>
           </div>
-          <div className={styles.fieldErrorSlot}>
+          <div className={fieldErrorSlotClassName}>
             <ErrorMessages id={errorId} messages={errorMessages} />
           </div>
         </div>
       );
     })}
-    <div className={styles.rowActions}>
+    <div className={rowActionsClassName}>
       <button
         type="button"
-        className={styles.addAnotherInputValue}
+        className={addAnotherInputValueClassName}
         onClick={onAddInput}
       >
         {addButtonLabel}

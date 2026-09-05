@@ -1,7 +1,5 @@
 import type { FC } from "react";
 
-import styles from "./ReleaseNameField.module.css";
-
 import {
   defaultNameInput,
   type ReleaseFormNameInput,
@@ -22,13 +20,16 @@ const ReleaseNameField: FC<ReleaseNameFieldProps> = ({
   value,
   onChange,
 }) => (
-  <div className={styles.field}>
-    <label className={styles.heading} htmlFor="add-release-name">
+  <div className="mt-[0.85rem] mb-[0.65rem] flex flex-col gap-[0.35rem]">
+    <label
+      className="m-0 mb-3 text-[1em] leading-[1.35] font-semibold"
+      htmlFor="add-release-name"
+    >
       Name
     </label>
     <select
       id="add-release-name"
-      className={styles.select}
+      className="box-border w-full max-w-[24rem] px-2 py-[0.35rem] text-[1em]"
       value={value.nameId ?? ""}
       onChange={(e) => {
         const { value: selected } = e.target;
