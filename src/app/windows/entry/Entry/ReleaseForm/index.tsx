@@ -8,7 +8,6 @@ import {
 } from "react";
 
 import ReleaseForm, { type ReleaseFormProps } from "./ReleaseForm";
-import styles from "./ReleaseForm.module.css";
 import {
   initialReleaseFormStateValue,
   type ReleaseFormState,
@@ -27,6 +26,9 @@ type ReleaseFormWrapperProps = Omit<
   tags: TagListItem[];
   setAddReleaseMode: () => void;
 };
+
+const sectionClassName = "mt-4";
+const formatsLoadStateClassName = "m-0 text-[1.2rem] font-bold";
 
 const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
   const {
@@ -85,16 +87,16 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
 
   if (referenceDataLoading || formState === null) {
     return (
-      <div className={styles.section}>
-        <p className={styles.formatsLoadState}>Loading&hellip;</p>
+      <div className={sectionClassName}>
+        <p className={formatsLoadStateClassName}>Loading&hellip;</p>
       </div>
     );
   }
 
   if (referenceDataLoadFailed) {
     return (
-      <div className={styles.section}>
-        <p className={styles.formatsLoadState} role="alert">
+      <div className={sectionClassName}>
+        <p className={formatsLoadStateClassName} role="alert">
           Could not load data required for the form.
         </p>
       </div>

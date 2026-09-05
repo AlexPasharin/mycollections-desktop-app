@@ -1,7 +1,18 @@
 import type { FC } from "react";
 
 import CatalogueNumberInputColumn from "./CatalogueNumberInputColumn";
-import styles from "./ReleaseCatalogueNumbersRow.module.css";
+import {
+  addAnotherInputValueClassName,
+  columnClassName,
+  columnHeadingClassName,
+  controlWithRemoveClassName,
+  fieldErrorSlotClassName,
+  inputClassName,
+  inputValueBlockClassName,
+  removeCrossClassName,
+  removeCrossInputValueClassName,
+  rowActionsClassName,
+} from "./classNames";
 
 import type {
   ReleaseFormCatalogueNumberRowErrors,
@@ -64,10 +75,7 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
   onFieldFocus,
   onBlurRowColumn,
 }) => {
-  const rowBlockClassName =
-    rowIndex === 0
-      ? `${styles.rowBlock} ${styles.rowBlockFirst}`
-      : styles.rowBlock;
+  const rowBlockClassName = rowIndex === 0 ? "pb-1 pt-0" : "pb-1 pt-2";
 
   const catNumberInputsCount =
     row.shape === "flat"
@@ -96,7 +104,12 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
 
   return (
     <>
-      {showDivider && <hr className={styles.divider} aria-hidden />}
+      {showDivider && (
+        <hr
+          className="mt-4 mb-3 border-0 border-t border-black/12"
+          aria-hidden
+        />
+      )}
       <div className={rowBlockClassName}>
         <div
           role="group"
@@ -105,9 +118,9 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
             rowCommonMessages?.length ? rowCommonErrorId : undefined
           }
         >
-          <div className={styles.rowColumns}>
-            <div className={styles.column}>
-              <div className={styles.columnHeading}>Labels</div>
+          <div className="flex flex-col items-stretch gap-3">
+            <div className={columnClassName}>
+              <div className={columnHeadingClassName}>Labels</div>
               {row.labelInputValues.map((inputValue, labelIndex) => {
                 const labelErrorMessages = errorSetToMessages(
                   rowErrors?.labelInputErrorMessages[inputValue.id],
@@ -117,11 +130,11 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
                   labelErrorMessages != null && labelErrorMessages.length > 0;
 
                 return (
-                  <div key={inputValue.id} className={styles.inputValueBlock}>
-                    <div className={styles.controlWithRemove}>
+                  <div key={inputValue.id} className={inputValueBlockClassName}>
+                    <div className={controlWithRemoveClassName}>
                       <select
                         id={`add-release-cat-label-${row.id}-${inputValue.id}`}
-                        className={styles.input}
+                        className={inputClassName}
                         value={inputValue.name}
                         aria-label={`Label ${labelIndex + 1}`}
                         aria-invalid={hasLabelErrors}
@@ -148,13 +161,13 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
                         ))}
                       </select>
                       <div
-                        className={styles.removeCrossInputValue}
+                        className={removeCrossInputValueClassName}
                         aria-hidden={canRemoveLabelInput ? undefined : true}
                       >
                         {canRemoveLabelInput && (
                           <button
                             type="button"
-                            className={styles.removeCross}
+                            className={removeCrossClassName}
                             aria-label="Remove label"
                             title="Remove label"
                             onClick={() => onRemoveLabelInput(inputValue.id)}
@@ -164,7 +177,7 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
                         )}
                       </div>
                     </div>
-                    <div className={styles.fieldErrorSlot}>
+                    <div className={fieldErrorSlotClassName}>
                       <ErrorMessages
                         id={labelErrorId}
                         messages={labelErrorMessages}
@@ -173,10 +186,10 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
                   </div>
                 );
               })}
-              <div className={styles.rowActions}>
+              <div className={rowActionsClassName}>
                 <button
                   type="button"
-                  className={styles.addAnotherInputValue}
+                  className={addAnotherInputValueClassName}
                   onClick={onAddNewLabelInput}
                 >
                   + Add another label
@@ -184,11 +197,11 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
               </div>
             </div>
 
-            <fieldset className={styles.shapeToggle}>
-              <legend className={styles.shapeToggleLegend}>
+            <fieldset className="m-0 flex flex-row flex-wrap items-center gap-x-4 gap-y-2 border-none p-0">
+              <legend className="m-0 mr-1 mb-[0.35rem] p-0 text-[0.92em] font-semibold">
                 Catalogue numbers shape
               </legend>
-              <label className={styles.shapeToggleOption}>
+              <label className="inline-flex cursor-pointer flex-row items-center gap-[0.35rem] text-[0.92em]">
                 <input
                   type="radio"
                   name={shapeToggleName}
@@ -198,7 +211,7 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
                 />
                 Flat list
               </label>
-              <label className={styles.shapeToggleOption}>
+              <label className="inline-flex cursor-pointer flex-row items-center gap-[0.35rem] text-[0.92em]">
                 <input
                   type="radio"
                   name={shapeToggleName}
@@ -292,15 +305,15 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
             )}
           </div>
 
-          <div className={styles.rowErrorSlot}>
+          <div className="mt-[0.35rem]">
             <ErrorMessages id={rowCommonErrorId} messages={rowCommonMessages} />
           </div>
         </div>
 
-        <div className={styles.removeRow}>
+        <div className="mt-2">
           <button
             type="button"
-            className={styles.removeRowButton}
+            className="cursor-pointer border-none bg-transparent px-0 py-1 text-left text-[0.92em] text-[#a40000] underline hover:text-[#7a0000]"
             aria-label={`Remove catalogue numbers row ${rowIndex + 1}`}
             onClick={onRemoveRow}
           >

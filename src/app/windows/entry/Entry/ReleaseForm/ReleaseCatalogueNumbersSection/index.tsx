@@ -1,7 +1,6 @@
 import { type FC, type FocusEvent } from "react";
 
 import ReleaseCatalogueNumbersRow from "./ReleaseCatalogueNumbersRow";
-import styles from "./ReleaseCatalogueNumbersSection.module.css";
 
 import {
   type ReleaseFormCatalogueNumbersInputFieldKey,
@@ -294,8 +293,10 @@ const ReleaseCatalogueNumbersSection: FC<
   };
 
   return (
-    <div className={styles.section}>
-      <h2 className={styles.heading}>Catalogue numbers</h2>
+    <div className="mt-0 mb-[0.65rem]">
+      <h2 className="m-0 mb-3 text-[1em] leading-[1.35] font-semibold">
+        Catalogue numbers
+      </h2>
 
       <Tabs
         ariaLabel="Catalogue numbers input mode"
@@ -365,7 +366,7 @@ const ReleaseCatalogueNumbersSection: FC<
                 {catalogueNumbers.activeTab === "rows" && (
                   <button
                     type="button"
-                    className={styles.addAnotherRow}
+                    className="mt-3 cursor-pointer border-none bg-transparent px-0 py-1 text-left text-[0.92em] text-[#1a5fb4] underline hover:text-[#0d3d82]"
                     onClick={addCatalogueNumbersRow}
                   >
                     + Add another catalogue row
@@ -381,19 +382,19 @@ const ReleaseCatalogueNumbersSection: FC<
             label: "JSON",
             children: (
               <div
-                className={styles.jsonField}
+                className="mb-[0.65rem] flex flex-col gap-[0.35rem]"
                 onFocus={handleJsonFocus}
                 onBlur={handleJsonBlur}
               >
                 <label
-                  className={styles.jsonLabel}
+                  className="m-0 text-[1em] leading-[1.35] font-semibold"
                   htmlFor="add-release-catalogue-numbers"
                 >
                   Catalogue numbers JSON
                 </label>
                 <textarea
                   id="add-release-catalogue-numbers"
-                  className={styles.jsonTextarea}
+                  className="min-h-[6rem] resize-y px-2 py-[0.35rem] text-[1em] leading-[1.35] [font:inherit]"
                   rows={6}
                   value={
                     catalogueNumbers.activeTab === "json"

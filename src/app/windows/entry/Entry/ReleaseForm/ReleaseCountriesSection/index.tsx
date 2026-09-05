@@ -1,7 +1,5 @@
 import type { FC } from "react";
 
-import styles from "./ReleaseCountriesSection.module.css";
-
 import type { ReleaseFormCountriesSubsectionErrors } from "../releaseFormUtils/errorMessages";
 import type { CountrySelectionInput } from "../releaseFormUtils/formValues";
 
@@ -26,6 +24,9 @@ type ReleaseCountriesSectionProps = {
   errors?: ReleaseFormCountriesSubsectionErrors | undefined;
 };
 
+const removeCrossClassName =
+  "cursor-pointer border-none bg-transparent p-[0.1rem] text-[0.85em] leading-none text-[#1a5fb4] hover:text-[#0d3d82]";
+
 const ReleaseCountriesSection: FC<ReleaseCountriesSectionProps> = ({
   countries,
   countrySelections,
@@ -45,13 +46,15 @@ const ReleaseCountriesSection: FC<ReleaseCountriesSectionProps> = ({
   const propertyErrorMessages = errors?.propertyErrorMessages;
 
   return (
-    <div className={styles.section}>
-      <div className={styles.headingRow}>
-        <h2 className={styles.heading}>{heading}</h2>
-        <div className={styles.headingRemoveSlot}>
+    <div className="mt-0 mb-[0.65rem]">
+      <div className="mb-3 flex min-w-0 flex-row flex-nowrap items-center gap-[0.35rem]">
+        <h2 className="m-0 min-w-0 flex-[0_1_auto] text-[1em] leading-[1.35] font-semibold">
+          {heading}
+        </h2>
+        <div className="box-border flex w-[1.85rem] flex-[0_0_1.85rem] shrink-0 items-center justify-center">
           <button
             type="button"
-            className={`${styles.removeCross} ${styles.removeCrossSection}`}
+            className={`${removeCrossClassName} text-[#c01c28] hover:text-[#9e1420]`}
             aria-label={removeAriaLabel}
             title={removeAriaLabel}
             onClick={onRemove}
@@ -61,7 +64,7 @@ const ReleaseCountriesSection: FC<ReleaseCountriesSectionProps> = ({
         </div>
       </div>
 
-      <div className={styles.propertyErrors}>
+      <div className="mb-[0.65rem] max-w-[24rem]">
         <ErrorMessages
           id={`${selectIdPrefix}-property-errors`}
           messages={errorSetToMessages(propertyErrorMessages)}
@@ -78,18 +81,18 @@ const ReleaseCountriesSection: FC<ReleaseCountriesSectionProps> = ({
         const rowErrorId = `${selectIdPrefix}-row-error-${row.id}`;
 
         return (
-          <div key={row.id} className={styles.inputValueBlock}>
-            <div className={styles.segment}>
+          <div key={row.id} className="mb-[0.95rem]">
+            <div className="relative flex w-full max-w-[24rem] min-w-0 flex-col gap-[0.35rem]">
               <label
-                className={styles.labelVisuallyHidden}
+                className="absolute m-[-1px] h-px w-px overflow-hidden border-0 p-0 whitespace-nowrap [clip-path:inset(50%)]"
                 htmlFor={`${selectIdPrefix}-${row.id}`}
               >
                 {`${rowLabelPrefix} ${rowIndex + 1}`}
               </label>
-              <div className={styles.controlWithRemove}>
+              <div className="flex w-full min-w-0 flex-row flex-nowrap items-center gap-[0.35rem]">
                 <select
                   id={`${selectIdPrefix}-${row.id}`}
-                  className={styles.select}
+                  className="box-border w-full min-w-0 flex-[1_1_0] px-2 py-[0.35rem] text-[1em]"
                   value={row.codeName}
                   aria-invalid={hasRowErrors}
                   aria-describedby={hasRowErrors ? rowErrorId : undefined}
@@ -106,11 +109,11 @@ const ReleaseCountriesSection: FC<ReleaseCountriesSectionProps> = ({
                     </option>
                   ))}
                 </select>
-                <div className={styles.removeCrossSlot}>
+                <div className="box-border flex w-[1.85rem] flex-[0_0_1.85rem] shrink-0 items-center justify-center">
                   {rowIndex > 0 && (
                     <button
                       type="button"
-                      className={styles.removeCross}
+                      className={removeCrossClassName}
                       aria-label={removeRowAriaLabel}
                       title={removeRowAriaLabel}
                       onClick={() => {
@@ -122,7 +125,7 @@ const ReleaseCountriesSection: FC<ReleaseCountriesSectionProps> = ({
                   )}
                 </div>
               </div>
-              <div className={styles.rowFieldErrors}>
+              <div className="mt-1">
                 <ErrorMessages
                   id={rowErrorId}
                   messages={errorSetToMessages(rowErrorMessagesForDisplay)}
@@ -133,7 +136,11 @@ const ReleaseCountriesSection: FC<ReleaseCountriesSectionProps> = ({
         );
       })}
 
-      <button type="button" className={styles.addAnotherRow} onClick={onAddRow}>
+      <button
+        type="button"
+        className="mt-3 cursor-pointer border-none bg-transparent px-0 py-1 text-left text-[0.92em] text-[#1a5fb4] underline hover:text-[#0d3d82]"
+        onClick={onAddRow}
+      >
         + Add another country
       </button>
     </div>

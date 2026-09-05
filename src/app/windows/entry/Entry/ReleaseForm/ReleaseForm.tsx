@@ -8,7 +8,6 @@ import {
 
 import ReleaseCatalogueNumbersSection from "./ReleaseCatalogueNumbersSection";
 import ReleaseCountriesSection from "./ReleaseCountriesSection";
-import styles from "./ReleaseForm.module.css";
 import ReleaseFormBlueprintLoader from "./ReleaseFormBlueprintLoader";
 import ReleaseFormFormatsSection from "./ReleaseFormFormatsSection";
 import ReleaseFormPreview from "./ReleaseFormPreview";
@@ -113,6 +112,14 @@ const CONDITION_PROBLEMS_FIELD_NOTIFICATIONS_ID =
   "add-release-condition-problems-notifications";
 const RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID =
   "add-release-relation-to-queen-notifications";
+
+const fieldClassName = "mb-[0.65rem] flex flex-col gap-[0.35rem]";
+const headingClassName = "m-0 mb-3 text-[1em] font-semibold leading-[1.35]";
+const cancelButtonClassName =
+  "cursor-pointer rounded-md border border-[#bcbcbc] bg-white px-[0.9rem] py-[0.35rem] font-medium text-[#333] hover:enabled:border-[#9a9a9a] hover:enabled:bg-[#f1f1f1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a5fb4]";
+const inputClassName = "px-2 py-[0.35rem] text-[1em]";
+const textareaClassName =
+  "min-h-[4.5rem] resize-y px-2 py-[0.35rem] text-[1em] [font:inherit] leading-[1.35]";
 
 const ReleaseForm: FC<ReleaseFormProps> = ({
   entry,
@@ -749,12 +756,15 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
     .join(" ");
 
   return (
-    <div className={styles.section}>
-      <form className={styles.form} onSubmit={handleSubmit}>
+    <div className="mt-4">
+      <form
+        className="box-border rounded-xl border border-black/18 bg-white p-[1.1rem_1.25rem_1.15rem] shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+        onSubmit={handleSubmit}
+      >
         {isUpdateMode && (
           <button
             type="button"
-            className={`${styles.cancelButton} mb-4`}
+            className={`${cancelButtonClassName} mb-4`}
             onClick={setAddReleaseMode}
           >
             Back to &quot;create new release&quot; mode
@@ -766,16 +776,19 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
         />
         <FormSectionsDivider />
 
-        <div className={styles.field}>
-          <label className={styles.heading} htmlFor="add-release-version">
+        <div className={fieldClassName}>
+          <label className={headingClassName} htmlFor="add-release-version">
             Release version
-            <sup className={styles.requiredMark} aria-hidden="true">
+            <sup
+              className="ml-[0.25em] text-[1.1em] leading-none font-semibold"
+              aria-hidden="true"
+            >
               *
             </sup>
           </label>
           <input
             id="add-release-version"
-            className={styles.input}
+            className={inputClassName}
             type="text"
             aria-required
             value={formState.releaseVersion.value}
@@ -804,8 +817,8 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
 
         <FormSectionsDivider />
 
-        <div className={styles.field}>
-          <h2 className={styles.heading}>Release date</h2>
+        <div className={fieldClassName}>
+          <h2 className={headingClassName}>Release date</h2>
           <GeneralizedDateFormInput
             date={formState.releaseDate.value}
             startDate={entry.originalReleaseDate}
@@ -823,13 +836,13 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
 
         <FormSectionsDivider />
 
-        <div className={styles.field}>
-          <label className={styles.heading} htmlFor="add-release-discogs-url">
+        <div className={fieldClassName}>
+          <label className={headingClassName} htmlFor="add-release-discogs-url">
             Discogs URL
           </label>
           <input
             id="add-release-discogs-url"
-            className={styles.input}
+            className={inputClassName}
             type="url"
             value={formState.discogsUrl.value}
             placeholder="https://www.discogs.com/release/<id>..."
@@ -891,7 +904,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
         ) : (
           <button
             type="button"
-            className={styles.printedInCountriesCta}
+            className="mt-3 block cursor-pointer border-none bg-transparent px-0 py-1 text-left text-[0.92em] text-[#1a5fb4] underline hover:text-[#0d3d82]"
             onClick={openPrintedInCountriesSection}
           >
             Add &quot;printed in&quot; countries
@@ -983,7 +996,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
 
         <FormSectionsDivider />
 
-        <div className={styles.checkboxRow}>
+        <div className="mt-[0.15rem] flex items-start gap-2">
           <input
             id="add-release-part-of-queen-collection"
             type="checkbox"
@@ -994,7 +1007,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             }
           />
           <label
-            className={styles.checkboxLabel}
+            className="m-0 leading-[1.35] font-normal"
             htmlFor="add-release-part-of-queen-collection"
           >
             Part of Queen collection
@@ -1002,16 +1015,16 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
         </div>
 
         {formState.partOfQueenCollection.value && (
-          <div className={`${styles.field} ${styles.fieldMoreSpaceBefore}`}>
+          <div className={`${fieldClassName} mt-[0.85rem]`}>
             <label
-              className={styles.heading}
+              className={headingClassName}
               htmlFor="add-release-relation-to-queen"
             >
               Relation to Queen
             </label>
             <textarea
               id="add-release-relation-to-queen"
-              className={styles.textarea}
+              className={textareaClassName}
               value={formState.relationToQueen.value}
               onChange={(e) => setFieldValue("relationToQueen", e.target.value)}
               onFocus={() => onFocus("relationToQueen")}
@@ -1031,13 +1044,13 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
 
         <FormSectionsDivider />
 
-        <div className={styles.field}>
-          <label className={styles.heading} htmlFor="add-release-comment">
+        <div className={fieldClassName}>
+          <label className={headingClassName} htmlFor="add-release-comment">
             Comment
           </label>
           <textarea
             id="add-release-comment"
-            className={styles.textarea}
+            className={textareaClassName}
             value={formState.comment.value}
             onChange={(e) => setFieldValue("comment", e.target.value)}
             onFocus={() => onFocus("comment")}
@@ -1054,16 +1067,16 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           />
         </div>
 
-        <div className={styles.field}>
+        <div className={fieldClassName}>
           <label
-            className={styles.heading}
+            className={headingClassName}
             htmlFor="add-release-condition-problems"
           >
             Condition problems
           </label>
           <textarea
             id="add-release-condition-problems"
-            className={styles.textarea}
+            className={textareaClassName}
             value={formState.conditionProblems.value}
             onChange={(e) => setFieldValue("conditionProblems", e.target.value)}
             onFocus={() => onFocus("conditionProblems")}
@@ -1080,24 +1093,27 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           />
         </div>
 
-        <div className={styles.actions}>
+        <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"
-            className={styles.cancelButton}
+            className={cancelButtonClassName}
             onClick={onClearFormState}
           >
             Discard changes
           </button>
           <button
             type="submit"
-            className={styles.submitButton}
+            className="cursor-pointer rounded-md border border-[#154f96] bg-[#1a5fb4] px-[0.9rem] py-[0.35rem] font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a5fb4] hover:enabled:bg-[#154f96] disabled:cursor-not-allowed disabled:border-[#bcbcbc] disabled:bg-[#d6d6d6] disabled:text-[#6b6b6b]"
             onMouseDown={(e) => e.preventDefault()}
           >
             Save
           </button>
         </div>
         {showSubmissionValidationError && (
-          <p className={styles.submissionError} role="alert">
+          <p
+            className="m-0 mt-[0.6rem] text-[0.9em] text-[#b42318]"
+            role="alert"
+          >
             Release submission failed due to validation errors, check the form
             values
           </p>
