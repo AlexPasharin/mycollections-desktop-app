@@ -1,7 +1,5 @@
 import { useEffect, useState, type FC } from "react";
 
-import styles from "./EntryRelease.module.css";
-
 import api from "../../../api";
 import ReleaseDetails from "../ReleaseDetails";
 
@@ -38,6 +36,33 @@ type EntryReleaseProps = {
   onEdit: (release: ReleaseByIdResult) => void;
   onDeleted: (deletedReleaseVersion: string, errors: string[]) => void;
 };
+
+const entryReleaseClassName =
+  "overflow-hidden rounded-md border border-[#c7c3e8] bg-[#fafaff] text-[1.02rem]";
+const releaseRowClassName = "flex w-full items-stretch";
+const releaseToggleClassName =
+  "m-0 flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-3 border-none bg-transparent px-3 py-[0.55rem] text-left [font:inherit] text-inherit hover:bg-[#f0eeff] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-indigo-500";
+const releaseRemoveClassName =
+  "m-0 shrink-0 cursor-pointer border-none border-l border-[#e0dcf5] bg-transparent px-[0.85rem] py-0 [font:inherit] text-[0.85em] font-medium text-red-700 transition-[background,color] duration-150 hover:bg-red-600 hover:text-white focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-red-600";
+const releaseRowMainClassName = "min-w-0 flex-1";
+const releaseVersionClassName = "font-medium text-indigo-800";
+const recentlyAddedBadgeClassName =
+  "ml-2 inline-block rounded-full border border-emerald-300 bg-emerald-100 px-[0.45rem] py-[0.05rem] align-middle text-[0.75em] font-semibold leading-[1.35] text-green-900";
+const recentlyEditedBadgeClassName =
+  "ml-2 inline-block rounded-full border border-blue-300 bg-blue-100 px-[0.45rem] py-[0.05rem] align-middle text-[0.75em] font-semibold leading-[1.35] text-blue-900";
+const chevronClassName =
+  "relative h-5 w-5 shrink-0 after:absolute after:inset-0 after:m-auto after:h-[0.45rem] after:w-[0.45rem] after:-rotate-45 after:border-r-2 after:border-b-2 after:border-indigo-600 after:transition-transform after:duration-[220ms] after:ease-[ease] after:content-['']";
+const chevronExpandedClassName =
+  "relative h-5 w-5 shrink-0 after:absolute after:inset-0 after:m-auto after:h-[0.45rem] after:w-[0.45rem] after:rotate-45 after:border-r-2 after:border-b-2 after:border-indigo-600 after:transition-transform after:duration-[220ms] after:ease-[ease] after:content-['']";
+const detailsSlideClassName =
+  "grid grid-rows-[0fr] transition-[grid-template-rows] duration-[320ms] ease-[ease]";
+const detailsSlideOpenClassName =
+  "grid grid-rows-[1fr] transition-[grid-template-rows] duration-[320ms] ease-[ease]";
+const detailsSlideInnerClassName = "min-h-0 overflow-hidden";
+const releaseDetailsPanelClassName =
+  "border-t border-[#e0dcf5] bg-white px-3 pb-3";
+const detailsLoadingClassName = "m-0 mt-[0.65rem] text-[0.92em] text-gray-600";
+const detailsMissingClassName = "m-0 mt-[0.65rem] text-[0.92em] text-amber-700";
 
 const EntryRelease: FC<EntryReleaseProps> = ({
   entry,
@@ -171,34 +196,36 @@ const EntryRelease: FC<EntryReleaseProps> = ({
   };
 
   return (
-    <li className={styles.entryRelease}>
-      <div className={styles.releaseRow}>
+    <li className={entryReleaseClassName}>
+      <div className={releaseRowClassName}>
         <button
           type="button"
-          className={styles.releaseToggle}
+          className={releaseToggleClassName}
           aria-expanded={isExpanded}
           onClick={() => setIsExpanded((expanded) => !expanded)}
         >
-          <span className={styles.releaseRowMain}>
-            <span className={styles.releaseVersion}>{versionLabel}</span>
+          <span className={releaseRowMainClassName}>
+            <span className={releaseVersionClassName}>{versionLabel}</span>
             {displayFormats.length > 0 && ` (${displayFormats.join(", ")})`}
             {isRecentlyAdded && (
-              <span className={styles.recentlyAddedBadge}>Recently added</span>
+              <span className={recentlyAddedBadgeClassName}>
+                Recently added
+              </span>
             )}
             {isRecentlyEdited && (
-              <span className={styles.recentlyEditedBadge}>
+              <span className={recentlyEditedBadgeClassName}>
                 Recently edited
               </span>
             )}
           </span>
           <span
-            className={isExpanded ? styles.chevronExpanded : styles.chevron}
+            className={isExpanded ? chevronExpandedClassName : chevronClassName}
             aria-hidden
           />
         </button>
         <button
           type="button"
-          className={styles.releaseRemove}
+          className={releaseRemoveClassName}
           onClick={openConfirm}
           aria-label={`Remove release ${versionLabel}`}
           title="Remove release"
@@ -208,25 +235,23 @@ const EntryRelease: FC<EntryReleaseProps> = ({
       </div>
       <div
         className={
-          isExpanded
-            ? `${styles.detailsSlide} ${styles.detailsSlideOpen}`
-            : styles.detailsSlide
+          isExpanded ? detailsSlideOpenClassName : detailsSlideClassName
         }
       >
-        <div className={styles.detailsSlideInner}>
+        <div className={detailsSlideInnerClassName}>
           {isExpanded && (
-            <div className={styles.releaseDetailsPanel}>
+            <div className={releaseDetailsPanelClassName}>
               {detailsStatus === "loading" && (
-                <p className={styles.detailsLoading}>Loading details…</p>
+                <p className={detailsLoadingClassName}>Loading details…</p>
               )}
               {detailsStatus === "notFound" && (
-                <p className={styles.detailsMissing}>
+                <p className={detailsMissingClassName}>
                   This release could not be found in this entry&apos;s
                   collection.
                 </p>
               )}
               {detailsStatus === "failed" && (
-                <p className={styles.detailsMissing}>
+                <p className={detailsMissingClassName}>
                   Could not load release details.
                 </p>
               )}

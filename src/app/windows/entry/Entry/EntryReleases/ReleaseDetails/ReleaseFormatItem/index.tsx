@@ -1,26 +1,10 @@
 import { type FC, type ReactElement } from "react";
 
-import styles from "./ReleaseFormatItem.module.css";
-
 import type { ReleaseFormatOfReleaseItem } from "@/types/releases";
 import { formatJson } from "@/utils/common";
 
 type ReleaseFormatItemProps = {
   format: ReleaseFormatOfReleaseItem;
-};
-
-const renderSpeed = (speed: unknown): string | ReactElement | null => {
-  const text = formatJson(speed);
-
-  if (text === null) {
-    return null;
-  }
-
-  if (text.includes("\n")) {
-    return <pre className={styles.speedPre}>{text}</pre>;
-  }
-
-  return text;
 };
 
 const ReleaseFormatItem: FC<ReleaseFormatItemProps> = ({ format }) => {
@@ -39,11 +23,11 @@ const ReleaseFormatItem: FC<ReleaseFormatItemProps> = ({ format }) => {
   }
 
   return (
-    <li className={styles.root}>
-      <p className={styles.title}>{titleParts.join(", ")}</p>
+    <li className="mb-[0.55rem] rounded bg-[#f5f5f5] p-[0.45rem_0.55rem] last:mb-0">
+      <p className="m-0 mb-[0.35rem] font-semibold">{titleParts.join(", ")}</p>
       {speedContent !== null && (
-        <div className={styles.field}>
-          <span className={styles.label}>Speed: </span>
+        <div className="m-0 mb-[0.45rem]">
+          <span className="font-semibold">Speed: </span>
           {speedContent}
         </div>
       )}
@@ -52,3 +36,21 @@ const ReleaseFormatItem: FC<ReleaseFormatItemProps> = ({ format }) => {
 };
 
 export default ReleaseFormatItem;
+
+const renderSpeed = (speed: unknown): string | ReactElement | null => {
+  const text = formatJson(speed);
+
+  if (text === null) {
+    return null;
+  }
+
+  if (text.includes("\n")) {
+    return (
+      <pre className="mt-1 block overflow-x-auto rounded-[3px] bg-white p-[0.35rem_0.45rem] text-[0.8rem] leading-[1.35] break-words whitespace-pre-wrap">
+        {text}
+      </pre>
+    );
+  }
+
+  return text;
+};

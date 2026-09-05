@@ -1,7 +1,5 @@
 import { type FC } from "react";
 
-import styles from "./ReleaseCountries.module.css";
-
 import { DetailField } from "../DetailField";
 
 import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
@@ -49,9 +47,9 @@ const ReleaseCountriesInner: FC<{
     const { CD, slipcase } = countries;
 
     return (
-      <div className={styles.countriesCompound}>
+      <div className="mt-2 ml-[0.65rem] flex flex-col gap-[0.45rem]">
         <div>
-          <span className={styles.detailLabel}>CD:</span>
+          <span className="font-semibold">CD:</span>
           <CountriesBasicBlock basic={CD} nested />
         </div>
         <DetailField label="Slipcase — printed in">
@@ -87,7 +85,7 @@ const CountriesBasicBlock: FC<CountriesBasicBlockProps> = ({
   }
 
   return (
-    <div className={styles.nestedCountriesBasic}>
+    <div className="mt-2 flex flex-col gap-[0.35rem] border-l-2 border-[#ddd] pl-[0.65rem]">
       <DetailField label="Made in">
         {joinStringOrArray(basic["made in"])}
       </DetailField>
