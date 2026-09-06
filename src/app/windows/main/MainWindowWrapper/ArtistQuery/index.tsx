@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState, type FC } from "react";
+import { useCallback, useState, type FC } from "react";
 
 import api from "../../api";
 import ArtistQueryList from "../ArtistQueryList";
 
 import type { DbSource } from "@/db/db-source";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import useFetch from "@/hooks/useFetch";
 import type { ArtistQueryResult } from "@/types/artists";
 
 /** Wait this long after the last keystroke before calling the API. */
@@ -15,61 +16,36 @@ type ArtistQueryProps = {
 };
 
 const ArtistQuery: FC<ArtistQueryProps> = ({ dbSource }) => {
-  const [artists, setArtists] = useState<ArtistQueryResult>(null);
+  // const [artists, setArtists] = useState<ArtistQueryResult>(null);
   const [inputValue, setInputValue] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
+
+  // const [isSearching, setIsSearching] = useState(false);
 
   const [debouncedQuery, isDebouncing] = useDebouncedValue(
     inputValue,
     SEARCH_DEBOUNCE_MS,
   );
 
-  /**
-   * Monotonic id for artist search requests. Incremented when clearing the query,
-   * dispatching a new search, or unmounting, so responses from older requests are ignored.
-   */
-  const searchRequestIdRef = useRef(0);
+  const queryArtistsPromise = useCallback(
+    () =>
+      debouncedQuery
+        ? api.queryArtists(debouncedQuery, dbSource)
+        : Promise.resolve(null),
+    [debouncedQuery, dbSource],
+  );
 
-  useEffect(() => {
-    return () => {
-      searchRequestIdRef.current += 1;
-    };
-  }, []);
-
-  useEffect(() => {
-    searchRequestIdRef.current += 1;
-
-    if (!debouncedQuery) {
-      setArtists(null);
-      setIsSearching(false);
-
-      return;
-    }
-
-    const dispatchedRequestId = searchRequestIdRef.current;
-
-    setIsSearching(true);
-
-    api
-      .queryArtists(debouncedQuery, dbSource)
-      .then((result) => {
-        if (dispatchedRequestId === searchRequestIdRef.current) {
-          setArtists(result);
-        }
-      })
-      .catch((error: unknown) => {
-        console.error(error);
-
-        if (dispatchedRequestId === searchRequestIdRef.current) {
-          setArtists(null);
-        }
-      })
-      .finally(() => {
-        if (dispatchedRequestId === searchRequestIdRef.current) {
-          setIsSearching(false);
-        }
-      });
-  }, [debouncedQuery, dbSource]);
+  const { data: artists, isLoading: isSearching } = useFetch({
+    promise: queryArtistsPromise,
+    onError: useCallback(
+      (error) => {
+        console.error(
+          `Error getting artists by query "${debouncedQuery}"`,
+          error,
+        );
+      },
+      [debouncedQuery],
+    ),
+  });
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);

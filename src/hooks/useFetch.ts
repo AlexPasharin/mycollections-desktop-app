@@ -41,8 +41,9 @@ const useFetch = <U>({
       .catch((fetchError: unknown) => {
         if (fetchTokenRef.current === token) {
           setError(fetchError);
-          onError?.(fetchError);
         }
+
+        onError?.(fetchError);
       })
       .finally(() => {
         if (fetchTokenRef.current === token) {
@@ -51,6 +52,13 @@ const useFetch = <U>({
         }
       });
   }, [promise, skip, onSuccess, onError, onFinally]);
+
+  useEffect(() => {
+    // invalidate all pending in-flight requests on component unmount
+    return () => {
+      fetchTokenRef.current += 1;
+    };
+  }, []);
 
   return {
     data,
