@@ -1,4 +1,4 @@
-import { type FC, useEffect, useState } from "react";
+import { type FC, useState } from "react";
 
 import api from "./api";
 import ArtistWindowMainContent from "./ArtistWindowMainContent";
@@ -7,8 +7,8 @@ import DbSourceSelect from "@/app/components/DbSourceSelect";
 import type { DbSource } from "@/db/db-source";
 import { parseDbSource } from "@/db/parse-db-source";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import useFetch from "@/hooks/useFetch";
 import { useSyncSearchParam } from "@/hooks/useSyncSearchParam";
-import type { ArtistByIdResult } from "@/types/artists";
 
 const ArtistWindowWrapper: FC = () => {
   const params = new URLSearchParams(window.location.search);
@@ -17,43 +17,9 @@ const ArtistWindowWrapper: FC = () => {
   const [primaryDbSource, setPrimaryDbSource] = useState<DbSource>(
     parseDbSource(params.get("source")),
   );
-  const [artist, setArtist] = useState<ArtistByIdResult>();
-  const [isLoading, setIsLoading] = useState(true);
 
   useSyncSearchParam("source", primaryDbSource);
-
-  const title = isLoading
-    ? "Artist View - Loading...."
-    : artist
-      ? `Artist View - ${artist.name}`
-      : "Artist View";
-
-  useDocumentTitle(title);
-
-  useEffect(() => {
-    if (!artistId) {
-      return;
-    }
-
-    setIsLoading(true);
-
-    api
-      .getArtistById(artistId, primaryDbSource)
-      .then(setArtist)
-      .catch((error: unknown) => {
-        console.error("Error getting artist by id", error);
-        setArtist(undefined);
-      })
-      .finally(() => setIsLoading(false));
-  }, [artistId, primaryDbSource]);
-
-  if (!artistId) {
-    const error = new Error("artistId is required");
-    console.error(error);
-    window.close();
-
-    return null;
-  }
+  useDocumentTitle("Artist View");
 
   return (
     <div>
@@ -66,20 +32,54 @@ const ArtistWindowWrapper: FC = () => {
         />
       </header>
 
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : artist ? (
-        <ArtistWindowMainContent
-          artist={artist}
+      {artistId ? (
+        <ArtistDataContentWrapper
           artistId={artistId}
           primaryDbSource={primaryDbSource}
-          onArtistUpdated={setArtist}
         />
       ) : (
-        <p>Artist not found in database</p>
+        <p>Artist id not provided</p>
       )}
     </div>
   );
 };
 
 export default ArtistWindowWrapper;
+
+const ArtistDataContentWrapper: FC<{
+  artistId: string;
+  primaryDbSource: DbSource;
+}> = ({ artistId, primaryDbSource }) => {
+  const {
+    data: artist,
+    setData: setArtist,
+    isLoading,
+  } = useFetch(api.getArtistById, [artistId, primaryDbSource], {
+    errorMessage: `Error getting artist by id (${artistId})`,
+  });
+
+  const title = isLoading
+    ? "Artist View - Loading...."
+    : artist
+      ? `Artist View - ${artist.name}`
+      : "Artist View";
+
+  useDocumentTitle(title);
+
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+
+  if (!artist) {
+    return <p>Artist not found in database (id: {artistId})</p>;
+  }
+
+  return (
+    <ArtistWindowMainContent
+      artist={artist}
+      artistId={artistId}
+      primaryDbSource={primaryDbSource}
+      onArtistUpdated={setArtist}
+    />
+  );
+};
