@@ -1,8 +1,9 @@
-import { useCallback, useState, type FC } from "react";
+import { useState, type FC } from "react";
 
 import api from "../../api";
 import ArtistQueryList from "../ArtistQueryList";
 
+import ErrorMessages from "@/app/components/ErrorMessages";
 import type { DbSource } from "@/db/db-source";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import useFetch from "@/hooks/useFetch";
@@ -16,35 +17,20 @@ type ArtistQueryProps = {
 };
 
 const ArtistQuery: FC<ArtistQueryProps> = ({ dbSource }) => {
-  // const [artists, setArtists] = useState<ArtistQueryResult>(null);
   const [inputValue, setInputValue] = useState("");
-
-  // const [isSearching, setIsSearching] = useState(false);
 
   const [debouncedQuery, isDebouncing] = useDebouncedValue(
     inputValue,
     SEARCH_DEBOUNCE_MS,
   );
 
-  const queryArtistsPromise = useCallback(
-    () =>
-      debouncedQuery
-        ? api.queryArtists(debouncedQuery, dbSource)
-        : Promise.resolve(null),
-    [debouncedQuery, dbSource],
-  );
-
-  const { data: artists, isLoading: isSearching } = useFetch({
-    promise: queryArtistsPromise,
-    onError: useCallback(
-      (error) => {
-        console.error(
-          `Error getting artists by query "${debouncedQuery}"`,
-          error,
-        );
-      },
-      [debouncedQuery],
-    ),
+  const {
+    data: artists,
+    isLoading: isSearching,
+    error: errorFetchingArtists,
+  } = useFetch(api.queryArtists, [debouncedQuery, dbSource], {
+    skip: !debouncedQuery,
+    errorMessage: `Error getting artists by query "${debouncedQuery}"`,
   });
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +43,14 @@ const ArtistQuery: FC<ArtistQueryProps> = ({ dbSource }) => {
       <input value={inputValue} onChange={onChange} />
 
       {isDebouncing || isSearching ? (
-        <div>Loading...</div>
+        <div className="mt-2">Loading...</div>
+      ) : errorFetchingArtists ? (
+        <div className="mt-2">
+          <ErrorMessages
+            id="error-fetching-artists"
+            messages={[{ message: "Error fetching artists" }]}
+          />
+        </div>
       ) : (
         <ArtistQueryResultView queryResults={artists} dbSource={dbSource} />
       )}

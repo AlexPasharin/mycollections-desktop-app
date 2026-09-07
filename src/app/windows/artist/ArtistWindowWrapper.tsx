@@ -1,4 +1,4 @@
-import { type FC, useCallback, useState } from "react";
+import { type FC, useState } from "react";
 
 import api from "./api";
 import ArtistWindowMainContent from "./ArtistWindowMainContent";
@@ -50,23 +50,12 @@ const ArtistDataContentWrapper: FC<{
   artistId: string;
   primaryDbSource: DbSource;
 }> = ({ artistId, primaryDbSource }) => {
-  const fetchArtistPromise = useCallback(
-    () => api.getArtistById(artistId, primaryDbSource),
-    [artistId, primaryDbSource],
-  );
-
   const {
     data: artist,
     setData: setArtist,
     isLoading,
-  } = useFetch({
-    promise: fetchArtistPromise,
-    onError: useCallback(
-      (error: unknown) => {
-        console.error(`Error getting artist by id (${artistId})`, error);
-      },
-      [artistId],
-    ),
+  } = useFetch(api.getArtistById, [artistId, primaryDbSource], {
+    errorMessage: `Error getting artist by id (${artistId})`,
   });
 
   const title = isLoading
