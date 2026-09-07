@@ -2,7 +2,7 @@ import {
   useState,
   type Dispatch,
   type FC,
-  type FormEvent,
+  type SubmitEvent,
   type SetStateAction,
 } from "react";
 
@@ -549,7 +549,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
     }));
   };
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (isSubmitting) {

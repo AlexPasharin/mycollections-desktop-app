@@ -1,4 +1,4 @@
-import { type FC, type FormEvent, useState } from "react";
+import { type FC, type SubmitEvent, useState } from "react";
 
 import api from "../../api";
 
@@ -41,7 +41,7 @@ const AddTagForm: FC<AddTagFormProps> = ({
     );
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (isSubmitting) {

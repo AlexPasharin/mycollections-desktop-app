@@ -1,4 +1,4 @@
-import { type FC, type FormEvent, useEffect, useState } from "react";
+import { type FC, type SubmitEvent, useEffect, useState } from "react";
 
 import ArtistUpsertFormPreview from "./ArtistUpsertFormPreview";
 import {
@@ -228,7 +228,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
     }));
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (isSubmitting) {

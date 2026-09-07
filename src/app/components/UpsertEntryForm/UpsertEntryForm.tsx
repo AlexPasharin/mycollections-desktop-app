@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FC, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FC, type SubmitEvent } from "react";
 
 import UpsertEntryAltNamesSection from "./UpsertEntryAltNamesSection";
 import UpsertEntryArtistsSection from "./UpsertEntryArtistsSection";
@@ -415,7 +415,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     );
   };
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (isSubmitting) {
