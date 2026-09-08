@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FC } from "react";
+import { useEffect, useEffectEvent, useState, type FC } from "react";
 
 import api from "../../api";
 
@@ -16,52 +16,60 @@ type AllArtistsListProps = {
 
 const AllArtistsList: FC<AllArtistsListProps> = ({ dbSource }) => {
   const [artistsState, setArtistsState] = useState<ArtistsState | null>(null);
-  const [loadingArtists, setLoadingArtists] = useState(true);
+  const [loadingArtists, setLoadingArtists] = useState(false);
   const [loadingError, setLoadingError] = useState<unknown>(null);
 
-  const fetchArtistsBatch = useCallback(
-    (direction: "next" | "prev", artistForCompare?: ListArtist | null) => {
-      setLoadingArtists(true);
+  const fetchArtistsBatch = (
+    direction: "next" | "prev",
+    artistForCompare?: ListArtist | null,
+  ) => {
+    if (loadingArtists) {
+      return;
+    }
 
-      api
-        .fetchArtists(
-          {
-            artistForCompare: artistForCompare ?? null,
-            batchSize: 50,
-            direction,
-          },
-          dbSource,
-        )
-        .then((result) =>
-          setArtistsState((prevArtistsState) => ({
-            ...result,
+    setLoadingArtists(true);
 
-            startIndex: prevArtistsState
-              ? direction === "next"
-                ? prevArtistsState.startIndex +
-                  prevArtistsState.artists.length -
-                  1 +
-                  1
-                : prevArtistsState.startIndex - result.artists.length
-              : 1,
-          })),
-        )
-        .catch((error: unknown) => {
-          const errorMessage = error instanceof Error ? error.message : error;
+    api
+      .fetchArtists(
+        {
+          artistForCompare: artistForCompare ?? null,
+          batchSize: 50,
+          direction,
+        },
+        dbSource,
+      )
+      .then((result) =>
+        setArtistsState((prevArtistsState) => ({
+          ...result,
 
-          console.error(errorMessage);
+          startIndex: prevArtistsState
+            ? direction === "next"
+              ? prevArtistsState.startIndex +
+                prevArtistsState.artists.length -
+                1 +
+                1
+              : prevArtistsState.startIndex - result.artists.length
+            : 1,
+        })),
+      )
+      .catch((error: unknown) => {
+        const errorMessage = error instanceof Error ? error.message : error;
 
-          setLoadingError(errorMessage);
-        })
-        .finally(() => setLoadingArtists(false));
-    },
-    [dbSource],
-  );
+        console.error(errorMessage);
 
-  useEffect(() => {
+        setLoadingError(errorMessage);
+      })
+      .finally(() => setLoadingArtists(false));
+  };
+
+  const initialFetchEffect = useEffectEvent(() => {
     setArtistsState(null);
     fetchArtistsBatch("next");
-  }, [fetchArtistsBatch]);
+  });
+
+  useEffect(() => {
+    initialFetchEffect();
+  }, [dbSource]);
 
   if (loadingError) {
     return (
@@ -78,6 +86,7 @@ const AllArtistsList: FC<AllArtistsListProps> = ({ dbSource }) => {
         <button
           type="button"
           onClick={() => fetchArtistsBatch("prev", artistsState.prev)}
+          disabled={loadingArtists}
         >
           Prev page &lt;-
         </button>
@@ -86,6 +95,7 @@ const AllArtistsList: FC<AllArtistsListProps> = ({ dbSource }) => {
         <button
           type="button"
           onClick={() => fetchArtistsBatch("next", artistsState.next)}
+          disabled={loadingArtists}
         >
           Next page -&gt;
         </button>
