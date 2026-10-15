@@ -10,6 +10,7 @@ model Artist {
 
   entries                EntryArtist[]
   alternativeArtistNames AlternativeArtistName[]
+  musicalMerchArtists    MusicalMerchArtist[]
 
   @@unique(name)
   @@map("artists")
