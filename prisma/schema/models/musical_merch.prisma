@@ -1,0 +1,19 @@
+model MusicalMerch {
+  id                  String               @id @default(dbgenerated("gen_random_uuid()")) @map("merch_id") @db.Uuid
+  name                String
+  description         String?
+  musicalMerchArtists MusicalMerchArtist[]
+
+  @@map("musical_merch")
+}
+
+model MusicalMerchArtist {
+  merchId  String @map("merch_id") @db.Uuid
+  artistId String @map("artist_id") @db.Uuid
+
+  merch  MusicalMerch @relation(fields: [merchId], references: [id])
+  artist Artist       @relation(fields: [artistId], references: [id])
+
+  @@unique([merchId, artistId])
+  @@map("musical_merch_artists")
+}
