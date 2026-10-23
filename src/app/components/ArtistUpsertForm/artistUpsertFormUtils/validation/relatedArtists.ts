@@ -5,28 +5,33 @@ import type {
   ValidArtistUpsertRelatedParentRow,
 } from "../formValues";
 
-import type { FormFieldError, FormFieldValidationResult } from "@/types/form";
+import type {
+  FormFeedbackMessages,
+  FormValidationFnResult,
+} from "@/hooks/useFormState";
 
 export const validateRelatedArtists = (
   rows: ArtistUpsertRelatedArtistRow[],
-): FormFieldValidationResult<
-  ValidArtistUpsertRelatedParentRow[],
-  Record<string, FormFieldError[]>,
-  ArtistUpsertRelatedArtistRow[]
+): FormValidationFnResult<
+  ArtistUpsertRelatedArtistRow[],
+  ValidArtistUpsertRelatedParentRow[]
 > => {
-  const errors: Record<string, FormFieldError[]> = {};
-  const validatedRows: ArtistUpsertRelatedArtistRow[] = [];
+  const errors: FormFeedbackMessages = [];
+  const processedRows: ArtistUpsertRelatedArtistRow[] = [];
+  const validatedRows: ValidArtistUpsertRelatedParentRow[] = [];
   const notifications = [];
   const seenArtistIds = new Map<string, string>();
-  let valid = true;
 
   for (const row of rows) {
-    const rowErrors = [];
-    const trimmedArtistId = row.artistId.trim();
+    const { relation, id, artistId } = row;
+    const trimmedArtistId = artistId.trim();
 
-    if (row.relation === "") {
-      rowErrors.push({
+    const rowErrors = [];
+
+    if (relation === "") {
+      errors.push({
         message: "Choose whether this artist is a parent or a child.",
+        sources: [id, "relation"],
       });
     }
 
@@ -34,46 +39,55 @@ export const validateRelatedArtists = (
       const firstRowId = seenArtistIds.get(trimmedArtistId);
 
       if (firstRowId === undefined) {
-        seenArtistIds.set(trimmedArtistId, row.id);
+        seenArtistIds.set(trimmedArtistId, id);
       } else {
         rowErrors.push({
           message: `Duplicate artist id ${trimmedArtistId}.`,
-          sources: ["artistId"],
+          sources: [id, "artistId"],
         });
       }
     } else {
-      rowErrors.push({ message: "Artist ID must be a valid UUID." });
+      errors.push({
+        message: "Artist ID must be a valid UUID.",
+        sources: [id, "artistId"],
+      });
     }
 
-    if (rowErrors.length > 0) {
-      valid = false;
-      errors[row.id] = rowErrors;
+    const newRow = {
+      id,
+      artistId: trimmedArtistId,
+    };
+
+    if (relation !== "") {
+      validatedRows.push({
+        ...newRow,
+        relation,
+      });
     }
 
-    validatedRows.push({ ...row, artistId: trimmedArtistId });
+    processedRows.push({
+      ...newRow,
+      relation,
+    });
 
     if (trimmedArtistId !== row.artistId) {
       notifications.push({
-        notification: `Note: artist ID "${trimmedArtistId}" has been trimmed`,
+        message: `Note: artist ID "${trimmedArtistId}" has been trimmed`,
+        sources: [id, "artistId"],
       });
     }
   }
 
-  if (!valid) {
+  if (errors.length > 0) {
     return {
-      valid: false,
-      value: validatedRows,
-      errorMessages: errors,
-      notifications: notifications.length > 0 ? notifications : undefined,
+      value: processedRows,
+      errors,
+      notifications,
     };
   }
 
   return {
-    valid: true,
-
-    // Relation is verified above for every row when valid is true.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    value: validatedRows as ValidArtistUpsertRelatedParentRow[],
-    notifications: notifications.length > 0 ? notifications : undefined,
+    validatedValue: validatedRows,
+    notifications,
   };
 };

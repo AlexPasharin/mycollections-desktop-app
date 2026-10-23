@@ -1,3 +1,4 @@
+import type { FormValidationFnResult } from "@/hooks/useFormState";
 import type { FormFieldValidationResult } from "@/types/form";
 
 export const validateRequiredTrimmedText =
@@ -20,5 +21,27 @@ export const validateRequiredTrimmedText =
         trimmed === value
           ? undefined
           : [{ notification: "Note: value has been trimmed" }],
+    };
+  };
+
+export const validateRequiredTrimmedText2 =
+  (requiredMessage: string) =>
+  (value: string): FormValidationFnResult<string> => {
+    const trimmed = value.trim();
+
+    if (trimmed === "") {
+      return {
+        value,
+        notifications: [],
+        errors: [{ message: requiredMessage }],
+      };
+    }
+
+    const notifications =
+      trimmed === value ? [] : [{ message: "Note: value has been trimmed" }];
+
+    return {
+      validatedValue: trimmed,
+      notifications,
     };
   };

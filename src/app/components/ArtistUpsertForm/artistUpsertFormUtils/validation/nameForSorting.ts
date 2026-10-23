@@ -1,34 +1,33 @@
-import type { FormField, FormFieldValidationResult } from "@/types/form";
+import type {
+  ArtistUpsertFormDraft,
+  ValidatedArtistUpsertFormDraft,
+} from "../formValues";
 
-export const validateNameForSorting = (
-  value: string,
-  form?: Record<string, FormField<unknown, unknown, unknown, unknown>>,
-): FormFieldValidationResult<string> => {
+import type { FormValidationFn } from "@/hooks/useFormState";
+
+export const validateNameForSorting: FormValidationFn<
+  ArtistUpsertFormDraft,
+  ValidatedArtistUpsertFormDraft,
+  "nameForSorting"
+> = (state) => {
+  const value = state.nameForSorting.value;
   const trimmed = value.trim();
 
   const notifications =
-    trimmed === value
-      ? undefined
-      : [{ notification: "Note: value has been trimmed" }];
+    trimmed === value ? [] : [{ message: "Note: value has been trimmed" }];
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-  const mainNameValue = form?.["name"]?.value as string; // in the form this is applied in this is always a string
-  const mainName = mainNameValue.trim();
+  const mainName = state.name.value.trim();
 
   if (mainName && mainName === trimmed) {
     return {
-      valid: false,
       value: trimmed,
-      errorMessages: [
-        { message: "Name for sorting cannot be the same as name" },
-      ],
+      errors: [{ message: "Name for sorting cannot be the same as name" }],
       notifications,
     };
   }
 
   return {
-    valid: true,
-    value: trimmed,
+    validatedValue: trimmed,
     notifications,
   };
 };
