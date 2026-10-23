@@ -1,24 +1,14 @@
 import type {
   ArtistUpsertAltNameRow,
-  ArtistUpsertRelatedArtistRow,
+  ValidatedArtistUpsertFormDraft,
+  ValidArtistUpsertRelatedParentRow,
 } from "./formValues";
 
 import type {
   ArtistAltNameInput,
   ArtistRelatedArtistInput,
 } from "@/types/artists";
-import type { RelatedItemRelation } from "@/types/common";
-import type { ArtistType } from "@/types/db/database";
 import { nullIfEmpty } from "@/utils/common";
-
-type ToUpsertArtistInputArgs = {
-  name: string;
-  nameForSorting: string;
-  type: ArtistType;
-  partOfQueenFamily: boolean;
-  altNames: ArtistUpsertAltNameRow[];
-  relatedArtists: ArtistUpsertRelatedArtistRow[];
-};
 
 export const toUpsertArtistInput = ({
   name,
@@ -26,8 +16,8 @@ export const toUpsertArtistInput = ({
   type,
   partOfQueenFamily,
   altNames,
-  relatedArtists,
-}: ToUpsertArtistInputArgs) => ({
+  relatedParents,
+}: ValidatedArtistUpsertFormDraft) => ({
   artist: {
     name,
     nameForSorting: nullIfEmpty(nameForSorting),
@@ -35,7 +25,7 @@ export const toUpsertArtistInput = ({
     partOfQueenFamily,
   },
   altNames: altNames.map(toAltNameInput),
-  relatedArtists: toRelatedArtistsFromForm(relatedArtists),
+  relatedArtists: toRelatedArtistsFromForm(relatedParents),
 });
 
 const toAltNameInput = (row: ArtistUpsertAltNameRow): ArtistAltNameInput => ({
@@ -44,12 +34,9 @@ const toAltNameInput = (row: ArtistUpsertAltNameRow): ArtistAltNameInput => ({
 });
 
 const toRelatedArtistsFromForm = (
-  rows: ArtistUpsertRelatedArtistRow[],
+  rows: ValidArtistUpsertRelatedParentRow[],
 ): ArtistRelatedArtistInput[] =>
   rows.map(({ artistId, relation }) => ({
     relatedArtistId: artistId,
-
-    // The form validator guarantees the relation is valid before saving.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    relation: relation as RelatedItemRelation,
+    relation,
   }));

@@ -1,36 +1,51 @@
-import type { ArtistUpsertAltNameRow } from "../formValues";
+import type {
+  ArtistUpsertAltNameRow,
+  ArtistUpsertFormDraft,
+  ValidatedArtistUpsertFormDraft,
+} from "../formValues";
 
 import type {
-  FormField,
-  FormFieldError,
-  FormFieldValidationResult,
-} from "@/types/form";
+  FormFeedbackMessages,
+  FormValidationFn,
+} from "@/hooks/useFormState";
 
-export const validateArtistAltNames = (
-  rows: ArtistUpsertAltNameRow[],
-  form?: Record<string, FormField<unknown, unknown, unknown, unknown>>,
-): FormFieldValidationResult<ArtistUpsertAltNameRow[]> => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-  const mainNameValue = form?.["name"]?.value as string; // in the form this is applied in this is always a string
-  const mainName = mainNameValue.trim();
+export const validateArtistAltNames: FormValidationFn<
+  ArtistUpsertFormDraft,
+  ValidatedArtistUpsertFormDraft,
+  "altNames"
+> = (state) => {
+  const mainName = state.name.value.trim();
   const seenNames = new Set<string>();
-  const errors: FormFieldError[] = [];
+  const errors: FormFeedbackMessages = [];
 
   const normalizedRows: ArtistUpsertAltNameRow[] = [];
   const notifications = [];
 
-  for (const row of rows) {
-    const { name } = row;
+  for (const row of state.altNames.value) {
+    const { name, id } = row;
     const trimmedName = name.trim();
     let rowError: string | undefined;
 
     if (trimmedName === "") {
-      rowError = "Alternative name cannot be empty.";
-    } else if (mainName !== "" && trimmedName === mainName) {
-      rowError = "Alternative name cannot match the artist's main name.";
-    } else if (seenNames.has(trimmedName)) {
-      rowError = `Duplicate alternative name "${trimmedName}".`;
-    } else {
+      errors.push({
+        message: "Alternative name cannot be empty.",
+        sources: [id],
+      });
+    }
+
+    if (mainName !== "" && trimmedName === mainName) {
+      errors.push({
+        message: "Alternative name cannot match the artist's main name.",
+        sources: [id],
+      });
+    }
+
+    if (seenNames.has(trimmedName)) {
+      errors.push({
+        message: `Duplicate alternative name "${trimmedName}".`,
+        sources: [id],
+      });
+    } else if (trimmedName !== "") {
       seenNames.add(trimmedName);
     }
 
@@ -38,12 +53,16 @@ export const validateArtistAltNames = (
 
     if (trimmedName !== name) {
       notifications.push({
-        notification: "Note: alternative name has been trimmed",
+        message: "Note: value has been trimmed",
+        sources: [id],
       });
     }
 
     if (rowError) {
-      errors.push({ message: rowError, sources: [row.id] });
+      errors.push({
+        message: rowError,
+        sources: [id],
+      });
     }
   }
 
@@ -51,14 +70,12 @@ export const validateArtistAltNames = (
 
   return valid
     ? {
-        valid,
-        value: normalizedRows,
+        validatedValue: normalizedRows,
         notifications,
       }
     : {
-        valid: false,
         value: normalizedRows,
-        errorMessages: errors,
+        errors,
         notifications,
       };
 };

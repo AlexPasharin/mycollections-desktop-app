@@ -1,23 +1,24 @@
-import { type FC, type SubmitEvent, useEffect, useState } from "react";
+import { type FC, type SubmitEvent, useState } from "react";
 
 import ArtistUpsertFormPreview from "./ArtistUpsertFormPreview";
 import {
   defaultAltNameRow,
   defaultRelatedParentRow,
-  initialArtistUpsertFormDraft,
+  initialArtistUpsertFormDraft2,
   type ArtistUpsertFormDraft,
+  type ValidatedArtistUpsertFormDraft,
 } from "./artistUpsertFormUtils/formValues";
 import { toUpsertArtistInput } from "./artistUpsertFormUtils/toUpsertArtistInput";
 import ArtistUpsertRelatedArtistsSection from "./ArtistUpsertRelatedArtistsSection";
 
+import FeedbackSection from "../FeedbackSection2";
 import FormSectionsDivider from "../Form/FormSectionsDivider";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
-import ErrorMessages from "@/app/components/ErrorMessages";
-import FeedbackSection from "@/app/components/FeedbackSection";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
+import useFormState from "@/hooks/useFormState";
 import type {
   ArtistAltNameInput,
   ArtistByIdResult,
@@ -32,10 +33,8 @@ import type {
   FormFeedback,
   FeedbackErrors,
   FeedbackNotifications,
-  FormField,
 } from "@/types/form";
 import { formatArtistTypeLabel } from "@/utils/artist";
-import { omitProperty } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
 
 type ArtistUpsertFormSharedProps = {
@@ -70,19 +69,25 @@ const NAME_FOR_SORTING_FIELD_ERROR_ID = "upsert-artist-name-for-sorting-error";
 const NAME_FOR_SORTING_FIELD_NOTIFICATIONS_ID =
   "upsert-artist-name-for-sorting-notifications";
 
-type ArtistUpsertFormArrayErrorField = Exclude<
-  keyof ArtistUpsertFormDraft,
-  "relatedParents"
->;
-
 const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
   const { mode, primaryDbSource, onClearFeedback, onArtistSaved, artist } =
     props;
   const isCreateMode = mode === "create";
 
-  const [form, setForm] = useState<ArtistUpsertFormDraft>(() =>
-    initialArtistUpsertFormDraft(artist),
-  );
+  const {
+    formState,
+    setFieldValue,
+    setField,
+    clearFieldFeedback,
+    validateField,
+    validateForm,
+  } = useFormState({
+    initialValue: initialArtistUpsertFormDraft2(artist),
+  });
+
+  const [validatedForm, setValidatedForm] =
+    useState<ValidatedArtistUpsertFormDraft | null>(null);
+
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
     useState(false);
   const [submitError, setSubmitError] = useState<string>();
@@ -91,73 +96,6 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
   const [checkedDbSources, setCheckedDbSources] = useState<
     ReadonlySet<DbSource>
   >(() => new Set(ALL_DB_SOURCES));
-
-  useEffect(() => {
-    setForm(initialArtistUpsertFormDraft(artist));
-    setShowSubmissionValidationError(false);
-    setIsConfirmOpen(false);
-    setSubmitError(undefined);
-  }, [artist, isCreateMode]);
-
-  const setFieldValue = <K extends keyof ArtistUpsertFormDraft>(
-    key: K,
-    value:
-      | ArtistUpsertFormDraft[K]["value"]
-      | ((prev: ArtistUpsertFormDraft) => ArtistUpsertFormDraft[K]["value"]),
-  ) =>
-    setForm((prev) => ({
-      ...prev,
-      [key]: {
-        ...prev[key],
-        value: typeof value === "function" ? value(prev) : value,
-      },
-    }));
-
-  const setField = <K extends keyof ArtistUpsertFormDraft>(
-    key: K,
-    value:
-      | ArtistUpsertFormDraft[K]
-      | ((prev: ArtistUpsertFormDraft) => ArtistUpsertFormDraft[K]),
-  ) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: typeof value === "function" ? value(prev) : value,
-    }));
-  };
-
-  const clearFieldFeedback = (
-    key: ArtistUpsertFormArrayErrorField,
-    source?: PropertyKey,
-  ) => {
-    setField(key, (prev) => ({
-      ...prev[key],
-      errors: prev[key].errors.filter(
-        (error) =>
-          error.sources && (!source || !error.sources.includes(source)),
-      ),
-      notifications: [],
-    }));
-  };
-
-  const validateField = <T extends keyof ArtistUpsertFormDraft>(key: T) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const validationResult = form[key].validationFn(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-      form[key].value as never,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-      form as Record<string, FormField<unknown, unknown, unknown, unknown>>,
-    ) as ReturnType<ArtistUpsertFormDraft[T]["validationFn"]>;
-
-    setField(key, (prev) => ({
-      ...prev[key],
-      valid: validationResult.valid,
-      value: validationResult.value,
-      notifications: validationResult.notifications ?? [],
-      errors: validationResult.valid ? [] : validationResult.errorMessages,
-    }));
-
-    return validationResult;
-  };
 
   const onBlur = (key: keyof ArtistUpsertFormDraft) => validateField(key);
 
@@ -175,13 +113,21 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
       errors: prev.altNames.errors.filter(
         (error) => !error.sources?.includes(rowId),
       ),
+      notifications: prev.altNames.notifications.filter(
+        (notification) => !notification.sources?.includes(rowId),
+      ),
     }));
   };
 
   const setAltNameValue = (rowId: string, name: string) => {
     setFieldValue("altNames", (prev) =>
       prev.altNames.value.map((row) =>
-        row.id === rowId ? { ...row, name } : row,
+        row.id === rowId
+          ? {
+              ...row,
+              name,
+            }
+          : row,
       ),
     );
   };
@@ -197,14 +143,24 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
     setField("relatedParents", (prev) => ({
       ...prev.relatedParents,
       value: prev.relatedParents.value.filter((row) => row.id !== rowId),
-      errors: omitProperty(prev.relatedParents.errors, rowId),
+      errors: prev.relatedParents.errors.filter(
+        (error) => !error.sources?.includes(rowId),
+      ),
+      notifications: prev.relatedParents.notifications.filter(
+        (notification) => !notification.sources?.includes(rowId),
+      ),
     }));
   };
 
   const setRelatedParentArtistId = (rowId: string, artistId: string) => {
     setFieldValue("relatedParents", (prev) =>
       prev.relatedParents.value.map((row) =>
-        row.id === rowId ? { ...row, artistId } : row,
+        row.id === rowId
+          ? {
+              ...row,
+              artistId,
+            }
+          : row,
       ),
     );
   };
@@ -220,11 +176,23 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
     );
   };
 
-  const clearRelatedParentRowFeedback = (rowId: string) => {
+  const clearRelatedParentRowFeedback = (
+    rowId: string,
+    field: "artistId" | "relation",
+  ) => {
     setField("relatedParents", (prev) => ({
       ...prev.relatedParents,
-      errors: omitProperty(prev.relatedParents.errors, rowId),
-      notifications: [],
+      errors: prev.relatedParents.errors.filter(
+        (error) =>
+          !(error.sources?.includes(rowId) && error.sources.includes(field)),
+      ),
+      notifications: prev.relatedParents.notifications.filter(
+        (notification) =>
+          !(
+            notification.sources?.includes(rowId) &&
+            notification.sources.includes(field)
+          ),
+      ),
     }));
   };
 
@@ -235,22 +203,13 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
       return;
     }
 
-    const validationResults = {
-      name: validateField("name"),
-      nameForSorting: validateField("nameForSorting"),
-      type: validateField("type"),
-      partOfQueenFamily: validateField("partOfQueenFamily"),
-      altNames: validateField("altNames"),
-      relatedParents: validateField("relatedParents"),
-    };
-
-    const formIsValid = Object.values(validationResults).every(
-      (result) => result.valid,
-    );
+    const validationResults = validateForm();
+    const formIsValid = validationResults !== null;
 
     setShowSubmissionValidationError(!formIsValid);
 
     if (formIsValid) {
+      setValidatedForm(validationResults);
       onClearFeedback();
       setSubmitError(undefined);
       setCheckedDbSources(new Set(ALL_DB_SOURCES));
@@ -269,26 +228,16 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
       return;
     }
 
-    const {
-      name: { value: name },
-      nameForSorting: { value: nameForSorting },
-      type: { value: typeValue },
-      partOfQueenFamily: { value: partOfQueenFamily },
-      altNames: { value: altNames },
-      relatedParents: { value: relatedArtists },
-    } = form;
+    if (validatedForm === null) {
+      setSubmitError("Form validation failed, check the form values");
+
+      return;
+    }
 
     setIsSubmitting(true);
     setSubmitError(undefined);
 
-    const upsertInput = toUpsertArtistInput({
-      name,
-      nameForSorting,
-      type: typeValue,
-      partOfQueenFamily,
-      altNames,
-      relatedArtists,
-    });
+    const upsertInput = toUpsertArtistInput(validatedForm);
 
     const savePromise = isCreateMode
       ? createArtistAcrossDbSources(
@@ -348,16 +297,6 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
     setSubmitError(undefined);
   };
 
-  const nameErrors = form.name.errors;
-  const nameNotifications = form.name.notifications;
-
-  const nameForSortingErrors = form.nameForSorting.errors;
-  const nameForSortingNotifications = form.nameForSorting.notifications;
-
-  const altNameRows = form.altNames.value;
-  const altNameErrors = form.altNames.errors;
-  const hasNameErrors = nameErrors.length > 0;
-
   return (
     <div>
       <form
@@ -371,26 +310,28 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
           <input
             id="upsert-artist-name"
             type="text"
-            value={form.name.value}
+            value={formState.name.value}
             onChange={(event) => {
-              setFieldValue("name", event.target.value);
+              setFieldValue("name", () => event.target.value);
               clearFieldFeedback("name");
-              setSubmitError(undefined);
+              setShowSubmissionValidationError(false);
             }}
             onBlur={() => {
               onBlur("name");
             }}
             disabled={isSubmitting}
-            aria-invalid={hasNameErrors}
-            aria-describedby={hasNameErrors ? NAME_FIELD_ERROR_ID : undefined}
+            aria-invalid={formState.name.errors.length > 0}
+            aria-describedby={
+              formState.name.errors.length > 0 ? NAME_FIELD_ERROR_ID : undefined
+            }
             className="px-2 py-[0.35rem] text-base"
             autoComplete="off"
           />
           <FeedbackSection
             notificationsId={NAME_FIELD_NOTIFICATIONS_ID}
             errorsId={NAME_FIELD_ERROR_ID}
-            errors={nameErrors}
-            notifications={nameNotifications}
+            errors={formState.name.errors}
+            notifications={formState.name.notifications}
           />
         </div>
 
@@ -406,11 +347,11 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
           <input
             id="upsert-artist-name-for-sorting"
             type="text"
-            value={form.nameForSorting.value}
+            value={formState.nameForSorting.value}
             onChange={(event) => {
-              setFieldValue("nameForSorting", event.target.value);
+              setFieldValue("nameForSorting", () => event.target.value);
               clearFieldFeedback("nameForSorting");
-              setSubmitError(undefined);
+              setShowSubmissionValidationError(false);
             }}
             onBlur={() => {
               onBlur("nameForSorting");
@@ -422,8 +363,8 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
           <FeedbackSection
             notificationsId={NAME_FOR_SORTING_FIELD_NOTIFICATIONS_ID}
             errorsId={NAME_FOR_SORTING_FIELD_ERROR_ID}
-            errors={nameForSortingErrors}
-            notifications={nameForSortingNotifications}
+            errors={formState.nameForSorting.errors}
+            notifications={formState.nameForSorting.notifications}
           />
         </div>
 
@@ -435,12 +376,12 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
           </label>
           <select
             id="upsert-artist-type"
-            value={form.type.value}
+            value={formState.type.value}
             onChange={(event) => {
               // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-              setFieldValue("type", event.target.value as ArtistType);
+              setFieldValue("type", () => event.target.value as ArtistType);
               clearFieldFeedback("type");
-              setSubmitError(undefined);
+              setShowSubmissionValidationError(false);
             }}
             disabled={isSubmitting}
             className="box-border w-full max-w-96 px-2 py-[0.35rem] text-base"
@@ -458,11 +399,11 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
-            checked={form.partOfQueenFamily.value}
+            checked={formState.partOfQueenFamily.value}
             onChange={(event) => {
-              setFieldValue("partOfQueenFamily", event.target.checked);
+              setFieldValue("partOfQueenFamily", () => event.target.checked);
               clearFieldFeedback("partOfQueenFamily");
-              setSubmitError(undefined);
+              setShowSubmissionValidationError(false);
             }}
             disabled={isSubmitting}
           />
@@ -476,55 +417,70 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
             Alternative names
           </h2>
 
-          {altNameRows.length > 0 && (
+          {formState.altNames.value.length > 0 && (
             <ul
-              className="mb-3 flex flex-col gap-[0.55rem] p-0"
+              className="mb-3 flex list-none flex-col gap-[0.55rem] p-0"
               aria-label="Alternative names"
             >
-              {altNameRows.map((row, index) => {
-                const rowErrors = altNameErrors.filter((error) =>
+              {formState.altNames.value.map((row, index) => {
+                const rowErrors = formState.altNames.errors.filter((error) =>
                   error.sources?.includes(row.id),
                 );
+                const rowNotifications =
+                  formState.altNames.notifications.filter((notification) =>
+                    notification.sources?.includes(row.id),
+                  );
+
                 const hasErrors = rowErrors.length > 0;
-                const errorId = `upsert-artist-alt-name-error-${row.id}`;
+                const errorsId = `upsert-artist-alt-name-error-${row.id}`;
+                const notificationsId = `upsert-artist-alt-name-notifications-${row.id}`;
                 const inputId = `upsert-artist-alt-name-${row.id}`;
 
                 return (
-                  <li key={row.id} className="flex flex-wrap items-start gap-2">
-                    <label
-                      className="min-w-28 pt-[0.35rem] text-[0.92em] font-semibold"
-                      htmlFor={inputId}
-                    >
-                      Alt name {index + 1}
-                    </label>
-                    <input
-                      id={inputId}
-                      className="min-w-40 flex-[1_1_14rem] px-2 py-[0.35rem] text-base"
-                      type="text"
-                      value={row.name}
-                      onChange={(event) => {
-                        setAltNameValue(row.id, event.target.value);
-                        clearFieldFeedback("altNames", row.id);
-                      }}
-                      onBlur={() => {
-                        onBlur("altNames");
-                      }}
-                      disabled={isSubmitting}
-                      aria-invalid={hasErrors}
-                      aria-describedby={hasErrors ? errorId : undefined}
-                      autoComplete="off"
+                  <li key={row.id}>
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <label
+                        className="min-w-28 pt-[0.35rem] text-[0.92em] font-semibold"
+                        htmlFor={inputId}
+                      >
+                        Alt name {index + 1}
+                      </label>
+                      <input
+                        id={inputId}
+                        className="min-w-40 flex-[1_1_14rem] px-2 py-[0.35rem] text-base"
+                        type="text"
+                        value={row.name}
+                        onChange={(event) => {
+                          setAltNameValue(row.id, event.target.value);
+                          clearFieldFeedback("altNames", row.id);
+                          setShowSubmissionValidationError(false);
+                        }}
+                        onBlur={() => {
+                          onBlur("altNames");
+                        }}
+                        disabled={isSubmitting}
+                        aria-invalid={hasErrors}
+                        aria-describedby={hasErrors ? errorsId : undefined}
+                        autoComplete="off"
+                      />
+                      <button
+                        type="button"
+                        className="cursor-pointer rounded-md border border-[#bcbcbc] bg-white px-[0.6rem] py-[0.35rem] text-[0.92em] text-[#333] hover:bg-[#f1f1f1] disabled:cursor-not-allowed disabled:opacity-60"
+                        onClick={() => {
+                          removeAltNameRow(row.id);
+                        }}
+                        disabled={isSubmitting}
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    <FeedbackSection
+                      notificationsId={notificationsId}
+                      errorsId={errorsId}
+                      errors={rowErrors}
+                      notifications={rowNotifications}
                     />
-                    <button
-                      type="button"
-                      className="cursor-pointer rounded-md border border-[#bcbcbc] bg-white px-[0.6rem] py-[0.35rem] text-[0.92em] text-[#333] hover:bg-[#f1f1f1] disabled:cursor-not-allowed disabled:opacity-60"
-                      onClick={() => {
-                        removeAltNameRow(row.id);
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      Remove
-                    </button>
-                    <ErrorMessages id={errorId} messages={rowErrors} />
                   </li>
                 );
               })}
@@ -544,22 +500,24 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
         <FormSectionsDivider />
 
         <ArtistUpsertRelatedArtistsSection
-          relatedArtists={form.relatedParents.value}
-          errors={form.relatedParents.errors}
-          notifications={form.relatedParents.notifications}
+          relatedArtists={formState.relatedParents.value}
+          errors={formState.relatedParents.errors}
+          notifications={formState.relatedParents.notifications}
           onChangeArtistId={(rowId, artistId) => {
             setRelatedParentArtistId(rowId, artistId);
-            clearRelatedParentRowFeedback(rowId);
+            clearRelatedParentRowFeedback(rowId, "artistId");
+            setShowSubmissionValidationError(false);
           }}
           onChangeRelation={(rowId, relation) => {
             setRelatedParentRelation(rowId, relation);
-            clearRelatedParentRowFeedback(rowId);
+            clearRelatedParentRowFeedback(rowId, "relation");
+            setShowSubmissionValidationError(false);
           }}
           onAddRow={addRelatedParentRow}
           onRemoveRow={removeRelatedParentRow}
-          onFocus={(rowId) => {
+          onFocus={(rowId, field) => {
             setShowSubmissionValidationError(false);
-            clearRelatedParentRowFeedback(rowId);
+            clearRelatedParentRowFeedback(rowId, field);
           }}
           onBlur={() => {
             onBlur("relatedParents");
@@ -567,7 +525,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
         />
 
         {showSubmissionValidationError && (
-          <p className="m-0 text-[0.85em] text-[#b42318]" role="alert">
+          <p className="mb-2 text-[0.85em] text-[#b42318]" role="alert">
             Artist submission failed due to validation errors, check the form
             values
           </p>
@@ -583,14 +541,16 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
           </button>
         </div>
       </form>
+
       <ConfirmDialog
         isOpen={isConfirmOpen}
         size="wide"
         title={isCreateMode ? "Confirm new artist" : "Confirm artist changes"}
         description={
-          isConfirmOpen && (
+          isConfirmOpen &&
+          validatedForm && (
             <>
-              <ArtistUpsertFormPreview form={form} />
+              <ArtistUpsertFormPreview form={validatedForm} />
               <DbSourcesCheckboxes
                 heading={
                   isCreateMode ? "Add to databases" : "Save to databases"

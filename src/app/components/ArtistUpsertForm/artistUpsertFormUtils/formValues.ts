@@ -5,12 +5,16 @@ import {
 } from "./validation";
 
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
+import type { InitialFormStateValue } from "@/hooks/useFormState";
 import type { ArtistByIdResult } from "@/types/artists";
 import type { RelatedItemRelation } from "@/types/common";
 import { ArtistType } from "@/types/db/database";
-import type { FormField, FormFieldError, RelatedItemRow } from "@/types/form";
+import type { FormFieldError, RelatedItemRow } from "@/types/form";
 import { withNewId } from "@/utils/id";
-import { validatePassThrough, validateRequiredTrimmedText } from "@/validation";
+import {
+  validatePassThrough2,
+  validateRequiredTrimmedText2,
+} from "@/validation";
 
 export type ArtistUpsertAltNameRow = {
   id: string;
@@ -31,16 +35,19 @@ export type ValidArtistUpsertRelatedParentRow = ArtistUpsertRelatedArtistRow & {
 export type ArtistUpsertRelatedParentsErrors = Record<string, FormFieldError[]>;
 
 export type ArtistUpsertFormDraft = {
-  name: FormField;
-  nameForSorting: FormField;
-  type: FormField<ArtistType>;
-  partOfQueenFamily: FormField<boolean>;
-  altNames: FormField<ArtistUpsertAltNameRow[]>;
-  relatedParents: FormField<
-    ArtistUpsertRelatedArtistRow[],
-    ArtistUpsertRelatedParentsErrors,
-    ValidArtistUpsertRelatedParentRow[]
-  >;
+  name: string;
+  nameForSorting: string;
+  type: ArtistType;
+  partOfQueenFamily: boolean;
+  altNames: ArtistUpsertAltNameRow[];
+  relatedParents: ArtistUpsertRelatedArtistRow[];
+};
+
+export type ValidatedArtistUpsertFormDraft = Omit<
+  ArtistUpsertFormDraft,
+  "relatedParents"
+> & {
+  relatedParents: ValidArtistUpsertRelatedParentRow[];
 };
 
 export const defaultAltNameRow = (name = ""): ArtistUpsertAltNameRow =>
@@ -52,36 +59,29 @@ export const defaultRelatedParentRow = (): ArtistUpsertRelatedArtistRow =>
     relation: "",
   });
 
-export const initialArtistUpsertFormDraft = (
+export const initialArtistUpsertFormDraft2 = (
   artist?: ArtistByIdResult,
-): ArtistUpsertFormDraft => ({
+): InitialFormStateValue<
+  ArtistUpsertFormDraft,
+  ValidatedArtistUpsertFormDraft
+> => ({
   name: {
     value: artist?.name ?? "",
-    valid: true,
-    validationFn: validateRequiredTrimmedText("Artist name is required"),
-    errors: [],
-    notifications: [],
+    validationFn: (state) =>
+      validateRequiredTrimmedText2("Artist name is required")(state.name.value),
   },
   nameForSorting: {
     value: artist?.nameForSorting ?? "",
-    valid: true,
     validationFn: validateNameForSorting,
-    errors: [],
-    notifications: [],
   },
   type: {
     value: artist?.type ?? ArtistType.ARTIST,
-    valid: true,
-    validationFn: validatePassThrough,
-    errors: [],
-    notifications: [],
+    validationFn: (state) => validatePassThrough2(state.type.value),
   },
   partOfQueenFamily: {
     value: artist?.partOfQueenFamily ?? false,
-    valid: true,
-    validationFn: validatePassThrough,
-    errors: [],
-    notifications: [],
+    validationFn: (state) =>
+      validatePassThrough2(state.partOfQueenFamily.value),
   },
   altNames: {
     value:
@@ -90,20 +90,14 @@ export const initialArtistUpsertFormDraft = (
         nameId,
         name,
       })) ?? [],
-    valid: true,
     validationFn: validateArtistAltNames,
-    errors: [],
-    notifications: [],
   },
   relatedParents: {
     value: relatedArtistsToFormValue(
       artist?.parentArtists,
       artist?.childArtists,
     ),
-    valid: true,
-    validationFn: validateRelatedArtists,
-    errors: {},
-    notifications: [],
+    validationFn: (state) => validateRelatedArtists(state.relatedParents.value),
   },
 });
 
