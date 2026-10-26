@@ -1,25 +1,21 @@
 import type { FC } from "react";
 
-import type {
-  UpsertEntryArtistFieldSource,
-  UpsertEntryArtistsErrors,
-} from "../upsertEntryFormUtils/errorMessages";
 import type { UpsertEntryArtistRow } from "../upsertEntryFormUtils/formValues";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
-import NotificationMessages from "@/app/components/NotificationMessages";
-import type { FeedbackNotifications } from "@/types/form";
+import NotificationMessages2 from "@/app/components/NotificationMessages2";
+import type { FormFeedbackMessages } from "@/hooks/useFormState";
 
 type UpsertEntryArtistRowPatch = Partial<Omit<UpsertEntryArtistRow, "id">>;
 
 type UpsertEntryArtistsSectionProps = {
   artists: UpsertEntryArtistRow[];
-  errors: UpsertEntryArtistsErrors;
-  notifications: FeedbackNotifications;
+  errors: FormFeedbackMessages;
+  notifications: FormFeedbackMessages;
   onUpdateArtistRow: (rowId: string, patch: UpsertEntryArtistRowPatch) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
-  onFocus: (rowId: string, source: UpsertEntryArtistFieldSource) => void;
+  onFocus: (rowId: string) => void;
   onBlur: () => void;
 };
 
@@ -47,8 +43,10 @@ const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
         aria-label="Artists"
       >
         {artists.map((row, index) => {
-          const rowErrors = errors[row.id];
-          const hasErrors = rowErrors !== undefined && rowErrors.length > 0;
+          const rowErrors = errors.filter((error) =>
+            error.sources?.includes(row.id),
+          );
+          const hasErrors = rowErrors.length > 0;
           const errorId = `upsert-entry-artist-error-${row.id}`;
           const artistIdInputId = `upsert-entry-artist-id-${row.id}`;
           const altNameIdInputId = `upsert-entry-artist-alt-name-id-${row.id}`;
@@ -78,7 +76,7 @@ const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
                     onUpdateArtistRow(row.id, { artistId: e.target.value });
                   }}
                   onFocus={() => {
-                    onFocus(row.id, "artistId");
+                    onFocus(row.id);
                   }}
                   onBlur={onBlur}
                   autoComplete="off"
@@ -97,7 +95,7 @@ const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
                       });
                     }}
                     onFocus={() => {
-                      onFocus(row.id, "isEntriesMainArtist");
+                      onFocus(row.id);
                     }}
                     onBlur={onBlur}
                     aria-invalid={hasErrors}
@@ -132,7 +130,7 @@ const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
                     });
                   }}
                   onFocus={() => {
-                    onFocus(row.id, "entryArtistAltNameId");
+                    onFocus(row.id);
                   }}
                   onBlur={onBlur}
                   autoComplete="off"
@@ -160,7 +158,7 @@ const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
       </ul>
     )}
 
-    <NotificationMessages
+    <NotificationMessages2
       id="upsert-entry-artists-notifications"
       messages={notifications}
     />

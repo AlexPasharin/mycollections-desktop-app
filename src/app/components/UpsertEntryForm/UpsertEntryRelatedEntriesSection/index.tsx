@@ -5,13 +5,13 @@ import type { UpsertEntryRelatedEntryRow } from "../upsertEntryFormUtils/formVal
 import RelatedItemsFormSection, {
   type RelatedItemsFormSectionLabels,
 } from "@/app/components/RelatedItemsFormSection";
+import type { FormFeedbackMessages } from "@/hooks/useFormState";
 import type { RelatedItemRelation } from "@/types/common";
-import type { FeedbackNotifications, FormFieldError } from "@/types/form";
 
 type UpsertEntryRelatedEntriesSectionProps = {
   relatedEntries: UpsertEntryRelatedEntryRow[];
-  errors: FormFieldError[];
-  notifications: FeedbackNotifications;
+  errors: FormFeedbackMessages;
+  notifications: FormFeedbackMessages;
   onChangeEntryId: (rowId: string, entryId: string) => void;
   onChangeRelation: (rowId: string, relation: RelatedItemRelation) => void;
   onChangeOrderNumber: (rowId: string, orderNumber: string) => void;
@@ -39,7 +39,10 @@ const UpsertEntryRelatedEntriesSection: FC<
     rows={relatedEntries}
     getRelatedId={(row) => row.entryId}
     errors={errors}
-    notifications={notifications}
+    notifications={notifications.map(({ message, sources }) => ({
+      notification: message,
+      sources,
+    }))}
     labels={ENTRY_RELATED_ITEMS_LABELS}
     onChangeRelatedId={onChangeEntryId}
     onChangeRelation={onChangeRelation}

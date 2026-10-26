@@ -1,9 +1,4 @@
 import {
-  initialUpsertEntryFormFieldErrors,
-  type UpsertEntryAltNamesErrors,
-  type UpsertEntryArtistsErrors,
-} from "./errorMessages";
-import {
   validateAltNames,
   validateArtists,
   validateEntryDiscogsUrl,
@@ -13,21 +8,18 @@ import {
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
 import type { DbSource } from "@/db/db-source";
+import type { InitialFormStateValue, FormStateType } from "@/hooks/useFormState";
 import type { RelatedItemRelation } from "@/types/common";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryByIdResult } from "@/types/entries";
-import type {
-  FormField,
-  FormFieldError,
-  RelatedOrderedItemRow,
-} from "@/types/form";
+import type { RelatedOrderedItemRow } from "@/types/form";
 import type { TagId } from "@/types/tags";
 import { withNewId } from "@/utils/id";
 import {
-  validateOptionalTrimmedText,
-  validateReleaseDate,
-  validateRequiredTrimmedText,
-  validatePassThrough,
+  validateOptionalTrimmedText2,
+  validatePassThrough2,
+  validateReleaseDate2,
+  validateRequiredTrimmedText2,
 } from "@/validation";
 
 export type UpsertEntryFormEntry = Omit<
@@ -79,25 +71,33 @@ export const defaultRelatedEntryRow = (
   });
 
 export type UpsertEntryFormDraft = {
-  mainName: FormField;
-  originalReleaseDate: FormField<GeneralizedDateFormInputValue>;
-  discogsUrl: FormField;
-  comment: FormField<string>;
-  selectedTags: FormField<Set<TagId>>;
-  selectedTypes: FormField<Set<string>>;
-  artists: FormField<UpsertEntryArtistRow[], UpsertEntryArtistsErrors>;
-  altNames: FormField<UpsertEntryAltNameRow[], UpsertEntryAltNamesErrors>;
-  relatedEntries: FormField<
-    UpsertEntryRelatedEntryRow[],
-    FormFieldError[],
-    ValidUpsertEntryRelatedEntryRow[]
-  >;
-  partOfQueenCollection: FormField<boolean>;
-  relationToQueen: FormField<string>;
+  mainName: string;
+  originalReleaseDate: GeneralizedDateFormInputValue;
+  discogsUrl: string;
+  comment: string;
+  selectedTags: Set<TagId>;
+  selectedTypes: Set<string>;
+  artists: UpsertEntryArtistRow[];
+  altNames: UpsertEntryAltNameRow[];
+  relatedEntries: UpsertEntryRelatedEntryRow[];
+  partOfQueenCollection: boolean;
+  relationToQueen: string;
 };
 
+export type ValidatedUpsertEntryFormDraft = Omit<
+  UpsertEntryFormDraft,
+  "relatedEntries"
+> & {
+  relatedEntries: ValidUpsertEntryRelatedEntryRow[];
+};
+
+export type UpsertEntryFormState = FormStateType<
+  UpsertEntryFormDraft,
+  ValidatedUpsertEntryFormDraft
+>;
+
 export type UpsertEntryFormPersistedState = {
-  form: UpsertEntryFormDraft;
+  form: UpsertEntryFormState;
   checkedDbSources: ReadonlySet<DbSource>;
 };
 
@@ -109,7 +109,10 @@ type InitialUpsertEntryFormDraftArgs = {
 export const initialUpsertEntryFormDraft = ({
   entry,
   defaultArtistId,
-}: InitialUpsertEntryFormDraftArgs): UpsertEntryFormDraft => {
+}: InitialUpsertEntryFormDraftArgs): InitialFormStateValue<
+  UpsertEntryFormDraft,
+  ValidatedUpsertEntryFormDraft
+> => {
   const {
     mainName,
     originalReleaseDate,
@@ -142,10 +145,10 @@ export const initialUpsertEntryFormDraft = ({
   return {
     mainName: {
       value: mainName ?? "",
-      valid: true,
-      validationFn: validateRequiredTrimmedText("Main name is required."),
-      errors: initialUpsertEntryFormFieldErrors.mainName,
-      notifications: [],
+      validationFn: (state) =>
+        validateRequiredTrimmedText2("Main name is required.")(
+          state.mainName.value,
+        ),
     },
     originalReleaseDate: {
       value: {
@@ -153,73 +156,46 @@ export const initialUpsertEntryFormDraft = ({
         month: String(originalReleaseDate?.month ?? ""),
         day: String(originalReleaseDate?.day ?? ""),
       },
-      valid: true,
-      validationFn: validateReleaseDate(null),
-      errors: initialUpsertEntryFormFieldErrors.originalReleaseDate,
-      notifications: [],
+      validationFn: (state) =>
+        validateReleaseDate2(null)(state.originalReleaseDate.value),
     },
     discogsUrl: {
       value: discogsUrl ?? "",
-      valid: true,
       validationFn: validateEntryDiscogsUrl,
-      errors: initialUpsertEntryFormFieldErrors.discogsUrl,
-      notifications: [],
     },
     comment: {
       value: comment ?? "",
-      valid: true,
-      validationFn: validateOptionalTrimmedText,
-      errors: initialUpsertEntryFormFieldErrors.comment,
-      notifications: [],
+      validationFn: (state) => validateOptionalTrimmedText2(state.comment.value),
     },
     selectedTags: {
       value: new Set(tagIds),
-      valid: true,
-      validationFn: validatePassThrough,
-      errors: initialUpsertEntryFormFieldErrors.selectedTags,
-      notifications: [],
+      validationFn: (state) => validatePassThrough2(state.selectedTags.value),
     },
     selectedTypes: {
       value: new Set(typeIds),
-      valid: true,
-      validationFn: validatePassThrough,
-      errors: initialUpsertEntryFormFieldErrors.selectedTypes,
-      notifications: [],
+      validationFn: (state) => validatePassThrough2(state.selectedTypes.value),
     },
     artists: {
       value: artistRows,
-      valid: true,
       validationFn: validateArtists,
-      errors: initialUpsertEntryFormFieldErrors.artists,
-      notifications: [],
     },
     altNames: {
       value: altNameRows,
-      valid: true,
-      validationFn: validateAltNames(mainName ?? ""),
-      errors: initialUpsertEntryFormFieldErrors.altNames,
-      notifications: [],
+      validationFn: validateAltNames,
     },
     relatedEntries: {
       value: relatedEntries,
-      valid: true,
       validationFn: validateRelatedEntries,
-      errors: initialUpsertEntryFormFieldErrors.relatedEntries,
-      notifications: [],
     },
     partOfQueenCollection: {
       value: partOfQueenCollection ?? false,
-      valid: true,
-      validationFn: validatePassThrough,
-      errors: initialUpsertEntryFormFieldErrors.partOfQueenCollection,
-      notifications: [],
+      validationFn: (state) =>
+        validatePassThrough2(state.partOfQueenCollection.value),
     },
     relationToQueen: {
       value: relationToQueen ?? "",
-      valid: true,
-      validationFn: validateOptionalTrimmedText,
-      errors: initialUpsertEntryFormFieldErrors.relationToQueen,
-      notifications: [],
+      validationFn: (state) =>
+        validateOptionalTrimmedText2(state.relationToQueen.value),
     },
   };
 };

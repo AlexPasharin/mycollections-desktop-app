@@ -1,6 +1,6 @@
 import type { FC } from "react";
 
-import type { UpsertEntryFormDraft } from "../upsertEntryFormUtils/formValues";
+import type { UpsertEntryFormState } from "../upsertEntryFormUtils/formValues";
 
 import FormPreviewField, {
   FormPreviewBlockField,
@@ -12,7 +12,7 @@ import { generalizedDateToString } from "@/utils/date";
 import { orPlaceholder } from "@/utils/form";
 
 type UpsertEntryFormPreviewProps = {
-  form: UpsertEntryFormDraft;
+  form: UpsertEntryFormState;
   tags: TagListItem[];
   allEntryTypes: EntryTypeListItem[];
 };

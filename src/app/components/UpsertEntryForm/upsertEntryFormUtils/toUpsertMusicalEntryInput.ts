@@ -2,14 +2,13 @@ import type {
   UpsertEntryAltNameRow,
   UpsertEntryArtistRow,
   UpsertEntryRelatedEntryRow,
+  ValidatedUpsertEntryFormDraft,
 } from "./formValues";
 
-import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type {
   MusicalEntryArtistInput,
   MusicalEntryRelatedEntryInput,
 } from "@/types/entries";
-import type { TagId } from "@/types/tags";
 import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
 
@@ -31,19 +30,7 @@ type UpsertMusicalEntryInputPayload = {
   relatedEntries: MusicalEntryRelatedEntryInput[];
 };
 
-type ToUpsertMusicalEntryInputArgs = {
-  mainName: string;
-  originalReleaseDate: GeneralizedDateFormInputValue;
-  discogsUrl: string;
-  comment: string;
-  selectedTags: Set<TagId>;
-  selectedTypes: Set<string>;
-  artists: UpsertEntryArtistRow[];
-  altNames: UpsertEntryAltNameRow[];
-  relatedEntries: UpsertEntryRelatedEntryRow[];
-  partOfQueenCollection: boolean;
-  relationToQueen: string;
-};
+type ToUpsertMusicalEntryInputArgs = ValidatedUpsertEntryFormDraft;
 
 export const toUpsertMusicalEntryInput = ({
   mainName,
