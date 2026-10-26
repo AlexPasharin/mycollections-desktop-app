@@ -59,7 +59,7 @@ export const defaultRelatedParentRow = (): ArtistUpsertRelatedArtistRow =>
     relation: "",
   });
 
-export const initialArtistUpsertFormDraft2 = (
+export const initialArtistUpsertFormDraft = (
   artist?: ArtistByIdResult,
 ): InitialFormStateValue<
   ArtistUpsertFormDraft,

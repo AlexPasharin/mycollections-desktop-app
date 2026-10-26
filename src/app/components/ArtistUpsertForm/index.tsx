@@ -4,7 +4,7 @@ import ArtistUpsertFormPreview from "./ArtistUpsertFormPreview";
 import {
   defaultAltNameRow,
   defaultRelatedParentRow,
-  initialArtistUpsertFormDraft2,
+  initialArtistUpsertFormDraft,
   type ArtistUpsertFormDraft,
   type ValidatedArtistUpsertFormDraft,
 } from "./artistUpsertFormUtils/formValues";
@@ -82,7 +82,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
     validateField,
     validateForm,
   } = useFormState({
-    initialValue: initialArtistUpsertFormDraft2(artist),
+    initialValue: initialArtistUpsertFormDraft(artist),
   });
 
   const [validatedForm, setValidatedForm] =
