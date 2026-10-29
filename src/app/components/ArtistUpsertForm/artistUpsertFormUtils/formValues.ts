@@ -68,7 +68,7 @@ export const initialArtistUpsertFormDraft = (
   name: {
     value: artist?.name ?? "",
     validationFn: (state) =>
-      validateRequiredTrimmedText2("Artist name is required")(state.name.value),
+      validateRequiredTrimmedText2(state.name.value, "Artist name is required"),
   },
   nameForSorting: {
     value: artist?.nameForSorting ?? "",

@@ -8,7 +8,10 @@ import {
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
 import type { DbSource } from "@/db/db-source";
-import type { InitialFormStateValue, FormStateType } from "@/hooks/useFormState";
+import type {
+  InitialFormStateValue,
+  FormStateType,
+} from "@/hooks/useFormState";
 import type { RelatedItemRelation } from "@/types/common";
 import type { GeneralizedDate } from "@/types/date";
 import type { EntryByIdResult } from "@/types/entries";
@@ -146,8 +149,9 @@ export const initialUpsertEntryFormDraft = ({
     mainName: {
       value: mainName ?? "",
       validationFn: (state) =>
-        validateRequiredTrimmedText2("Main name is required.")(
+        validateRequiredTrimmedText2(
           state.mainName.value,
+          "Main name is required.",
         ),
     },
     originalReleaseDate: {
@@ -157,7 +161,7 @@ export const initialUpsertEntryFormDraft = ({
         day: String(originalReleaseDate?.day ?? ""),
       },
       validationFn: (state) =>
-        validateReleaseDate2(null)(state.originalReleaseDate.value),
+        validateReleaseDate2(state.originalReleaseDate.value),
     },
     discogsUrl: {
       value: discogsUrl ?? "",
@@ -165,7 +169,8 @@ export const initialUpsertEntryFormDraft = ({
     },
     comment: {
       value: comment ?? "",
-      validationFn: (state) => validateOptionalTrimmedText2(state.comment.value),
+      validationFn: (state) =>
+        validateOptionalTrimmedText2(state.comment.value),
     },
     selectedTags: {
       value: new Set(tagIds),

@@ -5,7 +5,7 @@ import type {
   ValidatedUpsertEntryFormDraft,
 } from "../formValues";
 
-import type { FormFeedbackMessages, FormValidationFn } from "@/hooks/useFormState";
+import type { FormValidationFn } from "@/hooks/useFormState";
 
 export const validateEntryDiscogsUrl: FormValidationFn<
   UpsertEntryFormDraft,
@@ -16,9 +16,9 @@ export const validateEntryDiscogsUrl: FormValidationFn<
   const validationResult = entryDiscogsUrlSchema.safeParse(value);
 
   if (!validationResult.success) {
-    const errors: FormFeedbackMessages = validationResult.error.issues.map(
-      ({ message }) => ({ message }),
-    );
+    const errors = validationResult.error.issues.map(({ message }) => ({
+      message,
+    }));
 
     return {
       value,
