@@ -15,7 +15,7 @@ type UpsertEntryArtistsSectionProps = {
   onUpdateArtistRow: (rowId: string, patch: UpsertEntryArtistRowPatch) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
-  onFocus: (rowId: string) => void;
+  onFocus: (rowId: string, field: string) => void;
   onBlur: () => void;
 };
 
@@ -76,7 +76,7 @@ const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
                     onUpdateArtistRow(row.id, { artistId: e.target.value });
                   }}
                   onFocus={() => {
-                    onFocus(row.id);
+                    onFocus(row.id, "artistId");
                   }}
                   onBlur={onBlur}
                   autoComplete="off"
@@ -93,9 +93,6 @@ const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
                       onUpdateArtistRow(row.id, {
                         isEntriesMainArtist: e.target.checked,
                       });
-                    }}
-                    onFocus={() => {
-                      onFocus(row.id);
                     }}
                     onBlur={onBlur}
                     aria-invalid={hasErrors}
@@ -130,7 +127,7 @@ const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
                     });
                   }}
                   onFocus={() => {
-                    onFocus(row.id);
+                    onFocus(row.id, "entryArtistAltNameId");
                   }}
                   onBlur={onBlur}
                   autoComplete="off"

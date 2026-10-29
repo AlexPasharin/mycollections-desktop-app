@@ -52,7 +52,6 @@ import NotificationMessages from "@/app/components/NotificationMessages";
 import api from "@/app/windows/entry/api";
 import type { DbSource } from "@/db/db-source";
 import { dbSourceLabel } from "@/db/db-source-options";
-import type { RelatedItemRelation } from "@/types/common";
 import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
@@ -436,17 +435,6 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
     setFieldValue("relatedReleases", (prev) =>
       prev.relatedReleases.value.map((row) =>
         row.id === rowId ? { ...row, releaseId } : row,
-      ),
-    );
-  };
-
-  const setRelatedReleaseRelation = (
-    rowId: string,
-    relation: RelatedItemRelation,
-  ) => {
-    setFieldValue("relatedReleases", (prev) =>
-      prev.relatedReleases.value.map((row) =>
-        row.id === rowId ? { ...row, relation } : row,
       ),
     );
   };
@@ -986,7 +974,6 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           errors={formState.relatedReleases.errors}
           notifications={formState.relatedReleases.notifications}
           onChangeReleaseId={setRelatedReleaseId}
-          onChangeRelation={setRelatedReleaseRelation}
           onChangeOrderNumber={setRelatedReleaseOrderNumber}
           onAddRow={addRelatedReleaseRow}
           onRemoveRow={removeRelatedReleaseRow}

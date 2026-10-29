@@ -100,8 +100,8 @@ describe("validateArtists", () => {
 
     expect(result.errors).toEqual([
       {
-        message: `Duplicate artist id ${artistId}.`,
-        sources: ["row-2", "artistId"],
+        message: `Duplicate artist ID "${artistId}".`,
+        sources: ["row-1", "row-2", "artistId"],
       },
     ]);
   });
@@ -114,8 +114,8 @@ describe("validateArtists", () => {
 
     expect(result.errors).toEqual([
       {
-        message: `Duplicate artist id ${artistId}.`,
-        sources: ["row-2", "artistId"],
+        message: `Duplicate artist ID "${artistId}".`,
+        sources: ["row-1", "row-2", "artistId"],
       },
     ]);
   });

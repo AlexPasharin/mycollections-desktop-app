@@ -5,7 +5,6 @@ import type { ReleaseFormRelatedReleaseRow } from "../releaseFormUtils/formValue
 import RelatedItemsFormSection, {
   type RelatedItemsFormSectionLabels,
 } from "@/app/components/RelatedItemsFormSection";
-import type { RelatedItemRelation } from "@/types/common";
 import type { FeedbackNotifications, FormFieldError } from "@/types/form";
 
 type ReleaseRelatedReleasesSectionProps = {
@@ -13,11 +12,10 @@ type ReleaseRelatedReleasesSectionProps = {
   errors: FormFieldError[];
   notifications: FeedbackNotifications;
   onChangeReleaseId: (rowId: string, releaseId: string) => void;
-  onChangeRelation: (rowId: string, relation: RelatedItemRelation) => void;
   onChangeOrderNumber: (rowId: string, orderNumber: string) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
-  onFocus: (rowId: string) => void;
+  onFocus: (rowId: string, key: "id" | "orderNumber") => void;
   onBlur: () => void;
 };
 
@@ -26,7 +24,6 @@ const ReleaseRelatedReleasesSection: FC<ReleaseRelatedReleasesSectionProps> = ({
   errors,
   notifications,
   onChangeReleaseId,
-  onChangeRelation,
   onChangeOrderNumber,
   onAddRow,
   onRemoveRow,
@@ -40,7 +37,6 @@ const ReleaseRelatedReleasesSection: FC<ReleaseRelatedReleasesSectionProps> = ({
     notifications={notifications}
     labels={RELEASE_RELATED_ITEMS_LABELS}
     onChangeRelatedId={onChangeReleaseId}
-    onChangeRelation={onChangeRelation}
     onChangeOrderNumber={onChangeOrderNumber}
     onAddRow={onAddRow}
     onRemoveRow={onRemoveRow}

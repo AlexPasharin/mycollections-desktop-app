@@ -24,8 +24,9 @@ const parentEntryId = "11111111-1111-4111-8111-111111111111";
 const childEntryId = "22222222-2222-4222-8222-222222222222";
 const childEntryId2 = "33333333-3333-4333-8333-333333333333";
 
-const trimmedEntryIdNotification = (entryId: string) => ({
+const trimmedEntryIdNotification = (rowId: string, entryId: string) => ({
   message: `Note: entry ID "${entryId}" has been trimmed`,
+  sources: [rowId, "id"],
 });
 
 describe("validateRelatedEntries", () => {
@@ -51,7 +52,7 @@ describe("validateRelatedEntries", () => {
       relatedEntryRow("row-1", parentEntryId, "parent", "1"),
     ]);
     expect(result.notifications).toEqual([
-      trimmedEntryIdNotification(parentEntryId),
+      trimmedEntryIdNotification("row-1", parentEntryId),
     ]);
   });
 
@@ -68,8 +69,8 @@ describe("validateRelatedEntries", () => {
       relatedEntryRow("row-3", childEntryId2, "child", "2"),
     ]);
     expect(result.notifications).toEqual([
-      trimmedEntryIdNotification(parentEntryId),
-      trimmedEntryIdNotification(childEntryId2),
+      trimmedEntryIdNotification("row-1", parentEntryId),
+      trimmedEntryIdNotification("row-3", childEntryId2),
     ]);
   });
 
@@ -80,7 +81,7 @@ describe("validateRelatedEntries", () => {
     ]);
 
     expect(result.errors).toEqual([
-      { message: "Entry ID must be a valid UUID.", sources: ["row-1"] },
+      { message: "Entry ID must be a valid UUID.", sources: ["row-1", "id"] },
     ]);
   });
 
@@ -93,11 +94,11 @@ describe("validateRelatedEntries", () => {
     expect(result.errors).toEqual([
       {
         message: "Child order number must be an integer greater than 0.",
-        sources: ["row-1"],
+        sources: ["row-1", "orderNumber"],
       },
       {
         message: "Child order number must be an integer greater than 0.",
-        sources: ["row-2"],
+        sources: ["row-2", "orderNumber"],
       },
     ]);
   });
@@ -111,8 +112,8 @@ describe("validateRelatedEntries", () => {
 
     expect(result.errors).toEqual([
       {
-        message: `Duplicate uuid "${childEntryId}" used by multiple rows.`,
-        sources: ["row-2", "row-3"],
+        message: `Duplicate uuid "${childEntryId}"`,
+        sources: ["row-2", "row-3", "id"],
       },
     ]);
   });
@@ -127,6 +128,7 @@ describe("validateRelatedEntries", () => {
     expect(result.errors).toEqual([
       {
         message: "Child order numbers must be sequential starting from 1.",
+        sources: ["row-1", "row-2", "row-3", "orderNumber"],
       },
     ]);
   });

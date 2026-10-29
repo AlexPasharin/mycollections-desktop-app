@@ -30,8 +30,6 @@ type UpsertMusicalEntryInputPayload = {
   relatedEntries: MusicalEntryRelatedEntryInput[];
 };
 
-type ToUpsertMusicalEntryInputArgs = ValidatedUpsertEntryFormDraft;
-
 export const toUpsertMusicalEntryInput = ({
   mainName,
   originalReleaseDate,
@@ -44,7 +42,7 @@ export const toUpsertMusicalEntryInput = ({
   relatedEntries,
   partOfQueenCollection,
   relationToQueen,
-}: ToUpsertMusicalEntryInputArgs): UpsertMusicalEntryInputPayload => ({
+}: ValidatedUpsertEntryFormDraft): UpsertMusicalEntryInputPayload => ({
   entry: {
     mainName,
     originalReleaseDate: generalizedDateToString(originalReleaseDate),

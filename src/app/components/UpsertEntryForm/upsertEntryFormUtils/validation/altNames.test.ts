@@ -72,7 +72,10 @@ describe("validateAltNames", () => {
     ]);
 
     expect(result.errors).toEqual([
-      { message: "Duplicate alternative name.", sources: ["row-2"] },
+      {
+        message: 'Duplicate alternative name "alternate title".',
+        sources: ["row-1", "row-2"],
+      },
     ]);
   });
 
@@ -90,7 +93,10 @@ describe("validateAltNames", () => {
         sources: ["row-1"],
       },
       { message: "Alternative name cannot be empty.", sources: ["row-2"] },
-      { message: "Duplicate alternative name.", sources: ["row-4"] },
+      {
+        message: 'Duplicate alternative name "duplicate".',
+        sources: ["row-3", "row-4"],
+      },
     ]);
   });
 });

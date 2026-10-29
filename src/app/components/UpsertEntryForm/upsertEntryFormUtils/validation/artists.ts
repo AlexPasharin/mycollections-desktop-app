@@ -19,23 +19,17 @@ export const validateArtists: FormValidationFn<
   const errors: FormFeedbackMessages = [];
   const notifications: FormFeedbackMessages = [];
   const validatedRows: UpsertEntryArtistRow[] = [];
-  const seenArtistIds = new Map<string, string>();
+  const seenArtistIds = new Map<string, string[]>();
 
   for (const row of state.artists.value) {
     const trimmedArtistId = row.artistId.trim();
     const trimmedAltNameId = row.entryArtistAltNameId.trim();
 
     if (isValidUuid(trimmedArtistId)) {
-      const firstRowId = seenArtistIds.get(trimmedArtistId);
-
-      if (firstRowId === undefined) {
-        seenArtistIds.set(trimmedArtistId, row.id);
-      } else {
-        errors.push({
-          message: `Duplicate artist id ${trimmedArtistId}.`,
-          sources: [row.id, "artistId"],
-        });
-      }
+      seenArtistIds.set(trimmedArtistId, [
+        ...(seenArtistIds.get(trimmedArtistId) ?? []),
+        row.id,
+      ]);
     } else {
       errors.push({
         message: "Artist ID must be a valid UUID.",
@@ -67,6 +61,15 @@ export const validateArtists: FormValidationFn<
       notifications.push({
         message: `Note: alternative artist name ID "${trimmedAltNameId}" has been trimmed`,
         sources: [row.id, "entryArtistAltNameId"],
+      });
+    }
+  }
+
+  for (const [artistId, ids] of seenArtistIds.entries()) {
+    if (ids.length > 1) {
+      errors.push({
+        message: `Duplicate artist ID "${artistId}".`,
+        sources: [...ids, "artistId"],
       });
     }
   }

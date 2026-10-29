@@ -15,7 +15,7 @@ export const validateAltNames: FormValidationFn<
   "altNames"
 > = (state) => {
   const normalizedMainName = state.mainName.value.trim().toLowerCase();
-  const seenNames = new Set<string>();
+  const seenNames = new Map<string, string[]>();
   const errors: FormFeedbackMessages = [];
   const notifications: FormFeedbackMessages = [];
   const normalizedRows: UpsertEntryAltNameRow[] = [];
@@ -35,13 +35,8 @@ export const validateAltNames: FormValidationFn<
         message: "Alternative name can not match the main name of the entry.",
         sources: [id],
       });
-    } else if (seenNames.has(normalized)) {
-      errors.push({
-        message: "Duplicate alternative name.",
-        sources: [id],
-      });
     } else {
-      seenNames.add(normalized);
+      seenNames.set(normalized, [...(seenNames.get(normalized) ?? []), id]);
     }
 
     normalizedRows.push({ ...row, name: trimmedName });
@@ -50,6 +45,15 @@ export const validateAltNames: FormValidationFn<
       notifications.push({
         message: "Note: alternative name have been trimmed",
         sources: [id],
+      });
+    }
+  }
+
+  for (const [name, ids] of seenNames.entries()) {
+    if (ids.length > 1) {
+      errors.push({
+        message: `Duplicate alternative name "${name}".`,
+        sources: ids,
       });
     }
   }

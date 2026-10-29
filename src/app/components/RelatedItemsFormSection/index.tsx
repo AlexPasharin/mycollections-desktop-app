@@ -1,7 +1,6 @@
 import ErrorMessages from "@/app/components/ErrorMessages";
 import NotificationMessages from "@/app/components/NotificationMessages";
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
-import type { RelatedItemRelation } from "@/types/common";
 import type {
   FeedbackNotifications,
   FormFieldError,
@@ -26,11 +25,10 @@ type RelatedItemsFormSectionProps<TRow extends RelatedOrderedItemRow> = {
   notifications: FeedbackNotifications;
   labels: RelatedItemsFormSectionLabels;
   onChangeRelatedId: (rowId: string, relatedId: string) => void;
-  onChangeRelation: (rowId: string, relation: RelatedItemRelation) => void;
   onChangeOrderNumber: (rowId: string, orderNumber: string) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
-  onFocus: (rowId: string) => void;
+  onFocus: (rowId: string, key: "id" | "orderNumber") => void;
   onBlur: () => void;
 };
 
@@ -44,7 +42,6 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
   notifications,
   labels,
   onChangeRelatedId,
-  onChangeRelation,
   onChangeOrderNumber,
   onAddRow,
   onRemoveRow,
@@ -83,8 +80,13 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
           const rowErrors = errors.filter((error) =>
             error.sources?.includes(row.id),
           );
+          const rowNotifications = notifications.filter((notification) =>
+            notification.sources?.includes(row.id),
+          );
           const hasErrors = rowErrors.length > 0;
+          const hasNotifications = rowNotifications.length > 0;
           const errorId = `${labels.rowIdPrefix}-error-${row.id}`;
+          const notificationsId = `${labels.rowIdPrefix}-notifications-${row.id}`;
           const relatedIdInputId = `${labels.rowIdPrefix}-id-${row.id}`;
           const relationSelectId = `${labels.rowIdPrefix}-relation-${row.id}`;
           const orderNumberInputId = `${labels.rowIdPrefix}-order-number-${row.id}`;
@@ -108,7 +110,7 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
                   onChangeRelatedId(row.id, e.target.value);
                 }}
                 onFocus={() => {
-                  onFocus(row.id);
+                  onFocus(row.id, "id");
                 }}
                 onBlur={onBlur}
                 autoComplete="off"
@@ -120,17 +122,6 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
                 className="w-full px-2 py-[0.35rem] text-base"
                 value={row.relation}
                 aria-label={`Relation${rowLabelSuffix}`}
-                onChange={(e) => {
-                  onChangeRelation(
-                    row.id,
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                    e.target.value as RelatedItemRelation, // we know that this is safe by construction
-                  );
-                }}
-                onFocus={() => {
-                  onFocus(row.id);
-                }}
-                onBlur={onBlur}
                 aria-invalid={hasErrors}
                 disabled={true}
                 aria-describedby={hasErrors ? errorId : undefined}
@@ -150,7 +141,7 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
                   onChangeOrderNumber(row.id, e.target.value);
                 }}
                 onFocus={() => {
-                  onFocus(row.id);
+                  onFocus(row.id, "orderNumber");
                 }}
                 onBlur={onBlur}
                 aria-invalid={hasErrors}
@@ -170,25 +161,31 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
                   <span aria-hidden="true">❌</span>
                 </button>
               )}
-              {hasErrors && (
+              {(hasErrors || hasNotifications) && (
                 <div className="col-span-5">
+                  <NotificationMessages
+                    id={notificationsId}
+                    messages={rowNotifications}
+                  />
                   <ErrorMessages id={errorId} messages={rowErrors} />
                 </div>
               )}
             </div>
           );
         })}
-
-        <ErrorMessages
-          id="related-items-errors"
-          messages={errors.filter((error) => !error.sources?.length)}
-        />
       </div>
     )}
 
+    <ErrorMessages
+      id="related-items-errors"
+      messages={errors.filter((error) => !error.sources?.length)}
+    />
+
     <NotificationMessages
       id={labels.notificationsId}
-      messages={notifications}
+      messages={notifications.filter(
+        (notification) => !notification.sources?.length,
+      )}
     />
 
     <button

@@ -35,7 +35,7 @@ export const validateRelatedEntries: FormValidationFn<
 
   if (!result.valid) {
     return {
-      value: rows,
+      value: result.value,
       errors: result.errorMessages,
       notifications,
     };

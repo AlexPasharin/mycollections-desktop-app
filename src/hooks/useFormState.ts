@@ -166,7 +166,7 @@ const removeFeedbackMessages = (
 ) =>
   messages.filter(
     ({ sources: msgSources }) =>
-      msgSources && !sources.every((source) => msgSources.includes(source)),
+      !sources.every((source) => msgSources?.includes(source)),
   );
 
 const getInitialValue = <T extends Record<string, unknown>, U extends T = T>(
