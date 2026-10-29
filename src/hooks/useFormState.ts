@@ -116,20 +116,34 @@ const useFormState = <T extends Record<PropertyKey, unknown>, U extends T = T>({
 
   const clearFieldFeedback = <K extends keyof T>(
     key: K,
-    source?: PropertyKey,
+    ...sources: PropertyKey[]
   ) =>
     setField(key, (prev) => {
       const { errors, notifications } = prev[key];
 
       return {
         ...prev[key],
-        errors: removeFeedbackMessages(errors, source),
-        notifications: removeFeedbackMessages(notifications),
+        errors: removeFeedbackMessages(errors, sources),
+        notifications: removeFeedbackMessages(notifications, sources),
       };
     });
 
   const resetFormState = () => {
     setFormState(getInitialValue(initialValue));
+  };
+
+  const toInitialFormStateValue = () => {
+    const persistedValue: Partial<InitialFormStateValue<T, U>> = {};
+
+    for (const key of Object.keys(formState) as (keyof T)[]) {
+      persistedValue[key] = {
+        value: formState[key].value,
+        validationFn: formState[key].validationFn,
+      };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    return persistedValue as InitialFormStateValue<T, U>; // should be safe by construction above
   };
 
   return {
@@ -140,6 +154,7 @@ const useFormState = <T extends Record<PropertyKey, unknown>, U extends T = T>({
     clearFieldFeedback,
     resetFormState,
     validateForm,
+    toInitialFormStateValue,
   };
 };
 
@@ -147,10 +162,11 @@ export default useFormState;
 
 const removeFeedbackMessages = (
   messages: FormFeedbackMessages,
-  source?: PropertyKey,
+  sources: PropertyKey[],
 ) =>
   messages.filter(
-    (msg) => msg.sources && (!source || !msg.sources.includes(source)),
+    ({ sources: msgSources }) =>
+      !sources.every((source) => msgSources?.includes(source)),
   );
 
 const getInitialValue = <T extends Record<string, unknown>, U extends T = T>(

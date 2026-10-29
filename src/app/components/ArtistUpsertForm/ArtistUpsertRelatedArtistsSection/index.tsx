@@ -54,18 +54,14 @@ const ArtistUpsertRelatedArtistsSection: FC<
         </span>
 
         {relatedArtists.map((relatedArtist, index) => {
+          const rowId = relatedArtist.id;
+
           const rowErrors = errors.filter((error) =>
-            error.sources?.some((source) =>
-              String(source).startsWith(relatedArtist.id),
-            ),
+            error.sources?.includes(rowId),
           );
           const rowNotifications = notifications.filter((notification) =>
-            notification.sources?.some((source) =>
-              String(source).startsWith(relatedArtist.id),
-            ),
+            notification.sources?.includes(rowId),
           );
-
-          const rowId = relatedArtist.id;
 
           const hasErrors = rowErrors.length > 0;
           const errorsId = `${labels.rowIdPrefix}-error-${rowId}`;

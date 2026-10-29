@@ -1,9 +1,9 @@
 import type {
-  UpsertEntryRelatedEntryRow,
-  ValidUpsertEntryRelatedEntryRow,
+  UpsertEntryFormDraft,
+  ValidatedUpsertEntryFormDraft,
 } from "../formValues";
 
-import type { FormFieldError, FormFieldValidationResult } from "@/types/form";
+import type { FormValidationFn } from "@/hooks/useFormState";
 import {
   validateRelatedItems,
   type ValidateRelatedItemsMessages,
@@ -16,15 +16,33 @@ const relatedEntryMessages: ValidateRelatedItemsMessages = {
     `Note: entry ID "${entryId}" has been trimmed`,
 };
 
-export const validateRelatedEntries = (
-  rows: UpsertEntryRelatedEntryRow[],
-): FormFieldValidationResult<
-  ValidUpsertEntryRelatedEntryRow[],
-  FormFieldError[],
-  UpsertEntryRelatedEntryRow[]
-> =>
-  validateRelatedItems<UpsertEntryRelatedEntryRow>(rows, {
+export const validateRelatedEntries: FormValidationFn<
+  UpsertEntryFormDraft,
+  ValidatedUpsertEntryFormDraft,
+  "relatedEntries"
+> = (state) => {
+  const rows = state.relatedEntries.value;
+
+  const result = validateRelatedItems(rows, {
     getRelatedId: (row) => row.entryId,
     withRelatedId: (row, entryId) => ({ ...row, entryId }),
     messages: relatedEntryMessages,
   });
+
+  const notifications = (result.notifications ?? []).map(
+    ({ notification, sources }) => ({ message: notification, sources }),
+  );
+
+  if (!result.valid) {
+    return {
+      value: result.value,
+      errors: result.errorMessages,
+      notifications,
+    };
+  }
+
+  return {
+    validatedValue: result.value,
+    notifications,
+  };
+};

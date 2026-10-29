@@ -1,13 +1,13 @@
 import type { FC } from "react";
 
-import type { UpsertEntryAltNamesErrors } from "../upsertEntryFormUtils/errorMessages";
 import type { UpsertEntryAltNameRow } from "../upsertEntryFormUtils/formValues";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
+import type { FormFeedbackMessages } from "@/hooks/useFormState";
 
 type UpsertEntryAltNamesSectionProps = {
   altNames: UpsertEntryAltNameRow[];
-  errors: UpsertEntryAltNamesErrors;
+  errors: FormFeedbackMessages;
   onChangeName: (rowId: string, name: string) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
@@ -35,8 +35,10 @@ const UpsertEntryAltNamesSection: FC<UpsertEntryAltNamesSectionProps> = ({
         aria-label="Alternative names"
       >
         {altNames.map((row, index) => {
-          const rowErrors = errors[row.id];
-          const hasErrors = rowErrors && rowErrors.length > 0;
+          const rowErrors = errors.filter((error) =>
+            error.sources?.includes(row.id),
+          );
+          const hasErrors = rowErrors.length > 0;
           const errorId = `upsert-entry-alt-name-error-${row.id}`;
           const inputId = `upsert-entry-alt-name-${row.id}`;
 

@@ -4,7 +4,7 @@ import ArtistUpsertFormPreview from "./ArtistUpsertFormPreview";
 import {
   defaultAltNameRow,
   defaultRelatedParentRow,
-  initialArtistUpsertFormDraft2,
+  initialArtistUpsertFormDraft,
   type ArtistUpsertFormDraft,
   type ValidatedArtistUpsertFormDraft,
 } from "./artistUpsertFormUtils/formValues";
@@ -82,7 +82,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
     validateField,
     validateForm,
   } = useFormState({
-    initialValue: initialArtistUpsertFormDraft2(artist),
+    initialValue: initialArtistUpsertFormDraft(artist),
   });
 
   const [validatedForm, setValidatedForm] =
@@ -97,6 +97,15 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
     ReadonlySet<DbSource>
   >(() => new Set(ALL_DB_SOURCES));
 
+  // on focus we attempt to remove errors and notifications related to the field that is being focused
+  const onFocus = (
+    key: keyof ArtistUpsertFormDraft,
+    ...sources: PropertyKey[]
+  ) => {
+    setShowSubmissionValidationError(false);
+    clearFieldFeedback(key, ...sources);
+  };
+
   const onBlur = (key: keyof ArtistUpsertFormDraft) => validateField(key);
 
   const addAltNameRow = () => {
@@ -107,15 +116,11 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
   };
 
   const removeAltNameRow = (rowId: string) => {
+    clearFieldFeedback("altNames", rowId);
+
     setField("altNames", (prev) => ({
       ...prev.altNames,
       value: prev.altNames.value.filter((row) => row.id !== rowId),
-      errors: prev.altNames.errors.filter(
-        (error) => !error.sources?.includes(rowId),
-      ),
-      notifications: prev.altNames.notifications.filter(
-        (notification) => !notification.sources?.includes(rowId),
-      ),
     }));
   };
 
@@ -140,15 +145,10 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
   };
 
   const removeRelatedParentRow = (rowId: string) => {
+    clearFieldFeedback("relatedParents", rowId);
     setField("relatedParents", (prev) => ({
       ...prev.relatedParents,
       value: prev.relatedParents.value.filter((row) => row.id !== rowId),
-      errors: prev.relatedParents.errors.filter(
-        (error) => !error.sources?.includes(rowId),
-      ),
-      notifications: prev.relatedParents.notifications.filter(
-        (notification) => !notification.sources?.includes(rowId),
-      ),
     }));
   };
 
@@ -174,26 +174,6 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
         row.id === rowId ? { ...row, relation } : row,
       ),
     );
-  };
-
-  const clearRelatedParentRowFeedback = (
-    rowId: string,
-    field: "artistId" | "relation",
-  ) => {
-    setField("relatedParents", (prev) => ({
-      ...prev.relatedParents,
-      errors: prev.relatedParents.errors.filter(
-        (error) =>
-          !(error.sources?.includes(rowId) && error.sources.includes(field)),
-      ),
-      notifications: prev.relatedParents.notifications.filter(
-        (notification) =>
-          !(
-            notification.sources?.includes(rowId) &&
-            notification.sources.includes(field)
-          ),
-      ),
-    }));
   };
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
@@ -313,9 +293,9 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
             value={formState.name.value}
             onChange={(event) => {
               setFieldValue("name", () => event.target.value);
-              clearFieldFeedback("name");
               setShowSubmissionValidationError(false);
             }}
+            onFocus={() => onFocus("name")}
             onBlur={() => {
               onBlur("name");
             }}
@@ -350,9 +330,9 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
             value={formState.nameForSorting.value}
             onChange={(event) => {
               setFieldValue("nameForSorting", () => event.target.value);
-              clearFieldFeedback("nameForSorting");
               setShowSubmissionValidationError(false);
             }}
+            onFocus={() => onFocus("nameForSorting")}
             onBlur={() => {
               onBlur("nameForSorting");
             }}
@@ -380,8 +360,11 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
             onChange={(event) => {
               // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
               setFieldValue("type", () => event.target.value as ArtistType);
-              clearFieldFeedback("type");
               setShowSubmissionValidationError(false);
+            }}
+            onFocus={() => onFocus("type")}
+            onBlur={() => {
+              onBlur("type");
             }}
             disabled={isSubmitting}
             className="box-border w-full max-w-96 px-2 py-[0.35rem] text-base"
@@ -402,8 +385,11 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
             checked={formState.partOfQueenFamily.value}
             onChange={(event) => {
               setFieldValue("partOfQueenFamily", () => event.target.checked);
-              clearFieldFeedback("partOfQueenFamily");
               setShowSubmissionValidationError(false);
+            }}
+            onFocus={() => onFocus("partOfQueenFamily")}
+            onBlur={() => {
+              onBlur("partOfQueenFamily");
             }}
             disabled={isSubmitting}
           />
@@ -452,9 +438,9 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
                         value={row.name}
                         onChange={(event) => {
                           setAltNameValue(row.id, event.target.value);
-                          clearFieldFeedback("altNames", row.id);
                           setShowSubmissionValidationError(false);
                         }}
+                        onFocus={() => onFocus("altNames", row.id)}
                         onBlur={() => {
                           onBlur("altNames");
                         }}
@@ -505,23 +491,16 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
           notifications={formState.relatedParents.notifications}
           onChangeArtistId={(rowId, artistId) => {
             setRelatedParentArtistId(rowId, artistId);
-            clearRelatedParentRowFeedback(rowId, "artistId");
             setShowSubmissionValidationError(false);
           }}
           onChangeRelation={(rowId, relation) => {
             setRelatedParentRelation(rowId, relation);
-            clearRelatedParentRowFeedback(rowId, "relation");
             setShowSubmissionValidationError(false);
           }}
           onAddRow={addRelatedParentRow}
           onRemoveRow={removeRelatedParentRow}
-          onFocus={(rowId, field) => {
-            setShowSubmissionValidationError(false);
-            clearRelatedParentRowFeedback(rowId, field);
-          }}
-          onBlur={() => {
-            onBlur("relatedParents");
-          }}
+          onFocus={(rowId, field) => onFocus("relatedParents", rowId, field)}
+          onBlur={() => onBlur("relatedParents")}
         />
 
         {showSubmissionValidationError && (

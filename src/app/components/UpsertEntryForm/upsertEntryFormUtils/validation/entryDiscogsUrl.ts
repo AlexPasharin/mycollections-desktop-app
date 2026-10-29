@@ -1,31 +1,40 @@
 import z from "zod";
 
-import type { FormFieldValidationResult } from "@/types/form";
+import type {
+  UpsertEntryFormDraft,
+  ValidatedUpsertEntryFormDraft,
+} from "../formValues";
 
-export const validateEntryDiscogsUrl = (
-  value: string,
-): FormFieldValidationResult => {
+import type { FormValidationFn } from "@/hooks/useFormState";
+
+export const validateEntryDiscogsUrl: FormValidationFn<
+  UpsertEntryFormDraft,
+  ValidatedUpsertEntryFormDraft,
+  "discogsUrl"
+> = (state) => {
+  const value = state.discogsUrl.value;
   const validationResult = entryDiscogsUrlSchema.safeParse(value);
 
   if (!validationResult.success) {
+    const errors = validationResult.error.issues.map(({ message }) => ({
+      message,
+    }));
+
     return {
-      valid: false,
       value,
-      errorMessages: validationResult.error.issues.map(({ message }) => ({
-        message,
-      })),
+      errors,
+      notifications: [],
     };
   }
 
   const validatedValue = validationResult.data;
 
   return {
-    valid: true,
-    value: validatedValue,
+    validatedValue,
     notifications:
       validatedValue === value
-        ? undefined
-        : [{ notification: "Note: value has been trimmed" }],
+        ? []
+        : [{ message: "Note: value has been trimmed" }],
   };
 };
 

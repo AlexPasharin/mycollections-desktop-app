@@ -21,3 +21,6 @@ prisma/generated
 src/types/db/database.ts
 
 localScripts
+
+# Claude Code (local settings and worktrees)
+.claude/

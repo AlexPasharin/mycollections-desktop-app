@@ -1,29 +1,30 @@
-import { useEffect, useRef, useState, type FC, type SubmitEvent } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useState,
+  type FC,
+  type SubmitEvent,
+} from "react";
 
 import UpsertEntryAltNamesSection from "./UpsertEntryAltNamesSection";
 import UpsertEntryArtistsSection from "./UpsertEntryArtistsSection";
 import UpsertEntryFormPreview from "./UpsertEntryFormPreview";
 import {
-  initialUpsertEntryFormFieldErrors,
-  isAltNameInputFieldKey,
-  isArtistsInputFieldKey,
-  isRelatedEntriesInputFieldKey,
-  type UpsertEntryFormInputFieldKey,
-} from "./upsertEntryFormUtils/errorMessages";
-import {
   defaultAltNameRow,
   defaultArtistRow,
   defaultRelatedEntryRow,
   initialUpsertEntryFormDraft,
+  type UpsertEntryArtistRow,
   type UpsertEntryFormDraft,
   type UpsertEntryFormEntry,
   type UpsertEntryFormPersistedState,
-  type UpsertEntryArtistRow,
+  type ValidatedUpsertEntryFormDraft,
 } from "./upsertEntryFormUtils/formValues";
 import { toUpsertMusicalEntryInput } from "./upsertEntryFormUtils/toUpsertMusicalEntryInput";
 import UpsertEntryRelatedEntriesSection from "./UpsertEntryRelatedEntriesSection";
 import UpsertEntryTypesSection from "./UpsertEntryTypesSection";
 
+import FeedbackSection2 from "../FeedbackSection2";
 import FormSectionsDivider from "../Form/FormSectionsDivider";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
@@ -31,10 +32,10 @@ import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
 import ErrorMessages from "@/app/components/ErrorMessages";
 import AddTagsFormSection from "@/app/components/Form/AddTagsFormSection";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
-import NotificationMessages from "@/app/components/NotificationMessages";
+import NotificationMessages2 from "@/app/components/NotificationMessages2";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
-import type { RelatedItemRelation } from "@/types/common";
+import useFormState from "@/hooks/useFormState";
 import type {
   CreateMusicalEntry,
   CreateMusicalEntryInput,
@@ -50,7 +51,6 @@ import type {
   FeedbackNotifications,
 } from "@/types/form";
 import type { TagListItem } from "@/types/tags";
-import { isDateInputFieldKey, omitProperty } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
 import { getNextOrderNumber } from "@/utils/relatedItems";
 
@@ -83,6 +83,7 @@ export type UpsertEntryFormProps =
   | UpsertEntryFormCreateProps;
 
 const MAIN_NAME_FIELD_ERROR_ID = "upsert-entry-main-name-error";
+const MAIN_NAME_FIELD_NOTIFICATIONS_ID = "upsert-entry-main-name-notifications";
 const ORIGINAL_RELEASE_DATE_FIELD_ERROR_ID =
   "upsert-entry-original-release-date-error";
 const DISCOGS_URL_FIELD_ERROR_ID = "upsert-entry-discogs-url-error";
@@ -106,13 +107,25 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     artistId,
   } = props;
 
-  const [form, setForm] = useState<UpsertEntryFormDraft>(
-    restoredState?.form ??
+  const {
+    formState,
+    setFieldValue,
+    setField,
+    clearFieldFeedback,
+    validateField,
+    validateForm,
+    toInitialFormStateValue,
+  } = useFormState({
+    initialValue:
+      restoredState?.form ??
       initialUpsertEntryFormDraft({
         entry,
         defaultArtistId: artistId,
       }),
-  );
+  });
+
+  const [validatedForm, setValidatedForm] =
+    useState<ValidatedUpsertEntryFormDraft | null>(null);
 
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
     useState(false);
@@ -124,164 +137,26 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
   >(() => restoredState?.checkedDbSources ?? new Set(ALL_DB_SOURCES));
   const [submitError, setSubmitError] = useState<string>();
 
-  useEffect(() => {
-    return () => {
-      onPersistState({ form, checkedDbSources });
-    };
-  }, [form, checkedDbSources, onPersistState]);
+  const persistState = useEffectEvent(() => {
+    onPersistState({
+      form: toInitialFormStateValue(),
+      checkedDbSources,
+    });
+  });
 
-  // Reset when entry is updated while the form stays mounted (update mode only).
-  // Skip on mount so a restored draft is not overwritten.
-  const prevEntryRef = useRef(entry);
+  useEffect(() => {
+    return persistState; // persist form state on unmount
+  }, []);
 
   const isCreateMode = mode === "create";
 
-  useEffect(() => {
-    if (isCreateMode) {
-      return;
-    }
-
-    if (prevEntryRef.current === entry) {
-      return;
-    }
-
-    prevEntryRef.current = entry;
-    setForm(initialUpsertEntryFormDraft({ entry, defaultArtistId: artistId }));
-    setShowSubmissionValidationError(false);
-    setIsConfirmOpen(false);
-    setSubmitError(undefined);
-  }, [entry, artistId, isCreateMode]);
-
-  const setFieldValue = <K extends keyof UpsertEntryFormDraft>(
-    key: K,
-    value:
-      | UpsertEntryFormDraft[K]["value"]
-      | ((prev: UpsertEntryFormDraft) => UpsertEntryFormDraft[K]["value"]),
-  ) =>
-    setForm((prev) => ({
-      ...prev,
-      [key]: {
-        ...prev[key],
-        value: typeof value === "function" ? value(prev) : value,
-      },
-    }));
-
-  const setField = <K extends keyof UpsertEntryFormDraft>(
-    key: K,
-    value:
-      | UpsertEntryFormDraft[K]
-      | ((prev: UpsertEntryFormDraft) => UpsertEntryFormDraft[K]),
-  ) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: typeof value === "function" ? value(prev) : value,
-    }));
-  };
-
   // on focus we attempt to remove errors and notifications related to the field that is being focused
-  const onFocus = (key: UpsertEntryFormInputFieldKey) => {
+  const onFocus = (
+    key: keyof UpsertEntryFormDraft,
+    ...sources: PropertyKey[]
+  ) => {
     setShowSubmissionValidationError(false);
-
-    if (isAltNameInputFieldKey(key)) {
-      setField("altNames", (prev) => ({
-        ...prev.altNames,
-        errors: omitProperty(prev.altNames.errors, key.rowId),
-        notifications: [],
-      }));
-
-      return;
-    }
-
-    if (isRelatedEntriesInputFieldKey(key)) {
-      const { relatedEntryRowId } = key;
-      setField("relatedEntries", (prev) => ({
-        ...prev.relatedEntries,
-        errors: prev.relatedEntries.errors.filter(
-          (error) =>
-            error.sources &&
-            error.sources.length > 0 &&
-            !error.sources.includes(relatedEntryRowId),
-        ),
-        notifications: [],
-      }));
-
-      return;
-    }
-
-    if (isArtistsInputFieldKey(key)) {
-      setField("artists", (prev) => {
-        const rowErrors = prev.artists.errors[key.artistRowId] ?? [];
-        const filteredRowErrors = rowErrors.filter(
-          (error) =>
-            error.sources &&
-            error.sources.length > 0 &&
-            !error.sources.includes(key.source),
-        );
-
-        const nextErrors =
-          filteredRowErrors.length > 0
-            ? {
-                ...prev.artists.errors,
-                [key.artistRowId]: filteredRowErrors,
-              }
-            : omitProperty(prev.artists.errors, key.artistRowId);
-
-        const notifications = prev.artists.notifications.filter(
-          (notification) => !notification.sources?.includes(key.source),
-        );
-
-        return {
-          ...prev.artists,
-          errors: nextErrors,
-          notifications,
-        };
-      });
-
-      return;
-    }
-
-    const errorKey = isDateInputFieldKey(key) ? "originalReleaseDate" : key;
-
-    setField(errorKey, (prev) => {
-      const errors = prev[errorKey].errors.filter(
-        (error) =>
-          error.sources &&
-          error.sources.length > 0 &&
-          !error.sources.includes(key),
-      );
-
-      return {
-        ...prev[errorKey],
-        errors,
-        notifications: [],
-      };
-    });
-  };
-
-  const validateField = <K extends keyof UpsertEntryFormDraft>(key: K) => {
-    const formFieldData = form[key];
-
-    type ValueType = UpsertEntryFormDraft[K]["value"];
-    type ResultType = ReturnType<UpsertEntryFormDraft[K]["validationFn"]>;
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const validationFn = formFieldData.validationFn as (
-      v: ValueType,
-    ) => ResultType;
-    const validationResult = validationFn(formFieldData.value);
-    const { valid, value, notifications = [] } = validationResult;
-
-    setField(key, (prev) => ({
-      ...prev[key],
-      valid,
-      value,
-      notifications,
-      errors: validationResult.valid
-        ? initialUpsertEntryFormFieldErrors[key]
-        : validationResult.errorMessages,
-    }));
-
-    return validationResult;
+    clearFieldFeedback(key, ...sources);
   };
 
   const onBlur = (key: keyof UpsertEntryFormDraft) => validateField(key);
@@ -324,10 +199,11 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
   };
 
   const removeAltNameRow = (rowId: string) => {
+    clearFieldFeedback("altNames", rowId);
+
     setField("altNames", (prev) => ({
       ...prev.altNames,
       value: prev.altNames.value.filter((row) => row.id !== rowId),
-      errors: omitProperty(prev.altNames.errors, rowId),
     }));
   };
 
@@ -347,10 +223,11 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
   };
 
   const removeArtistRow = (rowId: string) => {
+    clearFieldFeedback("artists", rowId);
+
     setField("artists", (prev) => ({
       ...prev.artists,
       value: prev.artists.value.filter((row) => row.id !== rowId),
-      errors: omitProperty(prev.artists.errors, rowId),
     }));
   };
 
@@ -373,18 +250,11 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
   };
 
   const removeRelatedEntryRow = (rowId: string) => {
+    clearFieldFeedback("relatedEntries", rowId);
+
     setField("relatedEntries", (prev) => ({
       ...prev.relatedEntries,
       value: prev.relatedEntries.value.filter((row) => row.id !== rowId),
-      errors: prev.relatedEntries.errors
-        .filter(
-          (error) =>
-            !error.sources?.includes(rowId) || error.sources.length > 1,
-        )
-        .map((error) => ({
-          ...error,
-          sources: error.sources?.filter((source) => source !== rowId),
-        })),
     }));
   };
 
@@ -392,17 +262,6 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     setFieldValue("relatedEntries", (prev) =>
       prev.relatedEntries.value.map((row) =>
         row.id === rowId ? { ...row, entryId } : row,
-      ),
-    );
-  };
-
-  const setRelatedEntryRelation = (
-    rowId: string,
-    relation: RelatedItemRelation,
-  ) => {
-    setFieldValue("relatedEntries", (prev) =>
-      prev.relatedEntries.value.map((row) =>
-        row.id === rowId ? { ...row, relation } : row,
       ),
     );
   };
@@ -422,27 +281,13 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
       return;
     }
 
-    const validationResults = {
-      mainName: validateField("mainName"),
-      originalReleaseDate: validateField("originalReleaseDate"),
-      discogsUrl: validateField("discogsUrl"),
-      comment: validateField("comment"),
-      selectedTags: validateField("selectedTags"),
-      selectedTypes: validateField("selectedTypes"),
-      altNames: validateField("altNames"),
-      artists: validateField("artists"),
-      relatedEntries: validateField("relatedEntries"),
-      partOfQueenCollection: validateField("partOfQueenCollection"),
-      relationToQueen: validateField("relationToQueen"),
-    };
-
-    const formIsValid = Object.values(validationResults).every(
-      (result) => result.valid,
-    );
+    const validationResults = validateForm();
+    const formIsValid = validationResults !== null;
 
     setShowSubmissionValidationError(!formIsValid);
 
     if (formIsValid) {
+      setValidatedForm(validationResults);
       setSubmitError(undefined);
       setCheckedDbSources(new Set(ALL_DB_SOURCES));
       setIsConfirmOpen(true);
@@ -460,36 +305,16 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
       return;
     }
 
-    const {
-      mainName: { value: mainName },
-      originalReleaseDate: { value: originalReleaseDate },
-      discogsUrl: { value: discogsUrl },
-      comment: { value: comment },
-      selectedTags: { value: selectedTags },
-      selectedTypes: { value: selectedTypes },
-      artists: { value: artists },
-      altNames: { value: altNames },
-      relatedEntries: { value: relatedEntries },
-      partOfQueenCollection: { value: partOfQueenCollection },
-      relationToQueen: { value: relationToQueen },
-    } = form;
+    if (validatedForm === null) {
+      setSubmitError("Form validation failed, check the form values");
+
+      return;
+    }
 
     setIsSubmitting(true);
     setSubmitError(undefined);
 
-    const upsertInput = toUpsertMusicalEntryInput({
-      mainName,
-      originalReleaseDate,
-      discogsUrl,
-      comment,
-      selectedTags,
-      selectedTypes,
-      artists,
-      altNames,
-      relatedEntries,
-      partOfQueenCollection,
-      relationToQueen,
-    });
+    const upsertInput = toUpsertMusicalEntryInput(validatedForm);
 
     const savePromise = isCreateMode
       ? createEntryAcrossDbSources(
@@ -541,13 +366,13 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     setSubmitError(undefined);
   };
 
-  const mainNameErrors = form.mainName.errors;
-  const originalReleaseDateErrors = form.originalReleaseDate.errors;
-  const discogsUrlErrors = form.discogsUrl.errors;
-  const discogsUrlNotifications = form.discogsUrl.notifications;
-  const commentNotifications = form.comment.notifications;
-  const relationToQueenNotifications = form.relationToQueen.notifications;
-  const altNamesNotifications = form.altNames.notifications;
+  const mainNameErrors = formState.mainName.errors;
+  const originalReleaseDateErrors = formState.originalReleaseDate.errors;
+  const discogsUrlErrors = formState.discogsUrl.errors;
+  const discogsUrlNotifications = formState.discogsUrl.notifications;
+  const commentNotifications = formState.comment.notifications;
+  const relationToQueenNotifications = formState.relationToQueen.notifications;
+  const altNamesNotifications = formState.altNames.notifications;
   const hasMainNameErrors = mainNameErrors.length > 0;
   const hasOriginalReleaseDateErrors = originalReleaseDateErrors.length > 0;
   const hasDiscogsUrlErrors = discogsUrlErrors.length > 0;
@@ -587,8 +412,8 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
             className="px-2 py-[0.35rem] text-base"
             type="text"
             aria-required
-            value={form.mainName.value}
-            onChange={(e) => setFieldValue("mainName", e.target.value)}
+            value={formState.mainName.value}
+            onChange={(e) => setFieldValue("mainName", () => e.target.value)}
             onFocus={() => onFocus("mainName")}
             onBlur={() => onBlur("mainName")}
             aria-invalid={hasMainNameErrors}
@@ -598,22 +423,24 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
             autoComplete="off"
             required
           />
-          <ErrorMessages
-            id={MAIN_NAME_FIELD_ERROR_ID}
-            messages={mainNameErrors}
+          <FeedbackSection2
+            notificationsId={MAIN_NAME_FIELD_NOTIFICATIONS_ID}
+            errorsId={MAIN_NAME_FIELD_ERROR_ID}
+            notifications={formState.mainName.notifications}
+            errors={mainNameErrors}
           />
         </div>
 
         <FormSectionsDivider />
 
         <UpsertEntryArtistsSection
-          artists={form.artists.value}
-          errors={form.artists.errors}
-          notifications={form.artists.notifications}
+          artists={formState.artists.value}
+          errors={formState.artists.errors}
+          notifications={formState.artists.notifications}
           onUpdateArtistRow={updateArtistRow}
           onAddRow={addArtistRow}
           onRemoveRow={removeArtistRow}
-          onFocus={(rowId, source) => onFocus({ artistRowId: rowId, source })}
+          onFocus={(rowId, field) => onFocus("artists", rowId, field)}
           onBlur={() => onBlur("artists")}
         />
 
@@ -624,11 +451,11 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
             Original release date
           </h2>
           <GeneralizedDateFormInput
-            date={form.originalReleaseDate.value}
+            date={formState.originalReleaseDate.value}
             setDate={(originalReleaseDate) =>
-              setFieldValue("originalReleaseDate", originalReleaseDate)
+              setFieldValue("originalReleaseDate", () => originalReleaseDate)
             }
-            onFocus={onFocus}
+            onFocus={() => onFocus("originalReleaseDate")}
             onBlur={() => onBlur("originalReleaseDate")}
             invalid={hasOriginalReleaseDateErrors}
             groupErrorId={ORIGINAL_RELEASE_DATE_FIELD_ERROR_ID}
@@ -653,8 +480,8 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
             className="px-2 py-[0.35rem] text-base"
             type="url"
             placeholder="https://www.discogs.com/master/<id>-..."
-            value={form.discogsUrl.value}
-            onChange={(e) => setFieldValue("discogsUrl", e.target.value)}
+            value={formState.discogsUrl.value}
+            onChange={(e) => setFieldValue("discogsUrl", () => e.target.value)}
             onFocus={() => onFocus("discogsUrl")}
             onBlur={() => onBlur("discogsUrl")}
             aria-invalid={hasDiscogsUrlErrors}
@@ -665,7 +492,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
             id={DISCOGS_URL_FIELD_ERROR_ID}
             messages={discogsUrlErrors}
           />
-          <NotificationMessages
+          <NotificationMessages2
             id={DISCOGS_URL_FIELD_NOTIFICATIONS_ID}
             messages={discogsUrlNotifications}
           />
@@ -675,7 +502,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
 
         <AddTagsFormSection
           tags={tags}
-          selectedTagIds={form.selectedTags.value}
+          selectedTagIds={formState.selectedTags.value}
           onAddTag={addSelectedTag}
           onRemoveTag={removeSelectedTag}
         />
@@ -684,7 +511,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
 
         <UpsertEntryTypesSection
           allEntryTypes={allEntryTypes}
-          selectedTypeIds={form.selectedTypes.value}
+          selectedTypeIds={formState.selectedTypes.value}
           onAddType={addSelectedType}
           onRemoveType={removeSelectedType}
         />
@@ -692,15 +519,15 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
         <FormSectionsDivider />
 
         <UpsertEntryAltNamesSection
-          altNames={form.altNames.value}
-          errors={form.altNames.errors}
+          altNames={formState.altNames.value}
+          errors={formState.altNames.errors}
           onChangeName={setAltNameValue}
           onAddRow={addAltNameRow}
           onRemoveRow={removeAltNameRow}
-          onFocus={(rowId) => onFocus({ rowId })}
+          onFocus={(rowId) => onFocus("altNames", rowId)}
           onBlur={() => onBlur("altNames")}
         />
-        <NotificationMessages
+        <NotificationMessages2
           id={DISCOGS_URL_FIELD_NOTIFICATIONS_ID}
           messages={altNamesNotifications}
         />
@@ -708,15 +535,14 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
         <FormSectionsDivider />
 
         <UpsertEntryRelatedEntriesSection
-          relatedEntries={form.relatedEntries.value}
-          errors={form.relatedEntries.errors}
-          notifications={form.relatedEntries.notifications}
+          relatedEntries={formState.relatedEntries.value}
+          errors={formState.relatedEntries.errors}
+          notifications={formState.relatedEntries.notifications}
           onChangeEntryId={setRelatedEntryId}
-          onChangeRelation={setRelatedEntryRelation}
           onChangeOrderNumber={setRelatedEntryOrderNumber}
           onAddRow={addRelatedEntryRow}
           onRemoveRow={removeRelatedEntryRow}
-          onFocus={(rowId) => onFocus({ relatedEntryRowId: rowId })}
+          onFocus={(rowId, key) => onFocus("relatedEntries", rowId, key)}
           onBlur={() => onBlur("relatedEntries")}
         />
 
@@ -726,13 +552,13 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           <input
             id="upsert-entry-part-of-queen-collection"
             type="checkbox"
-            checked={form.partOfQueenCollection.value}
+            checked={formState.partOfQueenCollection.value}
             onChange={(e) => {
               const checked = e.target.checked;
-              setFieldValue("partOfQueenCollection", checked);
+              setFieldValue("partOfQueenCollection", () => checked);
 
               if (!checked) {
-                setFieldValue("relationToQueen", "");
+                setFieldValue("relationToQueen", () => "");
               }
             }}
           />
@@ -744,7 +570,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           </label>
         </div>
 
-        {form.partOfQueenCollection.value && (
+        {formState.partOfQueenCollection.value && (
           <div className="mt-[0.85rem] mb-[0.65rem] flex flex-col gap-[0.35rem]">
             <label
               className="mb-3 text-base leading-snug font-semibold"
@@ -755,8 +581,10 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
             <textarea
               id="upsert-entry-relation-to-queen"
               className="min-h-[4.5rem] resize-y px-2 py-[0.35rem] font-[inherit] text-base leading-snug"
-              value={form.relationToQueen.value}
-              onChange={(e) => setFieldValue("relationToQueen", e.target.value)}
+              value={formState.relationToQueen.value}
+              onChange={(e) =>
+                setFieldValue("relationToQueen", () => e.target.value)
+              }
               onFocus={() => onFocus("relationToQueen")}
               onBlur={() => onBlur("relationToQueen")}
               aria-describedby={
@@ -765,7 +593,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
                   : undefined
               }
             />
-            <NotificationMessages
+            <NotificationMessages2
               id={RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID}
               messages={relationToQueenNotifications}
             />
@@ -784,8 +612,8 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           <textarea
             id="upsert-entry-comment"
             className="min-h-[4.5rem] resize-y px-2 py-[0.35rem] font-[inherit] text-base leading-snug"
-            value={form.comment.value}
-            onChange={(e) => setFieldValue("comment", e.target.value)}
+            value={formState.comment.value}
+            onChange={(e) => setFieldValue("comment", () => e.target.value)}
             onFocus={() => onFocus("comment")}
             onBlur={() => onBlur("comment")}
             aria-describedby={
@@ -794,7 +622,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
                 : undefined
             }
           />
-          <NotificationMessages
+          <NotificationMessages2
             id={COMMENT_FIELD_NOTIFICATIONS_ID}
             messages={commentNotifications}
           />
@@ -834,7 +662,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           isConfirmOpen && (
             <>
               <UpsertEntryFormPreview
-                form={form}
+                form={formState}
                 tags={tags}
                 allEntryTypes={allEntryTypes}
               />

@@ -1,56 +1,47 @@
 import { validate as isValidUuid } from "uuid";
 
-import type { UpsertEntryArtistsErrors } from "../errorMessages";
-import type { UpsertEntryArtistRow } from "../formValues";
+import type {
+  UpsertEntryArtistRow,
+  UpsertEntryFormDraft,
+  ValidatedUpsertEntryFormDraft,
+} from "../formValues";
 
-import type { FormFieldValidationResult } from "@/types/form";
+import type {
+  FormFeedbackMessages,
+  FormValidationFn,
+} from "@/hooks/useFormState";
 
-export const validateArtists = (
-  rows: UpsertEntryArtistRow[],
-): FormFieldValidationResult<
-  UpsertEntryArtistRow[],
-  UpsertEntryArtistsErrors,
-  UpsertEntryArtistRow[]
-> => {
-  const errors: UpsertEntryArtistsErrors = {};
+export const validateArtists: FormValidationFn<
+  UpsertEntryFormDraft,
+  ValidatedUpsertEntryFormDraft,
+  "artists"
+> = (state) => {
+  const errors: FormFeedbackMessages = [];
+  const notifications: FormFeedbackMessages = [];
   const validatedRows: UpsertEntryArtistRow[] = [];
-  const notifications = [];
-  const seenArtistIds = new Map<string, string>();
-  let valid = true;
+  const seenArtistIds = new Map<string, string[]>();
 
-  for (const row of rows) {
-    const rowErrors = [];
+  for (const row of state.artists.value) {
     const trimmedArtistId = row.artistId.trim();
     const trimmedAltNameId = row.entryArtistAltNameId.trim();
 
     if (isValidUuid(trimmedArtistId)) {
-      const firstRowId = seenArtistIds.get(trimmedArtistId);
-
-      if (firstRowId === undefined) {
-        seenArtistIds.set(trimmedArtistId, row.id);
-      } else {
-        rowErrors.push({
-          message: `Duplicate artist id ${trimmedArtistId}.`,
-          sources: ["artistId"],
-        });
-      }
+      seenArtistIds.set(trimmedArtistId, [
+        ...(seenArtistIds.get(trimmedArtistId) ?? []),
+        row.id,
+      ]);
     } else {
-      rowErrors.push({
+      errors.push({
         message: "Artist ID must be a valid UUID.",
-        sources: ["artistId"],
+        sources: [row.id, "artistId"],
       });
     }
 
     if (trimmedAltNameId !== "" && !isValidUuid(trimmedAltNameId)) {
-      rowErrors.push({
+      errors.push({
         message: "Alternative artist name ID must be a valid UUID.",
-        sources: ["entryArtistAltNameId"],
+        sources: [row.id, "entryArtistAltNameId"],
       });
-    }
-
-    if (rowErrors.length > 0) {
-      valid = false;
-      errors[row.id] = rowErrors;
     }
 
     validatedRows.push({
@@ -61,31 +52,38 @@ export const validateArtists = (
 
     if (trimmedArtistId !== row.artistId) {
       notifications.push({
-        notification: `Note: artist ID "${trimmedArtistId}" has been trimmed`,
-        sources: ["artistId"],
+        message: `Note: artist ID "${trimmedArtistId}" has been trimmed`,
+        sources: [row.id, "artistId"],
       });
     }
 
     if (trimmedAltNameId !== row.entryArtistAltNameId) {
       notifications.push({
-        notification: `Note: alternative artist name ID "${trimmedAltNameId}" has been trimmed`,
-        sources: ["entryArtistAltNameId"],
+        message: `Note: alternative artist name ID "${trimmedAltNameId}" has been trimmed`,
+        sources: [row.id, "entryArtistAltNameId"],
       });
     }
   }
 
-  if (!valid) {
+  for (const [artistId, ids] of seenArtistIds.entries()) {
+    if (ids.length > 1) {
+      errors.push({
+        message: `Duplicate artist ID "${artistId}".`,
+        sources: [...ids, "artistId"],
+      });
+    }
+  }
+
+  if (errors.length > 0) {
     return {
-      valid: false,
       value: validatedRows,
-      errorMessages: errors,
-      notifications: notifications.length > 0 ? notifications : undefined,
+      errors,
+      notifications,
     };
   }
 
   return {
-    valid: true,
-    value: validatedRows,
-    notifications: notifications.length > 0 ? notifications : undefined,
+    validatedValue: validatedRows,
+    notifications,
   };
 };

@@ -38,17 +38,17 @@ export const validateRelatedItems = <TRow extends RelatedOrderedItemRow>(
     const relatedId = getRelatedId(row);
     const trimmedRelatedId = relatedId.trim();
 
-    if (!isValidUuid(trimmedRelatedId)) {
+    if (isValidUuid(trimmedRelatedId)) {
+      usedUuids.set(trimmedRelatedId, [
+        ...(usedUuids.get(trimmedRelatedId) ?? []),
+        rowId,
+      ]);
+    } else {
       errorMessages.push({
         message: messages.invalidRelatedId,
-        sources: [rowId],
+        sources: [rowId, "id"],
       });
     }
-
-    usedUuids.set(trimmedRelatedId, [
-      ...(usedUuids.get(trimmedRelatedId) ?? []),
-      rowId,
-    ]);
 
     const parsedOrderNumber = strictStringToIntSchema.safeParse(
       row.orderNumber.trim(),
@@ -58,7 +58,7 @@ export const validateRelatedItems = <TRow extends RelatedOrderedItemRow>(
       errorMessages.push({
         message:
           messages.invalidOrderNumber ?? DEFAULT_INVALID_ORDER_NUMBER_MESSAGE,
-        sources: [rowId],
+        sources: [rowId, "orderNumber"],
       });
     }
 
@@ -67,6 +67,7 @@ export const validateRelatedItems = <TRow extends RelatedOrderedItemRow>(
     if (trimmedRelatedId !== relatedId) {
       notifications.push({
         notification: messages.trimmedRelatedId(trimmedRelatedId),
+        sources: [rowId, "id"],
       });
     }
   }
@@ -74,8 +75,8 @@ export const validateRelatedItems = <TRow extends RelatedOrderedItemRow>(
   for (const [relatedId, rowIds] of usedUuids.entries()) {
     if (rowIds.length > 1) {
       errorMessages.push({
-        message: `Duplicate uuid "${relatedId}" used by multiple rows.`,
-        sources: rowIds,
+        message: `Duplicate uuid "${relatedId}"`,
+        sources: [...rowIds, "id"],
       });
     }
   }
@@ -85,6 +86,7 @@ export const validateRelatedItems = <TRow extends RelatedOrderedItemRow>(
   if (!isSequential) {
     errorMessages.push({
       message: "Child order numbers must be sequential starting from 1.",
+      sources: [...rows.map((row) => row.id), "orderNumber"],
     });
   }
 

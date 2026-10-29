@@ -20,48 +20,38 @@ export const validateRelatedArtists = (
   const processedRows: ArtistUpsertRelatedArtistRow[] = [];
   const validatedRows: ValidArtistUpsertRelatedParentRow[] = [];
   const notifications = [];
-  const seenArtistIds = new Map<string, string>();
+  const seenArtistIds = new Map<string, string[]>();
 
   for (const row of rows) {
     const { relation, id, artistId } = row;
     const trimmedArtistId = artistId.trim();
-
-    const rowErrors = [];
-
-    if (relation === "") {
-      errors.push({
-        message: "Choose whether this artist is a parent or a child.",
-        sources: [id, "relation"],
-      });
-    }
-
-    if (isValidUuid(trimmedArtistId)) {
-      const firstRowId = seenArtistIds.get(trimmedArtistId);
-
-      if (firstRowId === undefined) {
-        seenArtistIds.set(trimmedArtistId, id);
-      } else {
-        rowErrors.push({
-          message: `Duplicate artist id ${trimmedArtistId}.`,
-          sources: [id, "artistId"],
-        });
-      }
-    } else {
-      errors.push({
-        message: "Artist ID must be a valid UUID.",
-        sources: [id, "artistId"],
-      });
-    }
 
     const newRow = {
       id,
       artistId: trimmedArtistId,
     };
 
-    if (relation !== "") {
+    if (relation === "") {
+      errors.push({
+        message: "Choose whether this artist is a parent or a child.",
+        sources: [id, "relation"],
+      });
+    } else {
       validatedRows.push({
         ...newRow,
         relation,
+      });
+    }
+
+    if (isValidUuid(trimmedArtistId)) {
+      seenArtistIds.set(trimmedArtistId, [
+        ...(seenArtistIds.get(trimmedArtistId) ?? []),
+        id,
+      ]);
+    } else {
+      errors.push({
+        message: "Artist ID must be a valid UUID.",
+        sources: [id, "artistId"],
       });
     }
 
@@ -74,6 +64,15 @@ export const validateRelatedArtists = (
       notifications.push({
         message: `Note: artist ID "${trimmedArtistId}" has been trimmed`,
         sources: [id, "artistId"],
+      });
+    }
+  }
+
+  for (const [artistId, ids] of seenArtistIds.entries()) {
+    if (ids.length > 1) {
+      errors.push({
+        message: `Duplicate artist ID "${artistId}".`,
+        sources: [...ids, "artistId"],
       });
     }
   }
