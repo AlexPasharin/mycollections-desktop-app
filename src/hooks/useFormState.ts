@@ -116,15 +116,15 @@ const useFormState = <T extends Record<PropertyKey, unknown>, U extends T = T>({
 
   const clearFieldFeedback = <K extends keyof T>(
     key: K,
-    source?: PropertyKey,
+    ...sources: PropertyKey[]
   ) =>
     setField(key, (prev) => {
       const { errors, notifications } = prev[key];
 
       return {
         ...prev[key],
-        errors: removeFeedbackMessages(errors, source),
-        notifications: removeFeedbackMessages(notifications),
+        errors: removeFeedbackMessages(errors, sources),
+        notifications: removeFeedbackMessages(notifications, sources),
       };
     });
 
@@ -162,10 +162,11 @@ export default useFormState;
 
 const removeFeedbackMessages = (
   messages: FormFeedbackMessages,
-  source?: PropertyKey,
+  sources: PropertyKey[],
 ) =>
   messages.filter(
-    (msg) => msg.sources && (!source || !msg.sources.includes(source)),
+    ({ sources: msgSources }) =>
+      msgSources && !sources.every((source) => msgSources.includes(source)),
   );
 
 const getInitialValue = <T extends Record<string, unknown>, U extends T = T>(
