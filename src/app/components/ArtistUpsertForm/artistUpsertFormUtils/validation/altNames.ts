@@ -15,7 +15,7 @@ export const validateArtistAltNames: FormValidationFn<
   "altNames"
 > = (state) => {
   const mainName = state.name.value.trim();
-  const seenNames = new Set<string>();
+  const seenNames = new Map<string, string[]>();
   const errors: FormFeedbackMessages = [];
 
   const normalizedRows: ArtistUpsertAltNameRow[] = [];
@@ -31,22 +31,13 @@ export const validateArtistAltNames: FormValidationFn<
         message: "Alternative name cannot be empty.",
         sources: [id],
       });
-    }
-
-    if (mainName !== "" && trimmedName === mainName) {
+    } else if (trimmedName === mainName) {
       errors.push({
         message: "Alternative name cannot match the artist's main name.",
         sources: [id],
       });
-    }
-
-    if (seenNames.has(trimmedName)) {
-      errors.push({
-        message: `Duplicate alternative name "${trimmedName}".`,
-        sources: [id],
-      });
-    } else if (trimmedName !== "") {
-      seenNames.add(trimmedName);
+    } else {
+      seenNames.set(trimmedName, [...(seenNames.get(trimmedName) ?? []), id]);
     }
 
     normalizedRows.push({ ...row, name: trimmedName });
@@ -62,6 +53,15 @@ export const validateArtistAltNames: FormValidationFn<
       errors.push({
         message: rowError,
         sources: [id],
+      });
+    }
+  }
+
+  for (const [name, ids] of seenNames.entries()) {
+    if (ids.length > 1) {
+      errors.push({
+        message: `Duplicate alternative name "${name}".`,
+        sources: ids,
       });
     }
   }
