@@ -132,6 +132,20 @@ const useFormState = <T extends Record<PropertyKey, unknown>, U extends T = T>({
     setFormState(getInitialValue(initialValue));
   };
 
+  const toInitialFormStateValue = () => {
+    const persistedValue: Partial<InitialFormStateValue<T, U>> = {};
+
+    for (const key of Object.keys(formState) as (keyof T)[]) {
+      persistedValue[key] = {
+        value: formState[key].value,
+        validationFn: formState[key].validationFn,
+      };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    return persistedValue as InitialFormStateValue<T, U>; // should be safe by construction above
+  };
+
   return {
     formState,
     setField,
@@ -140,6 +154,7 @@ const useFormState = <T extends Record<PropertyKey, unknown>, U extends T = T>({
     clearFieldFeedback,
     resetFormState,
     validateForm,
+    toInitialFormStateValue,
   };
 };
 

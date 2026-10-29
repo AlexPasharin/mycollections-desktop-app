@@ -1,4 +1,10 @@
-import { useEffect, useState, type FC, type SubmitEvent } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useState,
+  type FC,
+  type SubmitEvent,
+} from "react";
 
 import UpsertEntryAltNamesSection from "./UpsertEntryAltNamesSection";
 import UpsertEntryArtistsSection from "./UpsertEntryArtistsSection";
@@ -107,6 +113,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     clearFieldFeedback,
     validateField,
     validateForm,
+    toInitialFormStateValue,
   } = useFormState({
     initialValue:
       restoredState?.form ??
@@ -129,11 +136,16 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
   >(() => restoredState?.checkedDbSources ?? new Set(ALL_DB_SOURCES));
   const [submitError, setSubmitError] = useState<string>();
 
+  const persistState = useEffectEvent(() => {
+    onPersistState({
+      form: toInitialFormStateValue(),
+      checkedDbSources,
+    });
+  });
+
   useEffect(() => {
-    return () => {
-      onPersistState({ form: formState, checkedDbSources });
-    };
-  }, [formState, checkedDbSources, onPersistState]);
+    return persistState;
+  }, []);
 
   const isCreateMode = mode === "create";
 

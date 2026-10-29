@@ -94,13 +94,18 @@ export type ValidatedUpsertEntryFormDraft = Omit<
   relatedEntries: ValidUpsertEntryRelatedEntryRow[];
 };
 
+type UpsertEntryFormInitialState = InitialFormStateValue<
+  UpsertEntryFormDraft,
+  ValidatedUpsertEntryFormDraft
+>;
+
 export type UpsertEntryFormState = FormStateType<
   UpsertEntryFormDraft,
   ValidatedUpsertEntryFormDraft
 >;
 
 export type UpsertEntryFormPersistedState = {
-  form: UpsertEntryFormState;
+  form: UpsertEntryFormInitialState;
   checkedDbSources: ReadonlySet<DbSource>;
 };
 
@@ -112,10 +117,7 @@ type InitialUpsertEntryFormDraftArgs = {
 export const initialUpsertEntryFormDraft = ({
   entry,
   defaultArtistId,
-}: InitialUpsertEntryFormDraftArgs): InitialFormStateValue<
-  UpsertEntryFormDraft,
-  ValidatedUpsertEntryFormDraft
-> => {
+}: InitialUpsertEntryFormDraftArgs): UpsertEntryFormInitialState => {
   const {
     mainName,
     originalReleaseDate,
