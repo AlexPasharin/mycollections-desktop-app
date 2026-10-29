@@ -23,6 +23,7 @@ export const validateOptionalTrimmedText2 = (
 
   return {
     validatedValue: trimmed,
-    notifications: trimmed === value ? [] : [{ message: "Note: value has been trimmed" }],
+    notifications:
+      trimmed === value ? [] : [{ message: "Note: value has been trimmed" }],
   };
 };
