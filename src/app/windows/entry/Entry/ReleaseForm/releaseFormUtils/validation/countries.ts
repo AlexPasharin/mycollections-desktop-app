@@ -1,39 +1,40 @@
 import { z } from "zod";
 
-import {
-  emptyMutableCountriesSubsectionErrors,
-  type ReleaseFormCountriesErrors,
-} from "../errorMessages";
-import type { ReleaseFormCountries } from "../formValues";
+import type { ReleaseFormCountries } from "../formValues/countries";
+import type {
+  ReleaseFormDraft,
+  ValidatedReleaseFormDraft,
+} from "../formValues/formState";
 
-import type { FormFieldValidationResult } from "@/types/form";
+import type {
+  FormValidationFn,
+  FormFeedbackMessages,
+} from "@/hooks/useFormState";
 import type { ValidationResultErrorMessages } from "@/utils/validation";
 import { uniquePropertyArraySchema } from "@/validation";
 
-export const validateReleaseCountries = (
-  value: ReleaseFormCountries,
-): FormFieldValidationResult<
-  ReleaseFormCountries,
-  ReleaseFormCountriesErrors
-> => {
+export const validateReleaseCountries: FormValidationFn<
+  ReleaseFormDraft,
+  ValidatedReleaseFormDraft,
+  "countries"
+> = (state) => {
+  const value = state.countries.value;
   const validationResult = countriesSchema.safeParse(value);
 
   if (!validationResult.success) {
     return {
-      valid: false,
       value,
-      errorMessages: getCountriesFormFieldErrors(
+      errors: getCountriesFeedbackMessages(
         validationResult.error.issues,
         value,
       ),
+      notifications: [],
     };
   }
 
-  const validatedValue = validationResult.data;
-
   return {
-    valid: true,
-    value: validatedValue,
+    validatedValue: validationResult.data,
+    notifications: [],
   };
 };
 
@@ -84,44 +85,27 @@ const countriesSchema = z
     path: ["madeIn"],
   });
 
-const getCountriesFormFieldErrors = (
+const getCountriesFeedbackMessages = (
   errorMessages: ValidationResultErrorMessages,
   countries: ReleaseFormCountries,
-): ReleaseFormCountriesErrors => {
-  const madeIn = emptyMutableCountriesSubsectionErrors();
-  const printedIn = emptyMutableCountriesSubsectionErrors();
+): FormFeedbackMessages =>
+  errorMessages.flatMap(({ message, path }) => {
+    const subsection = path[0];
 
-  return errorMessages.reduce(
-    (acc, { message, path }) => {
-      const subsectionKey = path[0];
+    if (subsection !== "madeIn" && subsection !== "printedIn") {
+      return [];
+    }
 
-      if (subsectionKey !== "madeIn" && subsectionKey !== "printedIn") {
-        return acc;
-      }
+    const rowIndex = path[1];
+    const row =
+      typeof rowIndex === "number"
+        ? countries[subsection][rowIndex]
+        : undefined;
 
-      const target = acc[subsectionKey];
-
-      const rowOrPropertyKey = path[1];
-
-      if (typeof rowOrPropertyKey === "number") {
-        const rows =
-          subsectionKey === "madeIn" ? countries.madeIn : countries.printedIn;
-        const row = rows[rowOrPropertyKey];
-
-        if (!row) {
-          return acc;
-        }
-
-        const rowSet =
-          target.countrySelectErrorMessages[row.id] ?? new Set<string>();
-        rowSet.add(message);
-        target.countrySelectErrorMessages[row.id] = rowSet;
-      } else {
-        target.propertyErrorMessages.add(message);
-      }
-
-      return acc;
-    },
-    { madeIn, printedIn },
-  );
-};
+    return [
+      {
+        message,
+        sources: row ? [row.id, "codeName"] : [subsection],
+      },
+    ];
+  });

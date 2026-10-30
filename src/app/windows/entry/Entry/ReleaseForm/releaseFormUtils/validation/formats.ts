@@ -1,13 +1,16 @@
 import { z } from "zod";
 
+import type { ReleaseFormFormatInputs } from "../formValues/formats";
 import type {
-  ReleaseFormFormatErrors,
-  FormatFieldsRowId,
-} from "../errorMessages";
-import type { ReleaseFormFormatInputs } from "../formValues";
+  ReleaseFormDraft,
+  ValidatedReleaseFormDraft,
+} from "../formValues/formState";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
-import type { FormFieldValidationResult } from "@/types/form";
+import type {
+  FormValidationFn,
+  FormFeedbackMessages,
+} from "@/hooks/useFormState";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import {
   addCustomValidationIssues,
@@ -15,33 +18,29 @@ import {
 } from "@/utils/validation";
 import { strictStringToIntSchema } from "@/validation";
 
-export const validateReleaseFormats = (formats: ReleasesFormatListItem[]) => {
+export const validateReleaseFormats = (
+  formats: ReleasesFormatListItem[],
+): FormValidationFn<ReleaseFormDraft, ValidatedReleaseFormDraft, "formats"> => {
   const validationSchema = releaseFormFormatInputArraySchema(formats);
 
-  return (
-    value: ReleaseFormFormatInputs,
-  ): FormFieldValidationResult<
-    ReleaseFormFormatInputs,
-    ReleaseFormFormatErrors
-  > => {
+  return (state) => {
+    const value = state.formats.value;
     const validationResult = validationSchema.safeParse(value);
 
     if (!validationResult.success) {
-      const errorMessages = getFormatsFormFieldErrors(
-        validationResult.error.issues,
-        value,
-      );
-
       return {
-        valid: false,
         value,
-        errorMessages,
+        errors: getFormatsFeedbackMessages(
+          validationResult.error.issues,
+          value,
+        ),
+        notifications: [],
       };
     }
 
     return {
-      valid: true,
-      value,
+      validatedValue: value,
+      notifications: [],
     };
   };
 };
@@ -108,50 +107,22 @@ const releaseFormFormatInputSchema = (formats: ReleasesFormatListItem[]) => {
     });
 };
 
-const getFormatsFormFieldErrors = (
+const getFormatsFeedbackMessages = (
   errorMessages: ValidationResultErrorMessages,
   currentFormatInputValues: ReleaseFormFormatInputs,
-): ReleaseFormFormatErrors => {
-  type FormatErrorMessage = string;
-  const errorMessagesMap: Record<
-    FormatFieldsRowId,
-    Record<FormatErrorMessage, PropertyKey[]>
-  > = {};
-
-  for (const { message, path } of errorMessages) {
+): FormFeedbackMessages =>
+  errorMessages.flatMap(({ message, path }) => {
     const rowIndex = path[0];
     const source = path[1];
 
-    const filterRowById =
+    const row =
       typeof rowIndex === "number"
         ? currentFormatInputValues[rowIndex]
         : undefined;
 
-    if (!filterRowById) {
-      continue;
+    if (!row) {
+      return [];
     }
 
-    const mapEntry = errorMessagesMap[filterRowById.id] ?? {};
-    const messageEntry = mapEntry[message] ?? [];
-
-    if (source) {
-      messageEntry.push(source);
-    }
-
-    mapEntry[message] = messageEntry;
-    errorMessagesMap[filterRowById.id] = mapEntry;
-  }
-
-  const formatsErrorMessages: ReleaseFormFormatErrors = {};
-
-  for (const [rowId, messages] of Object.entries(errorMessagesMap)) {
-    formatsErrorMessages[rowId] = Object.entries(messages).map(
-      ([message, sources]) => ({
-        message,
-        sources,
-      }),
-    );
-  }
-
-  return formatsErrorMessages;
-};
+    return [{ message, sources: source ? [row.id, source] : [row.id] }];
+  });

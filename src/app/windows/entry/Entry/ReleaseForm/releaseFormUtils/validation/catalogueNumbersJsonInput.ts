@@ -1,7 +1,9 @@
-import type { ReleaseFormCatNumbersFieldErrors } from "../errorMessages";
 import type { ReleaseFormCatNumbersDraft } from "../formValues";
 
-import type { FormFieldValidationResult } from "@/types/form";
+import type {
+  FormFeedbackMessages,
+  FormValidationFnResult,
+} from "@/hooks/useFormState";
 import { formatJson } from "@/utils/common";
 import { parseYAML } from "@/utils/parsing";
 import { releaseCatNumbersSchema, type ReleaseCatNumbers } from "@/validation";
@@ -29,39 +31,26 @@ export const parseReleaseCatNumbersJsonInput = (
 
 export const validateReleaseCatNumbersJsonInput = (
   value: string,
-): FormFieldValidationResult<
-  ReleaseFormCatNumbersDraft,
-  ReleaseFormCatNumbersFieldErrors
-> => {
+): FormValidationFnResult<ReleaseFormCatNumbersDraft> => {
   const trimmed = value.trim();
 
   if (!trimmed) {
     return {
-      valid: true,
-      value: {
-        activeTab: "json",
-        value: trimmed,
-      },
+      validatedValue: { activeTab: "json", value: trimmed },
+      notifications: [],
     };
   }
+
+  const trimmedNotifications: FormFeedbackMessages =
+    trimmed === value ? [] : [{ message: "Note: value has been trimmed" }];
 
   const yamlParsingResult = parseYAML(trimmed);
 
   if (!yamlParsingResult) {
     return {
-      valid: false,
-      value: {
-        activeTab: "json",
-        value: trimmed,
-      },
-      notifications:
-        trimmed === value
-          ? undefined
-          : [{ notification: "Note: value has been trimmed" }],
-      errorMessages: {
-        rows: {},
-        jsonInput: [{ message: "Invalid JSON value" }],
-      },
+      value: { activeTab: "json", value: trimmed },
+      errors: [{ message: "Invalid JSON value" }],
+      notifications: trimmedNotifications,
     };
   }
 
@@ -70,34 +59,23 @@ export const validateReleaseCatNumbersJsonInput = (
   const validationResult = releaseCatNumbersSchema.safeParse(parsed);
   const prettifiedValue = formatJson(parsed) ?? "";
 
-  const notifications =
+  const notifications: FormFeedbackMessages =
     prettifiedValue === value
-      ? undefined
-      : [{ notification: "Note: JSON value has been pretty-printed" }];
+      ? []
+      : [{ message: "Note: JSON value has been pretty-printed" }];
 
   if (!validationResult.success) {
     return {
-      valid: false,
-      value: {
-        activeTab: "json",
-        value: prettifiedValue,
-      },
+      value: { activeTab: "json", value: prettifiedValue },
+      errors: validationResult.error.issues.map(({ message }) => ({
+        message,
+      })),
       notifications,
-      errorMessages: {
-        rows: {},
-        jsonInput: validationResult.error.issues.map(({ message }) => ({
-          message,
-        })),
-      },
     };
   }
 
   return {
-    valid: true,
-    value: {
-      activeTab: "json",
-      value: prettifiedValue,
-    },
+    validatedValue: { activeTab: "json", value: prettifiedValue },
     notifications,
   };
 };

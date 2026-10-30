@@ -19,16 +19,10 @@ import { releaseDateToFormValue } from "./releaseDate";
 
 import type { ReleaseFormTabMode } from "../../../types";
 import {
-  initialReleaseFormFieldErrors,
-  type ReleaseFormCatNumbersFieldErrors,
-  type ReleaseFormCountriesErrors,
-  type ReleaseFormFormatErrors,
-} from "../errorMessages";
-import {
   validateDiscogsUrl,
+  validateReleaseCatNumbers,
   validateReleaseCountries,
   validateReleaseFormats,
-  validateReleaseCatNumbers,
   validateReleaseMatrixRunout,
   validateRelatedReleases,
 } from "../validation";
@@ -36,42 +30,55 @@ import {
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES } from "@/db/db-source-options";
+import type {
+  FormStateType,
+  InitialFormStateValue,
+} from "@/hooks/useFormState";
 import type { CountryListItem } from "@/types/countries";
-import type { FormField, FormFieldError } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { ReleaseByIdResult } from "@/types/releases";
 import type { TagId } from "@/types/tags";
 import {
-  validateOptionalTrimmedText,
-  validatePassThrough,
-  validateReleaseDate,
-  validateRequiredTrimmedText,
+  validateOptionalTrimmedText2,
+  validatePassThrough2,
+  validateReleaseDate2,
+  validateRequiredTrimmedText2,
 } from "@/validation";
 
-export type ReleaseFormState = {
-  name: FormField<ReleaseFormNameInput>;
-  releaseVersion: FormField;
-  discogsUrl: FormField;
-  releaseDate: FormField<GeneralizedDateFormInputValue>;
-  countries: FormField<ReleaseFormCountries, ReleaseFormCountriesErrors>;
-  formats: FormField<ReleaseFormFormatInputs, ReleaseFormFormatErrors>;
-  catalogueNumbers: FormField<
-    ReleaseFormCatNumbersDraft,
-    ReleaseFormCatNumbersFieldErrors
-  >;
-  matrixRunout: FormField<ReleaseFormMatrixRunoutDraft>;
-  selectedTags: FormField<Set<TagId>>;
-  partOfQueenCollection: FormField<boolean>;
-  relationToQueen: FormField<string>;
-  comment: FormField<string>;
-  conditionProblems: FormField<string>;
-  relatedReleases: FormField<
-    ReleaseFormRelatedReleaseRow[],
-    FormFieldError[],
-    ValidReleaseFormRelatedReleaseRow[]
-  >;
-  dbSources: FormField<ReadonlySet<DbSource>>;
+export type ReleaseFormDraft = {
+  name: ReleaseFormNameInput;
+  releaseVersion: string;
+  discogsUrl: string;
+  releaseDate: GeneralizedDateFormInputValue;
+  countries: ReleaseFormCountries;
+  formats: ReleaseFormFormatInputs;
+  catalogueNumbers: ReleaseFormCatNumbersDraft;
+  matrixRunout: ReleaseFormMatrixRunoutDraft;
+  selectedTags: Set<TagId>;
+  partOfQueenCollection: boolean;
+  relationToQueen: string;
+  comment: string;
+  conditionProblems: string;
+  relatedReleases: ReleaseFormRelatedReleaseRow[];
+  dbSources: ReadonlySet<DbSource>;
 };
+
+export type ValidatedReleaseFormDraft = Omit<
+  ReleaseFormDraft,
+  "relatedReleases"
+> & {
+  relatedReleases: ValidReleaseFormRelatedReleaseRow[];
+};
+
+export type ReleaseFormInitialState = InitialFormStateValue<
+  ReleaseFormDraft,
+  ValidatedReleaseFormDraft
+>;
+
+export type ReleaseFormState = FormStateType<
+  ReleaseFormDraft,
+  ValidatedReleaseFormDraft
+>;
 
 type InitialReleaseFormStateValueArgs = {
   entry: ReleaseFormEntry;
@@ -89,39 +96,32 @@ export const initialReleaseFormStateValue = ({
   releaseBlueprint,
   dbSources,
   mode,
-}: InitialReleaseFormStateValueArgs): ReleaseFormState => ({
+}: InitialReleaseFormStateValueArgs): ReleaseFormInitialState => ({
   releaseVersion: {
     value: releaseBlueprint?.releaseVersion ?? "",
-    valid: true,
-    validationFn: validateRequiredTrimmedText("Release version is required."),
-    errors: initialReleaseFormFieldErrors.releaseVersion,
-    notifications: [],
+    validationFn: (state) =>
+      validateRequiredTrimmedText2(
+        state.releaseVersion.value,
+        "Release version is required.",
+      ),
   },
   name: {
     value: resolveNameInput(entry, releaseBlueprint),
-    valid: true,
-    validationFn: validatePassThrough,
-    errors: initialReleaseFormFieldErrors.name,
-    notifications: [],
+    validationFn: (state) => validatePassThrough2(state.name.value),
   },
   discogsUrl: {
     value:
       mode === "update" && releaseBlueprint?.discogsUrl
         ? releaseBlueprint.discogsUrl
         : "",
-    valid: true,
     validationFn: validateDiscogsUrl,
-    errors: initialReleaseFormFieldErrors.discogsUrl,
-    notifications: [],
   },
   releaseDate: {
     value: releaseDateToFormValue(
       releaseBlueprint?.releaseDate ?? entry.originalReleaseDate,
     ),
-    valid: true,
-    validationFn: validateReleaseDate(entry.originalReleaseDate),
-    errors: initialReleaseFormFieldErrors.releaseDate,
-    notifications: [],
+    validationFn: (state) =>
+      validateReleaseDate2(state.releaseDate.value, entry.originalReleaseDate),
   },
   countries: {
     value: countriesToFormValue(
@@ -129,71 +129,47 @@ export const initialReleaseFormStateValue = ({
       allCountries,
       mode,
     ),
-    valid: true,
     validationFn: validateReleaseCountries,
-    errors: initialReleaseFormFieldErrors.countries,
-    notifications: [],
   },
   formats: {
     value: formatsToFormValue(releaseBlueprint?.formats, allFormats, mode),
-    valid: true,
     validationFn: validateReleaseFormats(allFormats),
-    errors: initialReleaseFormFieldErrors.formats,
-    notifications: [],
   },
   catalogueNumbers: {
     value: catNumbersToFormValue(releaseBlueprint?.catalogueNumbers, mode),
-    valid: true,
     validationFn: validateReleaseCatNumbers,
-    errors: initialReleaseFormFieldErrors.catalogueNumbers,
-    notifications: [],
   },
   matrixRunout: {
     value: matrixRunoutToFormValue(releaseBlueprint?.matrixRunout),
-    valid: true,
     validationFn: validateReleaseMatrixRunout,
-    errors: initialReleaseFormFieldErrors.matrixRunout,
-    notifications: [],
   },
   selectedTags: {
     value: new Set<string>(
       releaseBlueprint?.tags.map((tag) => tag.tagId) ?? [],
     ),
-    valid: true,
-    validationFn: validatePassThrough,
-    errors: initialReleaseFormFieldErrors.selectedTags,
-    notifications: [],
+    validationFn: (state) => validatePassThrough2(state.selectedTags.value),
   },
   partOfQueenCollection: {
     value:
       (entry.partOfQueenCollection ||
         releaseBlueprint?.partOfQueenCollection) ??
       false,
-    valid: true,
-    validationFn: validatePassThrough,
-    errors: initialReleaseFormFieldErrors.partOfQueenCollection,
-    notifications: [],
+    validationFn: (state) =>
+      validatePassThrough2(state.partOfQueenCollection.value),
   },
   relationToQueen: {
     value: releaseBlueprint?.relationToQueen ?? "",
-    valid: true,
-    validationFn: validateOptionalTrimmedText,
-    errors: initialReleaseFormFieldErrors.relationToQueen,
-    notifications: [],
+    validationFn: (state) =>
+      validateOptionalTrimmedText2(state.relationToQueen.value),
   },
   comment: {
     value: releaseBlueprint?.comment ?? "",
-    valid: true,
-    validationFn: validateOptionalTrimmedText,
-    errors: initialReleaseFormFieldErrors.comment,
-    notifications: [],
+    validationFn: (state) => validateOptionalTrimmedText2(state.comment.value),
   },
   conditionProblems: {
     value: releaseBlueprint?.conditionProblems ?? "",
-    valid: true,
-    validationFn: validateOptionalTrimmedText,
-    errors: initialReleaseFormFieldErrors.conditionProblems,
-    notifications: [],
+    validationFn: (state) =>
+      validateOptionalTrimmedText2(state.conditionProblems.value),
   },
   relatedReleases: {
     value:
@@ -203,16 +179,10 @@ export const initialReleaseFormStateValue = ({
             releaseBlueprint?.parentReleases,
             releaseBlueprint?.childReleases,
           ),
-    valid: true,
     validationFn: validateRelatedReleases,
-    errors: initialReleaseFormFieldErrors.relatedReleases,
-    notifications: [],
   },
   dbSources: {
     value: dbSources ?? new Set(ALL_DB_SOURCES),
-    valid: true,
-    validationFn: validatePassThrough,
-    errors: initialReleaseFormFieldErrors.dbSources,
-    notifications: [],
+    validationFn: (state) => validatePassThrough2(state.dbSources.value),
   },
 });
