@@ -39,10 +39,10 @@ import type { ReleasesFormatListItem } from "@/types/formats";
 import type { ReleaseByIdResult } from "@/types/releases";
 import type { TagId } from "@/types/tags";
 import {
-  validateOptionalTrimmedText2,
-  validatePassThrough2,
-  validateReleaseDate2,
-  validateRequiredTrimmedText2,
+  validateOptionalTrimmedText,
+  validatePassThrough,
+  validateReleaseDate,
+  validateRequiredTrimmedText,
 } from "@/validation";
 
 export type ReleaseFormDraft = {
@@ -100,14 +100,14 @@ export const initialReleaseFormStateValue = ({
   releaseVersion: {
     value: releaseBlueprint?.releaseVersion ?? "",
     validationFn: (state) =>
-      validateRequiredTrimmedText2(
+      validateRequiredTrimmedText(
         state.releaseVersion.value,
         "Release version is required.",
       ),
   },
   name: {
     value: resolveNameInput(entry, releaseBlueprint),
-    validationFn: (state) => validatePassThrough2(state.name.value),
+    validationFn: (state) => validatePassThrough(state.name.value),
   },
   discogsUrl: {
     value:
@@ -118,10 +118,12 @@ export const initialReleaseFormStateValue = ({
   },
   releaseDate: {
     value: releaseDateToFormValue(
-      releaseBlueprint?.releaseDate ?? entry.originalReleaseDate,
+      releaseBlueprint
+        ? releaseBlueprint.releaseDate
+        : entry.originalReleaseDate,
     ),
     validationFn: (state) =>
-      validateReleaseDate2(state.releaseDate.value, entry.originalReleaseDate),
+      validateReleaseDate(state.releaseDate.value, entry.originalReleaseDate),
   },
   countries: {
     value: countriesToFormValue(
@@ -147,7 +149,7 @@ export const initialReleaseFormStateValue = ({
     value: new Set<string>(
       releaseBlueprint?.tags.map((tag) => tag.tagId) ?? [],
     ),
-    validationFn: (state) => validatePassThrough2(state.selectedTags.value),
+    validationFn: (state) => validatePassThrough(state.selectedTags.value),
   },
   partOfQueenCollection: {
     value:
@@ -155,21 +157,21 @@ export const initialReleaseFormStateValue = ({
         releaseBlueprint?.partOfQueenCollection) ??
       false,
     validationFn: (state) =>
-      validatePassThrough2(state.partOfQueenCollection.value),
+      validatePassThrough(state.partOfQueenCollection.value),
   },
   relationToQueen: {
     value: releaseBlueprint?.relationToQueen ?? "",
     validationFn: (state) =>
-      validateOptionalTrimmedText2(state.relationToQueen.value),
+      validateOptionalTrimmedText(state.relationToQueen.value),
   },
   comment: {
     value: releaseBlueprint?.comment ?? "",
-    validationFn: (state) => validateOptionalTrimmedText2(state.comment.value),
+    validationFn: (state) => validateOptionalTrimmedText(state.comment.value),
   },
   conditionProblems: {
     value: releaseBlueprint?.conditionProblems ?? "",
     validationFn: (state) =>
-      validateOptionalTrimmedText2(state.conditionProblems.value),
+      validateOptionalTrimmedText(state.conditionProblems.value),
   },
   relatedReleases: {
     value:
@@ -183,6 +185,6 @@ export const initialReleaseFormStateValue = ({
   },
   dbSources: {
     value: dbSources ?? new Set(ALL_DB_SOURCES),
-    validationFn: (state) => validatePassThrough2(state.dbSources.value),
+    validationFn: (state) => validatePassThrough(state.dbSources.value),
   },
 });

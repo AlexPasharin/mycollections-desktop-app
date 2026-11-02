@@ -42,7 +42,7 @@ const ArtistWindowMainContent: FC<ArtistWindowMainContentProps> = ({
   primaryDbSource,
   onArtistUpdated,
 }) => {
-  const [activeTab, setActiveTab] = useState<ArtistEntriesTab>("updateArtist");
+  const [activeTab, setActiveTab] = useState<ArtistEntriesTab>("searchEntries");
   const [searchEntriesQuery, setSearchEntriesQuery] = useState("");
   const [createEntryFeedback, setCreateEntryFeedback] = useState<FormFeedback>(
     formFeedbackInitialValue,

@@ -1,6 +1,6 @@
 import type { FC } from "react";
 
-import type { ReleaseFormState } from "../releaseFormUtils/formValues";
+import type { ValidatedReleaseFormDraft } from "../releaseFormUtils/formValues";
 import {
   toReleaseCatNumbersJson,
   toReleaseCountriesJson,
@@ -16,7 +16,7 @@ import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
 
 type ReleaseFormPreviewProps = {
-  formState: ReleaseFormState;
+  formState: ValidatedReleaseFormDraft;
   allFormats: ReleasesFormatListItem[];
   tagsAvailableForReleases: TagListItem[];
 };
@@ -32,36 +32,30 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
     allFormats.map((format) => [format.formatId, format.shortName] as const),
   );
 
-  const releaseDate = generalizedDateToString(formState.releaseDate.value);
-  const discogsUrl = nullIfEmpty(formState.discogsUrl.value);
+  const releaseDate = generalizedDateToString(formState.releaseDate);
+  const discogsUrl = nullIfEmpty(formState.discogsUrl);
   const selectedTagNames = tagsAvailableForReleases
-    .filter((t) => formState.selectedTags.value.has(t.tagId))
+    .filter((t) => formState.selectedTags.has(t.tagId))
     .map((t) => t.tag);
-  const comment = nullIfEmpty(formState.comment.value);
-  const conditionProblems = nullIfEmpty(formState.conditionProblems.value);
-  const relationToQueen = nullIfEmpty(formState.relationToQueen.value);
+  const comment = nullIfEmpty(formState.comment);
+  const conditionProblems = nullIfEmpty(formState.conditionProblems);
+  const relationToQueen = nullIfEmpty(formState.relationToQueen);
 
-  const countriesJson = toReleaseCountriesJson(formState.countries.value);
-  const catNumbersJson = toReleaseCatNumbersJson(
-    formState.catalogueNumbers.value,
-  );
-  const matrixRunoutJson = toReleaseMatrixRunoutJson(
-    formState.matrixRunout.value,
-  );
-  const formats = formState.formats.value;
+  const countriesJson = toReleaseCountriesJson(formState.countries);
+  const catNumbersJson = toReleaseCatNumbersJson(formState.catalogueNumbers);
+  const matrixRunoutJson = toReleaseMatrixRunoutJson(formState.matrixRunout);
+  const formats = formState.formats;
 
-  const relatedReleases = formState.relatedReleases.value.sort(
+  const relatedReleases = formState.relatedReleases.sort(
     (a, b) => parseInt(a.orderNumber, 10) - parseInt(b.orderNumber, 10),
   );
 
   return (
     <div className="flex flex-col gap-[0.45rem] text-[0.92em]">
       <FormPreviewField label="Version">
-        {formState.releaseVersion.value}
+        {formState.releaseVersion}
       </FormPreviewField>
-      <FormPreviewField label="Name">
-        {formState.name.value.name}
-      </FormPreviewField>
+      <FormPreviewField label="Name">{formState.name.name}</FormPreviewField>
       <FormPreviewField label="Release date">{releaseDate}</FormPreviewField>
       <FormPreviewField label="Discogs URL">
         {discogsUrl === null ? null : (
@@ -115,7 +109,7 @@ const ReleaseFormPreview: FC<ReleaseFormPreviewProps> = ({
         )}
       </FormPreviewField>
       <FormPreviewField label="Part of Queen collection">
-        {formState.partOfQueenCollection.value ? "Yes" : "No"}
+        {formState.partOfQueenCollection ? "Yes" : "No"}
       </FormPreviewField>
       <JsonField label="Relation to Queen" value={relationToQueen} />
       <JsonField label="Comment" value={comment} />

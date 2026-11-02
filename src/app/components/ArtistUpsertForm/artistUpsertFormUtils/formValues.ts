@@ -11,10 +11,7 @@ import type { RelatedItemRelation } from "@/types/common";
 import { ArtistType } from "@/types/db/database";
 import type { FormFieldError, RelatedItemRow } from "@/types/form";
 import { withNewId } from "@/utils/id";
-import {
-  validatePassThrough2,
-  validateRequiredTrimmedText2,
-} from "@/validation";
+import { validatePassThrough, validateRequiredTrimmedText } from "@/validation";
 
 export type ArtistUpsertAltNameRow = {
   id: string;
@@ -68,7 +65,7 @@ export const initialArtistUpsertFormDraft = (
   name: {
     value: artist?.name ?? "",
     validationFn: (state) =>
-      validateRequiredTrimmedText2(state.name.value, "Artist name is required"),
+      validateRequiredTrimmedText(state.name.value, "Artist name is required"),
   },
   nameForSorting: {
     value: artist?.nameForSorting ?? "",
@@ -76,12 +73,11 @@ export const initialArtistUpsertFormDraft = (
   },
   type: {
     value: artist?.type ?? ArtistType.ARTIST,
-    validationFn: (state) => validatePassThrough2(state.type.value),
+    validationFn: (state) => validatePassThrough(state.type.value),
   },
   partOfQueenFamily: {
     value: artist?.partOfQueenFamily ?? false,
-    validationFn: (state) =>
-      validatePassThrough2(state.partOfQueenFamily.value),
+    validationFn: (state) => validatePassThrough(state.partOfQueenFamily.value),
   },
   altNames: {
     value:

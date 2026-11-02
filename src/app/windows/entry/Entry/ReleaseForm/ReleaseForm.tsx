@@ -453,7 +453,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
     // re-order targets to ensure the primary source comes first
     const orderedTargets = [
       primaryDbSource,
-      ...Array.from(validatedForm.dbSources).filter(
+      ...Array.from(formState.dbSources.value).filter(
         (source) => source !== primaryDbSource,
       ),
     ];
@@ -929,10 +929,11 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
         size="wide"
         title={isUpdateMode ? "Confirm release update" : "Confirm new release"}
         description={
-          isConfirmOpen && (
+          isConfirmOpen &&
+          validatedForm && (
             <>
               <ReleaseFormPreview
-                formState={formState}
+                formState={validatedForm}
                 allFormats={allFormats}
                 tagsAvailableForReleases={tagsAvailableForReleases}
               />
