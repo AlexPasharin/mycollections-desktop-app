@@ -1,75 +1,54 @@
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { FormValidationFnResult } from "@/hooks/useFormState";
 import type { GeneralizedDate } from "@/types/date";
-import type { FormFieldValidationResult } from "@/types/form";
 import { createGeneralizedDateSchema } from "@/validation";
 
-export const validateReleaseDate2 = (
+export const validateReleaseDate = (
   value: GeneralizedDateFormInputValue,
   releaseDateStart?: GeneralizedDate | null,
 ): FormValidationFnResult<GeneralizedDateFormInputValue> => {
-  const result = validateReleaseDate(releaseDateStart)(value);
+  const validationSchema = releaseDateSchema(releaseDateStart);
+  const validationResult = validationSchema.safeParse(value);
 
-  if (!result.valid) {
+  if (!validationResult.success) {
+    type ReleaseDateErrorMessage = string;
+
+    const errorMessageMap = validationResult.error.issues.reduce<
+      Record<ReleaseDateErrorMessage, PropertyKey[]>
+    >((acc, { message, path }) => {
+      const mapEntry = acc[message] ?? [];
+      const source = path[0];
+
+      if (source) {
+        mapEntry.push(source);
+      }
+
+      acc[message] = mapEntry;
+
+      return acc;
+    }, {});
+
+    const errorMessages = Object.entries(errorMessageMap).map(
+      ([message, sources]) => ({
+        message,
+        sources,
+      }),
+    );
+
     return {
       value,
-      errors: result.errorMessages,
+      errors: errorMessages,
       notifications: [],
     };
   }
 
   return {
-    validatedValue: result.value,
+    validatedValue: {
+      year: validationResult.data?.year?.toString() ?? "",
+      month: validationResult.data?.month?.toString() ?? "",
+      day: validationResult.data?.day?.toString() ?? "",
+    },
     notifications: [],
-  };
-};
-
-export const validateReleaseDate = (
-  releaseDateStart?: GeneralizedDate | null,
-) => {
-  const validationSchema = releaseDateSchema(releaseDateStart);
-
-  return (
-    value: GeneralizedDateFormInputValue,
-  ): FormFieldValidationResult<GeneralizedDateFormInputValue> => {
-    const validationResult = validationSchema.safeParse(value);
-
-    if (!validationResult.success) {
-      type ReleaseDateErrorMessage = string;
-
-      const errorMessageMap = validationResult.error.issues.reduce<
-        Record<ReleaseDateErrorMessage, PropertyKey[]>
-      >((acc, { message, path }) => {
-        const mapEntry = acc[message] ?? [];
-        const source = path[0];
-
-        if (source) {
-          mapEntry.push(source);
-        }
-
-        acc[message] = mapEntry;
-
-        return acc;
-      }, {});
-
-      const errorMessages = Object.entries(errorMessageMap).map(
-        ([message, sources]) => ({
-          message,
-          sources,
-        }),
-      );
-
-      return {
-        valid: false,
-        value,
-        errorMessages,
-      };
-    }
-
-    return {
-      valid: true,
-      value,
-    };
   };
 };
 

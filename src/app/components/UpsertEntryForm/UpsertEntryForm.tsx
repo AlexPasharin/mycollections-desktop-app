@@ -283,11 +283,11 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
 
     const validationResults = validateForm();
     const formIsValid = validationResults !== null;
+    setValidatedForm(validationResults);
 
     setShowSubmissionValidationError(!formIsValid);
 
     if (formIsValid) {
-      setValidatedForm(validationResults);
       setSubmitError(undefined);
       setCheckedDbSources(new Set(ALL_DB_SOURCES));
       setIsConfirmOpen(true);
@@ -659,10 +659,11 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
         size="wide"
         title={isCreateMode ? "Confirm new entry" : "Confirm entry changes"}
         description={
-          isConfirmOpen && (
+          isConfirmOpen &&
+          validatedForm && (
             <>
               <UpsertEntryFormPreview
-                form={formState}
+                form={validatedForm}
                 tags={tags}
                 allEntryTypes={allEntryTypes}
               />

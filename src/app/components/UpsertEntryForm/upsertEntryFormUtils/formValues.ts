@@ -19,10 +19,10 @@ import type { RelatedOrderedItemRow } from "@/types/form";
 import type { TagId } from "@/types/tags";
 import { withNewId } from "@/utils/id";
 import {
-  validateOptionalTrimmedText2,
-  validatePassThrough2,
-  validateReleaseDate2,
-  validateRequiredTrimmedText2,
+  validateOptionalTrimmedText,
+  validatePassThrough,
+  validateReleaseDate,
+  validateRequiredTrimmedText,
 } from "@/validation";
 
 export type UpsertEntryFormEntry = Omit<
@@ -151,7 +151,7 @@ export const initialUpsertEntryFormDraft = ({
     mainName: {
       value: mainName ?? "",
       validationFn: (state) =>
-        validateRequiredTrimmedText2(
+        validateRequiredTrimmedText(
           state.mainName.value,
           "Main name is required.",
         ),
@@ -163,7 +163,7 @@ export const initialUpsertEntryFormDraft = ({
         day: String(originalReleaseDate?.day ?? ""),
       },
       validationFn: (state) =>
-        validateReleaseDate2(state.originalReleaseDate.value),
+        validateReleaseDate(state.originalReleaseDate.value),
     },
     discogsUrl: {
       value: discogsUrl ?? "",
@@ -171,16 +171,15 @@ export const initialUpsertEntryFormDraft = ({
     },
     comment: {
       value: comment ?? "",
-      validationFn: (state) =>
-        validateOptionalTrimmedText2(state.comment.value),
+      validationFn: (state) => validateOptionalTrimmedText(state.comment.value),
     },
     selectedTags: {
       value: new Set(tagIds),
-      validationFn: (state) => validatePassThrough2(state.selectedTags.value),
+      validationFn: (state) => validatePassThrough(state.selectedTags.value),
     },
     selectedTypes: {
       value: new Set(typeIds),
-      validationFn: (state) => validatePassThrough2(state.selectedTypes.value),
+      validationFn: (state) => validatePassThrough(state.selectedTypes.value),
     },
     artists: {
       value: artistRows,
@@ -197,12 +196,12 @@ export const initialUpsertEntryFormDraft = ({
     partOfQueenCollection: {
       value: partOfQueenCollection ?? false,
       validationFn: (state) =>
-        validatePassThrough2(state.partOfQueenCollection.value),
+        validatePassThrough(state.partOfQueenCollection.value),
     },
     relationToQueen: {
       value: relationToQueen ?? "",
       validationFn: (state) =>
-        validateOptionalTrimmedText2(state.relationToQueen.value),
+        validateOptionalTrimmedText(state.relationToQueen.value),
     },
   };
 };

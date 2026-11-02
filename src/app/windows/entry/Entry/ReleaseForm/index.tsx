@@ -1,26 +1,19 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  type Dispatch,
-  type FC,
-  type SetStateAction,
-} from "react";
+import { useMemo, type FC } from "react";
 
 import ReleaseForm, { type ReleaseFormProps } from "./ReleaseForm";
 import {
   initialReleaseFormStateValue,
-  type ReleaseFormState,
+  type ReleaseFormInitialState,
 } from "./releaseFormUtils/formValues";
 
 import type { TagListItem } from "@/types/tags";
 
 type ReleaseFormWrapperProps = Omit<
   ReleaseFormProps,
-  "formState" | "setFormState" | "tagsAvailableForReleases" | "onClearFormState"
+  "initialFormState" | "onPersistFormState" | "tagsAvailableForReleases"
 > & {
-  formState: ReleaseFormState | null;
-  onFormStateChange: Dispatch<SetStateAction<ReleaseFormState | null>>;
+  persistedFormState: ReleaseFormInitialState | null;
+  setPersistedFormState: (state: ReleaseFormInitialState) => void;
   referenceDataLoading: boolean;
   referenceDataLoadFailed: boolean;
   tags: TagListItem[];
@@ -30,22 +23,20 @@ type ReleaseFormWrapperProps = Omit<
 const sectionClassName = "mt-4";
 const formatsLoadStateClassName = "m-0 text-[1.2rem] font-bold";
 
-const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
-  const {
-    referenceDataLoading,
-    referenceDataLoadFailed,
-    formState,
-    onFormStateChange,
-    tabData,
-    entry,
-    tags,
-    allFormats,
-    allCountries,
-    primaryDbSource,
-    labels,
-    setAddReleaseMode,
-  } = props;
-
+const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = ({
+  referenceDataLoading,
+  referenceDataLoadFailed,
+  persistedFormState,
+  setPersistedFormState,
+  tabData,
+  entry,
+  tags,
+  allFormats,
+  allCountries,
+  primaryDbSource,
+  labels,
+  setAddReleaseMode,
+}) => {
   const tagsAvailableForReleases = useMemo(
     () =>
       tags.filter(
@@ -54,38 +45,7 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
     [tags, entry.tags],
   );
 
-  const dataReady = !referenceDataLoading && !referenceDataLoadFailed;
-
-  const setInitialFormState = useCallback(() => {
-    onFormStateChange(
-      initialReleaseFormStateValue({
-        entry,
-        allFormats,
-        allCountries,
-        releaseBlueprint: tabData.releaseBlueprint,
-        dbSources: tabData.dbSources,
-        mode: tabData.mode,
-      }),
-    );
-  }, [
-    entry,
-    allFormats,
-    allCountries,
-    tabData.releaseBlueprint,
-    tabData.dbSources,
-    tabData.mode,
-    onFormStateChange,
-  ]);
-
-  useEffect(() => {
-    if (!dataReady || formState !== null) {
-      return;
-    }
-
-    setInitialFormState();
-  }, [dataReady, formState, setInitialFormState]);
-
-  if (referenceDataLoading || formState === null) {
+  if (referenceDataLoading) {
     return (
       <div className={sectionClassName}>
         <p className={formatsLoadStateClassName}>Loading&hellip;</p>
@@ -103,15 +63,16 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
     );
   }
 
-  const setFormState = (update: SetStateAction<ReleaseFormState>) => {
-    onFormStateChange((prev) => {
-      if (prev === null) {
-        return prev;
-      }
-
-      return typeof update === "function" ? update(prev) : update;
+  const initialFormState =
+    (tabData.releaseBlueprint ? null : persistedFormState) ??
+    initialReleaseFormStateValue({
+      entry,
+      allFormats,
+      allCountries,
+      releaseBlueprint: tabData.releaseBlueprint,
+      dbSources: tabData.dbSources,
+      mode: tabData.mode,
     });
-  };
 
   return (
     <ReleaseForm
@@ -120,9 +81,8 @@ const ReleaseFormWrapper: FC<ReleaseFormWrapperProps> = (props) => {
       labels={labels}
       allFormats={allFormats}
       allCountries={allCountries}
-      onClearFormState={setInitialFormState}
-      formState={formState}
-      setFormState={setFormState}
+      initialFormState={initialFormState}
+      onPersistFormState={setPersistedFormState}
       tagsAvailableForReleases={tagsAvailableForReleases}
       tabData={tabData}
       setAddReleaseMode={setAddReleaseMode}

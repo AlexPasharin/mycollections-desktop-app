@@ -15,7 +15,6 @@ import {
 } from "./classNames";
 
 import type {
-  ReleaseFormCatalogueNumberRowErrors,
   ReleaseFormCatalogueNumbersInputFieldKey,
   CatalogueNumbersInputField,
 } from "../../releaseFormUtils/errorMessages";
@@ -25,15 +24,15 @@ import type {
 } from "../../releaseFormUtils/formValues";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
+import type { FormFeedbackMessages } from "@/hooks/useFormState";
 import type { LabelListItem } from "@/types/labels";
-import { errorSetToMessages } from "@/validation";
 
 export type ReleaseCatalogueNumbersRowProps = {
   row: CatalogueNumberRowState;
   rowIndex: number;
   showDivider: boolean;
   labels: LabelListItem[];
-  rowErrors?: ReleaseFormCatalogueNumberRowErrors | undefined;
+  rowErrors: FormFeedbackMessages;
   onSetRowShape: (shape: CatalogueNumberRowShape) => void;
   onAddNewLabelInput: () => void;
   onRemoveLabelInput: (inputValueId: string) => void;
@@ -98,7 +97,9 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
     row.shape === "europeUk" && row.ukCatalogueNumberInputValues.length > 1;
 
   const rowCommonErrorId = `add-release-cat-row-error-${row.id}`;
-  const rowCommonMessages = errorSetToMessages(rowErrors?.rowErrorMessages);
+  const rowCommonMessages = rowErrors.filter(
+    (error) => error.sources?.length === 1,
+  );
 
   const shapeToggleName = `add-release-cat-row-shape-${row.id}`;
 
@@ -115,19 +116,18 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
           role="group"
           aria-label={`Catalogue numbers ${rowIndex + 1}`}
           aria-describedby={
-            rowCommonMessages?.length ? rowCommonErrorId : undefined
+            rowCommonMessages.length > 0 ? rowCommonErrorId : undefined
           }
         >
           <div className="flex flex-col items-stretch gap-3">
             <div className={columnClassName}>
               <div className={columnHeadingClassName}>Labels</div>
               {row.labelInputValues.map((inputValue, labelIndex) => {
-                const labelErrorMessages = errorSetToMessages(
-                  rowErrors?.labelInputErrorMessages[inputValue.id],
+                const labelErrorMessages = rowErrors.filter(
+                  (error) => error.sources?.[1] === inputValue.id,
                 );
                 const labelErrorId = `add-release-cat-label-error-${row.id}-${inputValue.id}`;
-                const hasLabelErrors =
-                  labelErrorMessages != null && labelErrorMessages.length > 0;
+                const hasLabelErrors = labelErrorMessages.length > 0;
 
                 return (
                   <div key={inputValue.id} className={inputValueBlockClassName}>
@@ -231,7 +231,7 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
                 errorIdPrefix="add-release-cat-number-error"
                 rowId={row.id}
                 inputValues={row.catalogueNumberInputValues}
-                errorMessagesByInputId={rowErrors?.catNumberInputErrorMessages}
+                rowErrors={rowErrors}
                 canRemoveAnyInput={canRemoveFlatCatNumberInput}
                 addButtonLabel="+ Add another catalogue number"
                 removeInputAriaLabel="Remove catalogue number"
@@ -258,9 +258,7 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
                   errorIdPrefix="add-release-cat-uk-error"
                   rowId={row.id}
                   inputValues={row.ukCatalogueNumberInputValues}
-                  errorMessagesByInputId={
-                    rowErrors?.ukCatNumberInputErrorMessages
-                  }
+                  rowErrors={rowErrors}
                   canRemoveAnyInput={canRemoveUkCatNumberInput}
                   addButtonLabel='+ Add another "in UK" value'
                   removeInputAriaLabel='Remove "in UK" catalogue number'
@@ -283,9 +281,7 @@ const ReleaseCatalogueNumbersRow: FC<ReleaseCatalogueNumbersRowProps> = ({
                   errorIdPrefix="add-release-cat-europe-error"
                   rowId={row.id}
                   inputValues={row.europeCatalogueNumberInputValues}
-                  errorMessagesByInputId={
-                    rowErrors?.europeCatNumberInputErrorMessages
-                  }
+                  rowErrors={rowErrors}
                   canRemoveAnyInput={canRemoveEuropeCatNumberInput}
                   addButtonLabel='+ Add another "in Europe" value'
                   removeInputAriaLabel='Remove "in Europe" catalogue number'

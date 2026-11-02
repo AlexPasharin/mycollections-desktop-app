@@ -2,8 +2,8 @@ import { type FC, type FocusEvent } from "react";
 
 import type { ReleaseFormMatrixRunoutDraft } from "../releaseFormUtils/formValues";
 
-import FeedbackSection from "@/app/components/FeedbackSection";
-import type { FeedbackErrors, FeedbackNotifications } from "@/types/form";
+import FeedbackSection2 from "@/app/components/FeedbackSection2";
+import type { FormFeedbackMessages } from "@/hooks/useFormState";
 
 const MATRIX_RUNOUT_FIELD_ERROR_ID = "add-release-matrix-runout-error";
 const MATRIX_RUNOUT_FIELD_NOTIFICATIONS_ID =
@@ -11,8 +11,8 @@ const MATRIX_RUNOUT_FIELD_NOTIFICATIONS_ID =
 
 type ReleaseMatrixRunoutFieldProps = {
   matrixRunout: ReleaseFormMatrixRunoutDraft;
-  errorMessages: FeedbackErrors;
-  notifications: FeedbackNotifications;
+  errorMessages: FormFeedbackMessages;
+  notifications: FormFeedbackMessages;
   onValueChange: (value: string) => void;
   onTreatAsTextChange: (treatAsText: boolean) => void;
   onFocus: () => void;
@@ -94,7 +94,7 @@ const ReleaseMatrixRunoutField: FC<ReleaseMatrixRunoutFieldProps> = ({
           treat as plain text, not json object
         </label>
       </div>
-      <FeedbackSection
+      <FeedbackSection2
         notificationsId={MATRIX_RUNOUT_FIELD_NOTIFICATIONS_ID}
         errorsId={MATRIX_RUNOUT_FIELD_ERROR_ID}
         notifications={notifications}

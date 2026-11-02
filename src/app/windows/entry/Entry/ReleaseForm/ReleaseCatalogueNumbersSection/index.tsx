@@ -4,7 +4,6 @@ import ReleaseCatalogueNumbersRow from "./ReleaseCatalogueNumbersRow";
 
 import {
   type ReleaseFormCatalogueNumbersInputFieldKey,
-  type ReleaseFormCatNumbersFieldErrors,
   type CatalogueNumbersInputField,
 } from "../releaseFormUtils/errorMessages";
 import {
@@ -24,9 +23,9 @@ import {
 import { toReleaseCatNumbersJson } from "../releaseFormUtils/toUpsertMusicalReleaseInput";
 import { parseReleaseCatNumbersJsonInput } from "../releaseFormUtils/validation/catalogueNumbersJsonInput";
 
-import FeedbackSection from "@/app/components/FeedbackSection";
+import FeedbackSection2 from "@/app/components/FeedbackSection2";
 import Tabs from "@/app/components/Tabs";
-import type { FeedbackNotifications } from "@/types/form";
+import type { FormFeedbackMessages } from "@/hooks/useFormState";
 import type { LabelListItem } from "@/types/labels";
 import { formatJson } from "@/utils/common";
 
@@ -47,8 +46,8 @@ export type ReleaseCatalogueNumbersSectionProps = {
   labels: LabelListItem[];
   catalogueNumbers: ReleaseFormCatNumbersDraft;
   setCatalogueNumbers: SetReleaseCatalogueNumbers;
-  errors: ReleaseFormCatNumbersFieldErrors;
-  notifications: FeedbackNotifications;
+  errors: FormFeedbackMessages;
+  notifications: FormFeedbackMessages;
   addCatalogueNumbersRow: () => void;
   removeCatalogueNumbersRow: (rowId: string) => void;
   onFieldFocus: (key: ReleaseFormCatalogueNumbersInputFieldKey) => void;
@@ -260,7 +259,7 @@ const ReleaseCatalogueNumbersSection: FC<
     );
   };
 
-  const jsonInputErrors = errors.jsonInput;
+  const jsonInputErrors = errors.filter((error) => !error.sources?.length);
   const hasJsonInputErrors = jsonInputErrors.length > 0;
   const hasJsonInputNotifications = notifications.length > 0;
 
@@ -318,7 +317,9 @@ const ReleaseCatalogueNumbersSection: FC<
                         rowIndex={rowIndex}
                         showDivider={rowIndex > 0}
                         labels={labels}
-                        rowErrors={errors.rows[row.id]}
+                        rowErrors={errors.filter((error) =>
+                          error.sources?.includes(row.id),
+                        )}
                         onSetRowShape={(shape) => setRowShape(row.id, shape)}
                         onAddNewLabelInput={() => addNewLabelInput(row.id)}
                         onSetLabelName={(inputValueId, name) =>
@@ -419,7 +420,7 @@ const ReleaseCatalogueNumbersSection: FC<
                   }
                   autoComplete="off"
                 />
-                <FeedbackSection
+                <FeedbackSection2
                   notificationsId={CATALOGUE_NUMBERS_JSON_NOTIFICATIONS_ID}
                   errorsId={CATALOGUE_NUMBERS_JSON_ERROR_ID}
                   notifications={notifications}

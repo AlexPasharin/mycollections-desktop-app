@@ -128,8 +128,10 @@ const useFormState = <T extends Record<PropertyKey, unknown>, U extends T = T>({
       };
     });
 
-  const resetFormState = () => {
-    setFormState(getInitialValue(initialValue));
+  const resetFormState = (
+    nextInitialValue: InitialFormStateValue<T, U> = initialValue,
+  ) => {
+    setFormState(getInitialValue(nextInitialValue));
   };
 
   const toInitialFormStateValue = () => {

@@ -1,31 +1,39 @@
 import z from "zod";
 
-import type { FormFieldValidationResult } from "@/types/form";
+import type {
+  ReleaseFormDraft,
+  ValidatedReleaseFormDraft,
+} from "../formValues/formState";
 
-export const validateDiscogsUrl = (
-  value: string,
-): FormFieldValidationResult => {
-  const validationResult = discogsUrlSchema.safeParse(value);
+import type { FormValidationFn } from "@/hooks/useFormState";
+
+export const validateDiscogsUrl: FormValidationFn<
+  ReleaseFormDraft,
+  ValidatedReleaseFormDraft,
+  "discogsUrl"
+> = (state) => {
+  const value = state.discogsUrl.value;
+  const trimmedValue = value.trim();
+  const validationResult = discogsUrlSchema.safeParse(trimmedValue);
+
+  const notifications =
+    trimmedValue === value ? [] : [{ message: "Note: value has been trimmed" }];
 
   if (!validationResult.success) {
     return {
-      valid: false,
-      value,
-      errorMessages: validationResult.error.issues.map(({ message }) => ({
+      value: trimmedValue,
+      errors: validationResult.error.issues.map(({ message }) => ({
         message,
       })),
+      notifications,
     };
   }
 
   const validatedValue = validationResult.data;
 
   return {
-    valid: true,
-    value: validatedValue,
-    notifications:
-      validatedValue === value
-        ? undefined
-        : [{ notification: "Note: value has been trimmed" }],
+    validatedValue,
+    notifications,
   };
 };
 
@@ -34,7 +42,6 @@ const discogsUrlPattern = /^https:\/\/www\.discogs\.com\/release\/\d+-./;
 
 const discogsUrlSchema = z
   .string()
-  .trim()
   .refine(
     (value) => value === "" || discogsUrlPattern.test(value),
     "Discogs URL must be of the form https://www.discogs.com/release/<numerical id>-<arbitrary text>",

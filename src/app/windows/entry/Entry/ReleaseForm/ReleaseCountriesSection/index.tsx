@@ -1,11 +1,10 @@
 import type { FC } from "react";
 
-import type { ReleaseFormCountriesSubsectionErrors } from "../releaseFormUtils/errorMessages";
 import type { CountrySelectionInput } from "../releaseFormUtils/formValues";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
+import type { FormFeedbackMessages } from "@/hooks/useFormState";
 import type { CountryListItem } from "@/types/countries";
-import { errorSetToMessages } from "@/validation";
 
 type ReleaseCountriesSectionProps = {
   countries: CountryListItem[];
@@ -21,7 +20,7 @@ type ReleaseCountriesSectionProps = {
   removeRowAriaLabel: string;
   onRemove: () => void;
   removeAriaLabel: string;
-  errors?: ReleaseFormCountriesSubsectionErrors | undefined;
+  errors: FormFeedbackMessages;
 };
 
 const removeCrossClassName =
@@ -43,7 +42,10 @@ const ReleaseCountriesSection: FC<ReleaseCountriesSectionProps> = ({
   removeAriaLabel,
   errors,
 }) => {
-  const propertyErrorMessages = errors?.propertyErrorMessages;
+  const propertyErrorMessages = errors.filter(
+    (error) =>
+      !countrySelections.some((row) => error.sources?.includes(row.id)),
+  );
 
   return (
     <div className="mt-0 mb-[0.65rem]">
@@ -67,17 +69,15 @@ const ReleaseCountriesSection: FC<ReleaseCountriesSectionProps> = ({
       <div className="mb-[0.65rem] max-w-[24rem]">
         <ErrorMessages
           id={`${selectIdPrefix}-property-errors`}
-          messages={errorSetToMessages(propertyErrorMessages)}
+          messages={propertyErrorMessages}
         />
       </div>
 
       {countrySelections.map((row, rowIndex) => {
-        const rowErrorSet = errors?.countrySelectErrorMessages[row.id];
-        const rowErrorMessagesForDisplay =
-          rowErrorSet !== undefined && rowErrorSet.size > 0
-            ? rowErrorSet
-            : undefined;
-        const hasRowErrors = rowErrorMessagesForDisplay !== undefined;
+        const rowErrorMessages = errors.filter((error) =>
+          error.sources?.includes(row.id),
+        );
+        const hasRowErrors = rowErrorMessages.length > 0;
         const rowErrorId = `${selectIdPrefix}-row-error-${row.id}`;
 
         return (
@@ -126,10 +126,7 @@ const ReleaseCountriesSection: FC<ReleaseCountriesSectionProps> = ({
                 </div>
               </div>
               <div className="mt-1">
-                <ErrorMessages
-                  id={rowErrorId}
-                  messages={errorSetToMessages(rowErrorMessagesForDisplay)}
-                />
+                <ErrorMessages id={rowErrorId} messages={rowErrorMessages} />
               </div>
             </div>
           </div>

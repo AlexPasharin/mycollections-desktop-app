@@ -1,4 +1,5 @@
 import { validateRelatedReleases } from "./relatedReleases";
+import { formStateWith } from "./testUtils";
 
 import type { ReleaseFormRelatedReleaseRow } from "../formValues";
 
@@ -16,95 +17,82 @@ const relatedReleaseRow = (
   orderNumber,
 });
 
+const validateRows = (rows: ReleaseFormRelatedReleaseRow[]) =>
+  validateRelatedReleases(formStateWith({ relatedReleases: rows }));
+
 const parentReleaseId = "11111111-1111-4111-8111-111111111111";
 const childReleaseId = "22222222-2222-4222-8222-222222222222";
 const childReleaseId2 = "33333333-3333-4333-8333-333333333333";
 
 const trimmedReleaseIdNotification = (rowId: string, releaseId: string) => ({
-  notification: `Note: release ID "${releaseId}" has been trimmed`,
+  message: `Note: release ID "${releaseId}" has been trimmed`,
   sources: [rowId, "id"],
 });
 
 describe("validateRelatedReleases", () => {
   it("accepts rows with parent or child relation and a valid release id", () => {
-    const result = validateRelatedReleases([
+    const result = validateRows([
       relatedReleaseRow("row-1", parentReleaseId, "parent", "1"),
       relatedReleaseRow("row-2", childReleaseId, "child", "1"),
     ]);
 
-    expect(result).toEqual({
-      valid: true,
-      value: [
-        relatedReleaseRow("row-1", parentReleaseId, "parent", "1"),
-        relatedReleaseRow("row-2", childReleaseId, "child", "1"),
-      ],
-    });
+    expect(result.validatedValue).toEqual([
+      relatedReleaseRow("row-1", parentReleaseId, "parent", "1"),
+      relatedReleaseRow("row-2", childReleaseId, "child", "1"),
+    ]);
+    expect(result.notifications).toEqual([]);
   });
 
   it("trims release ids in the validated value", () => {
-    const result = validateRelatedReleases([
+    const result = validateRows([
       relatedReleaseRow("row-1", `  ${parentReleaseId}  `, "parent", "1"),
     ]);
 
-    expect(result).toEqual({
-      valid: true,
-      value: [relatedReleaseRow("row-1", parentReleaseId, "parent", "1")],
-      notifications: [trimmedReleaseIdNotification("row-1", parentReleaseId)],
-    });
+    expect(result.validatedValue).toEqual([
+      relatedReleaseRow("row-1", parentReleaseId, "parent", "1"),
+    ]);
+    expect(result.notifications).toEqual([
+      trimmedReleaseIdNotification("row-1", parentReleaseId),
+    ]);
   });
 
   it("emits one trim notification per trimmed release id", () => {
-    const result = validateRelatedReleases([
+    const result = validateRows([
       relatedReleaseRow("row-1", `  ${parentReleaseId}  `, "parent", "1"),
       relatedReleaseRow("row-2", childReleaseId, "child", "1"),
       relatedReleaseRow("row-3", ` ${childReleaseId2} `, "child", "2"),
     ]);
 
-    expect(result).toEqual({
-      valid: true,
-      value: [
-        relatedReleaseRow("row-1", parentReleaseId, "parent", "1"),
-        relatedReleaseRow("row-2", childReleaseId, "child", "1"),
-        relatedReleaseRow("row-3", childReleaseId2, "child", "2"),
-      ],
-      notifications: [
-        trimmedReleaseIdNotification("row-1", parentReleaseId),
-        trimmedReleaseIdNotification("row-3", childReleaseId2),
-      ],
-    });
+    expect(result.validatedValue).toEqual([
+      relatedReleaseRow("row-1", parentReleaseId, "parent", "1"),
+      relatedReleaseRow("row-2", childReleaseId, "child", "1"),
+      relatedReleaseRow("row-3", childReleaseId2, "child", "2"),
+    ]);
+    expect(result.notifications).toEqual([
+      trimmedReleaseIdNotification("row-1", parentReleaseId),
+      trimmedReleaseIdNotification("row-3", childReleaseId2),
+    ]);
   });
 
   it("requires a valid uuid release id on every row", () => {
-    const result = validateRelatedReleases([
+    const result = validateRows([
       relatedReleaseRow("row-1", "", "parent", "1"),
       relatedReleaseRow("row-2", "not-a-uuid", "child", "1"),
     ]);
 
-    expect(result.valid).toBe(false);
-
-    if (result.valid) {
-      return;
-    }
-
-    expect(result.errorMessages).toEqual([
+    expect(result.errors).toEqual([
       { message: "Release ID must be a valid UUID.", sources: ["row-1", "id"] },
       { message: "Release ID must be a valid UUID.", sources: ["row-2", "id"] },
     ]);
   });
 
   it("requires child order number to be an integer greater than 0", () => {
-    const result = validateRelatedReleases([
+    const result = validateRows([
       relatedReleaseRow("row-1", parentReleaseId, "parent", "0"),
       relatedReleaseRow("row-2", childReleaseId, "child", "2.2"),
     ]);
 
-    expect(result.valid).toBe(false);
-
-    if (result.valid) {
-      return;
-    }
-
-    expect(result.errorMessages).toEqual([
+    expect(result.errors).toEqual([
       {
         message: "Child order number must be an integer greater than 0.",
         sources: ["row-1", "orderNumber"],
@@ -117,19 +105,13 @@ describe("validateRelatedReleases", () => {
   });
 
   it("reports duplicate release ids across rows", () => {
-    const result = validateRelatedReleases([
+    const result = validateRows([
       relatedReleaseRow("row-1", parentReleaseId, "parent", "1"),
       relatedReleaseRow("row-2", childReleaseId, "child", "1"),
       relatedReleaseRow("row-3", childReleaseId, "child", "2"),
     ]);
 
-    expect(result.valid).toBe(false);
-
-    if (result.valid) {
-      return;
-    }
-
-    expect(result.errorMessages).toEqual([
+    expect(result.errors).toEqual([
       {
         message: `Duplicate uuid "${childReleaseId}"`,
         sources: ["row-2", "row-3", "id"],
@@ -138,19 +120,13 @@ describe("validateRelatedReleases", () => {
   });
 
   it("requires child order numbers to be sequential starting from 1", () => {
-    const result = validateRelatedReleases([
+    const result = validateRows([
       relatedReleaseRow("row-1", parentReleaseId, "parent", "1"),
       relatedReleaseRow("row-2", childReleaseId, "child", "2"),
       relatedReleaseRow("row-3", childReleaseId2, "child", "3"),
     ]);
 
-    expect(result.valid).toBe(false);
-
-    if (result.valid) {
-      return;
-    }
-
-    expect(result.errorMessages).toEqual([
+    expect(result.errors).toEqual([
       {
         message: "Child order numbers must be sequential starting from 1.",
         sources: ["row-1", "row-2", "row-3", "orderNumber"],

@@ -4,7 +4,7 @@ import EntryArtists from "./EntryArtists";
 import EntryDetailsPanel from "./EntryDetailsPanel";
 import EntryReleases from "./EntryReleases";
 import ReleaseForm from "./ReleaseForm";
-import { type ReleaseFormState } from "./ReleaseForm/releaseFormUtils/formValues";
+import { type ReleaseFormInitialState } from "./ReleaseForm/releaseFormUtils/formValues";
 import type { ReleaseFormTabSharedData } from "./types";
 
 import FeedbackSection from "@/app/components/FeedbackSection";
@@ -81,8 +81,12 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
   const [tagsLoading, setTagsLoading] = useState(true);
   const [tagsLoadFailed, setTagsLoadFailed] = useState(false);
 
-  const [releaseFormState, setReleaseFormState] =
-    useState<ReleaseFormState | null>(null);
+  const releaseFormStateRef = useRef<ReleaseFormInitialState | null>(null);
+
+  const setReleaseFormStateRef = (state: ReleaseFormInitialState | null) => {
+    releaseFormStateRef.current = state;
+  };
+
   const editEntryDraftRef = useRef<UpsertEntryFormPersistedState | null>(null);
 
   const [allFormats, setAllFormats] = useState<ReleasesFormatListItem[]>([]);
@@ -127,10 +131,6 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
 
   const handleTabChange = (tabId: EntryTabId) => {
     setActiveTab(entryTabInitialState(tabId));
-
-    if (tabId === "releaseUpsertForm") {
-      setReleaseFormState(null);
-    }
   };
 
   const handleReleaseCreated = (
@@ -172,9 +172,9 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
   };
 
   const handleEditRelease = (release: ReleaseByIdResult) => {
-    const dbSources = releaseFormState?.dbSources.value;
+    const dbSources = releaseFormStateRef.current?.dbSources.value;
 
-    setReleaseFormState(null);
+    setReleaseFormStateRef(null);
     setActiveTab({
       id: "releaseUpsertForm",
       data: {
@@ -186,10 +186,12 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
     });
   };
 
-  const handleUseReleaseAsBlueprint = (releaseBlueprint: ReleaseByIdResult) => {
-    const dbSources = releaseFormState?.dbSources.value;
+  const handleUseReleaseAsBlueprint = (
+    releaseBlueprint: ReleaseByIdResult,
+    dbSources = releaseFormStateRef.current?.dbSources.value,
+  ) => {
+    setReleaseFormStateRef(null);
 
-    setReleaseFormState(null);
     setActiveTab((tab) => {
       const mode = tab.data?.mode ?? "create";
 
@@ -217,7 +219,7 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
   };
 
   useEffect(() => {
-    setReleaseFormState(null);
+    setReleaseFormStateRef(null);
     setActiveTab((tab) => entryTabInitialState(tab.id));
 
     setTagsLoadFailed(false);
@@ -456,8 +458,8 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
                     tagsLoadFailed ||
                     countriesLoadFailed
                   }
-                  formState={releaseFormState}
-                  onFormStateChange={setReleaseFormState}
+                  persistedFormState={releaseFormStateRef.current}
+                  setPersistedFormState={setReleaseFormStateRef}
                   setAddReleaseMode={() => handleTabChange("releaseUpsertForm")}
                   tabData={
                     isReleaseFormUpdateMode

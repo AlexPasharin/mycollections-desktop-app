@@ -3,63 +3,53 @@ import z from "zod";
 import { validateReleaseCatNumbersJsonInput } from "./catalogueNumbersJsonInput";
 
 import type {
-  ReleaseFormCatalogueNumberRowErrors,
-  ReleaseFormCatNumbersErrors,
-  ReleaseFormCatNumbersFieldErrors,
-  CatNumberFieldsRowId,
-} from "../errorMessages";
-import type {
   CatalogueNumberRowState,
   ReleaseFormCatNumbersDraft,
 } from "../formValues";
+import type {
+  ReleaseFormDraft,
+  ValidatedReleaseFormDraft,
+} from "../formValues/formState";
 
-import type { FormFieldValidationResult } from "@/types/form";
+import type {
+  FormFeedbackMessages,
+  FormValidationFn,
+  FormValidationFnResult,
+} from "@/hooks/useFormState";
 import type { ValidationResultErrorMessages } from "@/utils/validation";
 import { uniquePropertyArraySchema } from "@/validation";
 
-export const validateReleaseCatNumbers = (
-  value: ReleaseFormCatNumbersDraft,
-): FormFieldValidationResult<
-  ReleaseFormCatNumbersDraft,
-  ReleaseFormCatNumbersFieldErrors
-> =>
-  value.activeTab === "json"
+export const validateReleaseCatNumbers: FormValidationFn<
+  ReleaseFormDraft,
+  ValidatedReleaseFormDraft,
+  "catalogueNumbers"
+> = (state) => {
+  const value = state.catalogueNumbers.value;
+
+  return value.activeTab === "json"
     ? validateReleaseCatNumbersJsonInput(value.value)
     : validateReleaseCatNumbersRows(value.rows);
+};
 
 const validateReleaseCatNumbersRows = (
-  value: CatalogueNumberRowState[],
-): FormFieldValidationResult<
-  ReleaseFormCatNumbersDraft,
-  ReleaseFormCatNumbersFieldErrors
-> => {
-  const validationResult = catNumbersRowsSchema.safeParse(value);
+  rows: CatalogueNumberRowState[],
+): FormValidationFnResult<ReleaseFormCatNumbersDraft> => {
+  const validationResult = catNumbersRowsSchema.safeParse(rows);
 
   if (!validationResult.success) {
-    const errorMessages = getCatNumbersFormFieldErrors(
-      validationResult.error.issues,
-      value,
-    );
-
     return {
-      valid: false,
-      value: {
-        rows: value,
-        activeTab: "rows",
-      },
-      errorMessages: {
-        rows: errorMessages,
-        jsonInput: [],
-      },
+      value: { rows, activeTab: "rows" },
+      errors: getCatNumbersFeedbackMessages(
+        validationResult.error.issues,
+        rows,
+      ),
+      notifications: [],
     };
   }
 
   return {
-    valid: true,
-    value: {
-      rows: validationResult.data,
-      activeTab: "rows",
-    },
+    validatedValue: { rows: validationResult.data, activeTab: "rows" },
+    notifications: [],
   };
 };
 
@@ -147,184 +137,48 @@ const catalogueNumberRowSchema = z.discriminatedUnion("shape", [
 
 const catNumbersRowsSchema = z.array(catalogueNumberRowSchema);
 
-const getCatNumbersFormFieldErrors = (
+const getCatNumbersFeedbackMessages = (
   errorMessages: ValidationResultErrorMessages,
-  currentCatalogueNumberInputValues: CatalogueNumberRowState[],
-): ReleaseFormCatNumbersErrors => {
-  if (errorMessages.length === 0) {
-    return {};
-  }
-
-  const errorMessagesMap: Record<
-    CatNumberFieldsRowId,
-    ReleaseFormCatalogueNumberRowErrors
-  > = {};
-
-  for (const { message, path } of errorMessages) {
+  rows: CatalogueNumberRowState[],
+): FormFeedbackMessages =>
+  errorMessages.flatMap(({ message, path }) => {
     const rowIndex = path[0];
+    const row = typeof rowIndex === "number" ? rows[rowIndex] : undefined;
 
-    // id of the catalogue number row that the error belongs to
-    const catNumbersRowById =
-      typeof rowIndex === "number"
-        ? currentCatalogueNumberInputValues[rowIndex]
+    if (!row) {
+      return [];
+    }
+
+    const [, fieldKey, inputIndex] = path;
+    const inputId =
+      typeof inputIndex === "number"
+        ? inputsOnRow(row, fieldKey)?.[inputIndex]?.id
         : undefined;
 
-    if (!catNumbersRowById) {
-      // should never happen
-      continue;
-    }
+    return [{ message, sources: inputId ? [row.id, inputId] : [row.id] }];
+  });
 
-    const fieldKey = path[1];
-
-    // entry for the catalogue number row that the error belongs to
-    let rowErrorMessages: ReleaseFormCatalogueNumberRowErrors =
-      errorMessagesMap[catNumbersRowById.id] ?? {
-        labelInputErrorMessages: {},
-        catNumberInputErrorMessages: {},
-        europeCatNumberInputErrorMessages: {},
-        ukCatNumberInputErrorMessages: {},
-        rowErrorMessages: new Set(),
-      };
-
-    if (fieldKey === "labelInputValues") {
-      const labelInputIndex = path[2];
-
-      // id of the label input that the error belongs to
-      const labelInputId =
-        typeof labelInputIndex === "number"
-          ? catNumbersRowById.labelInputValues[labelInputIndex]?.id
-          : undefined;
-
-      if (!labelInputId) {
-        rowErrorMessages.rowErrorMessages.add(message);
-
-        continue;
-      }
-
-      // error messages that belong to row's label inputs
-      const labelInputsErrorMessages = rowErrorMessages.labelInputErrorMessages;
-
-      // error messages that belong to this particular label input
-      const labelInputErrorMessages =
-        labelInputsErrorMessages[labelInputId] ?? new Set();
-
-      labelInputErrorMessages.add(message);
-
-      rowErrorMessages.labelInputErrorMessages = {
-        ...labelInputsErrorMessages,
-        [labelInputId]: labelInputErrorMessages,
-      };
-
-      rowErrorMessages.labelInputErrorMessages[labelInputId] =
-        labelInputErrorMessages;
-    } else {
-      const inputValueBucket = catNumberInputValueBucketFor(fieldKey);
-
-      if (!inputValueBucket) {
-        rowErrorMessages.rowErrorMessages.add(message);
-
-        continue;
-      }
-
-      const inputsOnRow = inputValueBucket.readInputs(catNumbersRowById);
-      const catalogueNumberInputIndex = path[2];
-
-      const catalogueNumberInputId =
-        typeof catalogueNumberInputIndex === "number"
-          ? inputsOnRow?.[catalogueNumberInputIndex]?.id
-          : undefined;
-
-      if (!catalogueNumberInputId) {
-        // should never happen
-        rowErrorMessages.rowErrorMessages.add(message);
-
-        continue;
-      }
-
-      rowErrorMessages = addInputErrorToBucket(
-        rowErrorMessages,
-        inputValueBucket.errorMessagesKey,
-        catalogueNumberInputId,
-        message,
-      );
-    }
-
-    errorMessagesMap[catNumbersRowById.id] = rowErrorMessages;
-  }
-
-  return errorMessagesMap;
-};
-
-type CatNumberInputErrorMessagesKey = keyof Pick<
-  ReleaseFormCatalogueNumberRowErrors,
-  | "catNumberInputErrorMessages"
-  | "europeCatNumberInputErrorMessages"
-  | "ukCatNumberInputErrorMessages"
->;
-
-type CatNumberInputValueBucket = {
-  errorMessagesKey: CatNumberInputErrorMessagesKey;
-  readInputs: (
-    row: CatalogueNumberRowState,
-  ) => { id: string; value: string }[] | undefined;
-};
-
-const addInputErrorToBucket = (
-  rowErrors: ReleaseFormCatalogueNumberRowErrors,
-  bucketKey: CatNumberInputErrorMessagesKey,
-  inputId: string,
-  message: string,
-): ReleaseFormCatalogueNumberRowErrors => {
-  rowErrors[bucketKey] = withInputMessage(
-    rowErrors[bucketKey],
-    inputId,
-    message,
-  );
-
-  return rowErrors;
-};
-
-const withInputMessage = (
-  bucket: Record<string, Set<string>>,
-  inputId: string,
-  message: string,
-): Record<string, Set<string>> => {
-  const set = bucket[inputId] ?? new Set<string>();
-  set.add(message);
-
-  return {
-    ...bucket,
-    [inputId]: set,
-  };
-};
-
-const catNumberInputValueBucketFor = (
+const inputsOnRow = (
+  row: CatalogueNumberRowState,
   fieldKey: PropertyKey | undefined,
-): CatNumberInputValueBucket | undefined => {
-  if (fieldKey === "catalogueNumberInputValues") {
-    return {
-      errorMessagesKey: "catNumberInputErrorMessages",
-      readInputs: (row) =>
-        row.shape === "flat" ? row.catalogueNumberInputValues : undefined,
-    };
+) => {
+  if (fieldKey === "labelInputValues") {
+    return row.labelInputValues;
   }
 
-  if (fieldKey === "europeCatalogueNumberInputValues") {
-    return {
-      errorMessagesKey: "europeCatNumberInputErrorMessages",
-      readInputs: (row) =>
-        row.shape === "europeUk"
-          ? row.europeCatalogueNumberInputValues
-          : undefined,
-    };
+  if (fieldKey === "catalogueNumberInputValues" && row.shape === "flat") {
+    return row.catalogueNumberInputValues;
   }
 
-  if (fieldKey === "ukCatalogueNumberInputValues") {
-    return {
-      errorMessagesKey: "ukCatNumberInputErrorMessages",
-      readInputs: (row) =>
-        row.shape === "europeUk" ? row.ukCatalogueNumberInputValues : undefined,
-    };
+  if (
+    fieldKey === "europeCatalogueNumberInputValues" &&
+    row.shape === "europeUk"
+  ) {
+    return row.europeCatalogueNumberInputValues;
+  }
+
+  if (fieldKey === "ukCatalogueNumberInputValues" && row.shape === "europeUk") {
+    return row.ukCatalogueNumberInputValues;
   }
 
   return undefined;

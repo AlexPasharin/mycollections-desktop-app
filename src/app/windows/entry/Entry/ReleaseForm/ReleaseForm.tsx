@@ -1,9 +1,9 @@
 import {
+  useEffect,
+  useEffectEvent,
   useState,
-  type Dispatch,
   type FC,
   type SubmitEvent,
-  type SetStateAction,
 } from "react";
 
 import ReleaseCatalogueNumbersSection from "./ReleaseCatalogueNumbersSection";
@@ -12,24 +12,23 @@ import ReleaseFormBlueprintLoader from "./ReleaseFormBlueprintLoader";
 import ReleaseFormFormatsSection from "./ReleaseFormFormatsSection";
 import ReleaseFormPreview from "./ReleaseFormPreview";
 import {
-  catalogueNumbersInputBucketKeyFor,
-  removeMadeInCountrySelectionRowFromFieldErrors,
-  stripPrintedInFromCountriesFieldErrors,
   isCatalogueNumbersInputFieldKey,
   isCountriesInputFieldKey,
   isFormatInputFieldKey,
   isRelatedReleasesInputFieldKey,
   type ReleaseFormInputFieldKey,
-  emptyMutableCountriesSubsectionErrors,
-  initialReleaseFormFieldErrors,
 } from "./releaseFormUtils/errorMessages";
 import {
   defaultCatalogueNumberRow,
   defaultFormatInputRow,
   defaultRelatedReleaseRow,
   emptyCountrySelection,
-  type ReleaseFormState,
+  initialReleaseFormStateValue,
   type ReleaseFormEntry,
+  type ReleaseFormDraft,
+  type ReleaseFormInitialState,
+  type ReleaseFormState,
+  type ValidatedReleaseFormDraft,
 } from "./releaseFormUtils/formValues";
 import { toUpsertMusicalReleaseInput } from "./releaseFormUtils/toUpsertMusicalReleaseInput";
 import ReleaseMatrixRunoutField from "./ReleaseMatrixRunoutField";
@@ -44,14 +43,15 @@ import type {
 import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
 import ErrorMessages from "@/app/components/ErrorMessages";
-import FeedbackSection from "@/app/components/FeedbackSection";
+import FeedbackSection2 from "@/app/components/FeedbackSection2";
 import AddTagsFormSection from "@/app/components/Form/AddTagsFormSection";
 import FormSectionsDivider from "@/app/components/Form/FormSectionsDivider";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
-import NotificationMessages from "@/app/components/NotificationMessages";
+import NotificationMessages2 from "@/app/components/NotificationMessages2";
 import api from "@/app/windows/entry/api";
 import type { DbSource } from "@/db/db-source";
 import { dbSourceLabel } from "@/db/db-source-options";
+import useFormState from "@/hooks/useFormState";
 import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
@@ -60,7 +60,7 @@ import type {
   ReleaseByIdResult,
 } from "@/types/releases";
 import type { TagListItem } from "@/types/tags";
-import { isDateInputFieldKey, omitProperty } from "@/utils/common";
+import { isDateInputFieldKey } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
 import { getNextOrderNumber } from "@/utils/relatedItems";
 
@@ -71,7 +71,10 @@ export type ReleaseFormTabData =
         notifications: string[],
         errors: string[],
       ) => void;
-      onUseReleaseAsBlueprint: (releaseBlueprint: ReleaseByIdResult) => void;
+      onUseReleaseAsBlueprint: (
+        releaseBlueprint: ReleaseByIdResult,
+        dbSources?: ReadonlySet<DbSource>,
+      ) => void;
     })
   | (ReleaseFormTabUpdateModeSharedData & {
       onReleaseUpdated: (
@@ -81,7 +84,7 @@ export type ReleaseFormTabData =
       ) => void;
       onUseReleaseAsBlueprint: (
         releaseBlueprint: ReleaseByIdResult,
-        releaseId?: string,
+        dbSources?: ReadonlySet<DbSource>,
       ) => void;
     });
 
@@ -92,9 +95,8 @@ export type ReleaseFormProps = {
   labels: LabelListItem[];
   tagsAvailableForReleases: TagListItem[];
   allCountries: CountryListItem[];
-  formState: ReleaseFormState;
-  setFormState: Dispatch<SetStateAction<ReleaseFormState>>;
-  onClearFormState: () => void;
+  initialFormState: ReleaseFormInitialState;
+  onPersistFormState: (state: ReleaseFormInitialState) => void;
   tabData: ReleaseFormTabData;
   setAddReleaseMode: () => void;
 };
@@ -123,13 +125,12 @@ const textareaClassName =
 const ReleaseForm: FC<ReleaseFormProps> = ({
   entry,
   primaryDbSource,
-  onClearFormState,
   allFormats,
   labels,
   tagsAvailableForReleases,
   allCountries,
-  formState,
-  setFormState,
+  initialFormState,
+  onPersistFormState,
   tabData,
   setAddReleaseMode,
 }) => {
@@ -142,209 +143,81 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [submitError, setSubmitError] = useState<string>();
 
-  const setField = <K extends keyof ReleaseFormState>(
-    key: K,
-    value:
-      | ReleaseFormState[K]
-      | ((prev: ReleaseFormState) => ReleaseFormState[K]),
-  ) => {
-    setFormState((prev) => ({
-      ...prev,
-      [key]: typeof value === "function" ? value(prev) : value,
-    }));
+  const {
+    formState,
+    setFieldValue: setFieldStateValue,
+    clearFieldFeedback,
+    validateField,
+    validateForm,
+    resetFormState,
+    toInitialFormStateValue,
+  } = useFormState({ initialValue: initialFormState });
 
-    setShowSubmissionValidationError(false);
+  const [validatedForm, setValidatedForm] =
+    useState<ValidatedReleaseFormDraft | null>(null);
+
+  const discardChanges = () => {
+    resetFormState(
+      initialReleaseFormStateValue({
+        entry,
+        allFormats,
+        allCountries,
+        dbSources: tabData.dbSources,
+        mode: tabData.mode,
+      }),
+    );
   };
 
-  const setFieldValue = <K extends keyof ReleaseFormState>(
+  const persistState = useEffectEvent(() => {
+    onPersistFormState(toInitialFormStateValue());
+  });
+
+  useEffect(() => {
+    return persistState;
+  }, []);
+
+  const setFieldValue = <K extends keyof ReleaseFormDraft>(
     key: K,
     value:
-      | ReleaseFormState[K]["value"]
-      | ((prev: ReleaseFormState) => ReleaseFormState[K]["value"]),
-  ) =>
-    setField(key, (prev) => ({
-      ...prev[key],
-      value: typeof value === "function" ? value(prev) : value,
-    }));
+      | ReleaseFormDraft[K]
+      | ((prev: ReleaseFormState) => ReleaseFormDraft[K]),
+  ) => {
+    setFieldStateValue(key, typeof value === "function" ? value : () => value);
+    setShowSubmissionValidationError(false);
+  };
 
   // on focus we attempt to remove errors related to the field that is being focused
   const onFocus = (key: ReleaseFormInputFieldKey) => {
     setShowSubmissionValidationError(false);
 
-    if (typeof key === "string" && !isDateInputFieldKey(key)) {
-      setField(key, (prev) => ({
-        ...prev[key],
-        notifications: [],
-      }));
-    }
-
     if (isFormatInputFieldKey(key)) {
-      const { formatRowId, field } = key;
-
-      setField("formats", (prev) => {
-        const formatsErrors = prev.formats.errors;
-
-        const nextFormatRowErrors = formatsErrors[formatRowId]?.filter(
-          (error) =>
-            error.sources &&
-            error.sources.length > 0 &&
-            !error.sources.includes(field),
-        );
-
-        return {
-          ...prev.formats,
-          errors: nextFormatRowErrors
-            ? {
-                ...formatsErrors,
-                [formatRowId]: nextFormatRowErrors,
-              }
-            : omitProperty(formatsErrors, formatRowId),
-        };
-      });
+      clearFieldFeedback("formats", key.formatRowId);
 
       return;
     }
 
     if (isCatalogueNumbersInputFieldKey(key)) {
-      const { catNumberRowId, field, inputValueId } = key;
-
-      setField("catalogueNumbers", (prev) => {
-        const catalogueNumbersErrors = prev.catalogueNumbers.errors.rows;
-        const rowErrors = catalogueNumbersErrors[catNumberRowId];
-
-        if (!rowErrors) {
-          return prev.catalogueNumbers;
-        }
-
-        const errorKey = catalogueNumbersInputBucketKeyFor(field);
-
-        const nextRowErrors = {
-          ...rowErrors,
-          [errorKey]: omitProperty(rowErrors[errorKey], inputValueId),
-        };
-
-        return {
-          ...prev.catalogueNumbers,
-          errors: {
-            ...prev.catalogueNumbers.errors,
-            rows: {
-              ...catalogueNumbersErrors,
-              [catNumberRowId]: nextRowErrors,
-            },
-          },
-        };
-      });
+      clearFieldFeedback("catalogueNumbers", key.catNumberRowId);
 
       return;
     }
 
     if (isCountriesInputFieldKey(key)) {
-      const { countriesSubsection, rowId } = key;
-
-      setField("countries", (prev) => {
-        const countriesErrors = prev.countries.errors;
-        const subsection = countriesErrors[countriesSubsection];
-
-        // The focused row's per-row error is dropped, and subsection-level
-        // errors (uniqueness, plus the cross-section "made-in required when
-        // printed-in is set" rule that lives on madeIn) are cleared too —
-        // editing this row can resolve all of them and they'll be re-checked
-        // on blur.
-        const nextSubsection = {
-          countrySelectErrorMessages: omitProperty(
-            subsection.countrySelectErrorMessages,
-            rowId,
-          ),
-          propertyErrorMessages: new Set<string>(),
-        };
-
-        return {
-          ...prev.countries,
-          errors: {
-            ...countriesErrors,
-            [countriesSubsection]: nextSubsection,
-          },
-        };
-      });
+      clearFieldFeedback("countries", key.rowId);
 
       return;
     }
 
     if (isRelatedReleasesInputFieldKey(key)) {
-      const { relatedReleaseRowId } = key;
-
-      setField("relatedReleases", (prev) => ({
-        ...prev.relatedReleases,
-        errors: prev.relatedReleases.errors.filter(
-          (error) =>
-            error.sources &&
-            error.sources.length > 0 &&
-            !error.sources.includes(relatedReleaseRowId),
-        ),
-        notifications: [],
-      }));
+      clearFieldFeedback("relatedReleases", key.relatedReleaseRowId);
 
       return;
     }
 
-    if (key === "catalogueNumbers") {
-      setField("catalogueNumbers", (prev) => ({
-        ...prev.catalogueNumbers,
-        errors: initialReleaseFormFieldErrors.catalogueNumbers,
-        notifications: [],
-      }));
-
-      return;
-    }
-
-    const errorKey = isDateInputFieldKey(key) ? "releaseDate" : key;
-
-    setField(errorKey, (prev) => {
-      const errors = prev[errorKey].errors.filter(
-        (error) =>
-          error.sources &&
-          error.sources.length > 0 &&
-          !error.sources.includes(key),
-      );
-
-      return {
-        ...prev[errorKey],
-        errors,
-        notifications: [],
-      };
-    });
+    clearFieldFeedback(isDateInputFieldKey(key) ? "releaseDate" : key);
   };
 
-  const validateField = <K extends keyof ReleaseFormState>(key: K) => {
-    const formFieldData = formState[key];
-
-    // Correlated union: TS can't see that `value` and `validationFn`'s parameter
-    // share the same K, so we narrow the call signature locally. Sound because
-    // both fields come from the same `formState[key]` instance.
-    type ValueType = ReleaseFormState[K]["value"];
-    type ResultType = ReturnType<ReleaseFormState[K]["validationFn"]>;
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const validationFn = formFieldData.validationFn as (
-      v: ValueType,
-    ) => ResultType;
-    const validationResult = validationFn(formFieldData.value);
-    const { valid, value, notifications = [] } = validationResult;
-
-    setField(key, (prev) => ({
-      ...prev[key],
-      valid,
-      value,
-      notifications,
-      errors: validationResult.valid
-        ? initialReleaseFormFieldErrors[key]
-        : validationResult.errorMessages,
-    }));
-
-    return validationResult;
-  };
-
-  const onBlur = (key: keyof ReleaseFormState) => validateField(key);
+  const onBlur = (key: keyof ReleaseFormDraft) => validateField(key);
 
   const addFormatRow = () => {
     setFieldValue("formats", (prev) => [
@@ -354,6 +227,8 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   };
 
   const removeFormatRow = (rowId: string) => {
+    clearFieldFeedback("formats", rowId);
+
     setFieldValue("formats", (prev) =>
       prev.formats.value.filter((formatRow) => formatRow.id !== rowId),
     );
@@ -374,21 +249,16 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   };
 
   const removeCatalogueNumbersRow = (rowId: string) => {
-    setField("catalogueNumbers", (prev) =>
+    clearFieldFeedback("catalogueNumbers", rowId);
+
+    setFieldValue("catalogueNumbers", (prev) =>
       prev.catalogueNumbers.value.activeTab === "json"
-        ? prev.catalogueNumbers
+        ? prev.catalogueNumbers.value
         : {
-            ...prev.catalogueNumbers,
-            value: {
-              ...prev.catalogueNumbers.value,
-              rows: prev.catalogueNumbers.value.rows.filter(
-                (row) => row.id !== rowId,
-              ),
-            },
-            errors: {
-              ...prev.catalogueNumbers.errors,
-              rows: omitProperty(prev.catalogueNumbers.errors.rows, rowId),
-            },
+            ...prev.catalogueNumbers.value,
+            rows: prev.catalogueNumbers.value.rows.filter(
+              (row) => row.id !== rowId,
+            ),
           },
     );
   };
@@ -400,6 +270,8 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   };
 
   const removeSelectedTag = (tagId: string) => {
+    clearFieldFeedback("selectedTags", tagId);
+
     setFieldValue("selectedTags", (prev) => {
       const next = new Set(prev.selectedTags.value);
       next.delete(tagId);
@@ -416,19 +288,11 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   };
 
   const removeRelatedReleaseRow = (rowId: string) => {
-    setField("relatedReleases", (prev) => ({
-      ...prev.relatedReleases,
-      value: prev.relatedReleases.value.filter((row) => row.id !== rowId),
-      errors: prev.relatedReleases.errors
-        .filter(
-          (error) =>
-            !error.sources?.includes(rowId) || error.sources.length > 1,
-        )
-        .map((error) => ({
-          ...error,
-          sources: error.sources?.filter((source) => source !== rowId),
-        })),
-    }));
+    clearFieldFeedback("relatedReleases", rowId);
+
+    setFieldValue("relatedReleases", (prev) =>
+      prev.relatedReleases.value.filter((row) => row.id !== rowId),
+    );
   };
 
   const setRelatedReleaseId = (rowId: string, releaseId: string) => {
@@ -455,30 +319,20 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   };
 
   const removeCountrySelectionRow = (inputId: string) => {
-    setField("countries", (prev) => ({
-      ...prev.countries,
-      value: {
-        ...prev.countries.value,
-        madeIn: prev.countries.value.madeIn.filter((row) => row.id !== inputId),
-      },
-      errors: removeMadeInCountrySelectionRowFromFieldErrors(
-        prev.countries.errors,
-        inputId,
-      ),
+    clearFieldFeedback("countries", inputId);
+
+    setFieldValue("countries", (prev) => ({
+      ...prev.countries.value,
+      madeIn: prev.countries.value.madeIn.filter((row) => row.id !== inputId),
     }));
   };
 
   const clearAllCountries = () => {
-    setField("countries", (prev) => ({
-      ...prev.countries,
-      value: {
-        madeIn: [],
-        printedIn: [],
-      },
-      errors: {
-        madeIn: emptyMutableCountriesSubsectionErrors(),
-        printedIn: emptyMutableCountriesSubsectionErrors(),
-      },
+    clearFieldFeedback("countries");
+
+    setFieldValue("countries", () => ({
+      madeIn: [],
+      printedIn: [],
     }));
   };
 
@@ -499,13 +353,11 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   };
 
   const closePrintedInCountriesSection = () => {
-    setField("countries", (prev) => ({
-      ...prev.countries,
-      value: {
-        ...prev.countries.value,
-        printedIn: [],
-      },
-      errors: stripPrintedInFromCountriesFieldErrors(prev.countries.errors),
+    clearFieldFeedback("countries", "printedIn");
+
+    setFieldValue("countries", (prev) => ({
+      ...prev.countries.value,
+      printedIn: [],
     }));
   };
 
@@ -517,6 +369,8 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
   };
 
   const removePrintedInCountrySelectionRow = (inputId: string) => {
+    clearFieldFeedback("countries", inputId);
+
     setFieldValue("countries", (prev) => ({
       ...prev.countries.value,
       printedIn: prev.countries.value.printedIn.filter(
@@ -537,6 +391,16 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
     }));
   };
 
+  const countriesErrorsFor = (subsection: "madeIn" | "printedIn") => {
+    const rowIds = formState.countries.value[subsection].map((row) => row.id);
+
+    return formState.countries.errors.filter(
+      (error) =>
+        error.sources?.includes(subsection) === true ||
+        rowIds.some((rowId) => error.sources?.includes(rowId) === true),
+    );
+  };
+
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -546,32 +410,9 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
 
     console.info("releaseId", tabData.releaseId);
 
-    const validationResults = {
-      releaseVersion: validateField("releaseVersion"),
-      discogsUrl: validateField("discogsUrl"),
-      comment: validateField("comment"),
-      conditionProblems: validateField("conditionProblems"),
-      releaseDate: validateField("releaseDate"),
-      countries: validateField("countries"),
-      formats: validateField("formats"),
-      catalogueNumbers: validateField("catalogueNumbers"),
-      matrixRunout: validateField("matrixRunout"),
-      selectedTags: validateField("selectedTags"),
-      partOfQueenCollection: validateField("partOfQueenCollection"),
-      relationToQueen: validateField("relationToQueen"),
-      relatedReleases: validateField("relatedReleases"),
-      name: validateField("name"),
-    };
-
-    const formIsValid = Object.values(validationResults).every(
-      (result) => result.valid,
-    );
-
-    console.info({
-      formState,
-      validationResults,
-      formIsValid,
-    });
+    const validationResults = validateForm();
+    const formIsValid = validationResults !== null;
+    setValidatedForm(validationResults);
 
     setShowSubmissionValidationError(!formIsValid);
 
@@ -595,51 +436,26 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
       return;
     }
 
-    const {
-      name: { value: name },
-      releaseVersion: { value: releaseVersion },
-      releaseDate: { value: releaseDate },
-      discogsUrl: { value: discogsUrl },
-      countries: { value: countries },
-      formats: { value: formats },
-      catalogueNumbers: { value: catalogueNumbers },
-      matrixRunout: { value: matrixRunout },
-      selectedTags: { value: selectedTags },
-      partOfQueenCollection: { value: partOfQueenCollection },
-      relationToQueen: { value: relationToQueen },
-      comment: { value: comment },
-      conditionProblems: { value: conditionProblems },
-      relatedReleases: { value: relatedReleases },
-      dbSources: { value: dbSources },
-    } = formState;
+    if (validatedForm === null) {
+      setSubmitError("Form validation failed, check the form values");
 
-    const formInputArgs = {
-      entry,
-      name,
-      releaseVersion,
-      releaseDate,
-      discogsUrl,
-      countries,
-      formats,
-      catalogueNumbers,
-      matrixRunout,
-      selectedTags,
-      partOfQueenCollection,
-      relationToQueen,
-      comment,
-      conditionProblems,
-      relatedReleases,
-    };
+      return;
+    }
 
     setIsSubmitting(true);
     setSubmitError(undefined);
 
-    const upsertInput = toUpsertMusicalReleaseInput(formInputArgs);
+    const upsertInput = toUpsertMusicalReleaseInput({
+      ...validatedForm,
+      entry,
+    });
 
     // re-order targets to ensure the primary source comes first
     const orderedTargets = [
       primaryDbSource,
-      ...Array.from(dbSources).filter((source) => source !== primaryDbSource),
+      ...Array.from(formState.dbSources.value).filter(
+        (source) => source !== primaryDbSource,
+      ),
     ];
     const savePromise = isUpdateMode
       ? updateReleasesAcrossDbSources(
@@ -760,7 +576,9 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
         )}
         <ReleaseFormBlueprintLoader
           primaryDbSource={primaryDbSource}
-          onReleaseFetched={tabData.onUseReleaseAsBlueprint}
+          onReleaseFetched={(release) =>
+            tabData.onUseReleaseAsBlueprint(release, formState.dbSources.value)
+          }
         />
         <FormSectionsDivider />
 
@@ -788,7 +606,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             autoComplete="off"
             required
           />
-          <FeedbackSection
+          <FeedbackSection2
             notificationsId={RELEASE_VERSION_FIELD_NOTIFICATIONS_ID}
             errorsId={RELEASE_VERSION_FIELD_ERROR_ID}
             notifications={releaseVersionNotifications}
@@ -845,7 +663,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             id={DISCOGS_URL_FIELD_ERROR_ID}
             messages={discogsUrlErrors}
           />
-          <NotificationMessages
+          <NotificationMessages2
             id={DISCOGS_URL_FIELD_NOTIFICATIONS_ID}
             messages={discogsUrlNotifications}
           />
@@ -867,7 +685,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           removeRowAriaLabel="Remove country row"
           onRemove={clearAllCountries}
           removeAriaLabel="Remove all countries and printed-in countries"
-          errors={formState.countries.errors.madeIn}
+          errors={countriesErrorsFor("madeIn")}
         />
 
         {formState.countries.value.printedIn.length > 0 ? (
@@ -887,7 +705,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
             removeRowAriaLabel="Remove printed-in country row"
             onRemove={closePrintedInCountriesSection}
             removeAriaLabel='Remove "printed in" countries section'
-            errors={formState.countries.errors.printedIn}
+            errors={countriesErrorsFor("printedIn")}
           />
         ) : (
           <button
@@ -1022,7 +840,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
                   : undefined
               }
             />
-            <NotificationMessages
+            <NotificationMessages2
               id={RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID}
               messages={relationToQueenNotifications}
             />
@@ -1048,7 +866,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
                 : undefined
             }
           />
-          <NotificationMessages
+          <NotificationMessages2
             id={COMMENT_FIELD_NOTIFICATIONS_ID}
             messages={commentNotifications}
           />
@@ -1074,7 +892,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
                 : undefined
             }
           />
-          <NotificationMessages
+          <NotificationMessages2
             id={CONDITION_PROBLEMS_FIELD_NOTIFICATIONS_ID}
             messages={conditionProblemsNotifications}
           />
@@ -1084,7 +902,7 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
           <button
             type="button"
             className={cancelButtonClassName}
-            onClick={onClearFormState}
+            onClick={discardChanges}
           >
             Discard changes
           </button>
@@ -1111,10 +929,11 @@ const ReleaseForm: FC<ReleaseFormProps> = ({
         size="wide"
         title={isUpdateMode ? "Confirm release update" : "Confirm new release"}
         description={
-          isConfirmOpen && (
+          isConfirmOpen &&
+          validatedForm && (
             <>
               <ReleaseFormPreview
-                formState={formState}
+                formState={validatedForm}
                 allFormats={allFormats}
                 tagsAvailableForReleases={tagsAvailableForReleases}
               />

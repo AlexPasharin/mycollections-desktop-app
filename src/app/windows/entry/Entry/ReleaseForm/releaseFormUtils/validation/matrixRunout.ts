@@ -1,15 +1,25 @@
 import { z } from "zod";
 
-import type { ReleaseFormMatrixRunoutDraft } from "../formValues";
+import type {
+  ReleaseFormDraft,
+  ValidatedReleaseFormDraft,
+} from "../formValues/formState";
 
-import type { FormFieldValidationResult } from "@/types/form";
+import type {
+  FormFeedbackMessages,
+  FormValidationFn,
+} from "@/hooks/useFormState";
 import { formatJson } from "@/utils/common";
 import { parseYAML } from "@/utils/parsing";
 import { releaseMatrixRunoutSchema } from "@/validation";
 
-export const validateReleaseMatrixRunout = (
-  value: ReleaseFormMatrixRunoutDraft,
-): FormFieldValidationResult<ReleaseFormMatrixRunoutDraft> => {
+export const validateReleaseMatrixRunout: FormValidationFn<
+  ReleaseFormDraft,
+  ValidatedReleaseFormDraft,
+  "matrixRunout"
+> = (state) => {
+  const value = state.matrixRunout.value;
+
   // Step 1: parse the raw input (YAML → JS value, with required-object check).
   // We do this independently of the downstream structural validation so we can
   // pretty-print the JSON even when the structural rules ultimately reject it.
@@ -17,11 +27,9 @@ export const validateReleaseMatrixRunout = (
 
   if (!preResult.success) {
     return {
-      valid: false,
       value,
-      errorMessages: preResult.error.issues.map(({ message }) => ({
-        message,
-      })),
+      errors: preResult.error.issues.map(({ message }) => ({ message })),
+      notifications: [],
     };
   }
 
@@ -31,16 +39,14 @@ export const validateReleaseMatrixRunout = (
   // Step 2: if the parsed value is an object, compute the pretty-printed form
   // and use it as the new textarea value (with a notification, if it changed).
   let formValue = value;
-  let prettifiedNotification: [{ notification: string }] | undefined;
+  let notifications: FormFeedbackMessages = [];
 
   if (isJsonObject) {
     const prettified = formatJson(parsed) ?? "";
 
     if (prettified !== value.value) {
       formValue = { ...value, value: prettified };
-      prettifiedNotification = [
-        { notification: "Note: JSON value has been pretty-printed" },
-      ];
+      notifications = [{ message: "Note: JSON value has been pretty-printed" }];
     }
   }
 
@@ -50,19 +56,15 @@ export const validateReleaseMatrixRunout = (
 
   if (!finalResult.success) {
     return {
-      valid: false,
       value: formValue,
-      errorMessages: finalResult.error.issues.map(({ message }) => ({
-        message,
-      })),
-      notifications: prettifiedNotification,
+      errors: finalResult.error.issues.map(({ message }) => ({ message })),
+      notifications,
     };
   }
 
   return {
-    valid: true,
-    value: formValue,
-    notifications: prettifiedNotification,
+    validatedValue: formValue,
+    notifications,
   };
 };
 
