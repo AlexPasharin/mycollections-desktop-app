@@ -8,7 +8,7 @@ import type { ReleaseFormFormatInput } from "../../releaseFormUtils/formValues";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
-import type { FormFieldError } from "@/types/form";
+import type { FormFeedbackMessages } from "@/hooks/useFormState";
 import type { ReleasesFormatListItem } from "@/types/formats";
 
 export type ReleaseFormFormatRowPatch = Partial<
@@ -19,7 +19,7 @@ type ReleaseFormFormatBlockProps = {
   row: ReleaseFormFormatInput;
   rowIndex: number;
   releasesFormats: ReleasesFormatListItem[];
-  formatRowErrors?: FormFieldError[] | undefined;
+  formatRowErrors: FormFeedbackMessages;
   onFormatChange: (formatId: string) => void;
   patchFormat: (patch: ReleaseFormFormatRowPatch) => void;
   onRemoveFormat: () => void;
@@ -59,7 +59,7 @@ const ReleaseFormFormatBlock: FC<ReleaseFormFormatBlockProps> = ({
   const suffix = `-${row.id}`;
 
   const fieldInvalid = (field: FormatField) =>
-    formatRowErrors?.some((e) => e.sources?.includes(field)) ?? false;
+    formatRowErrors.some((e) => e.sources?.includes(field));
 
   return (
     <div role="group" aria-label={`Format ${rowIndex + 1}`}>

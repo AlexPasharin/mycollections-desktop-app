@@ -1,6 +1,6 @@
 import type { FC } from "react";
 
-import type { UpsertEntryFormState } from "../upsertEntryFormUtils/formValues";
+import type { ValidatedUpsertEntryFormDraft } from "../upsertEntryFormUtils/formValues";
 
 import FormPreviewField, {
   FormPreviewBlockField,
@@ -12,7 +12,7 @@ import { generalizedDateToString } from "@/utils/date";
 import { orPlaceholder } from "@/utils/form";
 
 type UpsertEntryFormPreviewProps = {
-  form: UpsertEntryFormState;
+  form: ValidatedUpsertEntryFormDraft;
   tags: TagListItem[];
   allEntryTypes: EntryTypeListItem[];
 };
@@ -22,15 +22,13 @@ const UpsertEntryFormPreview: FC<UpsertEntryFormPreviewProps> = ({
   tags,
   allEntryTypes,
 }) => {
-  const originalReleaseDate = generalizedDateToString(
-    form.originalReleaseDate.value,
-  );
-  const discogsUrl = nullIfEmpty(form.discogsUrl.value);
-  const comment = nullIfEmpty(form.comment.value);
-  const relationToQueen = nullIfEmpty(form.relationToQueen.value);
+  const originalReleaseDate = generalizedDateToString(form.originalReleaseDate);
+  const discogsUrl = nullIfEmpty(form.discogsUrl);
+  const comment = nullIfEmpty(form.comment);
+  const relationToQueen = nullIfEmpty(form.relationToQueen);
 
   const selectedTagNames = tags
-    .filter((t) => form.selectedTags.value.has(t.tagId))
+    .filter((t) => form.selectedTags.has(t.tagId))
     .map((t) => t.tag);
 
   const typeNameById = new Map(
@@ -39,25 +37,23 @@ const UpsertEntryFormPreview: FC<UpsertEntryFormPreviewProps> = ({
     ),
   );
 
-  const relatedEntries = form.relatedEntries.value.sort(
+  const relatedEntries = form.relatedEntries.sort(
     (a, b) => parseInt(a.orderNumber, 10) - parseInt(b.orderNumber, 10),
   );
 
-  const selectedTypeNames = Array.from(form.selectedTypes.value, (typeId) => {
+  const selectedTypeNames = Array.from(form.selectedTypes, (typeId) => {
     return typeNameById.get(typeId) ?? typeId;
   });
 
   return (
     <div className="flex flex-col gap-[0.45rem] text-[0.92em]">
-      <FormPreviewField label="Main name">
-        {form.mainName.value}
-      </FormPreviewField>
+      <FormPreviewField label="Main name">{form.mainName}</FormPreviewField>
       <FormPreviewBlockField label="Artists">
-        {form.artists.value.length === 0 ? (
+        {form.artists.length === 0 ? (
           <p className="whitespace-pre-wrap">{orPlaceholder(null)}</p>
         ) : (
           <ul className="mt-[0.2rem] pl-[1.1rem]">
-            {form.artists.value.map((row) => {
+            {form.artists.map((row) => {
               const altNameId = nullIfEmpty(row.entryArtistAltNameId.trim());
               const mainLabel = row.isEntriesMainArtist ? " (main)" : "";
 
@@ -95,11 +91,11 @@ const UpsertEntryFormPreview: FC<UpsertEntryFormPreviewProps> = ({
         )}
       </FormPreviewField>
       <FormPreviewBlockField label="Alternative names">
-        {form.altNames.value.length === 0 ? (
+        {form.altNames.length === 0 ? (
           <p className="whitespace-pre-wrap">{orPlaceholder(null)}</p>
         ) : (
           <ul className="mt-[0.2rem] pl-[1.1rem]">
-            {form.altNames.value.map((row) => (
+            {form.altNames.map((row) => (
               <li key={row.id}>{orPlaceholder(row.name.trim())}</li>
             ))}
           </ul>
@@ -119,7 +115,7 @@ const UpsertEntryFormPreview: FC<UpsertEntryFormPreviewProps> = ({
         )}
       </FormPreviewBlockField>
       <FormPreviewField label="Part of Queen collection">
-        {form.partOfQueenCollection.value ? "Yes" : "No"}
+        {form.partOfQueenCollection ? "Yes" : "No"}
       </FormPreviewField>
       <FormPreviewBlockField label="Relation to Queen">
         <p className="whitespace-pre-wrap">{orPlaceholder(relationToQueen)}</p>

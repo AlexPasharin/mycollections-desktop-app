@@ -13,15 +13,19 @@ export const validateDiscogsUrl: FormValidationFn<
   "discogsUrl"
 > = (state) => {
   const value = state.discogsUrl.value;
-  const validationResult = discogsUrlSchema.safeParse(value);
+  const trimmedValue = value.trim();
+  const validationResult = discogsUrlSchema.safeParse(trimmedValue);
+
+  const notifications =
+    trimmedValue === value ? [] : [{ message: "Note: value has been trimmed" }];
 
   if (!validationResult.success) {
     return {
-      value,
+      value: trimmedValue,
       errors: validationResult.error.issues.map(({ message }) => ({
         message,
       })),
-      notifications: [],
+      notifications,
     };
   }
 
@@ -29,10 +33,7 @@ export const validateDiscogsUrl: FormValidationFn<
 
   return {
     validatedValue,
-    notifications:
-      validatedValue === value
-        ? []
-        : [{ message: "Note: value has been trimmed" }],
+    notifications,
   };
 };
 
@@ -41,7 +42,6 @@ const discogsUrlPattern = /^https:\/\/www\.discogs\.com\/release\/\d+-./;
 
 const discogsUrlSchema = z
   .string()
-  .trim()
   .refine(
     (value) => value === "" || discogsUrlPattern.test(value),
     "Discogs URL must be of the form https://www.discogs.com/release/<numerical id>-<arbitrary text>",

@@ -60,13 +60,7 @@ const releaseFormFormatInputArraySchema = (formats: ReleasesFormatListItem[]) =>
           const message =
             "This format row is similar to a previously added one — same format, picture sleeve, and jukebox hole settings. Merge amounts or change options.";
 
-          addCustomValidationIssues(
-            ctx,
-            message,
-            [index, "formatId"],
-            [index, "pictureSleeve"],
-            [index, "jukeboxHole"],
-          );
+          addCustomValidationIssues(ctx, message, [index]);
         } else {
           seenKeys.add(key);
         }

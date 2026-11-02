@@ -4,14 +4,13 @@ import type {
   ReleaseFormEntry,
   ReleaseFormFormatInputs,
   ReleaseFormMatrixRunoutDraft,
-  ReleaseFormNameInput,
   ReleaseFormRelatedReleaseRow,
   CatalogueNumberRowState,
   CountrySelectionInput,
+  ValidatedReleaseFormDraft,
 } from "./formValues";
 import { parseReleaseCatNumbersJsonInput } from "./validation/catalogueNumbersJsonInput";
 
-import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type {
   MusicalReleaseRelatedReleaseInput,
   ReleaseByIdResultCatalogueNumbers,
@@ -20,21 +19,7 @@ import type { TagId } from "@/types/tags";
 import { nullIfEmpty } from "@/utils/common";
 import { generalizedDateToString } from "@/utils/date";
 
-type ToUpsertMusicalReleaseInputArgs = {
-  name: ReleaseFormNameInput;
-  releaseVersion: string;
-  releaseDate: GeneralizedDateFormInputValue;
-  discogsUrl: string;
-  countries: ReleaseFormCountries;
-  formats: ReleaseFormFormatInputs;
-  catalogueNumbers: ReleaseFormCatNumbersDraft;
-  matrixRunout: ReleaseFormMatrixRunoutDraft;
-  selectedTags: Set<TagId>;
-  partOfQueenCollection: boolean;
-  relationToQueen: string;
-  comment: string;
-  conditionProblems: string;
-  relatedReleases: ReleaseFormRelatedReleaseRow[];
+type ToUpsertMusicalReleaseInputArgs = ValidatedReleaseFormDraft & {
   entry: ReleaseFormEntry;
 };
 

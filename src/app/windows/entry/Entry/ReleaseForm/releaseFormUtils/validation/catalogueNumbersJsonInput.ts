@@ -36,7 +36,10 @@ export const validateReleaseCatNumbersJsonInput = (
 
   if (!trimmed) {
     return {
-      validatedValue: { activeTab: "json", value: trimmed },
+      validatedValue: {
+        activeTab: "json",
+        value: trimmed,
+      },
       notifications: [],
     };
   }

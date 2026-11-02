@@ -4,13 +4,11 @@ import ReleaseFormFormatBlock, {
   type ReleaseFormFormatRowPatch,
 } from "./ReleaseFormFormatBlock";
 
-import type {
-  ReleaseFormFormatErrors,
-  ReleaseFormFormatInputFieldKey,
-} from "../releaseFormUtils/errorMessages";
+import type { ReleaseFormFormatInputFieldKey } from "../releaseFormUtils/errorMessages";
 import type { ReleaseFormFormatInput } from "../releaseFormUtils/formValues";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
+import type { FormFeedbackMessages } from "@/hooks/useFormState";
 import type { ReleasesFormatListItem } from "@/types/formats";
 
 type SetReleaseFormFormats = (
@@ -22,7 +20,7 @@ type SetReleaseFormFormats = (
 type ReleaseFormFormatsSectionProps = {
   formatInputs: ReleaseFormFormatInput[];
   releasesFormats: ReleasesFormatListItem[];
-  errors: ReleaseFormFormatErrors;
+  errors: FormFeedbackMessages;
   setFormats: SetReleaseFormFormats;
   addFormatRow: () => void;
   removeFormatRow: (rowId: string) => void;
@@ -79,9 +77,7 @@ const ReleaseFormFormatsSection: FC<ReleaseFormFormatsSectionProps> = ({
     });
   };
 
-  const hasErrors = Object.values(errors).some(
-    (rowErrors) => rowErrors.length > 0,
-  );
+  const hasErrors = errors.length > 0;
 
   const hasEmptyFormatId = formats.some((row) => row.formatId === "");
 
@@ -106,7 +102,9 @@ const ReleaseFormFormatsSection: FC<ReleaseFormFormatsSectionProps> = ({
               row={formatRow}
               rowIndex={rowIndex}
               releasesFormats={releasesFormats}
-              formatRowErrors={errors[formatRow.id]}
+              formatRowErrors={errors.filter((error) =>
+                error.sources?.includes(formatRow.id),
+              )}
               onFormatChange={(formatId) =>
                 onFormatChange(formatRow.id, formatId)
               }

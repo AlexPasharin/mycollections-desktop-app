@@ -14,7 +14,7 @@ import {
 } from "../classNames";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
-import { errorSetToMessages } from "@/validation";
+import type { FormFeedbackMessages } from "@/hooks/useFormState";
 
 export type CatalogueNumberInputColumnProps = {
   /** Visible heading shown once at the top of the column (e.g. "Catalogue
@@ -33,7 +33,7 @@ export type CatalogueNumberInputColumnProps = {
   errorIdPrefix: string;
   rowId: string;
   inputValues: { id: string; value: string }[];
-  errorMessagesByInputId: Record<string, Set<string>> | undefined;
+  rowErrors: FormFeedbackMessages;
   canRemoveAnyInput: boolean;
   addButtonLabel: string;
   removeInputAriaLabel: string;
@@ -51,7 +51,7 @@ const CatalogueNumberInputColumn: FC<CatalogueNumberInputColumnProps> = ({
   errorIdPrefix,
   rowId,
   inputValues,
-  errorMessagesByInputId,
+  rowErrors,
   canRemoveAnyInput,
   addButtonLabel,
   removeInputAriaLabel,
@@ -64,12 +64,12 @@ const CatalogueNumberInputColumn: FC<CatalogueNumberInputColumnProps> = ({
   <div className={columnClassName}>
     <div className={columnHeadingClassName}>{columnHeading}</div>
     {inputValues.map((inputValue, index) => {
-      const errorMessages = errorSetToMessages(
-        errorMessagesByInputId?.[inputValue.id],
+      const errorMessages = rowErrors.filter(
+        (error) => error.sources?.[1] === inputValue.id,
       );
       const inputId = `${idPrefix}-${rowId}-${inputValue.id}`;
       const errorId = `${errorIdPrefix}-${rowId}-${inputValue.id}`;
-      const hasErrors = errorMessages != null && errorMessages.length > 0;
+      const hasErrors = errorMessages.length > 0;
 
       return (
         <div key={inputValue.id} className={inputValueBlockClassName}>

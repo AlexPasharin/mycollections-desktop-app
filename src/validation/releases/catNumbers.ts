@@ -183,11 +183,13 @@ const validateFormatKeys = (formatKeys: string[]): boolean => {
     .every(checkSequentialStringsSuffixNumberingValidity);
 };
 
-export const releaseCatNumbersSchema = z.union([
-  z.null(),
-  standardCatNumbersObjSchema,
-  extendedCatNumbersObjSchema,
-]);
+export const releaseCatNumbersSchema = z.union(
+  [z.null(), standardCatNumbersObjSchema, extendedCatNumbersObjSchema],
+  {
+    error:
+      "Value is invalid — is not a json object / array or has wrong keys. Check documentation for which keys are allowed.",
+  },
+);
 
 export type ReleaseCatNumbers = z.infer<typeof releaseCatNumbersSchema>;
 
