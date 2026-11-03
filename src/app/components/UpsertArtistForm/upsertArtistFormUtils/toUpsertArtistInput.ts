@@ -1,7 +1,7 @@
 import type {
-  ArtistUpsertAltNameRow,
-  ValidatedArtistUpsertFormDraft,
-  ValidArtistUpsertRelatedParentRow,
+  UpsertArtistAltNameRow,
+  ValidatedUpsertArtistFormDraft,
+  ValidUpsertArtistRelatedParentRow,
 } from "./formValues";
 
 import type {
@@ -17,7 +17,7 @@ export const toUpsertArtistInput = ({
   partOfQueenFamily,
   altNames,
   relatedParents,
-}: ValidatedArtistUpsertFormDraft) => ({
+}: ValidatedUpsertArtistFormDraft) => ({
   artist: {
     name,
     nameForSorting: nullIfEmpty(nameForSorting),
@@ -28,13 +28,13 @@ export const toUpsertArtistInput = ({
   relatedArtists: toRelatedArtistsFromForm(relatedParents),
 });
 
-const toAltNameInput = (row: ArtistUpsertAltNameRow): ArtistAltNameInput => ({
+const toAltNameInput = (row: UpsertArtistAltNameRow): ArtistAltNameInput => ({
   ...(row.nameId === undefined ? {} : { nameId: row.nameId }),
   name: row.name,
 });
 
 const toRelatedArtistsFromForm = (
-  rows: ValidArtistUpsertRelatedParentRow[],
+  rows: ValidUpsertArtistRelatedParentRow[],
 ): ArtistRelatedArtistInput[] =>
   rows.map(({ artistId, relation }) => ({
     relatedArtistId: artistId,

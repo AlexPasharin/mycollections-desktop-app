@@ -1,6 +1,6 @@
 import type { FC } from "react";
 
-import { type ValidatedArtistUpsertFormDraft } from "../artistUpsertFormUtils/formValues";
+import { type ValidatedUpsertArtistFormDraft } from "../upsertArtistFormUtils/formValues";
 
 import FormPreviewField, {
   FormPreviewBlockField,
@@ -9,11 +9,11 @@ import { formatArtistTypeLabel } from "@/utils/artist";
 import { nullIfEmpty } from "@/utils/common";
 import { orPlaceholder } from "@/utils/form";
 
-type ArtistUpsertFormPreviewProps = {
-  form: ValidatedArtistUpsertFormDraft;
+type UpsertArtistFormPreviewProps = {
+  form: ValidatedUpsertArtistFormDraft;
 };
 
-const ArtistUpsertFormPreview: FC<ArtistUpsertFormPreviewProps> = ({
+const UpsertArtistFormPreview: FC<UpsertArtistFormPreviewProps> = ({
   form,
 }) => {
   const nameForSorting = nullIfEmpty(form.nameForSorting);
@@ -58,4 +58,4 @@ const ArtistUpsertFormPreview: FC<ArtistUpsertFormPreviewProps> = ({
   );
 };
 
-export default ArtistUpsertFormPreview;
+export default UpsertArtistFormPreview;

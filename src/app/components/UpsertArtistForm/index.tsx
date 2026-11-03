@@ -1,15 +1,15 @@
 import { type FC, type SubmitEvent, useState } from "react";
 
-import ArtistUpsertFormPreview from "./ArtistUpsertFormPreview";
+import UpsertArtistFormPreview from "./UpsertArtistFormPreview";
 import {
   defaultAltNameRow,
   defaultRelatedParentRow,
-  initialArtistUpsertFormDraft,
-  type ArtistUpsertFormDraft,
-  type ValidatedArtistUpsertFormDraft,
-} from "./artistUpsertFormUtils/formValues";
-import { toUpsertArtistInput } from "./artistUpsertFormUtils/toUpsertArtistInput";
-import ArtistUpsertRelatedArtistsSection from "./ArtistUpsertRelatedArtistsSection";
+  initialUpsertArtistFormDraft,
+  type UpsertArtistFormDraft,
+  type ValidatedUpsertArtistFormDraft,
+} from "./upsertArtistFormUtils/formValues";
+import { toUpsertArtistInput } from "./upsertArtistFormUtils/toUpsertArtistInput";
+import UpsertArtistRelatedArtistsSection from "./UpsertArtistRelatedArtistsSection";
 
 import FeedbackSection from "../FeedbackSection2";
 import FormSectionsDivider from "../Form/FormSectionsDivider";
@@ -37,7 +37,7 @@ import type {
 import { formatArtistTypeLabel } from "@/utils/artist";
 import { updateImmutableSet } from "@/utils/immutableSet";
 
-type ArtistUpsertFormSharedProps = {
+type UpsertArtistFormSharedProps = {
   primaryDbSource: DbSource;
   onClearFeedback: () => void;
   onArtistSaved: (result: {
@@ -46,21 +46,21 @@ type ArtistUpsertFormSharedProps = {
   }) => void;
 };
 
-type ArtistUpsertFormUpdateProps = ArtistUpsertFormSharedProps & {
+type UpsertArtistFormUpdateProps = UpsertArtistFormSharedProps & {
   mode: "update";
   artist: ArtistByIdResult;
   updateArtist: UpdateArtist;
 };
 
-type ArtistUpsertFormCreateProps = ArtistUpsertFormSharedProps & {
+type UpsertArtistFormCreateProps = UpsertArtistFormSharedProps & {
   mode: "create";
   artist?: never;
   createArtist: CreateArtist;
 };
 
-export type ArtistUpsertFormProps =
-  | ArtistUpsertFormUpdateProps
-  | ArtistUpsertFormCreateProps;
+export type UpsertArtistFormProps =
+  | UpsertArtistFormUpdateProps
+  | UpsertArtistFormCreateProps;
 
 const NAME_FIELD_ERROR_ID = "upsert-artist-name-error";
 const NAME_FIELD_NOTIFICATIONS_ID = "upsert-artist-name-notifications";
@@ -69,7 +69,7 @@ const NAME_FOR_SORTING_FIELD_ERROR_ID = "upsert-artist-name-for-sorting-error";
 const NAME_FOR_SORTING_FIELD_NOTIFICATIONS_ID =
   "upsert-artist-name-for-sorting-notifications";
 
-const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
+const UpsertArtistForm: FC<UpsertArtistFormProps> = (props) => {
   const { mode, primaryDbSource, onClearFeedback, onArtistSaved, artist } =
     props;
   const isCreateMode = mode === "create";
@@ -82,11 +82,11 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
     validateField,
     validateForm,
   } = useFormState({
-    initialValue: initialArtistUpsertFormDraft(artist),
+    initialValue: initialUpsertArtistFormDraft(artist),
   });
 
   const [validatedForm, setValidatedForm] =
-    useState<ValidatedArtistUpsertFormDraft | null>(null);
+    useState<ValidatedUpsertArtistFormDraft | null>(null);
 
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
     useState(false);
@@ -99,14 +99,14 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
 
   // on focus we attempt to remove errors and notifications related to the field that is being focused
   const onFocus = (
-    key: keyof ArtistUpsertFormDraft,
+    key: keyof UpsertArtistFormDraft,
     ...sources: PropertyKey[]
   ) => {
     setShowSubmissionValidationError(false);
     clearFieldFeedback(key, ...sources);
   };
 
-  const onBlur = (key: keyof ArtistUpsertFormDraft) => validateField(key);
+  const onBlur = (key: keyof UpsertArtistFormDraft) => validateField(key);
 
   const addAltNameRow = () => {
     setFieldValue("altNames", (prev) => [
@@ -485,7 +485,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
 
         <FormSectionsDivider />
 
-        <ArtistUpsertRelatedArtistsSection
+        <UpsertArtistRelatedArtistsSection
           relatedArtists={formState.relatedParents.value}
           errors={formState.relatedParents.errors}
           notifications={formState.relatedParents.notifications}
@@ -529,7 +529,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
           isConfirmOpen &&
           validatedForm && (
             <>
-              <ArtistUpsertFormPreview form={validatedForm} />
+              <UpsertArtistFormPreview form={validatedForm} />
               <DbSourcesCheckboxes
                 heading={
                   isCreateMode ? "Add to databases" : "Save to databases"
@@ -562,7 +562,7 @@ const ArtistUpsertForm: FC<ArtistUpsertFormProps> = (props) => {
   );
 };
 
-export default ArtistUpsertForm;
+export default UpsertArtistForm;
 
 type UpsertArtistOutcome =
   | {

@@ -1,13 +1,13 @@
 import type {
-  ArtistUpsertFormDraft,
-  ValidatedArtistUpsertFormDraft,
+  UpsertArtistFormDraft,
+  ValidatedUpsertArtistFormDraft,
 } from "../formValues";
 
 import type { FormValidationFn } from "@/hooks/useFormState";
 
 export const validateNameForSorting: FormValidationFn<
-  ArtistUpsertFormDraft,
-  ValidatedArtistUpsertFormDraft,
+  UpsertArtistFormDraft,
+  ValidatedUpsertArtistFormDraft,
   "nameForSorting"
 > = (state) => {
   const value = state.nameForSorting.value;

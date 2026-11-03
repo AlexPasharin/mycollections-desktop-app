@@ -1,7 +1,7 @@
 import type {
-  ArtistUpsertAltNameRow,
-  ArtistUpsertFormDraft,
-  ValidatedArtistUpsertFormDraft,
+  UpsertArtistAltNameRow,
+  UpsertArtistFormDraft,
+  ValidatedUpsertArtistFormDraft,
 } from "../formValues";
 
 import type {
@@ -10,15 +10,15 @@ import type {
 } from "@/hooks/useFormState";
 
 export const validateArtistAltNames: FormValidationFn<
-  ArtistUpsertFormDraft,
-  ValidatedArtistUpsertFormDraft,
+  UpsertArtistFormDraft,
+  ValidatedUpsertArtistFormDraft,
   "altNames"
 > = (state) => {
   const mainName = state.name.value.trim();
   const seenNames = new Map<string, string[]>();
   const errors: FormFeedbackMessages = [];
 
-  const normalizedRows: ArtistUpsertAltNameRow[] = [];
+  const normalizedRows: UpsertArtistAltNameRow[] = [];
   const notifications = [];
 
   for (const row of state.altNames.value) {
