@@ -4,8 +4,8 @@ import CreateArtistSuccess from "./CreateArtistSuccess";
 
 import api from "../../api";
 
-import ArtistUpsertForm from "@/app/components/ArtistUpsertForm";
 import FeedbackSection from "@/app/components/FeedbackSection";
+import UpsertArtistForm from "@/app/components/UpsertArtistForm";
 import type { DbSource } from "@/db/db-source";
 import type { ArtistByIdResult } from "@/types/artists";
 import type { FormFeedback } from "@/types/form";
@@ -58,7 +58,7 @@ const CreateArtist: FC<CreateArtistProps> = ({ primaryDbSource }) => {
           }}
         />
       ) : (
-        <ArtistUpsertForm
+        <UpsertArtistForm
           mode="create"
           primaryDbSource={primaryDbSource}
           createArtist={api.createArtist}

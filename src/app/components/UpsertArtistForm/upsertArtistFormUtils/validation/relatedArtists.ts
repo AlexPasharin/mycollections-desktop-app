@@ -1,8 +1,8 @@
 import { validate as isValidUuid } from "uuid";
 
 import type {
-  ArtistUpsertRelatedArtistRow,
-  ValidArtistUpsertRelatedParentRow,
+  UpsertArtistRelatedArtistRow,
+  ValidUpsertArtistRelatedParentRow,
 } from "../formValues";
 
 import type {
@@ -11,14 +11,14 @@ import type {
 } from "@/hooks/useFormState";
 
 export const validateRelatedArtists = (
-  rows: ArtistUpsertRelatedArtistRow[],
+  rows: UpsertArtistRelatedArtistRow[],
 ): FormValidationFnResult<
-  ArtistUpsertRelatedArtistRow[],
-  ValidArtistUpsertRelatedParentRow[]
+  UpsertArtistRelatedArtistRow[],
+  ValidUpsertArtistRelatedParentRow[]
 > => {
   const errors: FormFeedbackMessages = [];
-  const processedRows: ArtistUpsertRelatedArtistRow[] = [];
-  const validatedRows: ValidArtistUpsertRelatedParentRow[] = [];
+  const processedRows: UpsertArtistRelatedArtistRow[] = [];
+  const validatedRows: ValidUpsertArtistRelatedParentRow[] = [];
   const notifications = [];
   const seenArtistIds = new Map<string, string[]>();
 

@@ -6,9 +6,9 @@ import ArtistInfo from "./ArtistInfo";
 
 import api from "../api";
 
-import ArtistUpsertForm from "@/app/components/ArtistUpsertForm";
 import FeedbackSection from "@/app/components/FeedbackSection";
 import Tabs from "@/app/components/Tabs";
+import UpsertArtistForm from "@/app/components/UpsertArtistForm";
 import type { UpsertEntryFormPersistedState } from "@/app/components/UpsertEntryForm/upsertEntryFormUtils/formValues";
 import type { DbSource } from "@/db/db-source";
 import type { ArtistByIdResult } from "@/types/artists";
@@ -128,7 +128,7 @@ const ArtistWindowMainContent: FC<ArtistWindowMainContentProps> = ({
             panelId: UPDATE_ARTIST_PANEL_ID,
             label: "Update artist",
             children: (
-              <ArtistUpsertForm
+              <UpsertArtistForm
                 mode="update"
                 artist={artist}
                 primaryDbSource={primaryDbSource}

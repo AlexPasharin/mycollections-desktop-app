@@ -13,54 +13,54 @@ import type { FormFieldError, RelatedItemRow } from "@/types/form";
 import { withNewId } from "@/utils/id";
 import { validatePassThrough, validateRequiredTrimmedText } from "@/validation";
 
-export type ArtistUpsertAltNameRow = {
+export type UpsertArtistAltNameRow = {
   id: string;
   nameId?: string;
   name: string;
 };
 
-export type ArtistUpsertRelatedArtistRow = RelatedItemRow<
+export type UpsertArtistRelatedArtistRow = RelatedItemRow<
   RelatedItemRelation | ""
 > & {
   artistId: string;
 };
 
-export type ValidArtistUpsertRelatedParentRow = ArtistUpsertRelatedArtistRow & {
+export type ValidUpsertArtistRelatedParentRow = UpsertArtistRelatedArtistRow & {
   relation: RelatedItemRelation;
 };
 
-export type ArtistUpsertRelatedParentsErrors = Record<string, FormFieldError[]>;
+export type UpsertArtistRelatedParentsErrors = Record<string, FormFieldError[]>;
 
-export type ArtistUpsertFormDraft = {
+export type UpsertArtistFormDraft = {
   name: string;
   nameForSorting: string;
   type: ArtistType;
   partOfQueenFamily: boolean;
-  altNames: ArtistUpsertAltNameRow[];
-  relatedParents: ArtistUpsertRelatedArtistRow[];
+  altNames: UpsertArtistAltNameRow[];
+  relatedParents: UpsertArtistRelatedArtistRow[];
 };
 
-export type ValidatedArtistUpsertFormDraft = Omit<
-  ArtistUpsertFormDraft,
+export type ValidatedUpsertArtistFormDraft = Omit<
+  UpsertArtistFormDraft,
   "relatedParents"
 > & {
-  relatedParents: ValidArtistUpsertRelatedParentRow[];
+  relatedParents: ValidUpsertArtistRelatedParentRow[];
 };
 
-export const defaultAltNameRow = (name = ""): ArtistUpsertAltNameRow =>
+export const defaultAltNameRow = (name = ""): UpsertArtistAltNameRow =>
   withNewId({ name });
 
-export const defaultRelatedParentRow = (): ArtistUpsertRelatedArtistRow =>
+export const defaultRelatedParentRow = (): UpsertArtistRelatedArtistRow =>
   withNewId({
     artistId: "",
     relation: "",
   });
 
-export const initialArtistUpsertFormDraft = (
+export const initialUpsertArtistFormDraft = (
   artist?: ArtistByIdResult,
 ): InitialFormStateValue<
-  ArtistUpsertFormDraft,
-  ValidatedArtistUpsertFormDraft
+  UpsertArtistFormDraft,
+  ValidatedUpsertArtistFormDraft
 > => ({
   name: {
     value: artist?.name ?? "",
@@ -100,7 +100,7 @@ export const initialArtistUpsertFormDraft = (
 const relatedArtistsToFormValue = (
   parentArtists: ArtistByIdResult["parentArtists"] | undefined,
   childArtists: ArtistByIdResult["childArtists"] | undefined,
-): ValidArtistUpsertRelatedParentRow[] => [
+): ValidUpsertArtistRelatedParentRow[] => [
   ...(parentArtists ?? []).map(({ artistId }) =>
     withNewId({
       artistId,

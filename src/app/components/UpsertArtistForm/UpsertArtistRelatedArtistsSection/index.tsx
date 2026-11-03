@@ -1,14 +1,14 @@
 import { Fragment, type FC } from "react";
 
 import FeedbackSection2 from "../../FeedbackSection2";
-import type { ArtistUpsertRelatedArtistRow } from "../artistUpsertFormUtils/formValues";
+import type { UpsertArtistRelatedArtistRow } from "../upsertArtistFormUtils/formValues";
 
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
 import type { FormFeedbackMessages } from "@/hooks/useFormState";
 import type { RelatedItemRelation } from "@/types/common";
 
-type ArtistUpsertRelatedArtistsSectionProps = {
-  relatedArtists: ArtistUpsertRelatedArtistRow[];
+type UpsertArtistRelatedArtistsSectionProps = {
+  relatedArtists: UpsertArtistRelatedArtistRow[];
   errors: FormFeedbackMessages;
   notifications: FormFeedbackMessages;
   onChangeArtistId: (rowId: string, artistId: string) => void;
@@ -22,8 +22,8 @@ type ArtistUpsertRelatedArtistsSectionProps = {
 const relatedArtistsGridClassName =
   "grid w-fit max-w-full grid-cols-[32ch_6rem_1rem_1.85rem] items-center gap-x-3";
 
-const ArtistUpsertRelatedArtistsSection: FC<
-  ArtistUpsertRelatedArtistsSectionProps
+const UpsertArtistRelatedArtistsSection: FC<
+  UpsertArtistRelatedArtistsSectionProps
 > = ({
   relatedArtists,
   errors,
@@ -154,7 +154,7 @@ const ArtistUpsertRelatedArtistsSection: FC<
   </div>
 );
 
-export default ArtistUpsertRelatedArtistsSection;
+export default UpsertArtistRelatedArtistsSection;
 
 const labels = {
   sectionTitle: "Related artists",
