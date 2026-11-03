@@ -6,7 +6,7 @@ import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
 import type {
-  FeedbackErrors,
+  FormFeedbackMessages,
   FeedbackNotifications,
   FormFeedback,
 } from "@/types/form";
@@ -207,7 +207,7 @@ const formatCreateTagError = (reason: unknown): string =>
 
 const buildCreateTagFeedback = (outcomes: CreateTagOutcome[]): FormFeedback => {
   const notifications: FeedbackNotifications = [];
-  const errors: FeedbackErrors = [];
+  const errors: FormFeedbackMessages = [];
 
   for (const outcome of outcomes) {
     if (outcome.status === "fulfilled") {

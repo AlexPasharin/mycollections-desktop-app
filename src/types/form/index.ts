@@ -31,11 +31,9 @@ export type FormFieldValidationResult<
       notifications?: FeedbackNotifications | undefined;
     };
 
-export type FeedbackErrors = FormFeedbackMessages;
-
 export type FormFeedback = {
   notifications: FeedbackNotifications;
-  errors: FeedbackErrors;
+  errors: FormFeedbackMessages;
 };
 export type RelatedItemRow<Relation extends string = RelatedItemRelation> = {
   id: string;

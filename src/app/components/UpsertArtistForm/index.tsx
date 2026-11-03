@@ -31,7 +31,7 @@ import type { RelatedItemRelation } from "@/types/common";
 import { ArtistType } from "@/types/db/database";
 import type {
   FormFeedback,
-  FeedbackErrors,
+  FormFeedbackMessages,
   FeedbackNotifications,
 } from "@/types/form";
 import { formatArtistTypeLabel } from "@/utils/artist";
@@ -771,7 +771,7 @@ const buildUpsertArtistFeedback = (
   mode: "create" | "update",
 ): FormFeedback => {
   const notifications: FeedbackNotifications = [];
-  const errors: FeedbackErrors = [];
+  const errors: FormFeedbackMessages = [];
 
   for (const outcome of outcomes) {
     if (outcome.status === "fulfilled") {

@@ -47,7 +47,7 @@ import type {
 import type { EntryTypeListItem } from "@/types/entryTypes";
 import type {
   FormFeedback,
-  FeedbackErrors,
+  FormFeedbackMessages,
   FeedbackNotifications,
 } from "@/types/form";
 import type { TagListItem } from "@/types/tags";
@@ -913,7 +913,7 @@ const buildUpsertEntryFeedback = (
   mode: "create" | "update",
 ): FormFeedback => {
   const notifications: FeedbackNotifications = [];
-  const errors: FeedbackErrors = [];
+  const errors: FormFeedbackMessages = [];
 
   for (const outcome of outcomes) {
     if (outcome.status === "fulfilled") {
