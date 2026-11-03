@@ -4,10 +4,8 @@ import type {
   ValidatedUpsertArtistFormDraft,
 } from "../formValues";
 
-import type {
-  FormFeedbackMessages,
-  FormValidationFn,
-} from "@/hooks/useFormState";
+import type { FormValidationFn } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 
 export const validateArtistAltNames: FormValidationFn<
   UpsertArtistFormDraft,

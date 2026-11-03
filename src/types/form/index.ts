@@ -1,12 +1,11 @@
 import type { RelatedItemRelation } from "../common";
 
-type FeedbackError = {
+type FormFeedbackMessage = {
   message: string;
-};
-
-export type FormFieldError = FeedbackError & {
   sources?: PropertyKey[] | undefined;
 };
+
+export type FormFeedbackMessages = FormFeedbackMessage[];
 
 type FeedbackNotification = {
   notification: string;
@@ -17,7 +16,7 @@ export type FeedbackNotifications = FeedbackNotification[];
 
 export type FormFieldValidationResult<
   T = string,
-  E = FormFieldError[],
+  E = FormFeedbackMessages,
   EResult = T,
 > =
   | {
@@ -32,23 +31,7 @@ export type FormFieldValidationResult<
       notifications?: FeedbackNotifications | undefined;
     };
 
-export type FormField<
-  T = string,
-  U = FormFieldError[],
-  VResult = T,
-  EResult = T,
-> = {
-  value: T;
-  valid: boolean;
-  validationFn: (
-    value: T,
-    form?: Record<string, FormField<unknown, unknown, unknown, unknown>>,
-  ) => FormFieldValidationResult<VResult, U, EResult>;
-  errors: U;
-  notifications: FeedbackNotifications;
-};
-
-export type FeedbackErrors = FeedbackError[];
+export type FeedbackErrors = FormFeedbackMessages;
 
 export type FormFeedback = {
   notifications: FeedbackNotifications;

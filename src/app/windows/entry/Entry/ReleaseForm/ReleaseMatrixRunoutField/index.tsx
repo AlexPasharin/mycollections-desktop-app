@@ -3,7 +3,7 @@ import { type FC, type FocusEvent } from "react";
 import type { ReleaseFormMatrixRunoutDraft } from "../releaseFormUtils/formValues";
 
 import FeedbackSection2 from "@/app/components/FeedbackSection2";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 
 const MATRIX_RUNOUT_FIELD_ERROR_ID = "add-release-matrix-runout-error";
 const MATRIX_RUNOUT_FIELD_NOTIFICATIONS_ID =

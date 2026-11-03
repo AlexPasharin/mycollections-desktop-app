@@ -3,7 +3,7 @@ import NotificationMessages from "@/app/components/NotificationMessages";
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
 import type {
   FeedbackNotifications,
-  FormFieldError,
+  FormFeedbackMessages,
   RelatedOrderedItemRow,
 } from "@/types/form";
 
@@ -21,7 +21,7 @@ export type RelatedItemsFormSectionLabels = {
 type RelatedItemsFormSectionProps<TRow extends RelatedOrderedItemRow> = {
   rows: TRow[];
   getRelatedId: (row: TRow) => string;
-  errors: FormFieldError[];
+  errors: FormFeedbackMessages;
   notifications: FeedbackNotifications;
   labels: RelatedItemsFormSectionLabels;
   onChangeRelatedId: (rowId: string, relatedId: string) => void;

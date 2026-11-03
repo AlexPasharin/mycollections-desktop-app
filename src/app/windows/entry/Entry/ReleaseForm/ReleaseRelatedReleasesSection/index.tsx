@@ -5,7 +5,7 @@ import type { ReleaseFormRelatedReleaseRow } from "../releaseFormUtils/formValue
 import RelatedItemsFormSection, {
   type RelatedItemsFormSectionLabels,
 } from "@/app/components/RelatedItemsFormSection";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 
 type ReleaseRelatedReleasesSectionProps = {
   relatedReleases: ReleaseFormRelatedReleaseRow[];

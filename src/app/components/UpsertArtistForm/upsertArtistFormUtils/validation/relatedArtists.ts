@@ -5,10 +5,8 @@ import type {
   ValidUpsertArtistRelatedParentRow,
 } from "../formValues";
 
-import type {
-  FormFeedbackMessages,
-  FormValidationFnResult,
-} from "@/hooks/useFormState";
+import type { FormValidationFnResult } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 
 export const validateRelatedArtists = (
   rows: UpsertArtistRelatedArtistRow[],

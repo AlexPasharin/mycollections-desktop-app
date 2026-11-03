@@ -12,10 +12,10 @@ import type {
 } from "../formValues/formState";
 
 import type {
-  FormFeedbackMessages,
   FormValidationFn,
   FormValidationFnResult,
 } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 import type { ValidationResultErrorMessages } from "@/utils/validation";
 import { uniquePropertyArraySchema } from "@/validation";
 

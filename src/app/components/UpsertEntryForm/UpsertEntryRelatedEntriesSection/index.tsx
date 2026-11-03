@@ -5,7 +5,7 @@ import type { UpsertEntryRelatedEntryRow } from "../upsertEntryFormUtils/formVal
 import RelatedItemsFormSection, {
   type RelatedItemsFormSectionLabels,
 } from "@/app/components/RelatedItemsFormSection";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 
 type UpsertEntryRelatedEntriesSectionProps = {
   relatedEntries: UpsertEntryRelatedEntryRow[];

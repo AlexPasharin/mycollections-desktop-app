@@ -1,7 +1,7 @@
 import { validate as isValidUuid } from "uuid";
 
 import type {
-  FormFieldError,
+  FormFeedbackMessages,
   FormFieldValidationResult,
   RelatedOrderedItemRow,
 } from "@/types/form";
@@ -26,8 +26,8 @@ type ValidateRelatedItemsConfig<TRow extends RelatedOrderedItemRow> = {
 export const validateRelatedItems = <TRow extends RelatedOrderedItemRow>(
   rows: TRow[],
   { getRelatedId, withRelatedId, messages }: ValidateRelatedItemsConfig<TRow>,
-): FormFieldValidationResult<TRow[], FormFieldError[]> => {
-  const errorMessages: FormFieldError[] = [];
+): FormFieldValidationResult<TRow[], FormFeedbackMessages> => {
+  const errorMessages: FormFeedbackMessages = [];
   const validatedRows: TRow[] = [];
   const notifications = [];
 

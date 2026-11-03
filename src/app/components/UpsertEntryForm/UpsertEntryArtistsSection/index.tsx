@@ -4,7 +4,7 @@ import type { UpsertEntryArtistRow } from "../upsertEntryFormUtils/formValues";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
 import NotificationMessages2 from "@/app/components/NotificationMessages2";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 
 type UpsertEntryArtistRowPatch = Partial<Omit<UpsertEntryArtistRow, "id">>;
 

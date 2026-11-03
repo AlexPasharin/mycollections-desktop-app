@@ -1,11 +1,6 @@
 import { useState } from "react";
 
-export type FormFeedbackMessage = {
-  message: string;
-  sources?: PropertyKey[] | undefined;
-};
-
-export type FormFeedbackMessages = FormFeedbackMessage[];
+import type { FormFeedbackMessages } from "@/types/form";
 
 export type FormValidationFnResult<T, U = T> = {
   notifications: FormFeedbackMessages;

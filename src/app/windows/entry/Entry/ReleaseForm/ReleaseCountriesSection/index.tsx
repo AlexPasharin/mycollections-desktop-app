@@ -3,8 +3,8 @@ import type { FC } from "react";
 import type { CountrySelectionInput } from "../releaseFormUtils/formValues";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
 import type { CountryListItem } from "@/types/countries";
+import type { FormFeedbackMessages } from "@/types/form";
 
 type ReleaseCountriesSectionProps = {
   countries: CountryListItem[];

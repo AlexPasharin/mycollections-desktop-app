@@ -1,9 +1,7 @@
 import type { ReleaseFormCatNumbersDraft } from "../formValues";
 
-import type {
-  FormFeedbackMessages,
-  FormValidationFnResult,
-} from "@/hooks/useFormState";
+import type { FormValidationFnResult } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 import { formatJson } from "@/utils/common";
 import { parseYAML } from "@/utils/parsing";
 import { releaseCatNumbersSchema, type ReleaseCatNumbers } from "@/validation";

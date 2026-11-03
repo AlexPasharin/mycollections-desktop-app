@@ -25,7 +25,7 @@ import { parseReleaseCatNumbersJsonInput } from "../releaseFormUtils/validation/
 
 import FeedbackSection2 from "@/app/components/FeedbackSection2";
 import Tabs from "@/app/components/Tabs";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 import type { LabelListItem } from "@/types/labels";
 import { formatJson } from "@/utils/common";
 
