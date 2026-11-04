@@ -1,0 +1,247 @@
+import type {
+  UpsertReleaseFormCatNumbersDraft,
+  UpsertReleaseFormCountries,
+  UpsertReleaseFormEntry,
+  UpsertReleaseFormFormatInputs,
+  UpsertReleaseFormMatrixRunoutDraft,
+  UpsertReleaseFormRelatedReleaseRow,
+  CatalogueNumberRowState,
+  CountrySelectionInput,
+  ValidatedUpsertReleaseFormDraft,
+} from "./formValues";
+import { parseReleaseCatNumbersJsonInput } from "./validation/catalogueNumbersJsonInput";
+
+import type {
+  MusicalReleaseRelatedReleaseInput,
+  ReleaseByIdResultCatalogueNumbers,
+} from "@/types/releases";
+import type { TagId } from "@/types/tags";
+import { nullIfEmpty } from "@/utils/common";
+import { generalizedDateToString } from "@/utils/date";
+
+type ToUpsertMusicalReleaseInputArgs = ValidatedUpsertReleaseFormDraft & {
+  entry: UpsertReleaseFormEntry;
+};
+
+/**
+ * Build the composite payload for `createMusicalRelease` from validated form
+ * fields: the `musicalReleases` row plus the related `formatsOfReleases` and
+ * `musicalReleasesTags` rows that share the new release id.
+ *
+ * Assumes the caller has already validated every field; in particular this
+ * trusts the release date / matrix-runout drafts to be parseable, the
+ * countries / catalogue-numbers shapes to satisfy their validators, and each
+ * format row's `amount` to parse as an integer.
+ *
+ * Alt artists and freshly-typed alt names are not handled here.
+ */
+export const toUpsertMusicalReleaseInput = (
+  args: ToUpsertMusicalReleaseInputArgs,
+) => ({
+  release: toMusicalReleaseRowFromForm(args),
+  formats: toReleaseFormatsFromForm(args.formats),
+  tagIds: toReleaseTagIdsFromForm(args.selectedTags),
+  relatedReleases: toRelatedReleasesFromForm(args.relatedReleases),
+});
+
+export const toRelatedReleasesFromForm = (
+  rows: UpsertReleaseFormRelatedReleaseRow[],
+): MusicalReleaseRelatedReleaseInput[] =>
+  rows.map(({ releaseId, relation, orderNumber }) => ({
+    relatedReleaseId: releaseId,
+    relation,
+    childReleaseOrderNumber: parseInt(orderNumber, 10), // orderNumber is guaranteed to be a positive integer by the form validator
+  }));
+
+const toMusicalReleaseRowFromForm = ({
+  entry,
+  name,
+  releaseVersion,
+  releaseDate,
+  discogsUrl,
+  countries,
+  catalogueNumbers,
+  matrixRunout,
+  partOfQueenCollection,
+  relationToQueen,
+  comment,
+  conditionProblems,
+}: ToUpsertMusicalReleaseInputArgs) => ({
+  releaseVersion,
+  releaseDate: generalizedDateToString(releaseDate),
+  discogsUrl: nullIfEmpty(discogsUrl),
+  countries: toReleaseCountriesJson(countries),
+  catalogueNumbers: toReleaseCatNumbersJson(catalogueNumbers),
+  matrixRunout: toReleaseMatrixRunoutJson(matrixRunout),
+  comment: nullIfEmpty(comment),
+  conditionProblems: nullIfEmpty(conditionProblems),
+  partOfQueenCollection,
+  relationToQueen: partOfQueenCollection ? nullIfEmpty(relationToQueen) : null,
+  entryId: entry.entryId,
+  releaseAlternativeNameId: name.nameId,
+});
+
+const toReleaseFormatsFromForm = (formats: UpsertReleaseFormFormatInputs) =>
+  formats.map((format) => ({
+    formatId: format.formatId,
+    amount: parseInt(format.amount, 10),
+    pictureSleeve: format.pictureSleeve,
+    jukeboxHole: format.jukeboxHole,
+  }));
+
+const toReleaseTagIdsFromForm = (selectedTags: Set<TagId>) =>
+  Array.from(selectedTags);
+
+/**
+ * Maps the form's parallel made-in / printed-in arrays to the jsonb shape:
+ * `null` when both are empty, a plain string for a single made-in country, an
+ * array for many, or `{ "made in": ..., "printed in": ... }` when printed-in
+ * is also set. The form does not produce the CD/slipcase variant.
+ */
+export const toReleaseCountriesJson = (countries: UpsertReleaseFormCountries) => {
+  const madeIn = toCodeNamesJson(countries.madeIn);
+  const printedIn = toCodeNamesJson(countries.printedIn);
+
+  if (madeIn === null) {
+    return null;
+  }
+
+  if (printedIn === null) {
+    return madeIn;
+  }
+
+  // The validator guarantees `madeIn` is non-empty whenever `printedIn` is set,
+  // so the object form is well-formed.
+  return { "made in": madeIn, "printed in": printedIn };
+};
+
+const toCodeNamesJson = (
+  rows: CountrySelectionInput[],
+): string | string[] | null =>
+  singleOrArrayOrNull(rows.map((row) => row.codeName));
+
+export const toReleaseCatNumbersJson = (
+  draft: UpsertReleaseFormCatNumbersDraft,
+):
+  | Extract<ReleaseByIdResultCatalogueNumbers, { type: string }>["value"]
+  | null => {
+  if (draft.activeTab === "json") {
+    return parseReleaseCatNumbersJsonInput(draft.value)?.value ?? null;
+  }
+
+  return singleOrArrayOrNull(
+    draft.rows
+      .map(catNumberRowToJson)
+      .filter((row) => Object.keys(row).length > 0),
+  );
+};
+
+const catNumberRowToJson = (row: CatalogueNumberRowState) => {
+  const labels = collectNonEmptyValues(
+    row.labelInputValues.map((entry) => entry.name),
+  );
+  const labelEntry = singleOrArrayEntry(labels, "label");
+
+  if (row.shape === "flat") {
+    const catNumbers = collectNonEmptyValues(
+      row.catalogueNumberInputValues.map((entry) => entry.value),
+    );
+
+    return {
+      ...labelEntry,
+      ...singleOrArrayEntry(catNumbers, "cat_number"),
+    };
+  }
+
+  const europe = collectNonEmptyValues(
+    row.europeCatalogueNumberInputValues.map((entry) => entry.value),
+  );
+  const uk = collectNonEmptyValues(
+    row.ukCatalogueNumberInputValues.map((entry) => entry.value),
+  );
+
+  const europeJson = singleOrArrayOrNull(europe) ?? [];
+  const ukJson = singleOrArrayOrNull(uk) ?? [];
+
+  return {
+    ...labelEntry,
+    cat_numbers: { "in Europe": europeJson, "in UK": ukJson },
+  };
+};
+
+// Trims each value and drops empties so a stray placeholder input (e.g. the
+// default empty cat-number slot the user left untouched on a labels-only row)
+// doesn't leak into the JSON.
+const collectNonEmptyValues = (values: string[]): string[] => {
+  const result: string[] = [];
+
+  for (const value of values) {
+    const trimmed = value.trim();
+
+    if (trimmed.length > 0) {
+      result.push(trimmed);
+    }
+  }
+
+  return result;
+};
+
+const singleOrArrayEntry = (
+  values: string[],
+  key: string,
+): Record<string, string | string[]> => {
+  const collapsed = singleOrArrayOrNull(values);
+
+  if (collapsed === null) {
+    return {};
+  }
+
+  if (typeof collapsed === "string") {
+    return { [key]: collapsed };
+  }
+
+  const pluralKey = `${key}s`;
+
+  return { [pluralKey]: collapsed };
+};
+
+/**
+ * Maps the matrix/runout draft to the jsonb shape: `null` when the value is
+ * empty, a plain string when treated as text, otherwise the parsed JSON
+ * value. Trusts that the form has already validated the draft, so `JSON.parse`
+ * is safe here.
+ */
+export const toReleaseMatrixRunoutJson = (
+  draft: UpsertReleaseFormMatrixRunoutDraft,
+): unknown => {
+  const trimmed = draft.value.trim();
+
+  if (trimmed === "") {
+    return null;
+  }
+
+  if (draft.treatAsText) {
+    return trimmed;
+  }
+
+  return JSON.parse(trimmed);
+};
+
+/**
+ * Collapses a list to the jsonb single/array shape:
+ * `null` when empty, the single element when there is exactly one, or the
+ * whole array otherwise.
+ */
+const singleOrArrayOrNull = <T>(items: T[]): T | T[] | null => {
+  const [first, second] = items;
+
+  if (first === undefined) {
+    return null;
+  }
+
+  if (second === undefined) {
+    return first;
+  }
+
+  return items;
+};
