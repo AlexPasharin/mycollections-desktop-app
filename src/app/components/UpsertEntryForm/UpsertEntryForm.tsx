@@ -45,11 +45,7 @@ import type {
   UpdateMusicalEntryInput,
 } from "@/types/entries";
 import type { EntryTypeListItem } from "@/types/entryTypes";
-import type {
-  FormFeedback,
-  FormFeedbackMessages,
-  FeedbackNotifications,
-} from "@/types/form";
+import type { FormFeedback, FormFeedbackMessages } from "@/types/form";
 import type { TagListItem } from "@/types/tags";
 import { updateImmutableSet } from "@/utils/immutableSet";
 import { getNextOrderNumber } from "@/utils/relatedItems";
@@ -912,13 +908,15 @@ const buildUpsertEntryFeedback = (
   outcomes: UpsertEntryOutcome[],
   mode: "create" | "update",
 ): FormFeedback => {
-  const notifications: FeedbackNotifications = [];
+  const notifications: FormFeedbackMessages = [];
   const errors: FormFeedbackMessages = [];
 
   for (const outcome of outcomes) {
     if (outcome.status === "fulfilled") {
       notifications.push(
-        ...outcome.notifications.map((notification) => ({ notification })),
+        ...outcome.notifications.map((notification) => ({
+          message: notification,
+        })),
       );
     } else {
       const errorMessage = `Failed to ${mode} musical entry in ${dbSourceLabel(outcome.source)}`;

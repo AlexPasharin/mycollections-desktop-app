@@ -34,10 +34,7 @@ const ReleaseRelatedReleasesSection: FC<ReleaseRelatedReleasesSectionProps> = ({
     rows={relatedReleases}
     getRelatedId={(row) => row.releaseId}
     errors={errors}
-    notifications={notifications.map(({ message, sources }) => ({
-      notification: message,
-      sources,
-    }))}
+    notifications={notifications}
     labels={RELEASE_RELATED_ITEMS_LABELS}
     onChangeRelatedId={onChangeReleaseId}
     onChangeOrderNumber={onChangeOrderNumber}

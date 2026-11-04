@@ -5,11 +5,14 @@ import {
 } from "./validation";
 
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
-import type { InitialFormStateValue } from "@/hooks/useFormState";
 import type { ArtistByIdResult } from "@/types/artists";
 import type { RelatedItemRelation } from "@/types/common";
 import { ArtistType } from "@/types/db/database";
-import type { FormFeedbackMessages, RelatedItemRow } from "@/types/form";
+import type {
+  InitialFormStateValue,
+  FormFeedbackMessages,
+  RelatedItemRow,
+} from "@/types/form";
 import { withNewId } from "@/utils/id";
 import { validatePassThrough, validateRequiredTrimmedText } from "@/validation";
 

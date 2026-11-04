@@ -5,11 +5,7 @@ import api from "../../api";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
-import type {
-  FormFeedbackMessages,
-  FeedbackNotifications,
-  FormFeedback,
-} from "@/types/form";
+import type { FormFeedbackMessages, FormFeedback } from "@/types/form";
 import type { CreateTagInput, TagListItem } from "@/types/tags";
 import { updateImmutableSet } from "@/utils/immutableSet";
 
@@ -206,13 +202,15 @@ const formatCreateTagError = (reason: unknown): string =>
   reason instanceof Error ? reason.message : "Failed to create tag";
 
 const buildCreateTagFeedback = (outcomes: CreateTagOutcome[]): FormFeedback => {
-  const notifications: FeedbackNotifications = [];
+  const notifications: FormFeedbackMessages = [];
   const errors: FormFeedbackMessages = [];
 
   for (const outcome of outcomes) {
     if (outcome.status === "fulfilled") {
       notifications.push(
-        ...outcome.notifications.map((notification) => ({ notification })),
+        ...outcome.notifications.map((notification) => ({
+          message: notification,
+        })),
       );
     } else {
       const errorMessage = `Failed to create tag in ${dbSourceLabel(outcome.source)}`;

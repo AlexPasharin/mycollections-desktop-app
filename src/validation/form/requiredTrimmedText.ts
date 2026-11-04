@@ -1,4 +1,4 @@
-import type { FormValidationFnResult } from "@/hooks/useFormState";
+import type { FormValidationFnResult } from "@/types/form";
 
 export const validateRequiredTrimmedText = (
   value: string,

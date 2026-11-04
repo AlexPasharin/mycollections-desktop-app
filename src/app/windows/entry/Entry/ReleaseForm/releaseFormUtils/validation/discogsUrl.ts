@@ -5,7 +5,7 @@ import type {
   ValidatedReleaseFormDraft,
 } from "../formValues/formState";
 
-import type { FormValidationFn } from "@/hooks/useFormState";
+import type { FormValidationFn } from "@/types/form";
 
 export const validateDiscogsUrl: FormValidationFn<
   ReleaseFormDraft,

@@ -1,11 +1,8 @@
+import NotificationMessages2 from "../NotificationMessages2";
+
 import ErrorMessages from "@/app/components/ErrorMessages";
-import NotificationMessages from "@/app/components/NotificationMessages";
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
-import type {
-  FeedbackNotifications,
-  FormFeedbackMessages,
-  RelatedOrderedItemRow,
-} from "@/types/form";
+import type { FormFeedbackMessages, RelatedOrderedItemRow } from "@/types/form";
 
 export type RelatedItemsFormSectionLabels = {
   sectionTitle: string;
@@ -22,7 +19,7 @@ type RelatedItemsFormSectionProps<TRow extends RelatedOrderedItemRow> = {
   rows: TRow[];
   getRelatedId: (row: TRow) => string;
   errors: FormFeedbackMessages;
-  notifications: FeedbackNotifications;
+  notifications: FormFeedbackMessages;
   labels: RelatedItemsFormSectionLabels;
   onChangeRelatedId: (rowId: string, relatedId: string) => void;
   onChangeOrderNumber: (rowId: string, orderNumber: string) => void;
@@ -163,7 +160,7 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
               )}
               {(hasErrors || hasNotifications) && (
                 <div className="col-span-5">
-                  <NotificationMessages
+                  <NotificationMessages2
                     id={notificationsId}
                     messages={rowNotifications}
                   />
@@ -181,7 +178,7 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
       messages={errors.filter((error) => !error.sources?.length)}
     />
 
-    <NotificationMessages
+    <NotificationMessages2
       id={labels.notificationsId}
       messages={notifications.filter(
         (notification) => !notification.sources?.length,

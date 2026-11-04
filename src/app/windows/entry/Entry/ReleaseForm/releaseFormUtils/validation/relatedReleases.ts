@@ -3,7 +3,7 @@ import type {
   ValidatedReleaseFormDraft,
 } from "../formValues/formState";
 
-import type { FormValidationFn } from "@/hooks/useFormState";
+import type { FormValidationFn } from "@/types/form";
 import {
   validateRelatedItems,
   type ValidateRelatedItemsMessages,
@@ -28,9 +28,7 @@ export const validateRelatedReleases: FormValidationFn<
     messages: relatedReleaseMessages,
   });
 
-  const notifications = (result.notifications ?? []).map(
-    ({ notification, sources }) => ({ message: notification, sources }),
-  );
+  const notifications = result.notifications ?? [];
 
   if (!result.valid) {
     return {

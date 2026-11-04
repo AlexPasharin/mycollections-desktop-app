@@ -36,10 +36,7 @@ const UpsertEntryRelatedEntriesSection: FC<
     rows={relatedEntries}
     getRelatedId={(row) => row.entryId}
     errors={errors}
-    notifications={notifications.map(({ message, sources }) => ({
-      notification: message,
-      sources,
-    }))}
+    notifications={notifications}
     labels={ENTRY_RELATED_ITEMS_LABELS}
     onChangeRelatedId={onChangeEntryId}
     onChangeOrderNumber={onChangeOrderNumber}

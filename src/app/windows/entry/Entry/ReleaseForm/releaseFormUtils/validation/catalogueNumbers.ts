@@ -14,8 +14,8 @@ import type {
 import type {
   FormValidationFn,
   FormValidationFnResult,
-} from "@/hooks/useFormState";
-import type { FormFeedbackMessages } from "@/types/form";
+  FormFeedbackMessages,
+} from "@/types/form";
 import type { ValidationResultErrorMessages } from "@/utils/validation";
 import { uniquePropertyArraySchema } from "@/validation";
 

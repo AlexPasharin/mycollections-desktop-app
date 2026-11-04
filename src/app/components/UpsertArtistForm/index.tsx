@@ -29,11 +29,7 @@ import type {
 } from "@/types/artists";
 import type { RelatedItemRelation } from "@/types/common";
 import { ArtistType } from "@/types/db/database";
-import type {
-  FormFeedback,
-  FormFeedbackMessages,
-  FeedbackNotifications,
-} from "@/types/form";
+import type { FormFeedback, FormFeedbackMessages } from "@/types/form";
 import { formatArtistTypeLabel } from "@/utils/artist";
 import { updateImmutableSet } from "@/utils/immutableSet";
 
@@ -770,13 +766,15 @@ const buildUpsertArtistFeedback = (
   outcomes: UpsertArtistOutcome[],
   mode: "create" | "update",
 ): FormFeedback => {
-  const notifications: FeedbackNotifications = [];
+  const notifications: FormFeedbackMessages = [];
   const errors: FormFeedbackMessages = [];
 
   for (const outcome of outcomes) {
     if (outcome.status === "fulfilled") {
       notifications.push(
-        ...outcome.notifications.map((notification) => ({ notification })),
+        ...outcome.notifications.map((notification) => ({
+          message: notification,
+        })),
       );
     } else {
       const errorMessage = `Failed to ${mode} artist in ${dbSourceLabel(outcome.source)}`;
