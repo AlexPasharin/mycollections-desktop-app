@@ -2,9 +2,15 @@ import {
   type UpsertReleaseFormCatNumbersDraft,
   catNumbersToFormValue,
 } from "./catNumbers";
-import { type UpsertReleaseFormCountries, countriesToFormValue } from "./countries";
+import {
+  type UpsertReleaseFormCountries,
+  countriesToFormValue,
+} from "./countries";
 import type { UpsertReleaseFormEntry } from "./entry";
-import { formatsToFormValue, type UpsertReleaseFormFormatInputs } from "./formats";
+import {
+  formatsToFormValue,
+  type UpsertReleaseFormFormatInputs,
+} from "./formats";
 import {
   matrixRunoutToFormValue,
   type UpsertReleaseFormMatrixRunoutDraft,

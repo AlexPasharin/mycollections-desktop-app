@@ -28,7 +28,9 @@ type UpsertReleaseFormFormatsSectionProps = {
   onBlur: () => void;
 };
 
-const UpsertReleaseFormFormatsSection: FC<UpsertReleaseFormFormatsSectionProps> = ({
+const UpsertReleaseFormFormatsSection: FC<
+  UpsertReleaseFormFormatsSectionProps
+> = ({
   formatInputs: formats,
   releasesFormats,
   errors,
@@ -45,7 +47,10 @@ const UpsertReleaseFormFormatsSection: FC<UpsertReleaseFormFormatsSectionProps> 
     [releasesFormats],
   );
 
-  const patchFormat = (rowId: string, patch: UpsertReleaseFormFormatRowPatch) => {
+  const patchFormat = (
+    rowId: string,
+    patch: UpsertReleaseFormFormatRowPatch,
+  ) => {
     setFormats((prevFormatRows) =>
       prevFormatRows.map((formatRow) =>
         formatRow.id === rowId ? { ...formatRow, ...patch } : formatRow,

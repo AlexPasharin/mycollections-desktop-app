@@ -17,7 +17,11 @@ import { strictStringToIntSchema } from "@/validation";
 
 export const validateReleaseFormats = (
   formats: ReleasesFormatListItem[],
-): FormValidationFn<UpsertReleaseFormDraft, ValidatedUpsertReleaseFormDraft, "formats"> => {
+): FormValidationFn<
+  UpsertReleaseFormDraft,
+  ValidatedUpsertReleaseFormDraft,
+  "formats"
+> => {
   const validationSchema = upsertReleaseFormFormatInputArraySchema(formats);
 
   return (state) => {
@@ -42,7 +46,9 @@ export const validateReleaseFormats = (
   };
 };
 
-const upsertReleaseFormFormatInputArraySchema = (formats: ReleasesFormatListItem[]) =>
+const upsertReleaseFormFormatInputArraySchema = (
+  formats: ReleasesFormatListItem[],
+) =>
   z
     .array(upsertReleaseFormFormatInputSchema(formats))
     .superRefine((filterRows, ctx) => {
@@ -73,7 +79,9 @@ const upsertReleaseFormFormatAmountSchema = z
   .union([z.int(), z.string().trim().pipe(strictStringToIntSchema)])
   .pipe(z.int().min(1, { error: AMOUNT_MIN_MESSAGE }));
 
-const upsertReleaseFormFormatInputSchema = (formats: ReleasesFormatListItem[]) => {
+const upsertReleaseFormFormatInputSchema = (
+  formats: ReleasesFormatListItem[],
+) => {
   const sevenInchFormat = formats.find(
     (f) => f.shortName === SEVEN_INCH_FORMAT_SHORT_NAME,
   );

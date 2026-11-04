@@ -65,5 +65,6 @@ export const isCatalogueNumbersInputFieldKey = (
 export const isCountriesInputFieldKey = (key: UpsertReleaseFormInputFieldKey) =>
   typeof key === "object" && "countriesSubsection" in key;
 
-export const isRelatedReleasesInputFieldKey = (key: UpsertReleaseFormInputFieldKey) =>
-  typeof key === "object" && "relatedReleaseRowId" in key;
+export const isRelatedReleasesInputFieldKey = (
+  key: UpsertReleaseFormInputFieldKey,
+) => typeof key === "object" && "relatedReleaseRowId" in key;

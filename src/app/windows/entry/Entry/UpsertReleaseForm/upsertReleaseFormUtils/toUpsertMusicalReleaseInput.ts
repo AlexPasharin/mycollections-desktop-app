@@ -98,7 +98,9 @@ const toReleaseTagIdsFromForm = (selectedTags: Set<TagId>) =>
  * array for many, or `{ "made in": ..., "printed in": ... }` when printed-in
  * is also set. The form does not produce the CD/slipcase variant.
  */
-export const toReleaseCountriesJson = (countries: UpsertReleaseFormCountries) => {
+export const toReleaseCountriesJson = (
+  countries: UpsertReleaseFormCountries,
+) => {
   const madeIn = toCodeNamesJson(countries.madeIn);
   const printedIn = toCodeNamesJson(countries.printedIn);
 

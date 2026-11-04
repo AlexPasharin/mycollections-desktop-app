@@ -8,9 +8,10 @@ export type UpsertReleaseFormRelatedReleaseRow = RelatedOrderedItemRow & {
   releaseId: string;
 };
 
-export type ValidUpsertReleaseFormRelatedReleaseRow = UpsertReleaseFormRelatedReleaseRow & {
-  relation: RelatedItemRelation;
-};
+export type ValidUpsertReleaseFormRelatedReleaseRow =
+  UpsertReleaseFormRelatedReleaseRow & {
+    relation: RelatedItemRelation;
+  };
 
 export const defaultRelatedReleaseRow = (
   childReleaseOrderNumber: number | null,

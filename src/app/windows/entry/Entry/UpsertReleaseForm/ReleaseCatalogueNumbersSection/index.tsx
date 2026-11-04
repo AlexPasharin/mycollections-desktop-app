@@ -39,7 +39,9 @@ const CATALOGUE_NUMBERS_JSON_TAB_ID = "release-catalogue-numbers-json-tab";
 const CATALOGUE_NUMBERS_JSON_PANEL_ID = "release-catalogue-numbers-json-panel";
 
 export type SetReleaseCatalogueNumbers = (
-  update: (prev: UpsertReleaseFormCatNumbersDraft) => UpsertReleaseFormCatNumbersDraft,
+  update: (
+    prev: UpsertReleaseFormCatNumbersDraft,
+  ) => UpsertReleaseFormCatNumbersDraft,
 ) => void;
 
 export type ReleaseCatalogueNumbersSectionProps = {

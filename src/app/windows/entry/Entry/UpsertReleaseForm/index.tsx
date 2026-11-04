@@ -1,6 +1,8 @@
 import { useMemo, type FC } from "react";
 
-import UpsertReleaseForm, { type UpsertReleaseFormProps } from "./UpsertReleaseForm";
+import UpsertReleaseForm, {
+  type UpsertReleaseFormProps,
+} from "./UpsertReleaseForm";
 import {
   initialUpsertReleaseFormStateValue,
   type UpsertReleaseFormInitialState,

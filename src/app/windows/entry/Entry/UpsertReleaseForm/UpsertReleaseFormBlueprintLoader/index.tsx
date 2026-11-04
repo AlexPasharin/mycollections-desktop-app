@@ -13,10 +13,9 @@ type UpsertReleaseFormBlueprintLoaderProps = {
 const RELEASE_ID_INPUT_ID = "add-release-blueprint-release-id";
 const RELEASE_ID_ERROR_ID = "add-release-blueprint-release-id-error";
 
-const UpsertReleaseFormBlueprintLoader: FC<UpsertReleaseFormBlueprintLoaderProps> = ({
-  primaryDbSource,
-  onReleaseFetched,
-}) => {
+const UpsertReleaseFormBlueprintLoader: FC<
+  UpsertReleaseFormBlueprintLoaderProps
+> = ({ primaryDbSource, onReleaseFetched }) => {
   const [releaseIdInput, setReleaseIdInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();

@@ -81,9 +81,12 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
   const [tagsLoading, setTagsLoading] = useState(true);
   const [tagsLoadFailed, setTagsLoadFailed] = useState(false);
 
-  const upsertReleaseFormStateRef = useRef<UpsertReleaseFormInitialState | null>(null);
+  const upsertReleaseFormStateRef =
+    useRef<UpsertReleaseFormInitialState | null>(null);
 
-  const setUpsertReleaseFormStateRef = (state: UpsertReleaseFormInitialState | null) => {
+  const setUpsertReleaseFormStateRef = (
+    state: UpsertReleaseFormInitialState | null,
+  ) => {
     upsertReleaseFormStateRef.current = state;
   };
 
@@ -127,7 +130,8 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
 
   const activeTabId = activeTab.id;
   const upsertReleaseFormTabData = activeTab.data;
-  const isUpsertReleaseFormUpdateMode = upsertReleaseFormTabData?.mode === "update";
+  const isUpsertReleaseFormUpdateMode =
+    upsertReleaseFormTabData?.mode === "update";
 
   const handleTabChange = (tabId: EntryTabId) => {
     setActiveTab(entryTabInitialState(tabId));
