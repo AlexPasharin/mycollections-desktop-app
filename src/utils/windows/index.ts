@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, shell } from "electron";
 
 import appWindows from "@/app/windows";
 import type { AppWindowName } from "@/appConstants/appWindows";
@@ -14,6 +14,14 @@ const createWindow =
       webPreferences: {
         preload,
       },
+    });
+
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+      if (/^https?:\/\//.test(url)) {
+        void shell.openExternal(url);
+      }
+
+      return { action: "deny" };
     });
 
     const url =
