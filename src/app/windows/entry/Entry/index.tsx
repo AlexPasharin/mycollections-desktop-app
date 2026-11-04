@@ -3,9 +3,9 @@ import { useEffect, useMemo, useRef, useState, type FC } from "react";
 import EntryArtists from "./EntryArtists";
 import EntryDetailsPanel from "./EntryDetailsPanel";
 import EntryReleases from "./EntryReleases";
+import type { UpsertReleaseFormTabSharedData } from "./types";
 import UpsertReleaseForm from "./UpsertReleaseForm";
 import { type UpsertReleaseFormInitialState } from "./UpsertReleaseForm/upsertReleaseFormUtils/formValues";
-import type { UpsertReleaseFormTabSharedData } from "./types";
 
 import FeedbackSection from "@/app/components/FeedbackSection";
 import Tabs from "@/app/components/Tabs";

@@ -8,6 +8,9 @@ import {
 
 import ReleaseCatalogueNumbersSection from "./ReleaseCatalogueNumbersSection";
 import ReleaseCountriesSection from "./ReleaseCountriesSection";
+import ReleaseMatrixRunoutField from "./ReleaseMatrixRunoutField";
+import ReleaseNameField from "./ReleaseNameField";
+import ReleaseRelatedReleasesSection from "./ReleaseRelatedReleasesSection";
 import UpsertReleaseFormBlueprintLoader from "./UpsertReleaseFormBlueprintLoader";
 import UpsertReleaseFormFormatsSection from "./UpsertReleaseFormFormatsSection";
 import UpsertReleaseFormPreview from "./UpsertReleaseFormPreview";
@@ -31,9 +34,6 @@ import {
   type ValidatedUpsertReleaseFormDraft,
 } from "./upsertReleaseFormUtils/formValues";
 import { toUpsertMusicalReleaseInput } from "./upsertReleaseFormUtils/toUpsertMusicalReleaseInput";
-import ReleaseMatrixRunoutField from "./ReleaseMatrixRunoutField";
-import ReleaseNameField from "./ReleaseNameField";
-import ReleaseRelatedReleasesSection from "./ReleaseRelatedReleasesSection";
 
 import type {
   UpsertReleaseFormTabCreateModeSharedData,
