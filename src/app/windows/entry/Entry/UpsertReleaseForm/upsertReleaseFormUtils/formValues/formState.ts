@@ -121,9 +121,8 @@ export const initialUpsertReleaseFormStateValue = ({
   },
   releaseDate: {
     value: releaseDateToFormValue(
-      releaseBlueprint
-        ? releaseBlueprint.releaseDate
-        : entry.originalReleaseDate,
+      releaseBlueprint?.releaseDate,
+      entry.originalReleaseDate,
     ),
     validationFn: (state) =>
       validateReleaseDate(state.releaseDate.value, entry.originalReleaseDate),

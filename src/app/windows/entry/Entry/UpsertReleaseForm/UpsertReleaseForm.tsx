@@ -151,7 +151,17 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
     validateForm,
     resetFormState,
     toInitialFormStateValue,
-  } = useFormState({ initialValue: initialFormState });
+  } = useFormState({ draftValue: initialFormState });
+
+  const resetFormStateEvent = useEffectEvent(
+    (draft: UpsertReleaseFormInitialState) => {
+      resetFormState(draft);
+    },
+  );
+
+  useEffect(() => {
+    resetFormStateEvent(initialFormState);
+  }, [initialFormState]);
 
   const [validatedForm, setValidatedForm] =
     useState<ValidatedUpsertReleaseFormDraft | null>(null);
