@@ -28,12 +28,12 @@ export const validateRelatedReleases: FormValidationFn<
     messages: relatedReleaseMessages,
   });
 
-  const notifications = result.notifications ?? [];
+  const notifications = result.notifications;
 
   if (!result.valid) {
     return {
       value: result.value,
-      errors: result.errorMessages,
+      errors: result.errorMessages ?? [],
       notifications,
     };
   }
