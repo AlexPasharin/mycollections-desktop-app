@@ -1,10 +1,6 @@
 import { validate as isValidUuid } from "uuid";
 
-import type {
-  FormFieldError,
-  FormFieldValidationResult,
-  RelatedOrderedItemRow,
-} from "@/types/form";
+import type { FormFeedbackMessages, RelatedOrderedItemRow } from "@/types/form";
 import { isChildReleasesOrderNumbersSequential } from "@/utils/relatedItems";
 import { strictStringToIntSchema } from "@/validation";
 
@@ -26,10 +22,10 @@ type ValidateRelatedItemsConfig<TRow extends RelatedOrderedItemRow> = {
 export const validateRelatedItems = <TRow extends RelatedOrderedItemRow>(
   rows: TRow[],
   { getRelatedId, withRelatedId, messages }: ValidateRelatedItemsConfig<TRow>,
-): FormFieldValidationResult<TRow[], FormFieldError[]> => {
-  const errorMessages: FormFieldError[] = [];
+) => {
+  const errorMessages: FormFeedbackMessages = [];
   const validatedRows: TRow[] = [];
-  const notifications = [];
+  const notifications: FormFeedbackMessages = [];
 
   const usedUuids = new Map<string, string[]>();
 
@@ -66,7 +62,7 @@ export const validateRelatedItems = <TRow extends RelatedOrderedItemRow>(
 
     if (trimmedRelatedId !== relatedId) {
       notifications.push({
-        notification: messages.trimmedRelatedId(trimmedRelatedId),
+        message: messages.trimmedRelatedId(trimmedRelatedId),
         sources: [rowId, "id"],
       });
     }
@@ -97,13 +93,13 @@ export const validateRelatedItems = <TRow extends RelatedOrderedItemRow>(
       valid: false,
       value: validatedRows,
       errorMessages,
-      notifications: notifications.length > 0 ? notifications : undefined,
+      notifications,
     };
   }
 
   return {
     valid: true,
     value: validatedRows,
-    notifications: notifications.length > 0 ? notifications : undefined,
+    notifications,
   };
 };

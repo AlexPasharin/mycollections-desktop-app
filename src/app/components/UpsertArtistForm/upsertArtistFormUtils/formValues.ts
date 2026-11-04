@@ -5,11 +5,14 @@ import {
 } from "./validation";
 
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
-import type { InitialFormStateValue } from "@/hooks/useFormState";
 import type { ArtistByIdResult } from "@/types/artists";
 import type { RelatedItemRelation } from "@/types/common";
 import { ArtistType } from "@/types/db/database";
-import type { FormFieldError, RelatedItemRow } from "@/types/form";
+import type {
+  InitialFormStateValue,
+  FormFeedbackMessages,
+  RelatedItemRow,
+} from "@/types/form";
 import { withNewId } from "@/utils/id";
 import { validatePassThrough, validateRequiredTrimmedText } from "@/validation";
 
@@ -29,7 +32,10 @@ export type ValidUpsertArtistRelatedParentRow = UpsertArtistRelatedArtistRow & {
   relation: RelatedItemRelation;
 };
 
-export type UpsertArtistRelatedParentsErrors = Record<string, FormFieldError[]>;
+export type UpsertArtistRelatedParentsErrors = Record<
+  string,
+  FormFeedbackMessages
+>;
 
 export type UpsertArtistFormDraft = {
   name: string;

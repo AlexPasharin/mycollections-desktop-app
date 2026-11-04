@@ -30,11 +30,8 @@ import {
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES } from "@/db/db-source-options";
-import type {
-  FormStateType,
-  InitialFormStateValue,
-} from "@/hooks/useFormState";
 import type { CountryListItem } from "@/types/countries";
+import type { FormStateType, InitialFormStateValue } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { ReleaseByIdResult } from "@/types/releases";
 import type { TagId } from "@/types/tags";

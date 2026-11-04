@@ -1,6 +1,6 @@
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
-import type { FormValidationFnResult } from "@/hooks/useFormState";
 import type { GeneralizedDate } from "@/types/date";
+import type { FormValidationFnResult } from "@/types/form";
 import { createGeneralizedDateSchema } from "@/validation";
 
 export const validateReleaseDate = (

@@ -2,7 +2,7 @@ import type { FC } from "react";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
 import NotificationMessages2 from "@/app/components/NotificationMessages2";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 
 type FeedbackSectionProps = {
   notificationsId: string;

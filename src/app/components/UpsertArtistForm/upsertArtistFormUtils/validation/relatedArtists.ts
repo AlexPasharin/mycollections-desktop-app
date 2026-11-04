@@ -6,9 +6,9 @@ import type {
 } from "../formValues";
 
 import type {
-  FormFeedbackMessages,
   FormValidationFnResult,
-} from "@/hooks/useFormState";
+  FormFeedbackMessages,
+} from "@/types/form";
 
 export const validateRelatedArtists = (
   rows: UpsertArtistRelatedArtistRow[],

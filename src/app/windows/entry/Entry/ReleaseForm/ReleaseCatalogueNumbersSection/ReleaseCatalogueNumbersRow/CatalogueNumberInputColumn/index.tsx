@@ -14,7 +14,7 @@ import {
 } from "../classNames";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 
 export type CatalogueNumberInputColumnProps = {
   /** Visible heading shown once at the top of the column (e.g. "Catalogue

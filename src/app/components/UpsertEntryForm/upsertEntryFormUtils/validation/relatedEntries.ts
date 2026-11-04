@@ -3,7 +3,7 @@ import type {
   ValidatedUpsertEntryFormDraft,
 } from "../formValues";
 
-import type { FormValidationFn } from "@/hooks/useFormState";
+import type { FormValidationFn } from "@/types/form";
 import {
   validateRelatedItems,
   type ValidateRelatedItemsMessages,
@@ -29,14 +29,12 @@ export const validateRelatedEntries: FormValidationFn<
     messages: relatedEntryMessages,
   });
 
-  const notifications = (result.notifications ?? []).map(
-    ({ notification, sources }) => ({ message: notification, sources }),
-  );
+  const notifications = result.notifications;
 
   if (!result.valid) {
     return {
       value: result.value,
-      errors: result.errorMessages,
+      errors: result.errorMessages ?? [],
       notifications,
     };
   }

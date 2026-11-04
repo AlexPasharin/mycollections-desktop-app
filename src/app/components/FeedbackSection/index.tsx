@@ -1,14 +1,15 @@
 import type { FC } from "react";
 
+import NotificationMessages2 from "../NotificationMessages2";
+
 import ErrorMessages from "@/app/components/ErrorMessages";
-import NotificationMessages from "@/app/components/NotificationMessages";
-import type { FormFeedback } from "@/types/form";
+import type { FormFeedbackMessages } from "@/types/form";
 
 type FeedbackSectionProps = {
   notificationsId: string;
   errorsId: string;
-  notifications: FormFeedback["notifications"];
-  errors: FormFeedback["errors"];
+  notifications: FormFeedbackMessages;
+  errors: FormFeedbackMessages;
 };
 
 const FeedbackSection: FC<FeedbackSectionProps> = ({
@@ -18,7 +19,7 @@ const FeedbackSection: FC<FeedbackSectionProps> = ({
   errors,
 }) => (
   <>
-    <NotificationMessages id={notificationsId} messages={notifications} />
+    <NotificationMessages2 id={notificationsId} messages={notifications} />
     <ErrorMessages id={errorsId} messages={errors} />
   </>
 );

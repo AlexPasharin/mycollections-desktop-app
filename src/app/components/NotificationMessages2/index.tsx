@@ -1,7 +1,7 @@
 import type { FC } from "react";
 
 import Messages from "@/app/components/Messages";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 
 export type NotificationMessagesProps = {
   id: string;

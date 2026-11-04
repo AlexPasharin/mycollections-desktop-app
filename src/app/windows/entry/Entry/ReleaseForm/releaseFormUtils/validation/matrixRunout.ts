@@ -5,10 +5,7 @@ import type {
   ValidatedReleaseFormDraft,
 } from "../formValues/formState";
 
-import type {
-  FormFeedbackMessages,
-  FormValidationFn,
-} from "@/hooks/useFormState";
+import type { FormValidationFn, FormFeedbackMessages } from "@/types/form";
 import { formatJson } from "@/utils/common";
 import { parseYAML } from "@/utils/parsing";
 import { releaseMatrixRunoutSchema } from "@/validation";

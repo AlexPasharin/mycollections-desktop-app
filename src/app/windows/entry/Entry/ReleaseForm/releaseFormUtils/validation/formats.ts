@@ -7,10 +7,7 @@ import type {
 } from "../formValues/formState";
 
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
-import type {
-  FormValidationFn,
-  FormFeedbackMessages,
-} from "@/hooks/useFormState";
+import type { FormValidationFn, FormFeedbackMessages } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import {
   addCustomValidationIssues,

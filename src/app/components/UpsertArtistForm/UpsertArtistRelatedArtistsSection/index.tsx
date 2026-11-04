@@ -4,8 +4,8 @@ import FeedbackSection2 from "../../FeedbackSection2";
 import type { UpsertArtistRelatedArtistRow } from "../upsertArtistFormUtils/formValues";
 
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
 import type { RelatedItemRelation } from "@/types/common";
+import type { FormFeedbackMessages } from "@/types/form";
 
 type UpsertArtistRelatedArtistsSectionProps = {
   relatedArtists: UpsertArtistRelatedArtistRow[];

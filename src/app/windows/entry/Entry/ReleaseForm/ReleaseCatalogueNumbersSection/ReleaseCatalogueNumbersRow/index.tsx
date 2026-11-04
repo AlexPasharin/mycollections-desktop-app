@@ -24,7 +24,7 @@ import type {
 } from "../../releaseFormUtils/formValues";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 import type { LabelListItem } from "@/types/labels";
 
 export type ReleaseCatalogueNumbersRowProps = {

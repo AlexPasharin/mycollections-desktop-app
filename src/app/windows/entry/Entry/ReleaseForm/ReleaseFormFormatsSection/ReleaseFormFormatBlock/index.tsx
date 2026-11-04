@@ -8,7 +8,7 @@ import type { ReleaseFormFormatInput } from "../../releaseFormUtils/formValues";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
 import { SEVEN_INCH_FORMAT_SHORT_NAME } from "@/constants";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
 
 export type ReleaseFormFormatRowPatch = Partial<

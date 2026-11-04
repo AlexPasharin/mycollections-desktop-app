@@ -3,7 +3,7 @@ import type { FC } from "react";
 import type { UpsertEntryAltNameRow } from "../upsertEntryFormUtils/formValues";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 
 type UpsertEntryAltNamesSectionProps = {
   altNames: UpsertEntryAltNameRow[];

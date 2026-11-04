@@ -1,58 +1,57 @@
 import type { RelatedItemRelation } from "../common";
 
-type FeedbackError = {
+type FormFeedbackMessage = {
   message: string;
-};
-
-export type FormFieldError = FeedbackError & {
   sources?: PropertyKey[] | undefined;
 };
 
-type FeedbackNotification = {
-  notification: string;
-  sources?: PropertyKey[] | undefined;
-};
+export type FormFeedbackMessages = FormFeedbackMessage[];
 
-export type FeedbackNotifications = FeedbackNotification[];
-
-export type FormFieldValidationResult<
-  T = string,
-  E = FormFieldError[],
-  EResult = T,
-> =
+export type FormValidationFnResult<T, U = T> = {
+  notifications: FormFeedbackMessages;
+} & (
   | {
-      valid: true;
-      value: T;
-      notifications?: FeedbackNotifications | undefined;
+      value?: never;
+      validatedValue: U;
+      errors?: never;
     }
   | {
-      valid: false;
-      value: EResult;
-      errorMessages: E;
-      notifications?: FeedbackNotifications | undefined;
-    };
+      value: T;
+      errors: FormFeedbackMessages;
+      validatedValue?: never;
+    }
+);
 
-export type FormField<
-  T = string,
-  U = FormFieldError[],
-  VResult = T,
-  EResult = T,
+export type FormValidationFn<
+  T extends Record<PropertyKey, unknown>,
+  U extends T = T,
+  K extends keyof T = keyof T,
+> = (state: FormStateType<T, U>) => FormValidationFnResult<T[K], U[K]>;
+
+export type InitialFormStateValue<
+  T extends Record<PropertyKey, unknown>,
+  U extends T = T,
 > = {
-  value: T;
-  valid: boolean;
-  validationFn: (
-    value: T,
-    form?: Record<string, FormField<unknown, unknown, unknown, unknown>>,
-  ) => FormFieldValidationResult<VResult, U, EResult>;
-  errors: U;
-  notifications: FeedbackNotifications;
+  [key in keyof T]: {
+    value: T[key];
+    validationFn: FormValidationFn<T, U, key>;
+  };
 };
 
-export type FeedbackErrors = FeedbackError[];
+export type FormStateType<
+  T extends Record<PropertyKey, unknown>,
+  U extends T = T,
+> = {
+  [key in keyof T]: InitialFormStateValue<T, U>[key] & {
+    validatedValue: U[key] | null;
+    errors: FormFeedbackMessages;
+    notifications: FormFeedbackMessages;
+  };
+};
 
 export type FormFeedback = {
-  notifications: FeedbackNotifications;
-  errors: FeedbackErrors;
+  notifications: FormFeedbackMessages;
+  errors: FormFeedbackMessages;
 };
 export type RelatedItemRow<Relation extends string = RelatedItemRelation> = {
   id: string;

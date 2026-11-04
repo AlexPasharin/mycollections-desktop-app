@@ -5,7 +5,7 @@ import type { ReleaseFormRelatedReleaseRow } from "../releaseFormUtils/formValue
 import RelatedItemsFormSection, {
   type RelatedItemsFormSectionLabels,
 } from "@/app/components/RelatedItemsFormSection";
-import type { FormFeedbackMessages } from "@/hooks/useFormState";
+import type { FormFeedbackMessages } from "@/types/form";
 
 type ReleaseRelatedReleasesSectionProps = {
   relatedReleases: ReleaseFormRelatedReleaseRow[];
@@ -34,10 +34,7 @@ const ReleaseRelatedReleasesSection: FC<ReleaseRelatedReleasesSectionProps> = ({
     rows={relatedReleases}
     getRelatedId={(row) => row.releaseId}
     errors={errors}
-    notifications={notifications.map(({ message, sources }) => ({
-      notification: message,
-      sources,
-    }))}
+    notifications={notifications}
     labels={RELEASE_RELATED_ITEMS_LABELS}
     onChangeRelatedId={onChangeReleaseId}
     onChangeOrderNumber={onChangeOrderNumber}
