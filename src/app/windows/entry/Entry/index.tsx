@@ -69,6 +69,9 @@ const EDIT_ENTRY_UPDATE_NOTIFICATIONS_ID = "edit-entry-update-notifications";
 const EDIT_ENTRY_UPDATE_ERRORS_ID = "edit-entry-update-errors";
 
 const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
+  const [upsertReleaseFormDbSources, setUpsertReleaseFormDbSources] = useState<
+    ReadonlySet<DbSource>
+  >(new Set(ALL_DB_SOURCES));
   const [focusedReleaseId, setFocusedReleaseId] = useState<string | null>(
     readFocusedReleaseIdFromUrl,
   );
@@ -176,8 +179,6 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
   };
 
   const handleEditRelease = (release: ReleaseByIdResult) => {
-    const dbSources = upsertReleaseFormStateRef.current?.dbSources.value;
-
     setUpsertReleaseFormStateRef(null);
     setActiveTab({
       id: "releaseUpsertForm",
@@ -185,27 +186,24 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
         mode: "update",
         releaseId: release.releaseId,
         releaseBlueprint: release,
-        dbSources,
       },
     });
   };
 
   const handleUseReleaseAsBlueprint = (
-    releaseBlueprint: ReleaseByIdResult,
-    dbSources = upsertReleaseFormStateRef.current?.dbSources.value,
+    releaseBlueprint: ReleaseByIdResult | undefined,
   ) => {
     setUpsertReleaseFormStateRef(null);
 
     setActiveTab((tab) => {
       const mode = tab.data?.mode ?? "create";
 
-      if (mode === "create") {
+      if (mode === "create" || !releaseBlueprint) {
         return {
           id: "releaseUpsertForm",
           data: {
-            mode,
+            mode: "create",
             releaseBlueprint,
-            dbSources,
           },
         };
       }
@@ -213,10 +211,9 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
       return {
         id: "releaseUpsertForm",
         data: {
-          mode,
+          mode: "update",
           releaseId: tab.data?.releaseId ?? releaseBlueprint.releaseId,
           releaseBlueprint,
-          dbSources,
         },
       };
     });
@@ -448,6 +445,8 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
                 <UpsertReleaseForm
                   entry={sanitizedEntry}
                   primaryDbSource={primaryDbSource}
+                  dbSources={upsertReleaseFormDbSources}
+                  setDbSources={setUpsertReleaseFormDbSources}
                   tags={tags}
                   allFormats={allFormats}
                   labels={labels}
@@ -465,18 +464,17 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
                   persistedFormState={upsertReleaseFormStateRef.current}
                   setPersistedFormState={setUpsertReleaseFormStateRef}
                   setAddReleaseMode={() => handleTabChange("releaseUpsertForm")}
+                  onUseReleaseAsBlueprint={handleUseReleaseAsBlueprint}
                   tabData={
                     isUpsertReleaseFormUpdateMode
                       ? {
                           ...upsertReleaseFormTabData,
                           onReleaseUpdated: handleReleaseUpdated,
-                          onUseReleaseAsBlueprint: handleUseReleaseAsBlueprint,
                         }
                       : {
                           ...(upsertReleaseFormTabData ??
                             upsertReleaseFormTabInitialStateDate),
                           onReleaseCreated: handleReleaseCreated,
-                          onUseReleaseAsBlueprint: handleUseReleaseAsBlueprint,
                         }
                   }
                 />

@@ -11,7 +11,6 @@ import ReleaseCountriesSection from "./ReleaseCountriesSection";
 import ReleaseMatrixRunoutField from "./ReleaseMatrixRunoutField";
 import ReleaseNameField from "./ReleaseNameField";
 import ReleaseRelatedReleasesSection from "./ReleaseRelatedReleasesSection";
-import UpsertReleaseFormBlueprintLoader from "./UpsertReleaseFormBlueprintLoader";
 import UpsertReleaseFormFormatsSection from "./UpsertReleaseFormFormatsSection";
 import UpsertReleaseFormPreview from "./UpsertReleaseFormPreview";
 import {
@@ -55,10 +54,7 @@ import useFormState from "@/hooks/useFormState";
 import type { CountryListItem } from "@/types/countries";
 import type { ReleasesFormatListItem } from "@/types/formats";
 import type { LabelListItem } from "@/types/labels";
-import type {
-  CreateMusicalReleaseInput,
-  ReleaseByIdResult,
-} from "@/types/releases";
+import type { CreateMusicalReleaseInput } from "@/types/releases";
 import type { TagListItem } from "@/types/tags";
 import { isDateInputFieldKey } from "@/utils/common";
 import { updateImmutableSet } from "@/utils/immutableSet";
@@ -71,10 +67,6 @@ export type UpsertReleaseFormTabData =
         notifications: string[],
         errors: string[],
       ) => void;
-      onUseReleaseAsBlueprint: (
-        releaseBlueprint: ReleaseByIdResult,
-        dbSources?: ReadonlySet<DbSource>,
-      ) => void;
     })
   | (UpsertReleaseFormTabUpdateModeSharedData & {
       onReleaseUpdated: (
@@ -82,13 +74,11 @@ export type UpsertReleaseFormTabData =
         notifications: string[],
         errors: string[],
       ) => void;
-      onUseReleaseAsBlueprint: (
-        releaseBlueprint: ReleaseByIdResult,
-        dbSources?: ReadonlySet<DbSource>,
-      ) => void;
     });
 
 export type UpsertReleaseFormProps = {
+  dbSources: ReadonlySet<DbSource>;
+  setDbSources: (dbSources: ReadonlySet<DbSource>) => void;
   entry: UpsertReleaseFormEntry;
   primaryDbSource: DbSource;
   allFormats: ReleasesFormatListItem[];
@@ -98,7 +88,6 @@ export type UpsertReleaseFormProps = {
   initialFormState: UpsertReleaseFormInitialState;
   onPersistFormState: (state: UpsertReleaseFormInitialState) => void;
   tabData: UpsertReleaseFormTabData;
-  setAddReleaseMode: () => void;
 };
 
 const RELEASE_DATE_FIELD_ERROR_ID = "add-release-date-error";
@@ -116,7 +105,7 @@ const RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID =
 
 const fieldClassName = "mb-[0.65rem] flex flex-col gap-[0.35rem]";
 const headingClassName = "m-0 mb-3 text-[1em] font-semibold leading-[1.35]";
-const cancelButtonClassName =
+export const cancelButtonClassName =
   "cursor-pointer rounded-md border border-[#bcbcbc] bg-white px-[0.9rem] py-[0.35rem] font-medium text-[#333] hover:enabled:border-[#9a9a9a] hover:enabled:bg-[#f1f1f1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a5fb4]";
 const inputClassName = "px-2 py-[0.35rem] text-[1em]";
 const textareaClassName =
@@ -132,7 +121,8 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
   initialFormState,
   onPersistFormState,
   tabData,
-  setAddReleaseMode,
+  dbSources,
+  setDbSources,
 }) => {
   const isUpdateMode = tabData.mode === "update";
 
@@ -153,16 +143,6 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
     toInitialFormStateValue,
   } = useFormState({ initialValue: initialFormState });
 
-  const resetFormStateEvent = useEffectEvent(
-    (draft: UpsertReleaseFormInitialState) => {
-      resetFormState(draft);
-    },
-  );
-
-  useEffect(() => {
-    resetFormStateEvent(initialFormState);
-  }, [initialFormState]);
-
   const [validatedForm, setValidatedForm] =
     useState<ValidatedUpsertReleaseFormDraft | null>(null);
 
@@ -172,7 +152,6 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
         entry,
         allFormats,
         allCountries,
-        dbSources: tabData.dbSources,
         mode: tabData.mode,
       }),
     );
@@ -433,11 +412,11 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
   };
 
   const handleToggleDbSource = (source: DbSource) => {
-    setFieldValue("dbSources", (prev) =>
+    setDbSources(
       updateImmutableSet(
         source,
-        prev.dbSources.value.has(source) ? "remove" : "add",
-      )(prev.dbSources.value),
+        dbSources.has(source) ? "remove" : "add",
+      )(dbSources),
     );
   };
 
@@ -463,9 +442,7 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
     // re-order targets to ensure the primary source comes first
     const orderedTargets = [
       primaryDbSource,
-      ...Array.from(formState.dbSources.value).filter(
-        (source) => source !== primaryDbSource,
-      ),
+      ...Array.from(dbSources).filter((source) => source !== primaryDbSource),
     ];
     const savePromise = isUpdateMode
       ? updateReleasesAcrossDbSources(
@@ -570,28 +547,10 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
     .join(" ");
 
   return (
-    <div className="mt-4">
-      <form
-        className="box-border rounded-xl border border-black/18 bg-white p-[1.1rem_1.25rem_1.15rem] shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
-        onSubmit={handleSubmit}
-      >
-        {isUpdateMode && (
-          <button
-            type="button"
-            className={`${cancelButtonClassName} mb-4`}
-            onClick={setAddReleaseMode}
-          >
-            Back to &quot;create new release&quot; mode
-          </button>
-        )}
-        <UpsertReleaseFormBlueprintLoader
-          primaryDbSource={primaryDbSource}
-          onReleaseFetched={(release) =>
-            tabData.onUseReleaseAsBlueprint(release, formState.dbSources.value)
-          }
-        />
-        <FormSectionsDivider />
+    <>
+      <FormSectionsDivider />
 
+      <form onSubmit={handleSubmit}>
         <div className={fieldClassName}>
           <label className={headingClassName} htmlFor="add-release-version">
             Release version
@@ -962,7 +921,7 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
                     : "create-release-db-source"
                 }
                 activeDbSource={primaryDbSource}
-                checkedSources={formState.dbSources.value}
+                checkedSources={dbSources}
                 onToggle={handleToggleDbSource}
               />
             </>
@@ -975,7 +934,7 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
         onConfirm={handleConfirmSave}
         onCancel={handleCancelConfirm}
       />
-    </div>
+    </>
   );
 };
 

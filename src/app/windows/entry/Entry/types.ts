@@ -1,18 +1,15 @@
-import type { DbSource } from "@/db/db-source";
 import type { ReleaseByIdResult } from "@/types/releases";
 
 export type UpsertReleaseFormTabCreateModeSharedData = {
   mode: "create";
   releaseId?: never;
-  releaseBlueprint?: ReleaseByIdResult;
-  dbSources?: ReadonlySet<DbSource> | undefined;
+  releaseBlueprint?: ReleaseByIdResult | undefined;
 };
 
 export type UpsertReleaseFormTabUpdateModeSharedData = {
   mode: "update";
   releaseId: string;
-  releaseBlueprint: ReleaseByIdResult;
-  dbSources?: ReadonlySet<DbSource> | undefined;
+  releaseBlueprint: ReleaseByIdResult | undefined;
 };
 
 export type UpsertReleaseFormTabSharedData =
