@@ -38,11 +38,7 @@ const ArtistAddEntrySuccess: FC<ArtistAddEntrySuccessProps> = ({
     >
       Open window for new entry
     </button>
-    <button
-      type="button"
-      className={backButtonClassName}
-      onClick={onDismiss}
-    >
+    <button type="button" className={backButtonClassName} onClick={onDismiss}>
       Back to form
     </button>
   </div>
