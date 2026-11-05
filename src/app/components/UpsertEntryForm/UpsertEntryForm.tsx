@@ -1,7 +1,6 @@
 import {
   useEffect,
   useEffectEvent,
-  useMemo,
   useState,
   type FC,
   type SubmitEvent,
@@ -57,7 +56,6 @@ type UpsertEntryFormSharedProps = {
   allEntryTypes: EntryTypeListItem[];
   restoredState?: UpsertEntryFormPersistedState | null;
   onPersistState: (state: UpsertEntryFormPersistedState) => void;
-  onCancel: () => void;
   onEntrySaved: (entry: EntryByIdResult, feedback: FormFeedback) => void;
 };
 
@@ -103,16 +101,6 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     artistId,
   } = props;
 
-  const initialFormState = useMemo(
-    () =>
-      restoredState?.form ??
-      initialUpsertEntryFormDraft({
-        entry,
-        defaultArtistId: artistId,
-      }),
-    [entry, artistId, restoredState],
-  );
-
   const {
     formState,
     setFieldValue,
@@ -123,11 +111,21 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     resetFormState,
     toInitialFormStateValue,
   } = useFormState({
-    initialValue: initialFormState,
+    initialValue:
+      restoredState?.form ??
+      initialUpsertEntryFormDraft({
+        entry,
+        defaultArtistId: artistId,
+      }),
   });
 
   const discardChanges = () => {
-    resetFormState(initialFormState);
+    resetFormState(
+      initialUpsertEntryFormDraft({
+        entry,
+        defaultArtistId: artistId,
+      }),
+    );
   };
 
   const [validatedForm, setValidatedForm] =

@@ -15,7 +15,6 @@ type ArtistAddEntryFormProps = {
   artistId: string;
   primaryDbSource: DbSource;
   createEntryDraftRef: RefObject<UpsertEntryFormPersistedState | null>;
-  onCancel: () => void;
   onEntrySaved: (feedback: FormFeedback) => void;
 };
 
@@ -23,7 +22,6 @@ const ArtistAddEntryForm: FC<ArtistAddEntryFormProps> = ({
   artistId,
   primaryDbSource,
   createEntryDraftRef,
-  onCancel,
   onEntrySaved,
 }) => {
   const [tags, setTags] = useState<TagListItem[]>([]);
@@ -80,11 +78,6 @@ const ArtistAddEntryForm: FC<ArtistAddEntryFormProps> = ({
     onEntrySaved(feedback);
   };
 
-  const handleCancel = () => {
-    createEntryDraftRef.current = null;
-    onCancel();
-  };
-
   if (savedEntry) {
     return (
       <ArtistAddEntrySuccess
@@ -113,7 +106,6 @@ const ArtistAddEntryForm: FC<ArtistAddEntryFormProps> = ({
       onPersistState={(state) => {
         createEntryDraftRef.current = state;
       }}
-      onCancel={handleCancel}
       onEntrySaved={handleEntrySaved}
     />
   );

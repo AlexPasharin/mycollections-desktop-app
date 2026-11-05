@@ -509,7 +509,6 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
                     onPersistState={(state) => {
                       editEntryDraftRef.current = state;
                     }}
-                    onCancel={() => handleTabChange("releases")}
                     onEntrySaved={handleEntryUpdated}
                   />
                 </>
