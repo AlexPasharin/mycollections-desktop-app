@@ -34,8 +34,6 @@ import {
 } from "../validation";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
-import type { DbSource } from "@/db/db-source";
-import { ALL_DB_SOURCES } from "@/db/db-source-options";
 import type { CountryListItem } from "@/types/countries";
 import type { FormStateType, InitialFormStateValue } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
@@ -63,7 +61,6 @@ export type UpsertReleaseFormDraft = {
   comment: string;
   conditionProblems: string;
   relatedReleases: UpsertReleaseFormRelatedReleaseRow[];
-  dbSources: ReadonlySet<DbSource>;
 };
 
 export type ValidatedUpsertReleaseFormDraft = Omit<
@@ -88,7 +85,6 @@ type InitialUpsertReleaseFormStateValueArgs = {
   allFormats: ReleasesFormatListItem[];
   allCountries: CountryListItem[];
   releaseBlueprint?: ReleaseByIdResult | undefined;
-  dbSources?: ReadonlySet<DbSource> | undefined;
   mode: UpsertReleaseFormTabMode;
 };
 
@@ -97,7 +93,6 @@ export const initialUpsertReleaseFormStateValue = ({
   allFormats,
   allCountries,
   releaseBlueprint,
-  dbSources,
   mode,
 }: InitialUpsertReleaseFormStateValueArgs): UpsertReleaseFormInitialState => ({
   releaseVersion: {
@@ -121,9 +116,8 @@ export const initialUpsertReleaseFormStateValue = ({
   },
   releaseDate: {
     value: releaseDateToFormValue(
-      releaseBlueprint
-        ? releaseBlueprint.releaseDate
-        : entry.originalReleaseDate,
+      releaseBlueprint?.releaseDate,
+      entry.originalReleaseDate,
     ),
     validationFn: (state) =>
       validateReleaseDate(state.releaseDate.value, entry.originalReleaseDate),
@@ -185,9 +179,5 @@ export const initialUpsertReleaseFormStateValue = ({
             releaseBlueprint?.childReleases,
           ),
     validationFn: validateRelatedReleases,
-  },
-  dbSources: {
-    value: dbSources ?? new Set(ALL_DB_SOURCES),
-    validationFn: (state) => validatePassThrough(state.dbSources.value),
   },
 });

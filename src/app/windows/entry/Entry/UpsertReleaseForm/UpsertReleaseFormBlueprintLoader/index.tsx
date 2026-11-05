@@ -7,7 +7,9 @@ import type { ReleaseByIdResult } from "@/types/releases";
 
 type UpsertReleaseFormBlueprintLoaderProps = {
   primaryDbSource: DbSource;
-  onReleaseFetched: (release: ReleaseByIdResult, releaseId?: string) => void;
+  onReleaseFetched: (release: ReleaseByIdResult | undefined) => void;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
 };
 
 const RELEASE_ID_INPUT_ID = "add-release-blueprint-release-id";
@@ -15,9 +17,8 @@ const RELEASE_ID_ERROR_ID = "add-release-blueprint-release-id-error";
 
 const UpsertReleaseFormBlueprintLoader: FC<
   UpsertReleaseFormBlueprintLoaderProps
-> = ({ primaryDbSource, onReleaseFetched }) => {
+> = ({ primaryDbSource, onReleaseFetched, isLoading, setIsLoading }) => {
   const [releaseIdInput, setReleaseIdInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
 
   const fetchTokenRef = useRef(0);
@@ -47,9 +48,9 @@ const UpsertReleaseFormBlueprintLoader: FC<
           return;
         }
 
-        if (release) {
-          onReleaseFetched(release);
-        } else {
+        onReleaseFetched(release);
+
+        if (!release) {
           setErrorMessage("No release found for that ID.");
         }
       })
@@ -65,6 +66,7 @@ const UpsertReleaseFormBlueprintLoader: FC<
           return;
         }
 
+        onReleaseFetched(undefined);
         setErrorMessage("Failed to fetch the release.");
       })
       .finally(() => {

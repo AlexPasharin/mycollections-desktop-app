@@ -56,7 +56,6 @@ type UpsertEntryFormSharedProps = {
   allEntryTypes: EntryTypeListItem[];
   restoredState?: UpsertEntryFormPersistedState | null;
   onPersistState: (state: UpsertEntryFormPersistedState) => void;
-  onCancel: () => void;
   onEntrySaved: (entry: EntryByIdResult, feedback: FormFeedback) => void;
 };
 
@@ -93,7 +92,6 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
   const {
     mode,
     primaryDbSource,
-    onCancel,
     onEntrySaved,
     tags,
     allEntryTypes,
@@ -110,6 +108,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     clearFieldFeedback,
     validateField,
     validateForm,
+    resetFormState,
     toInitialFormStateValue,
   } = useFormState({
     initialValue:
@@ -119,6 +118,15 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
         defaultArtistId: artistId,
       }),
   });
+
+  const discardChanges = () => {
+    resetFormState(
+      initialUpsertEntryFormDraft({
+        entry,
+        defaultArtistId: artistId,
+      }),
+    );
+  };
 
   const [validatedForm, setValidatedForm] =
     useState<ValidatedUpsertEntryFormDraft | null>(null);
@@ -628,9 +636,9 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           <button
             type="button"
             className="cursor-pointer rounded-md border border-[#bcbcbc] bg-white px-[0.9rem] py-[0.35rem] font-medium text-[#333] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a5fb4] hover:enabled:border-[#9a9a9a] hover:enabled:bg-[#f1f1f1]"
-            onClick={onCancel}
+            onClick={discardChanges}
           >
-            Cancel
+            Discard changes
           </button>
           <button
             type="submit"

@@ -146,6 +146,25 @@ describe("initialUpsertReleaseFormStateValue", () => {
     });
   });
 
+  it("clamps blueprint release date to the entry original when the blueprint is earlier", () => {
+    const draft = initialUpsertReleaseFormStateValue({
+      entry,
+      allFormats,
+      allCountries,
+      releaseBlueprint: {
+        ...release,
+        releaseDate: { year: 1979, month: 12, day: 1 },
+      },
+      mode: "update",
+    });
+
+    expect(draft.releaseDate.value).toEqual({
+      year: "1980",
+      month: "1",
+      day: "15",
+    });
+  });
+
   it("locks catalogue numbers to JSON input in update mode for format-keys shape", () => {
     const draft = initialUpsertReleaseFormStateValue({
       entry,

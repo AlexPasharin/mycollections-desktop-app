@@ -117,7 +117,6 @@ const ArtistWindowMainContent: FC<ArtistWindowMainContentProps> = ({
                 artistId={artistId}
                 primaryDbSource={primaryDbSource}
                 createEntryDraftRef={createEntryDraftRef}
-                onCancel={() => setActiveTab("searchEntries")}
                 onEntrySaved={setCreateEntryFeedback}
               />
             ),
