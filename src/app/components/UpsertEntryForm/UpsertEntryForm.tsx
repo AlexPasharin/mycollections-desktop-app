@@ -1,7 +1,6 @@
 import {
   useEffect,
   useEffectEvent,
-  useRef,
   useState,
   type FC,
   type SubmitEvent,
@@ -56,7 +55,7 @@ type UpsertEntryFormSharedProps = {
   tags: TagListItem[];
   allEntryTypes: EntryTypeListItem[];
   restoredState?: UpsertEntryFormPersistedState | null;
-  onPersistState: (state: UpsertEntryFormPersistedState | null) => void;
+  onPersistState: (state: UpsertEntryFormPersistedState) => void;
   onCancel: () => void;
   onEntrySaved: (entry: EntryByIdResult, feedback: FormFeedback) => void;
 };
@@ -133,13 +132,8 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     ReadonlySet<DbSource>
   >(() => restoredState?.checkedDbSources ?? new Set(ALL_DB_SOURCES));
   const [submitError, setSubmitError] = useState<string>();
-  const shouldPersistOnUnmountRef = useRef(true);
 
   const persistState = useEffectEvent(() => {
-    if (!shouldPersistOnUnmountRef.current) {
-      return;
-    }
-
     onPersistState({
       form: toInitialFormStateValue(),
       checkedDbSources,
@@ -149,12 +143,6 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
   useEffect(() => {
     return persistState; // persist form state on unmount
   }, []);
-
-  const handleCancel = () => {
-    shouldPersistOnUnmountRef.current = false;
-    onPersistState(null);
-    onCancel();
-  };
 
   const isCreateMode = mode === "create";
 
@@ -640,7 +628,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           <button
             type="button"
             className="cursor-pointer rounded-md border border-[#bcbcbc] bg-white px-[0.9rem] py-[0.35rem] font-medium text-[#333] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a5fb4] hover:enabled:border-[#9a9a9a] hover:enabled:bg-[#f1f1f1]"
-            onClick={handleCancel}
+            onClick={onCancel}
           >
             Cancel
           </button>
