@@ -90,6 +90,9 @@ const ArtistAddEntryForm: FC<ArtistAddEntryFormProps> = ({
       <ArtistAddEntrySuccess
         entry={savedEntry}
         primaryDbSource={primaryDbSource}
+        onDismiss={() => {
+          setSavedEntry(null);
+        }}
       />
     );
   }

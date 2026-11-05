@@ -1,6 +1,7 @@
 import {
   useEffect,
   useEffectEvent,
+  useMemo,
   useState,
   type FC,
   type SubmitEvent,
@@ -93,7 +94,6 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
   const {
     mode,
     primaryDbSource,
-    onCancel,
     onEntrySaved,
     tags,
     allEntryTypes,
@@ -103,6 +103,16 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     artistId,
   } = props;
 
+  const initialFormState = useMemo(
+    () =>
+      restoredState?.form ??
+      initialUpsertEntryFormDraft({
+        entry,
+        defaultArtistId: artistId,
+      }),
+    [entry, artistId, restoredState],
+  );
+
   const {
     formState,
     setFieldValue,
@@ -110,15 +120,15 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     clearFieldFeedback,
     validateField,
     validateForm,
+    resetFormState,
     toInitialFormStateValue,
   } = useFormState({
-    initialValue:
-      restoredState?.form ??
-      initialUpsertEntryFormDraft({
-        entry,
-        defaultArtistId: artistId,
-      }),
+    initialValue: initialFormState,
   });
+
+  const discardChanges = () => {
+    resetFormState(initialFormState);
+  };
 
   const [validatedForm, setValidatedForm] =
     useState<ValidatedUpsertEntryFormDraft | null>(null);
@@ -628,9 +638,9 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           <button
             type="button"
             className="cursor-pointer rounded-md border border-[#bcbcbc] bg-white px-[0.9rem] py-[0.35rem] font-medium text-[#333] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a5fb4] hover:enabled:border-[#9a9a9a] hover:enabled:bg-[#f1f1f1]"
-            onClick={onCancel}
+            onClick={discardChanges}
           >
-            Cancel
+            Discard changes
           </button>
           <button
             type="submit"
