@@ -24,7 +24,7 @@ import { toUpsertMusicalEntryInput } from "./upsertEntryFormUtils/toUpsertMusica
 import UpsertEntryRelatedEntriesSection from "./UpsertEntryRelatedEntriesSection";
 import UpsertEntryTypesSection from "./UpsertEntryTypesSection";
 
-import FeedbackSection2 from "../FeedbackSection2";
+import FeedbackSection from "../FeedbackSection";
 import FormSectionsDivider from "../Form/FormSectionsDivider";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";
@@ -32,7 +32,7 @@ import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
 import ErrorMessages from "@/app/components/ErrorMessages";
 import AddTagsFormSection from "@/app/components/Form/AddTagsFormSection";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
-import NotificationMessages2 from "@/app/components/NotificationMessages2";
+import NotificationMessages from "@/app/components/NotificationMessages";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
 import useFormState from "@/hooks/useFormState";
@@ -427,7 +427,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
             autoComplete="off"
             required
           />
-          <FeedbackSection2
+          <FeedbackSection
             notificationsId={MAIN_NAME_FIELD_NOTIFICATIONS_ID}
             errorsId={MAIN_NAME_FIELD_ERROR_ID}
             notifications={formState.mainName.notifications}
@@ -496,7 +496,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
             id={DISCOGS_URL_FIELD_ERROR_ID}
             messages={discogsUrlErrors}
           />
-          <NotificationMessages2
+          <NotificationMessages
             id={DISCOGS_URL_FIELD_NOTIFICATIONS_ID}
             messages={discogsUrlNotifications}
           />
@@ -531,7 +531,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
           onFocus={(rowId) => onFocus("altNames", rowId)}
           onBlur={() => onBlur("altNames")}
         />
-        <NotificationMessages2
+        <NotificationMessages
           id={DISCOGS_URL_FIELD_NOTIFICATIONS_ID}
           messages={altNamesNotifications}
         />
@@ -597,7 +597,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
                   : undefined
               }
             />
-            <NotificationMessages2
+            <NotificationMessages
               id={RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID}
               messages={relationToQueenNotifications}
             />
@@ -626,7 +626,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
                 : undefined
             }
           />
-          <NotificationMessages2
+          <NotificationMessages
             id={COMMENT_FIELD_NOTIFICATIONS_ID}
             messages={commentNotifications}
           />

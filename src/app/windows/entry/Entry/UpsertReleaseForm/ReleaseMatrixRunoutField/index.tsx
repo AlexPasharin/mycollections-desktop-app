@@ -2,7 +2,7 @@ import { type FC, type FocusEvent } from "react";
 
 import type { UpsertReleaseFormMatrixRunoutDraft } from "../upsertReleaseFormUtils/formValues";
 
-import FeedbackSection2 from "@/app/components/FeedbackSection2";
+import FeedbackSection from "@/app/components/FeedbackSection";
 import type { FormFeedbackMessages } from "@/types/form";
 
 const MATRIX_RUNOUT_FIELD_ERROR_ID = "add-release-matrix-runout-error";
@@ -94,7 +94,7 @@ const ReleaseMatrixRunoutField: FC<ReleaseMatrixRunoutFieldProps> = ({
           treat as plain text, not json object
         </label>
       </div>
-      <FeedbackSection2
+      <FeedbackSection
         notificationsId={MATRIX_RUNOUT_FIELD_NOTIFICATIONS_ID}
         errorsId={MATRIX_RUNOUT_FIELD_ERROR_ID}
         notifications={notifications}

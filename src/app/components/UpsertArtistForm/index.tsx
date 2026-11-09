@@ -11,7 +11,7 @@ import {
 import { toUpsertArtistInput } from "./upsertArtistFormUtils/toUpsertArtistInput";
 import UpsertArtistRelatedArtistsSection from "./UpsertArtistRelatedArtistsSection";
 
-import FeedbackSection from "../FeedbackSection2";
+import FeedbackSection from "../FeedbackSection";
 import FormSectionsDivider from "../Form/FormSectionsDivider";
 
 import ConfirmDialog from "@/app/components/ConfirmDialog";

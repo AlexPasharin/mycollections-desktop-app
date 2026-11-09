@@ -1,8 +1,7 @@
 import type { FC } from "react";
 
-import NotificationMessages2 from "../NotificationMessages2";
-
 import ErrorMessages from "@/app/components/ErrorMessages";
+import NotificationMessages from "@/app/components/NotificationMessages";
 import type { FormFeedbackMessages } from "@/types/form";
 
 type FeedbackSectionProps = {
@@ -18,10 +17,10 @@ const FeedbackSection: FC<FeedbackSectionProps> = ({
   notifications,
   errors,
 }) => (
-  <>
-    <NotificationMessages2 id={notificationsId} messages={notifications} />
+  <div className="flex flex-col gap-[0.2rem]">
+    <NotificationMessages id={notificationsId} messages={notifications} />
     <ErrorMessages id={errorsId} messages={errors} />
-  </>
+  </div>
 );
 
 export default FeedbackSection;
