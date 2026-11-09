@@ -1,6 +1,6 @@
 import { Fragment, type FC } from "react";
 
-import FeedbackSection2 from "../../FeedbackSection2";
+import FeedbackSection from "../../FeedbackSection";
 import type { UpsertArtistRelatedArtistRow } from "../upsertArtistFormUtils/formValues";
 
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
@@ -131,7 +131,7 @@ const UpsertArtistRelatedArtistsSection: FC<
                 </button>
               </div>
               <div className="col-span-4">
-                <FeedbackSection2
+                <FeedbackSection
                   notificationsId={notificationsId}
                   errorsId={errorsId}
                   errors={rowErrors}

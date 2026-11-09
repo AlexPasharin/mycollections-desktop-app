@@ -42,11 +42,11 @@ import type {
 import ConfirmDialog from "@/app/components/ConfirmDialog";
 import DbSourcesCheckboxes from "@/app/components/DbSourcesCheckboxes";
 import ErrorMessages from "@/app/components/ErrorMessages";
-import FeedbackSection2 from "@/app/components/FeedbackSection2";
+import FeedbackSection from "@/app/components/FeedbackSection";
 import AddTagsFormSection from "@/app/components/Form/AddTagsFormSection";
 import FormSectionsDivider from "@/app/components/Form/FormSectionsDivider";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
-import NotificationMessages2 from "@/app/components/NotificationMessages2";
+import NotificationMessages from "@/app/components/NotificationMessages";
 import api from "@/app/windows/entry/api";
 import type { DbSource } from "@/db/db-source";
 import { dbSourceLabel } from "@/db/db-source-options";
@@ -575,7 +575,7 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
             autoComplete="off"
             required
           />
-          <FeedbackSection2
+          <FeedbackSection
             notificationsId={RELEASE_VERSION_FIELD_NOTIFICATIONS_ID}
             errorsId={RELEASE_VERSION_FIELD_ERROR_ID}
             notifications={releaseVersionNotifications}
@@ -632,7 +632,7 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
             id={DISCOGS_URL_FIELD_ERROR_ID}
             messages={discogsUrlErrors}
           />
-          <NotificationMessages2
+          <NotificationMessages
             id={DISCOGS_URL_FIELD_NOTIFICATIONS_ID}
             messages={discogsUrlNotifications}
           />
@@ -809,7 +809,7 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
                   : undefined
               }
             />
-            <NotificationMessages2
+            <NotificationMessages
               id={RELATION_TO_QUEEN_FIELD_NOTIFICATIONS_ID}
               messages={relationToQueenNotifications}
             />
@@ -835,7 +835,7 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
                 : undefined
             }
           />
-          <NotificationMessages2
+          <NotificationMessages
             id={COMMENT_FIELD_NOTIFICATIONS_ID}
             messages={commentNotifications}
           />
@@ -861,7 +861,7 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
                 : undefined
             }
           />
-          <NotificationMessages2
+          <NotificationMessages
             id={CONDITION_PROBLEMS_FIELD_NOTIFICATIONS_ID}
             messages={conditionProblemsNotifications}
           />

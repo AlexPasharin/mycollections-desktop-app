@@ -1,4 +1,4 @@
-import NotificationMessages2 from "../NotificationMessages2";
+import NotificationMessages from "../NotificationMessages";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
@@ -160,7 +160,7 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
               )}
               {(hasErrors || hasNotifications) && (
                 <div className="col-span-5">
-                  <NotificationMessages2
+                  <NotificationMessages
                     id={notificationsId}
                     messages={rowNotifications}
                   />
@@ -178,7 +178,7 @@ const RelatedItemsFormSection = <TRow extends RelatedOrderedItemRow>({
       messages={errors.filter((error) => !error.sources?.length)}
     />
 
-    <NotificationMessages2
+    <NotificationMessages
       id={labels.notificationsId}
       messages={notifications.filter(
         (notification) => !notification.sources?.length,

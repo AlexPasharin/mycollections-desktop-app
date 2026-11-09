@@ -173,7 +173,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   const visibleReleases = releases ?? [];
 
   const createNotifications = latestCreateNotifications.map((notification) => ({
-    notification,
+    message: notification,
   }));
 
   const createNotificationBanner = createNotifications.length > 0 && (
@@ -210,7 +210,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   );
 
   const updateNotifications = latestUpdateNotifications.map((notification) => ({
-    notification,
+    message: notification,
   }));
 
   const updateNotificationBanner = updateNotifications.length > 0 && (

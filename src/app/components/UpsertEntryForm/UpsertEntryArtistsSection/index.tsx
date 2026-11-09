@@ -3,7 +3,7 @@ import type { FC } from "react";
 import type { UpsertEntryArtistRow } from "../upsertEntryFormUtils/formValues";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
-import NotificationMessages2 from "@/app/components/NotificationMessages2";
+import NotificationMessages from "@/app/components/NotificationMessages";
 import type { FormFeedbackMessages } from "@/types/form";
 
 type UpsertEntryArtistRowPatch = Partial<Omit<UpsertEntryArtistRow, "id">>;
@@ -155,7 +155,7 @@ const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
       </ul>
     )}
 
-    <NotificationMessages2
+    <NotificationMessages
       id="upsert-entry-artists-notifications"
       messages={notifications}
     />

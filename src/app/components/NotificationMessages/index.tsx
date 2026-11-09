@@ -1,10 +1,11 @@
 import type { FC } from "react";
 
 import Messages from "@/app/components/Messages";
+import type { FormFeedbackMessages } from "@/types/form";
 
 export type NotificationMessagesProps = {
   id: string;
-  messages: { notification: string }[] | undefined;
+  messages: FormFeedbackMessages;
 };
 
 const NotificationMessages: FC<NotificationMessagesProps> = ({
@@ -13,7 +14,7 @@ const NotificationMessages: FC<NotificationMessagesProps> = ({
 }) => (
   <Messages
     id={id}
-    texts={messages?.map((item) => item.notification)}
+    texts={messages.map((item) => item.message)}
     variant="notification"
   />
 );

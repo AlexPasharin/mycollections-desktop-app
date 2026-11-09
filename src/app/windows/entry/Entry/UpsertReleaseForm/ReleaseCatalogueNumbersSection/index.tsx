@@ -23,7 +23,7 @@ import {
 import { toReleaseCatNumbersJson } from "../upsertReleaseFormUtils/toUpsertMusicalReleaseInput";
 import { parseReleaseCatNumbersJsonInput } from "../upsertReleaseFormUtils/validation/catalogueNumbersJsonInput";
 
-import FeedbackSection2 from "@/app/components/FeedbackSection2";
+import FeedbackSection from "@/app/components/FeedbackSection";
 import Tabs from "@/app/components/Tabs";
 import type { FormFeedbackMessages } from "@/types/form";
 import type { LabelListItem } from "@/types/labels";
@@ -422,7 +422,7 @@ const ReleaseCatalogueNumbersSection: FC<
                   }
                   autoComplete="off"
                 />
-                <FeedbackSection2
+                <FeedbackSection
                   notificationsId={CATALOGUE_NUMBERS_JSON_NOTIFICATIONS_ID}
                   errorsId={CATALOGUE_NUMBERS_JSON_ERROR_ID}
                   notifications={notifications}
