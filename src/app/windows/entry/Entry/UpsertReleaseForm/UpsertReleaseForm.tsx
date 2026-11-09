@@ -30,7 +30,6 @@ import {
   type UpsertReleaseFormDraft,
   type UpsertReleaseFormInitialState,
   type UpsertReleaseFormState,
-  type ValidatedUpsertReleaseFormDraft,
 } from "./upsertReleaseFormUtils/formValues";
 import { toUpsertMusicalReleaseInput } from "./upsertReleaseFormUtils/toUpsertMusicalReleaseInput";
 
@@ -139,12 +138,10 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
     clearFieldFeedback,
     validateField,
     validateForm,
+    validatedForm,
     resetFormState,
     toInitialFormStateValue,
   } = useFormState({ initialValue: initialFormState });
-
-  const [validatedForm, setValidatedForm] =
-    useState<ValidatedUpsertReleaseFormDraft | null>(null);
 
   const discardChanges = () => {
     resetFormState(
@@ -399,9 +396,8 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
 
     console.info("releaseId", tabData.releaseId);
 
-    const validationResults = validateForm();
-    const formIsValid = validationResults !== null;
-    setValidatedForm(validationResults);
+    validateForm();
+    const formIsValid = validatedForm !== null;
 
     setShowSubmissionValidationError(!formIsValid);
 

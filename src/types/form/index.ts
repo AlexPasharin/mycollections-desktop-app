@@ -38,21 +38,21 @@ export type InitialFormStateValue<
   };
 };
 
-export type FormStateType<
-  T extends Record<PropertyKey, unknown>,
-  U extends T = T,
-> = {
-  [key in keyof T]: InitialFormStateValue<T, U>[key] & {
-    validatedValue: U[key] | null;
-    errors: FormFeedbackMessages;
-    notifications: FormFeedbackMessages;
-  };
-};
-
 export type FormFeedback = {
   notifications: FormFeedbackMessages;
   errors: FormFeedbackMessages;
 };
+
+export type FormStateType<
+  T extends Record<PropertyKey, unknown>,
+  U extends T = T,
+> = {
+  [key in keyof T]: InitialFormStateValue<T, U>[key] &
+    FormFeedback & {
+      validatedValue: U[key] | null;
+    };
+};
+
 export type RelatedItemRow<Relation extends string = RelatedItemRelation> = {
   id: string;
   relation: Relation;

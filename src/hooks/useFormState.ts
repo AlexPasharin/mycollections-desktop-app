@@ -12,6 +12,7 @@ const useFormState = <T extends Record<PropertyKey, unknown>, U extends T = T>({
   initialValue: InitialFormStateValue<T, U>;
 }) => {
   const [formState, setFormState] = useState(getInitialValue(initialValue));
+  const [validatedForm, setValidatedForm] = useState<U | null>(null);
 
   const setField = <K extends keyof T>(
     key: K,
@@ -47,7 +48,7 @@ const useFormState = <T extends Record<PropertyKey, unknown>, U extends T = T>({
     return validatedValue;
   };
 
-  const validateForm = (): U | null => {
+  const validateForm = () => {
     const validationResults: Record<PropertyKey, unknown> = {};
     let valid = true;
 
@@ -62,13 +63,9 @@ const useFormState = <T extends Record<PropertyKey, unknown>, U extends T = T>({
       }
     }
 
-    if (valid) {
-      // assertion safe by construction
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-      return validationResults as U;
-    }
-
-    return null;
+    // assertion safe by construction
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    setValidatedForm(valid ? (validationResults as U) : null);
   };
 
   const clearFieldFeedback = <K extends keyof T>(
@@ -107,6 +104,7 @@ const useFormState = <T extends Record<PropertyKey, unknown>, U extends T = T>({
 
   return {
     formState,
+    validatedForm,
     setField,
     setFieldValue,
     validateField,

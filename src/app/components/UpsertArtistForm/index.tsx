@@ -6,7 +6,6 @@ import {
   defaultRelatedParentRow,
   initialUpsertArtistFormDraft,
   type UpsertArtistFormDraft,
-  type ValidatedUpsertArtistFormDraft,
 } from "./upsertArtistFormUtils/formValues";
 import { toUpsertArtistInput } from "./upsertArtistFormUtils/toUpsertArtistInput";
 import UpsertArtistRelatedArtistsSection from "./UpsertArtistRelatedArtistsSection";
@@ -77,12 +76,10 @@ const UpsertArtistForm: FC<UpsertArtistFormProps> = (props) => {
     clearFieldFeedback,
     validateField,
     validateForm,
+    validatedForm,
   } = useFormState({
     initialValue: initialUpsertArtistFormDraft(artist),
   });
-
-  const [validatedForm, setValidatedForm] =
-    useState<ValidatedUpsertArtistFormDraft | null>(null);
 
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
     useState(false);
@@ -179,13 +176,12 @@ const UpsertArtistForm: FC<UpsertArtistFormProps> = (props) => {
       return;
     }
 
-    const validationResults = validateForm();
-    const formIsValid = validationResults !== null;
+    validateForm();
+    const formIsValid = validatedForm !== null;
 
     setShowSubmissionValidationError(!formIsValid);
 
     if (formIsValid) {
-      setValidatedForm(validationResults);
       onClearFeedback();
       setSubmitError(undefined);
       setCheckedDbSources(new Set(ALL_DB_SOURCES));
