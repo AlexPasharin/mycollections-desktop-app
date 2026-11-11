@@ -396,8 +396,7 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
 
     console.info("releaseId", tabData.releaseId);
 
-    validateForm();
-    const formIsValid = validatedForm !== null;
+    const formIsValid = validateForm();
 
     setShowSubmissionValidationError(!formIsValid);
 

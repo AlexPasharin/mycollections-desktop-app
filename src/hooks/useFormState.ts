@@ -48,7 +48,7 @@ const useFormState = <T extends Record<PropertyKey, unknown>, U extends T = T>({
     return validatedValue;
   };
 
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     const validationResults: Record<PropertyKey, unknown> = {};
     let valid = true;
 
@@ -66,6 +66,8 @@ const useFormState = <T extends Record<PropertyKey, unknown>, U extends T = T>({
     // assertion safe by construction
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     setValidatedForm(valid ? (validationResults as U) : null);
+
+    return valid;
   };
 
   const clearFieldFeedback = <K extends keyof T>(

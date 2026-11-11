@@ -282,8 +282,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
       return;
     }
 
-    validateForm();
-    const formIsValid = validatedForm !== null;
+    const formIsValid = validateForm();
 
     setShowSubmissionValidationError(!formIsValid);
 
