@@ -18,7 +18,6 @@ import {
   type UpsertEntryFormDraft,
   type UpsertEntryFormEntry,
   type UpsertEntryFormPersistedState,
-  type ValidatedUpsertEntryFormDraft,
 } from "./upsertEntryFormUtils/formValues";
 import { toUpsertMusicalEntryInput } from "./upsertEntryFormUtils/toUpsertMusicalEntryInput";
 import UpsertEntryRelatedEntriesSection from "./UpsertEntryRelatedEntriesSection";
@@ -108,6 +107,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
     clearFieldFeedback,
     validateField,
     validateForm,
+    validatedForm,
     resetFormState,
     toInitialFormStateValue,
   } = useFormState({
@@ -127,9 +127,6 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
       }),
     );
   };
-
-  const [validatedForm, setValidatedForm] =
-    useState<ValidatedUpsertEntryFormDraft | null>(null);
 
   const [showSubmissionValidationError, setShowSubmissionValidationError] =
     useState(false);
@@ -285,9 +282,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
       return;
     }
 
-    const validationResults = validateForm();
-    const formIsValid = validationResults !== null;
-    setValidatedForm(validationResults);
+    const formIsValid = validateForm();
 
     setShowSubmissionValidationError(!formIsValid);
 
