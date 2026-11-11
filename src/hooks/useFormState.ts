@@ -53,7 +53,7 @@ const useFormState = <T extends Record<PropertyKey, unknown>, U extends T = T>({
     let valid = true;
 
     for (const key of Object.keys(formState)) {
-      const validatedValue = validateField(key);
+      const validatedValue = validateField(key as keyof T);
       const fieldIsValid = validatedValue !== undefined;
 
       if (fieldIsValid) {
