@@ -1,32 +1,41 @@
 import { useEffect, useRef, useState, type FC } from "react";
 
-import ArtistEntriesSearchResults from "./ArtistEntriesSearchResults";
-
-import api from "../../api";
+import EntriesSearchResults from "./EntriesSearchResults";
 
 import type { DbSource } from "@/db/db-source";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import type { EntrySearchResult } from "@/types/entries";
+import type {
+  CreateEntryWindowParams,
+  EntrySearchResult,
+  SearchEntries,
+} from "@/types/entries";
 
 /** Wait this long after the last keystroke before calling the API. */
 const SEARCH_DEBOUNCE_MS = 400;
 
 /** Max number of search hits returned per request (page size). */
-const ARTIST_ENTRIES_SEARCH_LIMIT = 10;
+const ENTRIES_SEARCH_LIMIT = 10;
 
-type ArtistEntriesSearchProps = {
-  artistId: string;
+type EntriesSearchProps = {
   dbSource: DbSource;
-  query: string;
-  onQueryChange: (query: string) => void;
+
+  /** Restricts the search to this artist's entries; searches all entries when omitted. */
+  artistId?: string;
+
+  /** Window-specific search API (must be referentially stable). */
+  onSearchEntries: SearchEntries;
+
+  /** Window-specific way of opening an entry. */
+  onOpenEntry: (params: Omit<CreateEntryWindowParams, "releaseId">) => void;
 };
 
-const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
+const EntriesSearch: FC<EntriesSearchProps> = ({
   artistId,
   dbSource,
-  query,
-  onQueryChange,
+  onSearchEntries,
+  onOpenEntry,
 }) => {
+  const [query, setQuery] = useState("");
   const [entries, setEntries] = useState<EntrySearchResult[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
@@ -38,19 +47,19 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
   );
 
   /**
-   * Monotonic id for artist-entry search requests. Incremented when clearing the query,
+   * Monotonic id for entries search requests. Incremented when clearing the query,
    * dispatching a new search, or unmounting, so responses from older requests are ignored.
    */
-  const artistEntriesSearchRequestIdRef = useRef(0);
+  const searchRequestIdRef = useRef(0);
 
   useEffect(() => {
     return () => {
-      artistEntriesSearchRequestIdRef.current += 1;
+      searchRequestIdRef.current += 1;
     };
   }, []);
 
   useEffect(() => {
-    artistEntriesSearchRequestIdRef.current += 1;
+    searchRequestIdRef.current += 1;
 
     if (!debouncedQuery) {
       setEntries([]);
@@ -60,21 +69,20 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
       return;
     }
 
-    const dispatchedRequestId = artistEntriesSearchRequestIdRef.current;
+    const dispatchedRequestId = searchRequestIdRef.current;
 
     setIsSearching(true);
 
-    api
-      .searchArtistEntries(
-        {
-          artistId,
-          query: debouncedQuery,
-          limit: ARTIST_ENTRIES_SEARCH_LIMIT,
-        },
-        dbSource,
-      )
+    onSearchEntries(
+      {
+        ...(artistId != null && { artistId }),
+        query: debouncedQuery,
+        limit: ENTRIES_SEARCH_LIMIT,
+      },
+      dbSource,
+    )
       .then((data) => {
-        if (dispatchedRequestId === artistEntriesSearchRequestIdRef.current) {
+        if (dispatchedRequestId === searchRequestIdRef.current) {
           setEntries(data.items);
           setNextCursor(data.nextCursor);
         }
@@ -82,17 +90,20 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
       .catch((error: unknown) => {
         console.error("Error searching entries", error);
 
-        if (dispatchedRequestId === artistEntriesSearchRequestIdRef.current) {
+        if (dispatchedRequestId === searchRequestIdRef.current) {
           setEntries([]);
           setNextCursor(null);
         }
       })
       .finally(() => {
-        if (dispatchedRequestId === artistEntriesSearchRequestIdRef.current) {
+        if (dispatchedRequestId === searchRequestIdRef.current) {
           setIsSearching(false);
         }
       });
-  }, [artistId, debouncedQuery, dbSource]);
+  }, [artistId, debouncedQuery, dbSource, onSearchEntries]);
+
+  // within a single artist's entries the artist is already known, so only show names when searching all entries
+  const showArtistNames = artistId == null;
 
   const hasMoreToLoad = nextCursor !== null;
 
@@ -103,16 +114,15 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
 
     setIsLoadingMore(true);
 
-    api
-      .searchArtistEntries(
-        {
-          artistId,
-          query: debouncedQuery,
-          limit: ARTIST_ENTRIES_SEARCH_LIMIT,
-          cursor: nextCursor,
-        },
-        dbSource,
-      )
+    onSearchEntries(
+      {
+        ...(artistId != null && { artistId }),
+        query: debouncedQuery,
+        limit: ENTRIES_SEARCH_LIMIT,
+        cursor: nextCursor,
+      },
+      dbSource,
+    )
       .then((data) => {
         setEntries((prev) => [...prev, ...data.items]);
         setNextCursor(data.nextCursor);
@@ -128,12 +138,11 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
   return (
     <>
       <label>
-        <p>Search for artist entries:</p>
         <input
           type="text"
           value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
-          placeholder="Filter by name…"
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Filter by entry's name…"
         />
       </label>
       {debouncedQuery &&
@@ -147,9 +156,10 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
           </p>
         )}
       {debouncedQuery && (
-        <ArtistEntriesSearchResults
+        <EntriesSearchResults
           entries={entries}
-          dbSource={dbSource}
+          onOpenEntry={(entryId) => onOpenEntry({ entryId, source: dbSource })}
+          showArtistNames={showArtistNames}
           isSearching={isDebouncing || isSearching}
         />
       )}
@@ -164,4 +174,4 @@ const ArtistEntriesSearch: FC<ArtistEntriesSearchProps> = ({
   );
 };
 
-export default ArtistEntriesSearch;
+export default EntriesSearch;
