@@ -39,8 +39,11 @@ const ArtistQuery: FC<ArtistQueryProps> = ({ dbSource }) => {
 
   return (
     <>
-      <h2>Find artist</h2>
-      <input value={inputValue} onChange={onChange} />
+      <input
+        value={inputValue}
+        onChange={onChange}
+        placeholder="Filter by artist's name…"
+      />
 
       {isDebouncing || isSearching ? (
         <div className="mt-2">Loading...</div>

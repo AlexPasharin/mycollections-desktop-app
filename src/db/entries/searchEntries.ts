@@ -6,9 +6,9 @@ import { dbClient } from "../client/kysely";
 import { aggregateDistinctValuesToArray } from "../utils";
 
 import type { DbSource } from "@/db/db-source";
-import type { SearchArtistEntries } from "@/types/entries";
+import type { EntrySearchResultArtist, SearchEntries } from "@/types/entries";
 
-export const searchArtistEntries: SearchArtistEntries = async (
+export const searchEntries: SearchEntries = async (
   { artistId, query, limit, cursor },
   dbSource,
 ) => {
@@ -17,9 +17,20 @@ export const searchArtistEntries: SearchArtistEntries = async (
   const cursorPayload = decodeCursor(cursor);
   const trimmedQuery = query.trim();
 
-  let grouped = dbClient(dbSource)
+  let filtered = dbClient(dbSource)
     .selectFrom(subquery.as("entries"))
+    .where((eb) =>
+      eb.or([
+        eb("mainName", "ilike", `%${trimmedQuery}%`),
+        eb("altName", "ilike", `%${trimmedQuery}%`),
+      ]),
+    );
 
+  if (artistId !== undefined) {
+    filtered = filtered.where("artistId", "=", artistId);
+  }
+
+  let grouped = filtered
     .select([
       "entryId",
       "mainName",
@@ -29,14 +40,6 @@ export const searchArtistEntries: SearchArtistEntries = async (
       aggregateDistinctValuesToArray("type", "types"),
       aggregateDistinctValuesToArray("altName", "altNames"),
     ])
-
-    .where("artistId", "=", artistId)
-    .where((eb) =>
-      eb.or([
-        eb("mainName", "ilike", `%${trimmedQuery}%`),
-        eb("altName", "ilike", `%${trimmedQuery}%`),
-      ]),
-    )
 
     .groupBy(["entryId", "mainName"])
 
@@ -66,19 +69,72 @@ export const searchArtistEntries: SearchArtistEntries = async (
       })
     : null;
 
+  const artistsByEntryId = await fetchArtistsByEntryId(
+    pageRows.map(({ entryId }) => entryId),
+    dbSource,
+  );
+
   const items = pageRows.map(({ entryId, mainName, types, altNames }) => ({
     entryId,
     mainName,
     types,
     altNames,
+    artists: artistsByEntryId.get(entryId) ?? [],
   }));
 
   return { items, nextCursor };
 };
 
-// builds (but does not execute) a subquery that returns all "extended entry" records for a given artist and query
+// Returns, per entry id, all artists of the entry (ordered by name), each marked as main artist or not.
+// Entry-specific artist alt name takes precedence over the artist's own name.
+// Fetched separately from the search query, because that one may be restricted to a single artist.
+const fetchArtistsByEntryId = async (
+  entryIds: string[],
+  dbSource?: DbSource,
+): Promise<Map<string, EntrySearchResultArtist[]>> => {
+  if (entryIds.length === 0) {
+    return new Map();
+  }
+
+  const rows = await dbClient(dbSource)
+    .selectFrom("musicalEntriesArtists")
+    .innerJoin("artists", "musicalEntriesArtists.artistId", "artists.artistId")
+    .leftJoin(
+      "alternativeArtistNames",
+      "musicalEntriesArtists.entryArtistNameId",
+      "alternativeArtistNames.nameId",
+    )
+    .where("musicalEntriesArtists.entryId", "in", entryIds)
+    .select([
+      "musicalEntriesArtists.entryId as entryId",
+      "musicalEntriesArtists.artistId as artistId",
+      "musicalEntriesArtists.isEntriesMainArtist as isEntriesMainArtist",
+      sql<string>`coalesce(${sql.ref("alternativeArtistNames.name")}, ${sql.ref("artists.name")})`.as(
+        "artistName",
+      ),
+    ])
+    .orderBy("artistName", "asc")
+    .execute();
+
+  const artistsByEntryId = new Map<string, EntrySearchResultArtist[]>();
+
+  for (const { entryId, artistId, artistName, isEntriesMainArtist } of rows) {
+    const artists = artistsByEntryId.get(entryId) ?? [];
+
+    artists.push({
+      artistId,
+      artistName,
+      isEntriesMainArtist: isEntriesMainArtist === true,
+    });
+    artistsByEntryId.set(entryId, artists);
+  }
+
+  return artistsByEntryId;
+};
+
+// builds (but does not execute) a subquery that returns all "extended entry" records for a given query (optionally restricted to a given artist)
 // every "extended entry" record contains entry_id, main_name, but also possible type and alternative_name (both lifted from other tables)
-// entry must belong to the given artist and must have a name or alternative name that matches the query (in "case-insensitive substring match" sense)
+// entry must belong to the given artist (if any) and must have a name or alternative name that matches the query (in "case-insensitive substring match" sense)
 // "best" similarity score is also returned as one of the fields, to be used for ordering the results by users of this function
 const buildEntriesQueryByNameSubstringMatch = (
   query: string,

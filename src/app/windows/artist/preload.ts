@@ -10,7 +10,7 @@ import {
   UPDATE_ARTIST,
   OPEN_ARTIST_WINDOW,
   OPEN_ENTRY_WINDOW,
-  SEARCH_ARTIST_ENTRIES,
+  SEARCH_ENTRIES,
 } from "@/appConstants/ipcEvents";
 import type { DbSource } from "@/db/db-source";
 import type { UpdateArtistInput } from "@/types/artists";
@@ -18,7 +18,7 @@ import type {
   CreateArtistWindowParams,
   CreateEntryWindowParams,
   CreateMusicalEntryInput,
-  SearchArtistEntriesParams,
+  SearchEntriesParams,
 } from "@/types/entries";
 
 const api = {
@@ -26,10 +26,8 @@ const api = {
     ipcRenderer.invoke(GET_ARTIST_BY_ID, artistId, dbSource),
   updateArtist: (input: UpdateArtistInput, dbSource: DbSource) =>
     ipcRenderer.invoke(UPDATE_ARTIST, input, dbSource),
-  searchArtistEntries: (
-    params: SearchArtistEntriesParams,
-    dbSource: DbSource,
-  ) => ipcRenderer.invoke(SEARCH_ARTIST_ENTRIES, params, dbSource),
+  searchEntries: (params: SearchEntriesParams, dbSource: DbSource) =>
+    ipcRenderer.invoke(SEARCH_ENTRIES, params, dbSource),
   fetchTags: (dbSource: DbSource) => ipcRenderer.invoke(FETCH_TAGS, dbSource),
   fetchEntryTypes: (dbSource: DbSource) =>
     ipcRenderer.invoke(FETCH_ENTRY_TYPES, dbSource),

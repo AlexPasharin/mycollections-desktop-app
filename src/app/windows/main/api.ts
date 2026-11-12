@@ -1,5 +1,9 @@
 import type { CreateArtist, FetchArtists, QueryArtist } from "@/types/artists";
-import type { CreateArtistWindowParams } from "@/types/entries";
+import type {
+  CreateArtistWindowParams,
+  CreateEntryWindowParams,
+  SearchEntries,
+} from "@/types/entries";
 import type { CreateLabelsWindowParams } from "@/types/labels";
 import type { CreateTagsWindowParams } from "@/types/tags";
 
@@ -7,6 +11,8 @@ export type API = {
   fetchArtists: FetchArtists;
   queryArtists: QueryArtist;
   createArtist: CreateArtist;
+  searchEntries: SearchEntries;
+  openNewEntryWindow: (params: CreateEntryWindowParams) => void;
   openNewArtistWindow: (params: CreateArtistWindowParams) => void;
   openNewTagsWindow: (params: CreateTagsWindowParams) => void;
   openNewLabelsWindow: (params: CreateLabelsWindowParams) => void;
