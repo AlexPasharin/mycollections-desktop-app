@@ -1,5 +1,5 @@
 export { getEntryById } from "./entryById";
 export { createMusicalEntry } from "./createMusicalEntry";
 export { fetchEntryTypes } from "./fetchEntryTypes";
-export { searchArtistEntries } from "./searchArtistEntries";
+export { searchEntries } from "./searchEntries";
 export { updateMusicalEntry } from "./updateMusicalEntry";

@@ -18,11 +18,20 @@ export type CreateEntryWindowParams = {
   releaseId?: string;
 };
 
+export type EntrySearchResultArtist = {
+  artistId: string;
+
+  /** Entry-specific artist's alternative name when set, otherwise the artist's main name. */
+  artistName: string;
+  isEntriesMainArtist: boolean;
+};
+
 export type EntrySearchResult = {
   entryId: string;
   mainName: string;
   types: string[];
   altNames: string[];
+  artists: EntrySearchResultArtist[];
 };
 
 export type EntryArtistInfo = {
@@ -72,8 +81,9 @@ export type GetEntryById = (
   dbSource: DbSource,
 ) => Promise<EntryByIdResult | undefined>;
 
-export type SearchArtistEntriesParams = {
-  artistId: string;
+export type SearchEntriesParams = {
+  /** When set, only this artist's entries are searched; otherwise all entries are. */
+  artistId?: string;
   query: string;
   limit: number;
 
@@ -81,7 +91,7 @@ export type SearchArtistEntriesParams = {
   cursor?: string | null;
 };
 
-export type SearchArtistEntriesResult = {
+export type SearchEntriesResult = {
   items: EntrySearchResult[];
 
   /**
@@ -91,10 +101,10 @@ export type SearchArtistEntriesResult = {
   nextCursor: string | null;
 };
 
-export type SearchArtistEntries = (
-  params: SearchArtistEntriesParams,
+export type SearchEntries = (
+  params: SearchEntriesParams,
   dbSource: DbSource,
-) => Promise<SearchArtistEntriesResult>;
+) => Promise<SearchEntriesResult>;
 
 export type MusicalEntryAltNameInput = { nameId?: string; name: string };
 

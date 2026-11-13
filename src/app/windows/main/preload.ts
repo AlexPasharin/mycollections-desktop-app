@@ -6,13 +6,19 @@ import {
   CREATE_ARTIST,
   FETCH_ARTISTS,
   OPEN_ARTIST_WINDOW,
+  OPEN_ENTRY_WINDOW,
   OPEN_LABELS_WINDOW,
   OPEN_TAGS_WINDOW,
   QUERY_ARTIST,
+  SEARCH_ENTRIES,
 } from "@/appConstants/ipcEvents";
 import type { DbSource } from "@/db/db-source";
 import type { CreateArtistInput } from "@/types/artists";
-import type { CreateArtistWindowParams } from "@/types/entries";
+import type {
+  CreateArtistWindowParams,
+  CreateEntryWindowParams,
+  SearchEntriesParams,
+} from "@/types/entries";
 import type { CreateLabelsWindowParams } from "@/types/labels";
 import type { CreateTagsWindowParams } from "@/types/tags";
 
@@ -23,6 +29,10 @@ const api = {
     ipcRenderer.invoke(QUERY_ARTIST, query, dbSource),
   createArtist: (input: CreateArtistInput, dbSource: DbSource) =>
     ipcRenderer.invoke(CREATE_ARTIST, input, dbSource),
+  searchEntries: (params: SearchEntriesParams, dbSource: DbSource) =>
+    ipcRenderer.invoke(SEARCH_ENTRIES, params, dbSource),
+  openNewEntryWindow: (params: CreateEntryWindowParams) =>
+    ipcRenderer.send(OPEN_ENTRY_WINDOW, params),
   openNewArtistWindow: (params: CreateArtistWindowParams) =>
     ipcRenderer.send(OPEN_ARTIST_WINDOW, params),
   openNewTagsWindow: (params: CreateTagsWindowParams) =>

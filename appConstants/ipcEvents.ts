@@ -19,7 +19,7 @@ export const FETCH_ENTRY_TYPES = "fetch-entry-types";
 export const CREATE_MUSICAL_ENTRY = "create-musical-entry";
 export const UPDATE_MUSICAL_ENTRY = "update-musical-entry";
 export const FETCH_COUNTRIES = "fetch-countries";
-export const SEARCH_ARTIST_ENTRIES = "search-artist-entries";
+export const SEARCH_ENTRIES = "search-entries";
 
 export const OPEN_ARTIST_WINDOW = "open-new-artist-window";
 export const OPEN_ENTRY_WINDOW = "open-new-entry-window";

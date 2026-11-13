@@ -3,6 +3,7 @@ node_modules/
 
 # dotenv environment variables file
 .env
+.env.claude
 
 # Webpack
 .webpack/
@@ -24,3 +25,9 @@ localScripts
 
 # Claude Code (local settings and worktrees)
 .claude/
+
+# container and claude
+settings.local.json
+.devcontainer/empty.json
+.devcontainer/.claude/CLAUDE.md
+.claude/settings*

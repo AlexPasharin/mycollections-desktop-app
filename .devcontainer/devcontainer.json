@@ -1,0 +1,61 @@
+{
+  "name": "My Collections",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "node",
+  "features": {
+    // Required to override vscode git credentials helper so the terminal won't use git credentials from the host machine
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "git.terminalAuthentication": false
+      },
+      "extensions": [
+        // List all extensions that should be pre-installed in the container
+        "anthropic.claude-code"
+      ]
+    }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "initializeCommand": "bash .devcontainer/init-host.sh",
+  "postStartCommand": "bash .devcontainer/init-container.sh",
+  "runArgs": [
+    "--env-file",
+    "${localWorkspaceFolder}/.devcontainer/.env.claude",
+    "--userns=keep-id:uid=1000,gid=1000"
+  ],
+  "mounts": [
+    // Make sure /tmp has correct sticky permissions also in rootless container
+    "type=tmpfs,target=/tmp,tmpfs-mode=1777",
+
+    // --- WORKSPACE LEVEL (Active Configurations) ---
+    // Lock the main config with our safe team defaults
+    "source=${localWorkspaceFolder}/.devcontainer/.claude/managed-settings.json,target=/etc/claude-code/managed-settings.json,type=bind,readonly",
+
+    // Lock the project's master system instructions
+    "source=${localWorkspaceFolder}/CLAUDE.md,target=/workspace/CLAUDE.md,type=bind,readonly",
+
+    // Lock the team's project-level agents
+    "source=${localWorkspaceFolder}/.claude/agents,target=/workspace/.claude/agents,type=bind,readonly",
+
+    // --- PERSISTENCE ---
+    // Persist Claude SSO credentials and PERSONAL agents across rebuilds
+    "source=claude-my-collections-project,target=/home/node/.claude,type=volume",
+
+    // BLOCK Global System Prompt Poisoning
+    "source=${localWorkspaceFolder}/.devcontainer/.claude/CLAUDE.md,target=/home/node/.claude/CLAUDE.md,type=bind,readonly",
+
+    // --- WORKSPACE PROTECTION ---
+    // BLOCK Workspace poisoning: Lock the Git hooks directory
+    "source=${localWorkspaceFolder}/.git/hooks,target=/workspace/.git/hooks,type=bind,readonly",
+
+    // BLOCK DevContainer poisoning: Lock the DevContainer config directory
+    "source=${localWorkspaceFolder}/.devcontainer,target=/workspace/.devcontainer,type=bind,readonly"
+  ]
+}

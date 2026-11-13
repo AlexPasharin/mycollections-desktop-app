@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, type FC } from "react";
 
 import ArtistAddEntryForm from "./ArtistAddEntryForm";
-import ArtistEntriesSearch from "./ArtistEntriesSearch";
 import ArtistInfo from "./ArtistInfo";
 
 import api from "../api";
 
+import EntriesSearch from "@/app/components/EntriesSearch";
 import FeedbackSection from "@/app/components/FeedbackSection";
 import Tabs from "@/app/components/Tabs";
 import UpsertArtistForm from "@/app/components/UpsertArtistForm";
@@ -43,7 +43,6 @@ const ArtistWindowMainContent: FC<ArtistWindowMainContentProps> = ({
   onArtistUpdated,
 }) => {
   const [activeTab, setActiveTab] = useState<ArtistEntriesTab>("searchEntries");
-  const [searchEntriesQuery, setSearchEntriesQuery] = useState("");
   const [createEntryFeedback, setCreateEntryFeedback] = useState<FormFeedback>(
     formFeedbackInitialValue,
   );
@@ -99,11 +98,11 @@ const ArtistWindowMainContent: FC<ArtistWindowMainContentProps> = ({
             panelId: SEARCH_ENTRIES_PANEL_ID,
             label: "Search entries",
             children: (
-              <ArtistEntriesSearch
+              <EntriesSearch
                 artistId={artistId}
                 dbSource={primaryDbSource}
-                query={searchEntriesQuery}
-                onQueryChange={setSearchEntriesQuery}
+                onSearchEntries={api.searchEntries}
+                onOpenEntry={api.openNewEntryWindow}
               />
             ),
           },

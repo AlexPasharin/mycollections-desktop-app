@@ -7,15 +7,18 @@ import CreateArtist from "./CreateArtist";
 import api from "../api";
 
 import DbSourceSelect from "@/app/components/DbSourceSelect";
+import EntriesSearch from "@/app/components/EntriesSearch";
 import Tabs from "@/app/components/Tabs";
 import { DEFAULT_DB_SOURCE, type DbSource } from "@/db/db-source";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
-type MainTab = "query" | "list" | "createArtist";
+type MainTab = "query" | "findEntry" | "list" | "createArtist";
 
 /** Stable ids for this tablist (single Main window view per document). */
 const QUERY_TAB_ID = "main-query-tab";
 const QUERY_PANEL_ID = "main-query-panel";
+const FIND_ENTRY_TAB_ID = "main-find-entry-tab";
+const FIND_ENTRY_PANEL_ID = "main-find-entry-panel";
 const LIST_TAB_ID = "main-list-tab";
 const LIST_PANEL_ID = "main-list-panel";
 const CREATE_ARTIST_TAB_ID = "main-create-artist-tab";
@@ -56,7 +59,7 @@ const MainWindowWrapper: FC = () => {
       </header>
 
       <Tabs
-        ariaLabel="Find artist, show all artists, or create an artist"
+        ariaLabel="Find an artist, find an entry, show all artists, or create an artist"
         activeTab={activeTab}
         onTabChange={setActiveTab}
         tabs={[
@@ -66,6 +69,19 @@ const MainWindowWrapper: FC = () => {
             panelId: QUERY_PANEL_ID,
             label: "Find artist",
             children: <ArtistQuery dbSource={dbSource} />,
+          },
+          {
+            id: "findEntry",
+            tabId: FIND_ENTRY_TAB_ID,
+            panelId: FIND_ENTRY_PANEL_ID,
+            label: "Find entry",
+            children: (
+              <EntriesSearch
+                dbSource={dbSource}
+                onSearchEntries={api.searchEntries}
+                onOpenEntry={api.openNewEntryWindow}
+              />
+            ),
           },
           {
             id: "list",

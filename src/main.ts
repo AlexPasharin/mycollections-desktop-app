@@ -37,7 +37,7 @@ import {
   OPEN_TAGS_WINDOW,
   OPEN_LABELS_WINDOW,
   QUERY_ARTIST,
-  SEARCH_ARTIST_ENTRIES,
+  SEARCH_ENTRIES,
 } from "@/appConstants/ipcEvents";
 import {
   createArtist,
@@ -52,7 +52,7 @@ import {
   createMusicalEntry,
   fetchEntryTypes,
   getEntryById,
-  searchArtistEntries,
+  searchEntries,
   updateMusicalEntry,
 } from "@/db/entries";
 import { fetchReleasesFormats } from "@/db/formats";
@@ -73,7 +73,7 @@ import type {
 } from "@/types/artists";
 import type {
   CreateMusicalEntryInput,
-  SearchArtistEntriesParams,
+  SearchEntriesParams,
   UpdateMusicalEntryInput,
 } from "@/types/entries";
 import type {
@@ -178,9 +178,9 @@ await app.whenReady().then(async () => {
       updateMusicalEntry(input, dbSource),
   );
   ipcMain.handle(
-    SEARCH_ARTIST_ENTRIES,
-    (_, params: SearchArtistEntriesParams, dbSource: DbSource) =>
-      searchArtistEntries(params, dbSource),
+    SEARCH_ENTRIES,
+    (_, params: SearchEntriesParams, dbSource: DbSource) =>
+      searchEntries(params, dbSource),
   );
 
   ipcMain.on(OPEN_ARTIST_WINDOW, (_event, params: CreateArtistWindowParams) => {
