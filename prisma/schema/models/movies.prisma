@@ -1,0 +1,86 @@
+model Movie {
+  id                    String  @id @default(dbgenerated("gen_random_uuid()")) @map("movie_id") @db.Uuid
+  name                  String
+  originalReleaseDate   String? @map("original_release_date")
+  comment               String?
+  imdbUrl               String? @map("imdb_url")
+  partOfQueenCollection Boolean @default(false) @map("part_of_queen_collection")
+  relationToQueen       String? @map("relation_to_queen")
+
+  releases MovieReleaseMovie[]
+
+  @@map("movies")
+}
+
+model MovieRelease {
+  id                    String  @id @default(dbgenerated("gen_random_uuid()")) @map("movie_release_id") @db.Uuid
+  name                  String?
+  version               String  @map("release_version")
+  releaseDate           String? @map("release_date")
+  catalogueNumbers      Json?   @map("catalogue_numbers")
+  countries             Json?
+  matrixRunout          Json?   @map("matrix_runout")
+  comment               String?
+  conditionProblems     String? @map("condition_problems")
+  partOfQueenCollection Boolean @default(false) @map("part_of_queen_collection")
+  relationToQueen       String? @map("relation_to_queen")
+
+  movies               MovieReleaseMovie[]
+  formats              FormatOfMovieRelease[]
+  parentReleases       ParentMovieRelease[]                @relation("ParentRelease")
+  childReleases        ParentMovieRelease[]                @relation("ChildRelease")
+  childMusicalReleases ParentMovieMusicalReleaseRelation[] @relation("ParentMovieMusicalRelease")
+
+  @@map("movie_releases")
+}
+
+model MovieReleaseMovie {
+  movieReleaseId String @map("movie_release_id") @db.Uuid
+  movieId        String @map("movie_id") @db.Uuid
+
+  movieRelease MovieRelease @relation(fields: [movieReleaseId], references: [id])
+  movie        Movie        @relation(fields: [movieId], references: [id])
+
+  @@unique([movieReleaseId, movieId])
+  @@map("movie_release_movies")
+}
+
+model FormatOfMovieRelease {
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  releaseId     String  @map("movie_release_id") @db.Uuid
+  formatId      String  @map("format_id") @db.Uuid
+  pictureSleeve Boolean @default(true) @map("picture_sleeve")
+  amount        Int // amount of parts of release of this format with same other column values
+
+  movieRelease MovieRelease  @relation(fields: [releaseId], references: [id])
+  format       ReleaseFormat @relation(fields: [formatId], references: [id])
+
+  @@unique([releaseId, formatId, pictureSleeve])
+  @@map("formats_of_movie_releases")
+}
+
+model ParentMovieRelease {
+  parentRelease   MovieRelease @relation("ParentRelease", fields: [parentReleaseId], references: [id])
+  parentReleaseId String       @map("parent_release_id") @db.Uuid
+
+  childRelease   MovieRelease @relation("ChildRelease", fields: [childReleaseId], references: [id])
+  childReleaseId String       @map("child_release_id") @db.Uuid
+
+  childReleaseOrderNumber Int @default(1) @map("child_release_order_number")
+
+  @@id([parentReleaseId, childReleaseId])
+  @@map("parent_movie_releases")
+}
+
+model ParentMovieMusicalReleaseRelation {
+  parentRelease   MovieRelease @relation("ParentMovieMusicalRelease", fields: [parentReleaseId], references: [id])
+  parentReleaseId String       @map("parent_movie_release_id") @db.Uuid
+
+  childRelease   MusicalRelease @relation("ChildMovieMusicalRelease", fields: [childReleaseId], references: [id])
+  childReleaseId String         @map("child_musical_release_id") @db.Uuid
+
+  childReleaseOrderNumber Int @default(1) @map("child_release_order_number")
+
+  @@id([parentReleaseId, childReleaseId])
+  @@map("parent_movie_musical_release_relations")
+}

@@ -17,12 +17,13 @@ model MusicalRelease {
 
   entryId String @map("entry_id") @db.Uuid
 
-  entry              MusicalEntry                      @relation(fields: [entryId], references: [id])
-  formats            FormatOfRelease[]
-  alternativeArtists MusicalReleaseAlternativeArtist[]
-  tags               MusicalReleaseTag[]
-  parentReleases     ParentMusicalRelease[]            @relation("ParentRelease")
-  childReleases      ParentMusicalRelease[]            @relation("ChildRelease")
+  entry               MusicalEntry                        @relation(fields: [entryId], references: [id])
+  formats             FormatOfRelease[]
+  alternativeArtists  MusicalReleaseAlternativeArtist[]
+  tags                MusicalReleaseTag[]
+  parentReleases      ParentMusicalRelease[]              @relation("ParentRelease")
+  childReleases       ParentMusicalRelease[]              @relation("ChildRelease")
+  parentMovieReleases ParentMovieMusicalReleaseRelation[] @relation("ChildMovieMusicalRelease")
 
   @@index(countries, type: Gin)
   @@index(catalogueNumbers, type: Gin)
@@ -41,7 +42,8 @@ model ReleaseFormat {
   hasSides     Boolean      @map("has_sides")
   defaultSpeed VINYL_SPEED? @map("default_speed")
 
-  releases FormatOfRelease[]
+  releases      FormatOfRelease[]
+  movieReleases FormatOfMovieRelease[]
 
   @@map("releases_formats")
 }
