@@ -6,4 +6,7 @@ Use `===` / `!==`. Loose `==` / `!=` is allowed only when comparing a variable a
 
 ## Reviewing code changes
 
-After making code changes, open the diff pane in the Claude app (`show_pane` with `pane: "diff"`) so the user can review them. Use the commit SHA as the scope after committing, or `uncommitted` before committing. The user reviews changes here rather than in SourceTree, which does not show Claude's changes.
+After making code changes, let the user review them:
+
+- If the `show_pane` tool is available (Claude desktop app), call it with `pane: "diff"`. Use the commit SHA as the scope after committing, or `uncommitted` before committing.
+- If it isn't available (for example in a devcontainer), say so and show `git diff` (uncommitted) or `git show <sha>` (after committing) instead.
