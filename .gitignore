@@ -23,11 +23,11 @@ src/types/db/database.ts
 
 localScripts
 
-# Claude Code (local settings and worktrees)
-.claude/
+# Claude Code (local settings and worktrees); only shared settings.json is tracked
+.claude/*
+!.claude/settings.json
 
 # container and claude
 settings.local.json
 .devcontainer/empty.json
-.devcontainer/.claude/CLAUDE.md
-.claude/settings*
+.devcontainer/.claude/
