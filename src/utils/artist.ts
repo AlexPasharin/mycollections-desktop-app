@@ -12,16 +12,14 @@ export const formatEntryArtistsLabel = (
     artistName: string;
   }[],
 ): string => {
-  const mainArtist = artists.find(
-    (artist) => artist.isEntriesMainArtist === true,
-  );
+  let mainArtists = artists.filter((artist) => artist.isEntriesMainArtist);
 
-  if (mainArtist) {
-    return mainArtist.artistName;
+  if (!mainArtists.length) {
+    mainArtists = artists;
   }
 
-  if (artists.length > 0) {
-    return artists.map((artist) => artist.artistName).join(", ");
+  if (mainArtists.length > 0) {
+    return mainArtists.map((artist) => artist.artistName).join(", ");
   }
 
   return "(Unknown artist)";

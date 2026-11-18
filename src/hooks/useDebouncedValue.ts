@@ -5,35 +5,36 @@ export type DebouncedValueResult = readonly [
   isDebouncing: boolean,
 ];
 
+/**
+ * Debounces a search-style string. The value is trimmed, and clearing the
+ * input applies immediately instead of waiting for the delay.
+ */
 export const useDebouncedValue = (
   value: string,
   delayMs: number,
 ): DebouncedValueResult => {
-  const [debouncedValue, setDebouncedValue] = useState(value.trim());
-  const [isDebouncing, setIsDebouncing] = useState(false);
+  const trimmedValue = value.trim();
+  const [debouncedValue, setDebouncedValue] = useState(trimmedValue);
 
   useEffect(() => {
-    const trimmedValue = value.trim();
-
     if (!trimmedValue) {
       setDebouncedValue(trimmedValue);
-      setIsDebouncing(false);
 
       return;
     }
 
-    setIsDebouncing(true);
-
     const timeout = setTimeout(() => {
       setDebouncedValue(trimmedValue);
-      setIsDebouncing(false);
     }, delayMs);
 
     return () => {
       clearTimeout(timeout);
-      setIsDebouncing(false);
     };
-  }, [value, delayMs]);
+  }, [trimmedValue, delayMs]);
+
+  // Derived during render so it is correct on the same render the input
+  // changes, with no extra state or effect-driven re-render.
+  const isDebouncing = Boolean(trimmedValue) && trimmedValue !== debouncedValue;
 
   return [debouncedValue, isDebouncing];
 };
