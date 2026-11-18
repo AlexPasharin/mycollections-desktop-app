@@ -78,7 +78,7 @@ export default tseslint.config(
       "valid-typeof": ["error", { requireStringLiterals: true }],
       curly: "error",
       "default-case-last": "error",
-      eqeqeq: ["error", "smart"],
+      eqeqeq: ["error", "always", { null: "ignore" }],
       "no-case-declarations": "error",
       "no-else-return": ["error", { allowElseIf: false }],
       "no-eval": "error",
