@@ -56,6 +56,8 @@
     "source=${localWorkspaceFolder}/.git/hooks,target=/workspace/.git/hooks,type=bind,readonly",
 
     // BLOCK DevContainer poisoning: Lock the DevContainer config directory
-    "source=${localWorkspaceFolder}/.devcontainer,target=/workspace/.devcontainer,type=bind,readonly"
+    "source=${localWorkspaceFolder}/.devcontainer,target=/workspace/.devcontainer,type=bind,readonly",
+
+    "source=${localEnv:HOME}/.claude/skills,target=/home/node/.claude/skills,type=bind,readonly"
   ]
 }
