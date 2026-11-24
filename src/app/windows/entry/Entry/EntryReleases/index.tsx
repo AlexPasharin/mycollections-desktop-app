@@ -82,7 +82,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
 }) => {
   const isFocusedReleaseView = focusedReleaseId !== null;
 
-  const [releases, setReleases] = useState<EntryRelease[]>();
+  const [releases, setReleases] = useState<EntryRelease[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
   const [recentlyDeletedVersion, setRecentlyDeletedVersion] =
@@ -95,7 +95,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
 
   const fetchReleases = useCallback(() => {
     setLoadFailed(false);
-    setReleases(undefined);
+    setReleases([]);
 
     // Focused mode has no entry-wide list to fetch: the selected release loads
     // its own details (and header) inside the list.
@@ -169,8 +169,6 @@ const EntryReleases: FC<EntryReleasesProps> = ({
       </p>
     );
   }
-
-  const visibleReleases = releases ?? [];
 
   const createNotifications = latestCreateNotifications.map((notification) => ({
     message: notification,
@@ -279,7 +277,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
       </div>
     );
 
-  if (!isFocusedReleaseView && (!releases || releases.length === 0)) {
+  if (!isFocusedReleaseView && releases.length === 0) {
     return (
       <>
         <p className={emptyStateClassName}>
@@ -316,13 +314,15 @@ const EntryReleases: FC<EntryReleasesProps> = ({
           </button>
         </div>
       ) : (
-        <h2 className={sectionTitleClassName}>Releases in collection: </h2>
+        <h2 className={sectionTitleClassName}>
+          Releases in collection ({releases.length}):
+        </h2>
       )}
       <div className={fieldClassName}>
         <EntryReleasesList
           entry={entry}
           primaryDbSource={primaryDbSource}
-          releases={visibleReleases}
+          releases={releases}
           allCountries={allCountries}
           focusedReleaseId={focusedReleaseId}
           showReleaseActions={!isFocusedReleaseView}
