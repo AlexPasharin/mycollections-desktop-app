@@ -55,9 +55,10 @@ const EntryReleasesList: FC<EntryReleasesListProps> = ({
 
   return (
     <ul className="m-0 mt-1 flex list-none flex-col gap-1 pl-0">
-      {items.map(({ releaseId, row }) => (
+      {items.map(({ releaseId, row }, idx) => (
         <EntryRelease
           key={releaseId}
+          index={focusedReleaseId ? undefined : idx + 1}
           entry={entry}
           primaryDbSource={primaryDbSource}
           releaseId={releaseId}
