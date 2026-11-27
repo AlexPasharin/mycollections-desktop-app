@@ -5,9 +5,9 @@ import ArtistEntriesGroup from "./ArtistEntriesGroup";
 import type { DbSource } from "@/db/db-source";
 import useFetch from "@/hooks/useFetch";
 import type {
-  CreateEntryWindowParams,
   FetchArtistEntriesGroupedByType,
   FetchArtistEntriesOfType,
+  OpenEntryWindow,
 } from "@/types/entries";
 
 type ArtistEntriesProps = {
@@ -18,7 +18,7 @@ type ArtistEntriesProps = {
   onFetchGroups: FetchArtistEntriesGroupedByType;
   onFetchGroupEntries: FetchArtistEntriesOfType;
 
-  onOpenEntry: (params: Omit<CreateEntryWindowParams, "releaseId">) => void;
+  onOpenEntry: OpenEntryWindow;
 };
 
 const ArtistEntries: FC<ArtistEntriesProps> = ({

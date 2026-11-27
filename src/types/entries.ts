@@ -18,6 +18,10 @@ export type CreateEntryWindowParams = {
   releaseId?: string;
 };
 
+export type OpenEntryWindow = (
+  params: Omit<CreateEntryWindowParams, "releaseId">,
+) => void;
+
 export type EntrySearchResultArtist = {
   artistId: string;
 

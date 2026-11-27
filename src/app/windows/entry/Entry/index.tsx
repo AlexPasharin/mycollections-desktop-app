@@ -416,7 +416,7 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
     <div>
       <h1>{entry.mainName}</h1>
 
-      <EntryArtists artists={entry.artists} />
+      <EntryArtists artists={entry.artists} primaryDbSource={primaryDbSource} />
       <EntryDetailsPanel entry={entry} primaryDbSource={primaryDbSource} />
 
       {isFocusedReleaseView ? (
