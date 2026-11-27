@@ -3,6 +3,8 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { API } from "./api";
 
 import {
+  FETCH_ARTIST_ENTRIES_GROUPED_BY_TYPE,
+  FETCH_ARTIST_ENTRIES_OF_TYPE,
   CREATE_MUSICAL_ENTRY,
   FETCH_ENTRY_TYPES,
   FETCH_TAGS,
@@ -15,6 +17,7 @@ import {
 import type { DbSource } from "@/db/db-source";
 import type { UpdateArtistInput } from "@/types/artists";
 import type {
+  FetchArtistEntriesOfTypeParams,
   CreateArtistWindowParams,
   CreateEntryWindowParams,
   CreateMusicalEntryInput,
@@ -28,6 +31,16 @@ const api = {
     ipcRenderer.invoke(UPDATE_ARTIST, input, dbSource),
   searchEntries: (params: SearchEntriesParams, dbSource: DbSource) =>
     ipcRenderer.invoke(SEARCH_ENTRIES, params, dbSource),
+  fetchArtistEntriesGroupedByType: (artistId: string, dbSource: DbSource) =>
+    ipcRenderer.invoke(
+      FETCH_ARTIST_ENTRIES_GROUPED_BY_TYPE,
+      artistId,
+      dbSource,
+    ),
+  fetchArtistEntriesOfType: (
+    params: FetchArtistEntriesOfTypeParams,
+    dbSource: DbSource,
+  ) => ipcRenderer.invoke(FETCH_ARTIST_ENTRIES_OF_TYPE, params, dbSource),
   fetchTags: (dbSource: DbSource) => ipcRenderer.invoke(FETCH_TAGS, dbSource),
   fetchEntryTypes: (dbSource: DbSource) =>
     ipcRenderer.invoke(FETCH_ENTRY_TYPES, dbSource),
