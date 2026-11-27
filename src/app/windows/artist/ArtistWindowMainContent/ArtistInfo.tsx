@@ -130,7 +130,7 @@ const RelatedArtistsSection: FC<RelatedArtistsSectionProps> = ({
         <li key={relatedArtist.artistId}>
           <button
             type="button"
-            className="m-0 cursor-pointer border-none bg-transparent p-0 text-left font-[inherit] text-[#1a5fb4] text-[inherit] underline hover:text-[#0d3d82] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a5fb4]"
+            className="m-0 cursor-pointer border-none bg-transparent p-0 text-[length:inherit] text-[inherit] underline hover:text-[#0d3d82] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a5fb4]"
             onClick={() => onArtistSelect(relatedArtist)}
           >
             {relatedArtist.name}

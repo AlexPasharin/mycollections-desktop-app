@@ -5,8 +5,8 @@ import EntriesSearchResults from "./EntriesSearchResults";
 import type { DbSource } from "@/db/db-source";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import type {
-  CreateEntryWindowParams,
   EntrySearchResult,
+  OpenEntryWindow,
   SearchEntries,
 } from "@/types/entries";
 
@@ -26,7 +26,7 @@ type EntriesSearchProps = {
   onSearchEntries: SearchEntries;
 
   /** Window-specific way of opening an entry. */
-  onOpenEntry: (params: Omit<CreateEntryWindowParams, "releaseId">) => void;
+  onOpenEntry: OpenEntryWindow;
 };
 
 const EntriesSearch: FC<EntriesSearchProps> = ({
