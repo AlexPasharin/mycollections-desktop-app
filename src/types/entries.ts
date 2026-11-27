@@ -106,6 +106,42 @@ export type SearchEntries = (
   dbSource: DbSource,
 ) => Promise<SearchEntriesResult>;
 
+export type ArtistEntriesTypeGroup = {
+  /** Null for the group collecting entries that have no type. */
+  typeId: string | null;
+  typeName: string;
+  entriesCount: number;
+};
+
+/** Groups ordered by name; the group of entries without a type (if any) comes last. */
+export type FetchArtistEntriesGroupedByType = (
+  artistId: string,
+  dbSource: DbSource,
+) => Promise<ArtistEntriesTypeGroup[]>;
+
+export type ArtistEntry = {
+  entryId: string;
+  mainName: string;
+  originalReleaseDate: GeneralizedDateFromDb;
+};
+
+export type FetchArtistEntriesOfTypeParams = {
+  artistId: string;
+
+  /** Null selects the entries that have no type. */
+  typeId: string | null;
+  offset?: number | null;
+
+  /** Omit to fetch all entries from `offset` on. */
+  limit?: number | null | undefined;
+};
+
+/** Entries of one group, earliest release first (undated last). */
+export type FetchArtistEntriesOfType = (
+  params: FetchArtistEntriesOfTypeParams,
+  dbSource: DbSource,
+) => Promise<ArtistEntry[]>;
+
 export type MusicalEntryAltNameInput = { nameId?: string; name: string };
 
 export type MusicalEntryArtistInput = {

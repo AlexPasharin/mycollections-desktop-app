@@ -1,3 +1,7 @@
+export {
+  fetchArtistEntriesGroupedByType,
+  fetchArtistEntriesOfType,
+} from "./artistEntries";
 export { getEntryById } from "./entryById";
 export { createMusicalEntry } from "./createMusicalEntry";
 export { fetchEntryTypes } from "./fetchEntryTypes";

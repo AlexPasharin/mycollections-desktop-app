@@ -68,6 +68,7 @@ model EntryArtist {
   musicalReleaseAlternativeArtists MusicalReleaseAlternativeArtist[]
 
   @@unique([entryId, artistId, entryArtistNameId])
+  @@index([artistId, entryId]) // for artist's entries lookup (the unique index above leads with entryId, so it can't serve it)
   @@map("musical_entries_artists")
 }
 

@@ -38,6 +38,8 @@ import {
   OPEN_LABELS_WINDOW,
   QUERY_ARTIST,
   SEARCH_ENTRIES,
+  FETCH_ARTIST_ENTRIES_GROUPED_BY_TYPE,
+  FETCH_ARTIST_ENTRIES_OF_TYPE,
 } from "@/appConstants/ipcEvents";
 import {
   createArtist,
@@ -49,6 +51,8 @@ import {
 import { fetchCountries } from "@/db/countries";
 import type { DbSource } from "@/db/db-source";
 import {
+  fetchArtistEntriesGroupedByType,
+  fetchArtistEntriesOfType,
   createMusicalEntry,
   fetchEntryTypes,
   getEntryById,
@@ -72,6 +76,7 @@ import type {
   UpdateArtistInput,
 } from "@/types/artists";
 import type {
+  FetchArtistEntriesOfTypeParams,
   CreateMusicalEntryInput,
   SearchEntriesParams,
   UpdateMusicalEntryInput,
@@ -181,6 +186,16 @@ await app.whenReady().then(async () => {
     SEARCH_ENTRIES,
     (_, params: SearchEntriesParams, dbSource: DbSource) =>
       searchEntries(params, dbSource),
+  );
+  ipcMain.handle(
+    FETCH_ARTIST_ENTRIES_GROUPED_BY_TYPE,
+    (_, artistId: string, dbSource: DbSource) =>
+      fetchArtistEntriesGroupedByType(artistId, dbSource),
+  );
+  ipcMain.handle(
+    FETCH_ARTIST_ENTRIES_OF_TYPE,
+    (_, params: FetchArtistEntriesOfTypeParams, dbSource: DbSource) =>
+      fetchArtistEntriesOfType(params, dbSource),
   );
 
   ipcMain.on(OPEN_ARTIST_WINDOW, (_event, params: CreateArtistWindowParams) => {
