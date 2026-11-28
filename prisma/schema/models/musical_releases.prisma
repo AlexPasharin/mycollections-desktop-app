@@ -97,9 +97,11 @@ model ReleaseSpecialArtist {
   release MusicalRelease @relation(fields: [releaseId], references: [id])
   artist  Artist         @relation(fields: [artistId], references: [id])
 
+  isReleasesMainArtist Boolean? @default(true) @map("is_releases_main_artist") // indicates if this is release's "main artist"
+
   entryArtistNameId  String?                @map("entry_artist_name_id") @db.Uuid
   entryAltArtistName AlternativeArtistName? @relation(fields: [entryArtistNameId], references: [id]) // in case release's artist name is marked as one of artist's alternative names
 
-  @@unique([releaseId, artistId])
+  @@unique([releaseId, artistId, entryArtistNameId])
   @@map("musical_release_special_artists")
 }

@@ -1,11 +1,13 @@
 -- This migration had to be generated empty with --create-only command and populated manually, because it's content cannot be expressed in Prisma schema
 
--- True when the entry already has this artist associated with the same alternative name
--- (NULL entry_artist_name_id matches NULL — IS NOT DISTINCT FROM).
+-- True when the entry already has this artist associated with the same alternative
+-- name and the same main-artist flag (NULL entry_artist_name_id / is_entries_main_artist
+-- match NULL — IS NOT DISTINCT FROM).
 CREATE OR REPLACE FUNCTION entry_has_matching_artist_association(
 	p_entry_id UUID,
 	p_artist_id UUID,
-	p_entry_artist_name_id UUID
+	p_entry_artist_name_id UUID,
+	p_is_main_artist BOOLEAN
 ) RETURNS BOOLEAN
 AS $$
 	SELECT EXISTS (
@@ -14,12 +16,13 @@ AS $$
 		WHERE ea.entry_id = p_entry_id
 			AND ea.artist_id = p_artist_id
 			AND ea.entry_artist_name_id IS NOT DISTINCT FROM p_entry_artist_name_id
+			AND ea.is_entries_main_artist IS NOT DISTINCT FROM p_is_main_artist
 	);
 $$ LANGUAGE sql STABLE;
 
 -- musical_release_special_artists: row is allowed only when the artist is NOT associated
--- with the release's entry, OR is associated but under a different entry_artist_name_id
--- (including the NULL vs non-NULL distinction).
+-- with the release's entry under the same (entry_artist_name_id, is_main_artist) pair
+-- (including NULL distinctions).
 CREATE OR REPLACE FUNCTION validate_musical_release_special_artists()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -34,7 +37,8 @@ BEGIN
 	IF entry_has_matching_artist_association(
 		release_row.entry_id,
 		NEW.artist_id,
-		NEW.entry_artist_name_id
+		NEW.entry_artist_name_id,
+		NEW.is_releases_main_artist
 	) THEN
 
 		SELECT * FROM musical_entries AS e
@@ -43,11 +47,12 @@ BEGIN
 
 		validation_errors := add_formatted_message(
 			validation_errors,
-			'Release special artist (release "%s", version "%s", artist id "%s", entry_artist_name_id "%s") is not allowed: this artist is already associated with the release''s entry "%s" (id "%s") under the same alternative name (including both-null).',
+			'Release special artist (release "%s", version "%s", artist id "%s", entry_artist_name_id "%s", is_releases_main_artist "%s") is not allowed: this artist is already associated with the release''s entry "%s" (id "%s") under the same alternative name and main-artist flag (including nulls).',
 			NEW.release_id::TEXT,
 			release_row.release_version,
 			NEW.artist_id::TEXT,
 			COALESCE(NEW.entry_artist_name_id::TEXT, 'null'),
+			COALESCE(NEW.is_releases_main_artist::TEXT, 'null'),
 			entry_row.main_name,
 			entry_row.entry_id::TEXT
 		);
@@ -87,6 +92,7 @@ BEGIN
 		WHERE r.entry_id = NEW.entry_id
 			AND sa.artist_id = NEW.artist_id
 			AND sa.entry_artist_name_id IS NOT DISTINCT FROM NEW.entry_artist_name_id
+			AND sa.is_releases_main_artist IS NOT DISTINCT FROM NEW.is_entries_main_artist
 	LOOP
 		SELECT * FROM musical_releases AS r
 		WHERE r.release_id = conflicting_special_artist.release_id
@@ -94,11 +100,12 @@ BEGIN
 
 		validation_errors := add_formatted_message(
 			validation_errors,
-			'Cannot update entry-artist association (entry "%s", id "%s", artist id "%s", entry_artist_name_id "%s"): it would duplicate release special artist on release "%s" (version "%s"). A special artist is only allowed when the artist is not on the entry, or is on the entry under a different alternative name (including null).',
+			'Cannot update entry-artist association (entry "%s", id "%s", artist id "%s", entry_artist_name_id "%s", is_entries_main_artist "%s"): it would duplicate release special artist on release "%s" (version "%s"). A special artist is only allowed when the artist is not on the entry under the same alternative name and main-artist flag (including nulls).',
 			entry_row.main_name,
 			NEW.entry_id::TEXT,
 			NEW.artist_id::TEXT,
 			COALESCE(NEW.entry_artist_name_id::TEXT, 'null'),
+			COALESCE(NEW.is_entries_main_artist::TEXT, 'null'),
 			release_row.release_id::TEXT,
 			release_row.release_version
 		);
@@ -141,18 +148,20 @@ BEGIN
 			AND entry_has_matching_artist_association(
 				NEW.entry_id,
 				sa.artist_id,
-				sa.entry_artist_name_id
+				sa.entry_artist_name_id,
+				sa.is_releases_main_artist
 			)
 	LOOP
 		validation_errors := add_formatted_message(
 			validation_errors,
-			'Cannot change entry_id of release "%s" (version "%s") to entry "%s" (id "%s"): release special artist (artist id "%s", entry_artist_name_id "%s") matches an existing entry-artist association on the new entry. A special artist is only allowed when the artist is not on the entry, or is on the entry under a different alternative name (including null).',
+			'Cannot change entry_id of release "%s" (version "%s") to entry "%s" (id "%s"): release special artist (artist id "%s", entry_artist_name_id "%s", is_releases_main_artist "%s") matches an existing entry-artist association on the new entry. A special artist is only allowed when the artist is not on the entry under the same alternative name and main-artist flag (including nulls).',
 			NEW.release_id::TEXT,
 			NEW.release_version,
 			entry_row.main_name,
 			NEW.entry_id::TEXT,
 			conflicting_special_artist.artist_id::TEXT,
-			COALESCE(conflicting_special_artist.entry_artist_name_id::TEXT, 'null')
+			COALESCE(conflicting_special_artist.entry_artist_name_id::TEXT, 'null'),
+			COALESCE(conflicting_special_artist.is_releases_main_artist::TEXT, 'null')
 		);
 	END LOOP;
 
