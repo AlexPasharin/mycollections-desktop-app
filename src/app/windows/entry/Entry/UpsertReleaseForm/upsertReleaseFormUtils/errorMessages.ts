@@ -41,6 +41,12 @@ export type UpsertReleaseFormRelatedReleasesInputFieldKey = {
   relatedReleaseRowId: RelatedReleaseRowId;
 };
 
+export type SpecialArtistRowId = string;
+
+export type UpsertReleaseFormSpecialArtistsInputFieldKey = {
+  specialArtistRowId: SpecialArtistRowId;
+};
+
 export type UpsertReleaseFormInputFieldKey =
   | "releaseVersion"
   | "discogsUrl"
@@ -53,7 +59,8 @@ export type UpsertReleaseFormInputFieldKey =
   | UpsertReleaseFormFormatInputFieldKey
   | UpsertReleaseFormCatalogueNumbersInputFieldKey
   | UpsertReleaseFormCountriesInputFieldKey
-  | UpsertReleaseFormRelatedReleasesInputFieldKey;
+  | UpsertReleaseFormRelatedReleasesInputFieldKey
+  | UpsertReleaseFormSpecialArtistsInputFieldKey;
 
 export const isFormatInputFieldKey = (key: UpsertReleaseFormInputFieldKey) =>
   typeof key === "object" && "formatRowId" in key;
@@ -68,3 +75,7 @@ export const isCountriesInputFieldKey = (key: UpsertReleaseFormInputFieldKey) =>
 export const isRelatedReleasesInputFieldKey = (
   key: UpsertReleaseFormInputFieldKey,
 ) => typeof key === "object" && "relatedReleaseRowId" in key;
+
+export const isSpecialArtistsInputFieldKey = (
+  key: UpsertReleaseFormInputFieldKey,
+) => typeof key === "object" && "specialArtistRowId" in key;

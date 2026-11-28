@@ -1,5 +1,7 @@
-import type { UpsertEntryAltNameRow, UpsertEntryArtistRow } from "./formValues";
+import type { UpsertEntryAltNameRow } from "./formValues";
 import { toUpsertMusicalEntryInput } from "./toUpsertMusicalEntryInput";
+
+import type { UpsertArtistRow } from "@/app/components/UpsertArtistsSection/upsertArtistRow";
 
 const altNameRow = (
   id: string,
@@ -15,12 +17,12 @@ const artistRow = (
   id: string,
   artistId: string,
   entryArtistAltNameId = "",
-  isEntriesMainArtist = false,
-): UpsertEntryArtistRow => ({
+  isMainArtist = false,
+): UpsertArtistRow => ({
   id,
   artistId,
   entryArtistAltNameId,
-  isEntriesMainArtist,
+  isMainArtist,
 });
 
 describe("toUpsertMusicalEntryInput", () => {

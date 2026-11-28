@@ -1,18 +1,25 @@
 import type { FC } from "react";
 
-import type { UpsertEntryArtistRow } from "../upsertEntryFormUtils/formValues";
+import type { UpsertArtistRow } from "./upsertArtistRow";
 
 import ErrorMessages from "@/app/components/ErrorMessages";
 import NotificationMessages from "@/app/components/NotificationMessages";
 import type { FormFeedbackMessages } from "@/types/form";
 
-type UpsertEntryArtistRowPatch = Partial<Omit<UpsertEntryArtistRow, "id">>;
+type UpsertArtistsSectionRowPatch = Partial<Omit<UpsertArtistRow, "id">>;
 
-type UpsertEntryArtistsSectionProps = {
-  artists: UpsertEntryArtistRow[];
+type UpsertArtistsSectionProps = {
+  heading: string;
+  listAriaLabel?: string;
+  idPrefix: string;
+  notificationsId: string;
+  artists: UpsertArtistRow[];
   errors: FormFeedbackMessages;
   notifications: FormFeedbackMessages;
-  onUpdateArtistRow: (rowId: string, patch: UpsertEntryArtistRowPatch) => void;
+  onUpdateArtistRow: (
+    rowId: string,
+    patch: UpsertArtistsSectionRowPatch,
+  ) => void;
   onAddRow: () => void;
   onRemoveRow: (rowId: string) => void;
   onFocus: (rowId: string, field: string) => void;
@@ -24,7 +31,11 @@ const fieldLabelClassName =
 
 const uuidInputClassName = "px-2 py-[0.35rem] text-base";
 
-const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
+const UpsertArtistsSection: FC<UpsertArtistsSectionProps> = ({
+  heading,
+  listAriaLabel = heading,
+  idPrefix,
+  notificationsId,
   artists,
   errors,
   notifications,
@@ -35,22 +46,22 @@ const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
   onBlur,
 }) => (
   <div className="mt-0 mb-[0.65rem]">
-    <h2 className="mb-3 text-base leading-snug font-semibold">Artists</h2>
+    <h2 className="mb-3 text-base leading-snug font-semibold">{heading}</h2>
 
     {artists.length > 0 && (
       <ul
         className="mb-3 flex list-none flex-col gap-[0.65rem] p-0"
-        aria-label="Artists"
+        aria-label={listAriaLabel}
       >
         {artists.map((row, index) => {
           const rowErrors = errors.filter((error) =>
             error.sources?.includes(row.id),
           );
           const hasErrors = rowErrors.length > 0;
-          const errorId = `upsert-entry-artist-error-${row.id}`;
-          const artistIdInputId = `upsert-entry-artist-id-${row.id}`;
-          const altNameIdInputId = `upsert-entry-artist-alt-name-id-${row.id}`;
-          const mainCheckboxId = `upsert-entry-artist-main-${row.id}`;
+          const errorId = `${idPrefix}-error-${row.id}`;
+          const artistIdInputId = `${idPrefix}-id-${row.id}`;
+          const altNameIdInputId = `${idPrefix}-alt-name-id-${row.id}`;
+          const mainCheckboxId = `${idPrefix}-main-${row.id}`;
           const removeAriaLabel = `Remove artist ${index + 1}`;
 
           return (
@@ -88,10 +99,10 @@ const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
                   <input
                     id={mainCheckboxId}
                     type="checkbox"
-                    checked={row.isEntriesMainArtist}
+                    checked={row.isMainArtist}
                     onChange={(e) => {
                       onUpdateArtistRow(row.id, {
-                        isEntriesMainArtist: e.target.checked,
+                        isMainArtist: e.target.checked,
                       });
                     }}
                     onBlur={onBlur}
@@ -155,10 +166,7 @@ const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
       </ul>
     )}
 
-    <NotificationMessages
-      id="upsert-entry-artists-notifications"
-      messages={notifications}
-    />
+    <NotificationMessages id={notificationsId} messages={notifications} />
 
     <button
       type="button"
@@ -170,4 +178,4 @@ const UpsertEntryArtistsSection: FC<UpsertEntryArtistsSectionProps> = ({
   </div>
 );
 
-export default UpsertEntryArtistsSection;
+export default UpsertArtistsSection;

@@ -6,6 +6,7 @@ import {
 } from "./validation";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
+import type { UpsertArtistRow } from "@/app/components/UpsertArtistsSection/upsertArtistRow";
 import { CHILD_RELATION, PARENT_RELATION } from "@/constants";
 import type { DbSource } from "@/db/db-source";
 import type { RelatedItemRelation } from "@/types/common";
@@ -41,20 +42,6 @@ export type UpsertEntryAltNameRow = {
 export const defaultAltNameRow = (name = ""): UpsertEntryAltNameRow =>
   withNewId({ name });
 
-export type UpsertEntryArtistRow = {
-  id: string;
-  artistId: string;
-  entryArtistAltNameId: string;
-  isEntriesMainArtist: boolean;
-};
-
-export const defaultArtistRow = (): UpsertEntryArtistRow =>
-  withNewId({
-    artistId: "",
-    entryArtistAltNameId: "",
-    isEntriesMainArtist: false,
-  });
-
 export type UpsertEntryRelatedEntryRow = RelatedOrderedItemRow & {
   entryId: string;
 };
@@ -80,7 +67,7 @@ export type UpsertEntryFormDraft = {
   comment: string;
   selectedTags: Set<TagId>;
   selectedTypes: Set<string>;
-  artists: UpsertEntryArtistRow[];
+  artists: UpsertArtistRow[];
   altNames: UpsertEntryAltNameRow[];
   relatedEntries: UpsertEntryRelatedEntryRow[];
   partOfQueenCollection: boolean;
@@ -209,14 +196,14 @@ export const initialUpsertEntryFormDraft = ({
 const artistsToFormValue = (
   artists: EntryByIdResult["artists"] | undefined,
   defaultArtistId: string | undefined,
-): UpsertEntryArtistRow[] => {
+): UpsertArtistRow[] => {
   if (artists !== undefined) {
     return artists.map(
       ({ artistId, entryArtistAltNameId, isEntriesMainArtist }) =>
         withNewId({
           artistId,
           entryArtistAltNameId: entryArtistAltNameId ?? "",
-          isEntriesMainArtist: isEntriesMainArtist ?? false,
+          isMainArtist: isEntriesMainArtist ?? false,
         }),
     );
   }
@@ -226,7 +213,7 @@ const artistsToFormValue = (
       withNewId({
         artistId: defaultArtistId,
         entryArtistAltNameId: "",
-        isEntriesMainArtist: true,
+        isMainArtist: true,
       }),
     ];
   }

@@ -63,6 +63,15 @@ export type ReleaseByIdResultCatalogueNumbers =
   | ReleaseCatNumbers
   | JsonParsingErrorData;
 
+export type ReleaseSpecialArtistItem = {
+  artistId: string;
+  entryArtistAltNameId: string | null;
+  isReleasesMainArtist: boolean | null;
+
+  /** Release-specific artist's alternative name when set, otherwise the artist's main name. */
+  artistName: string;
+};
+
 export type ReleaseByIdResult = Omit<
   Selectable<MusicalRelease>,
   | "countries"
@@ -78,6 +87,7 @@ export type ReleaseByIdResult = Omit<
   countries: ReleaseCountries | JsonParsingErrorData;
   catalogueNumbers: ReleaseByIdResultCatalogueNumbers;
   matrixRunout: ReleaseMatrixRunout | JsonParsingErrorData;
+  specialArtists: ReleaseSpecialArtistItem[];
   parentReleases: RelatedReleaseItem[];
   childReleases: RelatedReleaseItem[];
 };
@@ -93,9 +103,16 @@ export type MusicalReleaseRelatedReleaseInput = {
   childReleaseOrderNumber: number;
 };
 
+export type MusicalReleaseSpecialArtistInput = {
+  artistId: string;
+  entryArtistAltNameId: string | null;
+  isReleasesMainArtist: boolean;
+};
+
 interface UpsertMusicalReleaseBase {
   formats: Omit<Insertable<FormatOfRelease>, "releaseId">[];
   tagIds: string[];
+  specialArtists: MusicalReleaseSpecialArtistInput[];
   relatedReleases: MusicalReleaseRelatedReleaseInput[];
 }
 

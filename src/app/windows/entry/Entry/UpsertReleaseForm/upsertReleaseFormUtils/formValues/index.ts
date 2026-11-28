@@ -7,3 +7,4 @@ export * from "./matrixRunout";
 export * from "./name";
 export * from "./relatedReleases";
 export * from "./releaseDate";
+export * from "./specialArtists";
