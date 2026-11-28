@@ -1,3 +1,4 @@
+export * from "./artistAssociationRows";
 export * from "./optionalTrimmedText";
 export * from "./relatedItems";
 export * from "./releaseDate";

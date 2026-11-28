@@ -5,8 +5,12 @@ import { aggregateDistinctValuesToArray } from "../utils";
 
 import type { GetEntryReleases } from "@/types/releases";
 
-export const getEntryReleases: GetEntryReleases = (entryId, dbSource) =>
-  dbClient(dbSource)
+export const getEntryReleases: GetEntryReleases = (
+  entryId,
+  dbSource,
+  options,
+) => {
+  let query = dbClient(dbSource)
     .selectFrom("musicalReleases")
     .leftJoin(
       "formatsOfReleases",
@@ -18,7 +22,27 @@ export const getEntryReleases: GetEntryReleases = (entryId, dbSource) =>
       "formatsOfReleases.formatId",
       "releasesFormats.formatId",
     )
-    .where("musicalReleases.entryId", "=", entryId)
+    .where("musicalReleases.entryId", "=", entryId);
+
+  const specialArtistId = options?.specialArtistId;
+
+  if (specialArtistId !== undefined) {
+    query = query.where((eb) =>
+      eb.exists(
+        eb
+          .selectFrom("musicalReleaseSpecialArtists")
+          .select("musicalReleaseSpecialArtists.releaseId")
+          .whereRef(
+            "musicalReleaseSpecialArtists.releaseId",
+            "=",
+            "musicalReleases.releaseId",
+          )
+          .where("musicalReleaseSpecialArtists.artistId", "=", specialArtistId),
+      ),
+    );
+  }
+
+  return query
     .select((eb) => [
       "musicalReleases.releaseId",
       eb.ref("musicalReleases.releaseVersion").as("version"),
@@ -34,3 +58,4 @@ export const getEntryReleases: GetEntryReleases = (entryId, dbSource) =>
     )
     .orderBy("musicalReleases.releaseId")
     .execute();
+};

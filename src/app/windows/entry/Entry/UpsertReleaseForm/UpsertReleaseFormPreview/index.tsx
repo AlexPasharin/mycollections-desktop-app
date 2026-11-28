@@ -58,14 +58,14 @@ const UpsertReleaseFormPreview: FC<UpsertReleaseFormPreviewProps> = ({
       <FormPreviewField label="Name">{formState.name.name}</FormPreviewField>
       <FormPreviewField label="Release date">{releaseDate}</FormPreviewField>
       <FormPreviewField label="Discogs URL">
-        {discogsUrl === null ? null : (
+        {discogsUrl && (
           <a href={discogsUrl} target="_blank" rel="noreferrer">
             {discogsUrl}
           </a>
         )}
       </FormPreviewField>
       <FormPreviewField label="Formats">
-        {formats.length ? (
+        {formats.length > 0 && (
           <ul className={listClassName}>
             {formats.map((row) => {
               const shortName =
@@ -87,7 +87,7 @@ const UpsertReleaseFormPreview: FC<UpsertReleaseFormPreviewProps> = ({
               );
             })}
           </ul>
-        ) : null}
+        )}
       </FormPreviewField>
       <JsonField label="Countries" value={countriesJson} />
       <JsonField label="Catalogue numbers" value={catNumbersJson} />
@@ -95,8 +95,26 @@ const UpsertReleaseFormPreview: FC<UpsertReleaseFormPreviewProps> = ({
       <FormPreviewField label="Tags">
         {selectedTagNames.join(", ")}
       </FormPreviewField>
+      <FormPreviewField label="Special artists">
+        {formState.specialArtists.length > 0 && (
+          <ul className={listClassName}>
+            {formState.specialArtists.map((row) => {
+              const altNameId = nullIfEmpty(row.entryArtistAltNameId.trim());
+              const mainLabel = row.isMainArtist ? " (main)" : "";
+
+              return (
+                <li key={row.id}>
+                  {row.artistId.trim()}
+                  {altNameId !== null && ` — alt name ${altNameId}`}
+                  {mainLabel}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </FormPreviewField>
       <FormPreviewField label="Related releases">
-        {relatedReleases.length === 0 ? null : (
+        {relatedReleases.length > 0 && (
           <ul className={listClassName}>
             {relatedReleases.map((row) => (
               <li key={row.id}>

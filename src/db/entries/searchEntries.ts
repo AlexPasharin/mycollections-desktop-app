@@ -1,6 +1,9 @@
 import { sql } from "kysely";
 
-import { selectFromExtendedMusicalEntryRows } from "./utils";
+import {
+  selectArtistRelatedEntryIds,
+  selectFromExtendedMusicalEntryRows,
+} from "./utils";
 
 import { dbClient } from "../client/kysely";
 import { aggregateDistinctValuesToArray } from "../utils";
@@ -16,8 +19,9 @@ export const searchEntries: SearchEntries = async (
 
   const cursorPayload = decodeCursor(cursor);
   const trimmedQuery = query.trim();
+  const db = dbClient(dbSource);
 
-  let filtered = dbClient(dbSource)
+  let filtered = db
     .selectFrom(subquery.as("entries"))
     .where((eb) =>
       eb.or([
@@ -27,7 +31,11 @@ export const searchEntries: SearchEntries = async (
     );
 
   if (artistId !== undefined) {
-    filtered = filtered.where("artistId", "=", artistId);
+    filtered = filtered.where(
+      "entryId",
+      "in",
+      selectArtistRelatedEntryIds(db, artistId),
+    );
   }
 
   let grouped = filtered

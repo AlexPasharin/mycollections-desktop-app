@@ -158,7 +158,22 @@ const EntriesSearch: FC<EntriesSearchProps> = ({
       {debouncedQuery && (
         <EntriesSearchResults
           entries={entries}
-          onOpenEntry={(entryId) => onOpenEntry({ entryId, source: dbSource })}
+          onOpenEntry={(entryId) => {
+            const entry = entries.find(
+              (searchResult) => searchResult.entryId === entryId,
+            );
+            const isListedAsEntryArtist =
+              artistId != null &&
+              entry?.artists.some((artist) => artist.artistId === artistId) ===
+                true;
+
+            onOpenEntry({
+              entryId,
+              source: dbSource,
+              ...(artistId != null &&
+                !isListedAsEntryArtist && { specialArtist: artistId }),
+            });
+          }}
           showArtistNames={showArtistNames}
           isSearching={isDebouncing || isSearching}
         />

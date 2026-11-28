@@ -18,6 +18,7 @@ import {
   isCountriesInputFieldKey,
   isFormatInputFieldKey,
   isRelatedReleasesInputFieldKey,
+  isSpecialArtistsInputFieldKey,
   type UpsertReleaseFormInputFieldKey,
 } from "./upsertReleaseFormUtils/errorMessages";
 import {
@@ -46,6 +47,11 @@ import AddTagsFormSection from "@/app/components/Form/AddTagsFormSection";
 import FormSectionsDivider from "@/app/components/Form/FormSectionsDivider";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
 import NotificationMessages from "@/app/components/NotificationMessages";
+import UpsertArtistsSection from "@/app/components/UpsertArtistsSection";
+import {
+  defaultArtistRow,
+  type UpsertArtistRow,
+} from "@/app/components/UpsertArtistsSection/upsertArtistRow";
 import api from "@/app/windows/entry/api";
 import type { DbSource } from "@/db/db-source";
 import { dbSourceLabel } from "@/db/db-source-options";
@@ -200,6 +206,12 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
       return;
     }
 
+    if (isSpecialArtistsInputFieldKey(key)) {
+      clearFieldFeedback("specialArtists", key.specialArtistRowId);
+
+      return;
+    }
+
     clearFieldFeedback(isDateInputFieldKey(key) ? "releaseDate" : key);
   };
 
@@ -264,6 +276,32 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
 
       return next;
     });
+  };
+
+  const addSpecialArtistRow = () => {
+    setFieldValue("specialArtists", (prev) => [
+      ...prev.specialArtists.value,
+      defaultArtistRow(),
+    ]);
+  };
+
+  const removeSpecialArtistRow = (rowId: string) => {
+    clearFieldFeedback("specialArtists", rowId);
+
+    setFieldValue("specialArtists", (prev) =>
+      prev.specialArtists.value.filter((row) => row.id !== rowId),
+    );
+  };
+
+  const updateSpecialArtistRow = (
+    rowId: string,
+    patch: Partial<Omit<UpsertArtistRow, "id">>,
+  ) => {
+    setFieldValue("specialArtists", (prev) =>
+      prev.specialArtists.value.map((row) =>
+        row.id === rowId ? { ...row, ...patch } : row,
+      ),
+    );
   };
 
   const addRelatedReleaseRow = () => {
@@ -583,6 +621,22 @@ const UpsertReleaseForm: FC<UpsertReleaseFormProps> = ({
           entryAltNames={entry.altNames}
           value={formState.name.value}
           onChange={(value) => setFieldValue("name", value)}
+        />
+
+        <FormSectionsDivider />
+
+        <UpsertArtistsSection
+          heading="Special artists"
+          idPrefix="upsert-release-special-artist"
+          notificationsId="upsert-release-special-artists-notifications"
+          artists={formState.specialArtists.value}
+          errors={formState.specialArtists.errors}
+          notifications={formState.specialArtists.notifications}
+          onUpdateArtistRow={updateSpecialArtistRow}
+          onAddRow={addSpecialArtistRow}
+          onRemoveRow={removeSpecialArtistRow}
+          onFocus={(rowId) => onFocus({ specialArtistRowId: rowId })}
+          onBlur={() => onBlur("specialArtists")}
         />
 
         <FormSectionsDivider />
@@ -1001,7 +1055,8 @@ const updateReleasesAcrossDbSources = async (
   updateInput: ReturnType<typeof toUpsertMusicalReleaseInput>,
   targets: DbSource[],
 ) => {
-  const { release, formats, tagIds, relatedReleases } = updateInput;
+  const { release, formats, tagIds, specialArtists, relatedReleases } =
+    updateInput;
 
   const outcomes = await Promise.all(
     targets.map(async (source): Promise<SaveReleaseOutcome> => {
@@ -1012,6 +1067,7 @@ const updateReleasesAcrossDbSources = async (
             release,
             formats,
             tagIds,
+            specialArtists,
             relatedReleases,
           },
           source,

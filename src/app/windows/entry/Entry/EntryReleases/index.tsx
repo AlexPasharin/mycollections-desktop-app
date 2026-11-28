@@ -18,6 +18,7 @@ type EntryReleasesProps = {
   countriesLoading: boolean;
   countriesLoadFailed: boolean;
   focusedReleaseId: string | null;
+  specialArtistId: string | null;
   onShowFullEntryWindow: () => void;
   latestAddedReleaseId: string | undefined;
   latestUpdatedReleaseId: string | undefined;
@@ -66,6 +67,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   countriesLoading,
   countriesLoadFailed,
   focusedReleaseId,
+  specialArtistId,
   onShowFullEntryWindow,
   latestAddedReleaseId,
   latestUpdatedReleaseId,
@@ -81,6 +83,8 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   onDismissUpdatedErrors,
 }) => {
   const isFocusedReleaseView = focusedReleaseId !== null;
+  const isSpecialArtistView = specialArtistId !== null;
+  const isRestrictedReleasesView = isFocusedReleaseView || isSpecialArtistView;
 
   const [releases, setReleases] = useState<EntryRelease[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,7 +113,11 @@ const EntryReleases: FC<EntryReleasesProps> = ({
     setLoading(true);
 
     api
-      .getEntryReleases(entry.entryId, primaryDbSource)
+      .getEntryReleases(
+        entry.entryId,
+        primaryDbSource,
+        specialArtistId === null ? undefined : { specialArtistId },
+      )
       .then((data) => {
         if (token !== fetchTokenRef.current) {
           return;
@@ -129,7 +137,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
         setReleases([]);
         setLoading(false);
       });
-  }, [entry.entryId, primaryDbSource, focusedReleaseId]);
+  }, [entry.entryId, primaryDbSource, focusedReleaseId, specialArtistId]);
 
   // Fetches on mount; remounting (e.g. after visiting "Add release") loads a fresh list.
   useEffect(() => {
@@ -280,8 +288,16 @@ const EntryReleases: FC<EntryReleasesProps> = ({
   if (!isFocusedReleaseView && releases.length === 0) {
     return (
       <>
+        {isSpecialArtistView && (
+          <RestrictedReleasesViewCta
+            isFocusedReleaseView={false}
+            onShowFullEntryWindow={onShowFullEntryWindow}
+          />
+        )}
         <p className={emptyStateClassName}>
-          This entry has no releases in collection
+          {isSpecialArtistView
+            ? "No releases list this artist as a special artist"
+            : "This entry has no releases in collection"}
         </p>
         {createErrorBanner}
         {createNotificationBanner}
@@ -300,19 +316,11 @@ const EntryReleases: FC<EntryReleasesProps> = ({
       {updateErrorBanner}
       {updateNotificationBanner}
       {deleteErrorBanner}
-      {isFocusedReleaseView ? (
-        <div className={focusedReleaseCtaClassName}>
-          <p className="mb-2 text-xl font-bold">
-            Note! Showing only selected release&apos;s details.
-          </p>
-          <button
-            type="button"
-            className={focusedReleaseCtaButtonClassName}
-            onClick={onShowFullEntryWindow}
-          >
-            Click here to see full entry&apos;s window content
-          </button>
-        </div>
+      {isRestrictedReleasesView ? (
+        <RestrictedReleasesViewCta
+          isFocusedReleaseView={isFocusedReleaseView}
+          onShowFullEntryWindow={onShowFullEntryWindow}
+        />
       ) : (
         <h2 className={sectionTitleClassName}>
           Releases in collection ({releases.length}):
@@ -325,7 +333,7 @@ const EntryReleases: FC<EntryReleasesProps> = ({
           releases={releases}
           allCountries={allCountries}
           focusedReleaseId={focusedReleaseId}
-          showReleaseActions={!isFocusedReleaseView}
+          showReleaseActions={!isRestrictedReleasesView}
           latestAddedReleaseId={latestAddedReleaseId}
           latestUpdatedReleaseId={latestUpdatedReleaseId}
           onUseReleaseAsBlueprint={onUseReleaseAsBlueprint}
@@ -339,3 +347,28 @@ const EntryReleases: FC<EntryReleasesProps> = ({
 };
 
 export default EntryReleases;
+
+type RestrictedReleasesViewCtaProps = {
+  isFocusedReleaseView: boolean;
+  onShowFullEntryWindow: () => void;
+};
+
+const RestrictedReleasesViewCta: FC<RestrictedReleasesViewCtaProps> = ({
+  isFocusedReleaseView,
+  onShowFullEntryWindow,
+}) => (
+  <div className={focusedReleaseCtaClassName}>
+    <p className="mb-2 text-xl font-bold">
+      {isFocusedReleaseView
+        ? "Note! Showing only selected release's details."
+        : "Note! Showing only releases where this artist is listed as a special artist."}
+    </p>
+    <button
+      type="button"
+      className={focusedReleaseCtaButtonClassName}
+      onClick={onShowFullEntryWindow}
+    >
+      Click here to see full entry&apos;s window content
+    </button>
+  </div>
+);

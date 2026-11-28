@@ -17,12 +17,12 @@ model MusicalRelease {
 
   entryId String @map("entry_id") @db.Uuid
 
-  entry              MusicalEntry                      @relation(fields: [entryId], references: [id])
-  formats            FormatOfRelease[]
-  alternativeArtists MusicalReleaseAlternativeArtist[]
-  tags               MusicalReleaseTag[]
-  parentReleases     ParentMusicalRelease[]            @relation("ParentRelease")
-  childReleases      ParentMusicalRelease[]            @relation("ChildRelease")
+  entry                 MusicalEntry           @relation(fields: [entryId], references: [id])
+  formats               FormatOfRelease[]
+  tags                  MusicalReleaseTag[]
+  parentReleases        ParentMusicalRelease[] @relation("ParentRelease")
+  childReleases         ParentMusicalRelease[] @relation("ChildRelease")
+  releaseSpecialArtists ReleaseSpecialArtist[]
 
   @@index(countries, type: Gin)
   @@index(catalogueNumbers, type: Gin)
@@ -69,18 +69,6 @@ model Country {
   @@map("countries")
 }
 
-model MusicalReleaseAlternativeArtist {
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-
-  releaseId String          @map("release_id") @db.Uuid
-  release   MusicalRelease? @relation(fields: [releaseId], references: [id])
-
-  entryArtistId      String      @map("entry_artist_id") @db.Uuid
-  entryAltArtistName EntryArtist @relation(fields: [entryArtistId], references: [id])
-
-  @@map("musical_release_alternative_artists")
-}
-
 model ParentMusicalRelease {
   parentRelease   MusicalRelease @relation("ParentRelease", fields: [parentReleaseId], references: [id])
   parentReleaseId String         @map("parent_release_id") @db.Uuid
@@ -99,4 +87,21 @@ model Label {
   name String @unique
 
   @@map("labels")
+}
+
+model ReleaseSpecialArtist {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  releaseId String @map("release_id") @db.Uuid
+  artistId  String @map("artist_id") @db.Uuid
+
+  release MusicalRelease @relation(fields: [releaseId], references: [id])
+  artist  Artist         @relation(fields: [artistId], references: [id])
+
+  isReleasesMainArtist Boolean? @default(true) @map("is_releases_main_artist") // indicates if this is release's "main artist"
+
+  entryArtistNameId  String?                @map("entry_artist_name_id") @db.Uuid
+  entryAltArtistName AlternativeArtistName? @relation(fields: [entryArtistNameId], references: [id]) // in case release's artist name is marked as one of artist's alternative names
+
+  @@unique([releaseId, artistId, entryArtistNameId])
+  @@map("musical_release_special_artists")
 }

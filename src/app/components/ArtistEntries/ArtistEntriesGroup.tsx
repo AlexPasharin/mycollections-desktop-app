@@ -15,7 +15,9 @@ type ArtistEntriesGroupProps = {
   dbSource: DbSource;
   group: ArtistEntriesTypeGroup;
   onFetchGroupEntries: FetchArtistEntriesOfType;
-  onOpenEntry: (entryId: string) => void;
+  onOpenEntry: (
+    entry: Pick<ArtistEntry, "entryId" | "viaSpecialArtistOnly">,
+  ) => void;
 };
 
 const buttonClassName =
@@ -90,24 +92,31 @@ const ArtistEntriesGroup: FC<ArtistEntriesGroupProps> = ({
       </summary>
 
       <ol className="mt-2 list-decimal pl-6">
-        {entries.map(({ entryId, mainName, originalReleaseDate }) => {
-          const releaseYear = getReleaseYear(originalReleaseDate);
+        {entries.map(
+          ({
+            entryId,
+            mainName,
+            originalReleaseDate,
+            viaSpecialArtistOnly,
+          }) => {
+            const releaseYear = getReleaseYear(originalReleaseDate);
 
-          return (
-            <li key={entryId}>
-              <button
-                className="m-0 block w-full origin-left cursor-pointer border-none bg-transparent py-[0.35rem] text-left text-inherit transition-transform duration-150 ease-in-out [font:inherit] hover:scale-[1.03] focus-visible:scale-[1.03]"
-                type="button"
-                onClick={() => {
-                  onOpenEntry(entryId);
-                }}
-              >
-                <span className="font-bold">{mainName}</span>
-                {releaseYear !== undefined && <span> ({releaseYear})</span>}
-              </button>
-            </li>
-          );
-        })}
+            return (
+              <li key={entryId}>
+                <button
+                  className="m-0 block w-full origin-left cursor-pointer border-none bg-transparent py-[0.35rem] text-left text-inherit transition-transform duration-150 ease-in-out [font:inherit] hover:scale-[1.03] focus-visible:scale-[1.03]"
+                  type="button"
+                  onClick={() => {
+                    onOpenEntry({ entryId, viaSpecialArtistOnly });
+                  }}
+                >
+                  <span className="font-bold">{mainName}</span>
+                  {releaseYear !== undefined && <span> ({releaseYear})</span>}
+                </button>
+              </li>
+            );
+          },
+        )}
       </ol>
 
       {isLoading && <p>Loading…</p>}

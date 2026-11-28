@@ -63,6 +63,14 @@ const release: ReleaseByIdResult = {
   partOfQueenCollection: true,
   relationToQueen: "Related single",
   entryId: "entry-1",
+  specialArtists: [
+    {
+      artistId: "artist-special-1",
+      entryArtistAltNameId: "alt-artist-1",
+      isReleasesMainArtist: true,
+      artistName: "Special Artist",
+    },
+  ],
   parentReleases: [
     {
       releaseId: "parent-release-1",
@@ -122,6 +130,13 @@ describe("initialUpsertReleaseFormStateValue", () => {
       value: formatJson(release.matrixRunout),
       treatAsText: false,
     });
+    expect(draft.specialArtists.value).toEqual([
+      expect.objectContaining({
+        artistId: "artist-special-1",
+        entryArtistAltNameId: "alt-artist-1",
+        isMainArtist: true,
+      }),
+    ]);
     expect(draft.relatedReleases.value).toEqual([
       expect.objectContaining({
         releaseId: "parent-release-1",

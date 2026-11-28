@@ -16,6 +16,9 @@ export type CreateEntryWindowParams = {
   entryId: string;
   source: DbSource;
   releaseId?: string;
+
+  /** When set, opens entry in special-artist releases-only mode for this artist id. */
+  specialArtist?: string;
 };
 
 export type OpenEntryWindow = (
@@ -127,6 +130,12 @@ export type ArtistEntry = {
   entryId: string;
   mainName: string;
   originalReleaseDate: GeneralizedDateFromDb;
+
+  /**
+   * True when the artist is related to this entry only via release special artists
+   * (not listed on the entry itself). Opening should use the specialArtist query param.
+   */
+  viaSpecialArtistOnly: boolean;
 };
 
 export type FetchArtistEntriesOfTypeParams = {

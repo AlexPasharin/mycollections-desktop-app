@@ -6,7 +6,7 @@ import { toJsonbParam } from "../utils";
 import type { CreateMusicalRelease } from "@/types/releases";
 
 export const createMusicalRelease: CreateMusicalRelease = async (
-  { release, formats, tagIds, relatedReleases },
+  { release, formats, tagIds, specialArtists, relatedReleases },
   dbSource,
 ) => {
   const { results, notifications } = await applyWithNotificationsFor(
@@ -36,6 +36,22 @@ export const createMusicalRelease: CreateMusicalRelease = async (
         await trx
           .insertInto("musicalReleasesTags")
           .values(tagIds.map((tagId) => ({ releaseId, tagId })))
+          .execute();
+      }
+
+      if (specialArtists.length > 0) {
+        await trx
+          .insertInto("musicalReleaseSpecialArtists")
+          .values(
+            specialArtists.map(
+              ({ artistId, entryArtistAltNameId, isReleasesMainArtist }) => ({
+                releaseId,
+                artistId,
+                entryArtistNameId: entryArtistAltNameId,
+                isReleasesMainArtist,
+              }),
+            ),
+          )
           .execute();
       }
 

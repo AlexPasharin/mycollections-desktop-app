@@ -57,8 +57,12 @@ const ArtistEntries: FC<ArtistEntriesProps> = ({
           dbSource={dbSource}
           group={group}
           onFetchGroupEntries={onFetchGroupEntries}
-          onOpenEntry={(entryId) => {
-            onOpenEntry({ entryId, source: dbSource });
+          onOpenEntry={({ entryId, viaSpecialArtistOnly }) => {
+            onOpenEntry({
+              entryId,
+              source: dbSource,
+              ...(viaSpecialArtistOnly && { specialArtist: artistId }),
+            });
           }}
         />
       ))}

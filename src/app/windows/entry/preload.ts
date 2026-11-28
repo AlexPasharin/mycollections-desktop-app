@@ -27,6 +27,7 @@ import type {
 } from "@/types/entries";
 import type {
   CreateMusicalReleaseInput,
+  GetEntryReleasesOptions,
   UpdateMusicalReleaseInput,
 } from "@/types/releases";
 
@@ -42,8 +43,11 @@ const api = {
     ipcRenderer.invoke(FETCH_ENTRY_TYPES, dbSource),
   getEntryById: (entryId: string, dbSource: DbSource) =>
     ipcRenderer.invoke(GET_ENTRY_BY_ID, entryId, dbSource),
-  getEntryReleases: (entryId: string, dbSource: DbSource) =>
-    ipcRenderer.invoke(GET_ENTRY_RELEASES, entryId, dbSource),
+  getEntryReleases: (
+    entryId: string,
+    dbSource: DbSource,
+    options?: GetEntryReleasesOptions,
+  ) => ipcRenderer.invoke(GET_ENTRY_RELEASES, entryId, dbSource, options),
   getEntryReleaseTagIds: (entryId: string, dbSource: DbSource) =>
     ipcRenderer.invoke(GET_ENTRY_RELEASE_TAG_IDS, entryId, dbSource),
   getReleaseById: (releaseId: string, dbSource: DbSource) =>

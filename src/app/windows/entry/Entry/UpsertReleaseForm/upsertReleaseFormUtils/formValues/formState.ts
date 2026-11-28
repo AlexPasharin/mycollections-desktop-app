@@ -22,6 +22,7 @@ import {
   relatedReleasesToFormValue,
 } from "./relatedReleases";
 import { releaseDateToFormValue } from "./releaseDate";
+import { specialArtistsToFormValue } from "./specialArtists";
 
 import type { UpsertReleaseFormTabMode } from "../../../types";
 import {
@@ -31,9 +32,11 @@ import {
   validateReleaseFormats,
   validateReleaseMatrixRunout,
   validateRelatedReleases,
+  validateSpecialArtists,
 } from "../validation";
 
 import type { GeneralizedDateFormInputValue } from "@/app/components/GeneralizedDateFormInput";
+import type { UpsertArtistRow } from "@/app/components/UpsertArtistsSection/upsertArtistRow";
 import type { CountryListItem } from "@/types/countries";
 import type { FormStateType, InitialFormStateValue } from "@/types/form";
 import type { ReleasesFormatListItem } from "@/types/formats";
@@ -60,6 +63,7 @@ export type UpsertReleaseFormDraft = {
   relationToQueen: string;
   comment: string;
   conditionProblems: string;
+  specialArtists: UpsertArtistRow[];
   relatedReleases: UpsertReleaseFormRelatedReleaseRow[];
 };
 
@@ -169,6 +173,10 @@ export const initialUpsertReleaseFormStateValue = ({
     value: releaseBlueprint?.conditionProblems ?? "",
     validationFn: (state) =>
       validateOptionalTrimmedText(state.conditionProblems.value),
+  },
+  specialArtists: {
+    value: specialArtistsToFormValue(releaseBlueprint?.specialArtists),
+    validationFn: validateSpecialArtists,
   },
   relatedReleases: {
     value:
