@@ -56,14 +56,15 @@ const UpsertReleaseFormWrapper: FC<UpsertReleaseFormWrapperProps> = ({
   );
 
   const initialFormState =
-    (tabData.releaseBlueprint ? null : persistedFormState) ??
-    initialUpsertReleaseFormStateValue({
-      entry,
-      allFormats,
-      allCountries,
-      releaseBlueprint: tabData.releaseBlueprint,
-      mode: tabData.mode,
-    });
+    persistedFormState && !tabData.releaseBlueprint
+      ? persistedFormState
+      : initialUpsertReleaseFormStateValue({
+          entry,
+          allFormats,
+          allCountries,
+          releaseBlueprint: tabData.releaseBlueprint,
+          mode: tabData.mode,
+        });
 
   const isUpdateMode = tabData.mode === "update";
 

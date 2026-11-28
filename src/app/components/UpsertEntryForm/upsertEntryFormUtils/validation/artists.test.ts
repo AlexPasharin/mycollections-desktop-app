@@ -1,21 +1,21 @@
 import { validateArtists } from "./artists";
 import { formStateWith } from "./testUtils";
 
-import type { UpsertEntryArtistRow } from "../formValues";
+import type { UpsertArtistRow } from "@/app/components/UpsertArtistsSection/upsertArtistRow";
 
 const artistRow = (
   id: string,
   artistId: string,
   entryArtistAltNameId = "",
-  isEntriesMainArtist = false,
-): UpsertEntryArtistRow => ({
+  isMainArtist = false,
+): UpsertArtistRow => ({
   id,
   artistId,
   entryArtistAltNameId,
-  isEntriesMainArtist,
+  isMainArtist,
 });
 
-const validateRows = (rows: UpsertEntryArtistRow[]) =>
+const validateRows = (rows: UpsertArtistRow[]) =>
   validateArtists(formStateWith({ artists: rows }));
 
 const artistId = "11111111-1111-4111-8111-111111111111";

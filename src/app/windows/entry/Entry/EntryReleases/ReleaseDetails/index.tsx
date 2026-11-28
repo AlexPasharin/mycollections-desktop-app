@@ -7,6 +7,7 @@ import ReleaseMatrixRunout from "./ReleaseMatrixRunout";
 
 import api from "../../../api";
 
+import ArtistsAttribution from "@/app/components/ArtistsAttribution";
 import CopyTextCta from "@/app/components/CopyTextCta";
 import DataWithErrorDisplay from "@/app/components/DataWithErrorDisplay";
 import type { DbSource } from "@/db/db-source";
@@ -53,6 +54,7 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
     conditionProblems,
     partOfQueenCollection,
     relationToQueen,
+    specialArtists,
     parentReleases,
     childReleases,
   } = release;
@@ -76,6 +78,23 @@ const ReleaseDetails: FC<ReleaseDetailsProps> = ({
         <DetailLabeledField label="Released as">
           {alternativeName.name}
         </DetailLabeledField>
+      )}
+      {specialArtists.length > 0 && (
+        <ArtistsAttribution
+          artists={specialArtists.map(
+            ({ artistId, artistName, isReleasesMainArtist }) => ({
+              artistId,
+              artistName,
+              isMainArtist: isReleasesMainArtist,
+            }),
+          )}
+          onOpenArtist={(artistId) => {
+            api.openNewArtistWindow({
+              artistId,
+              source: primaryDbSource,
+            });
+          }}
+        />
       )}
       {formats.length > 0 && (
         <div className={detailBlockClassName}>

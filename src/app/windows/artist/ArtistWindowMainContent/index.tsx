@@ -5,6 +5,7 @@ import ArtistInfo from "./ArtistInfo";
 
 import api from "../api";
 
+import ArtistEntries from "@/app/components/ArtistEntries";
 import EntriesSearch from "@/app/components/EntriesSearch";
 import FeedbackSection from "@/app/components/FeedbackSection";
 import Tabs from "@/app/components/Tabs";
@@ -15,7 +16,11 @@ import type { ArtistByIdResult } from "@/types/artists";
 import type { FormFeedback } from "@/types/form";
 import { formFeedbackInitialValue } from "@/utils/form";
 
-type ArtistEntriesTab = "searchEntries" | "addEntry" | "updateArtist";
+type ArtistEntriesTab =
+  | "searchEntries"
+  | "browseEntries"
+  | "addEntry"
+  | "updateArtist";
 
 type ArtistWindowMainContentProps = {
   artist: ArtistByIdResult;
@@ -27,6 +32,8 @@ type ArtistWindowMainContentProps = {
 /** Stable ids for this tablist (single Artist view per document). */
 const SEARCH_ENTRIES_TAB_ID = "artist-search-entries-tab";
 const SEARCH_ENTRIES_PANEL_ID = "artist-search-entries-panel";
+const BROWSE_ENTRIES_TAB_ID = "artist-browse-entries-tab";
+const BROWSE_ENTRIES_PANEL_ID = "artist-browse-entries-panel";
 const ADD_ENTRY_TAB_ID = "artist-add-entry-tab";
 const ADD_ENTRY_PANEL_ID = "artist-add-entry-panel";
 const UPDATE_ARTIST_TAB_ID = "artist-update-artist-tab";
@@ -88,7 +95,7 @@ const ArtistWindowMainContent: FC<ArtistWindowMainContentProps> = ({
       />
 
       <Tabs
-        ariaLabel="Search artist entries, add a new entry, or update the artist"
+        ariaLabel="Search or browse artist entries, add a new entry, or update the artist"
         activeTab={activeTab}
         onTabChange={setActiveTab}
         tabs={[
@@ -102,6 +109,21 @@ const ArtistWindowMainContent: FC<ArtistWindowMainContentProps> = ({
                 artistId={artistId}
                 dbSource={primaryDbSource}
                 onSearchEntries={api.searchEntries}
+                onOpenEntry={api.openNewEntryWindow}
+              />
+            ),
+          },
+          {
+            id: "browseEntries",
+            tabId: BROWSE_ENTRIES_TAB_ID,
+            panelId: BROWSE_ENTRIES_PANEL_ID,
+            label: "Browse entries",
+            children: (
+              <ArtistEntries
+                artistId={artistId}
+                dbSource={primaryDbSource}
+                onFetchGroups={api.fetchArtistEntriesGroupedByType}
+                onFetchGroupEntries={api.fetchArtistEntriesOfType}
                 onOpenEntry={api.openNewEntryWindow}
               />
             ),

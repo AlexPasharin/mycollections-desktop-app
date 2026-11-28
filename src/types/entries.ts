@@ -16,7 +16,14 @@ export type CreateEntryWindowParams = {
   entryId: string;
   source: DbSource;
   releaseId?: string;
+
+  /** When set, opens entry in special-artist releases-only mode for this artist id. */
+  specialArtist?: string;
 };
+
+export type OpenEntryWindow = (
+  params: Omit<CreateEntryWindowParams, "releaseId">,
+) => void;
 
 export type EntrySearchResultArtist = {
   artistId: string;
@@ -105,6 +112,48 @@ export type SearchEntries = (
   params: SearchEntriesParams,
   dbSource: DbSource,
 ) => Promise<SearchEntriesResult>;
+
+export type ArtistEntriesTypeGroup = {
+  /** Null for the group collecting entries that have no type. */
+  typeId: string | null;
+  typeName: string;
+  entriesCount: number;
+};
+
+/** Groups ordered by name; the group of entries without a type (if any) comes last. */
+export type FetchArtistEntriesGroupedByType = (
+  artistId: string,
+  dbSource: DbSource,
+) => Promise<ArtistEntriesTypeGroup[]>;
+
+export type ArtistEntry = {
+  entryId: string;
+  mainName: string;
+  originalReleaseDate: GeneralizedDateFromDb;
+
+  /**
+   * True when the artist is related to this entry only via release special artists
+   * (not listed on the entry itself). Opening should use the specialArtist query param.
+   */
+  viaSpecialArtistOnly: boolean;
+};
+
+export type FetchArtistEntriesOfTypeParams = {
+  artistId: string;
+
+  /** Null selects the entries that have no type. */
+  typeId: string | null;
+  offset?: number | null;
+
+  /** Omit to fetch all entries from `offset` on. */
+  limit?: number | null | undefined;
+};
+
+/** Entries of one group, earliest release first (undated last). */
+export type FetchArtistEntriesOfType = (
+  params: FetchArtistEntriesOfTypeParams,
+  dbSource: DbSource,
+) => Promise<ArtistEntry[]>;
 
 export type MusicalEntryAltNameInput = { nameId?: string; name: string };
 

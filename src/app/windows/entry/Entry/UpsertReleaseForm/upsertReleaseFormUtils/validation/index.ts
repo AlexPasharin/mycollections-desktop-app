@@ -4,3 +4,4 @@ export * from "./formats";
 export * from "./catalogueNumbers";
 export * from "./matrixRunout";
 export * from "./relatedReleases";
+export * from "./specialArtists";

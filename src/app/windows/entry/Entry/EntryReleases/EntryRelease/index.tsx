@@ -18,6 +18,7 @@ import type {
 type DetailsStatus = "idle" | "loading" | "loaded" | "notFound" | "failed";
 
 type EntryReleaseProps = {
+  index: number | undefined;
   entry: EntryByIdResult;
   primaryDbSource: DbSource;
   releaseId: string;
@@ -65,6 +66,7 @@ const detailsLoadingClassName = "m-0 mt-[0.65rem] text-[0.92em] text-gray-600";
 const detailsMissingClassName = "m-0 mt-[0.65rem] text-[0.92em] text-amber-700";
 
 const EntryRelease: FC<EntryReleaseProps> = ({
+  index,
   entry,
   primaryDbSource,
   releaseId,
@@ -205,7 +207,10 @@ const EntryRelease: FC<EntryReleaseProps> = ({
           onClick={() => setIsExpanded((expanded) => !expanded)}
         >
           <span className={releaseRowMainClassName}>
-            <span className={releaseVersionClassName}>{versionLabel}</span>
+            <span className={releaseVersionClassName}>
+              {index === undefined ? "" : `${index}. `}
+              {versionLabel}
+            </span>
             {displayFormats.length > 0 && ` (${displayFormats.join(", ")})`}
             {isRecentlyAdded && (
               <span className={recentlyAddedBadgeClassName}>

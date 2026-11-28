@@ -19,6 +19,11 @@ export const deleteRelease: DeleteRelease = (releaseId, dbSource) =>
         .returningAll()
         .execute();
 
+      await trx
+        .deleteFrom("musicalReleaseSpecialArtists")
+        .where("releaseId", "=", releaseId)
+        .execute();
+
       const release = await trx
         .deleteFrom("musicalReleases")
         .where("releaseId", "=", releaseId)

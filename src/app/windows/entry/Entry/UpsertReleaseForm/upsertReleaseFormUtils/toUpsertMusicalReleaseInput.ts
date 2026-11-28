@@ -11,8 +11,10 @@ import type {
 } from "./formValues";
 import { parseReleaseCatNumbersJsonInput } from "./validation/catalogueNumbersJsonInput";
 
+import type { UpsertArtistRow } from "@/app/components/UpsertArtistsSection/upsertArtistRow";
 import type {
   MusicalReleaseRelatedReleaseInput,
+  MusicalReleaseSpecialArtistInput,
   ReleaseByIdResultCatalogueNumbers,
 } from "@/types/releases";
 import type { TagId } from "@/types/tags";
@@ -24,16 +26,14 @@ type ToUpsertMusicalReleaseInputArgs = ValidatedUpsertReleaseFormDraft & {
 };
 
 /**
- * Build the composite payload for `createMusicalRelease` from validated form
- * fields: the `musicalReleases` row plus the related `formatsOfReleases` and
- * `musicalReleasesTags` rows that share the new release id.
+ * Build the composite payload for `createMusicalRelease` / `updateMusicalRelease`
+ * from validated form fields: the `musicalReleases` row plus related formats,
+ * tags, special artists, and related-release rows.
  *
  * Assumes the caller has already validated every field; in particular this
  * trusts the release date / matrix-runout drafts to be parseable, the
  * countries / catalogue-numbers shapes to satisfy their validators, and each
  * format row's `amount` to parse as an integer.
- *
- * Alt artists and freshly-typed alt names are not handled here.
  */
 export const toUpsertMusicalReleaseInput = (
   args: ToUpsertMusicalReleaseInputArgs,
@@ -41,8 +41,18 @@ export const toUpsertMusicalReleaseInput = (
   release: toMusicalReleaseRowFromForm(args),
   formats: toReleaseFormatsFromForm(args.formats),
   tagIds: toReleaseTagIdsFromForm(args.selectedTags),
+  specialArtists: toSpecialArtistsFromForm(args.specialArtists),
   relatedReleases: toRelatedReleasesFromForm(args.relatedReleases),
 });
+
+export const toSpecialArtistsFromForm = (
+  rows: UpsertArtistRow[],
+): MusicalReleaseSpecialArtistInput[] =>
+  rows.map(({ artistId, entryArtistAltNameId, isMainArtist }) => ({
+    artistId,
+    entryArtistAltNameId: nullIfEmpty(entryArtistAltNameId),
+    isReleasesMainArtist: isMainArtist,
+  }));
 
 export const toRelatedReleasesFromForm = (
   rows: UpsertReleaseFormRelatedReleaseRow[],

@@ -65,9 +65,8 @@ model EntryArtist {
   entryArtistNameId  String?                @map("entry_artist_name_id") @db.Uuid
   entryAltArtistName AlternativeArtistName? @relation(fields: [entryArtistNameId], references: [id]) // in case entry's artist name is marked as one of artist's alternative names
 
-  musicalReleaseAlternativeArtists MusicalReleaseAlternativeArtist[]
-
   @@unique([entryId, artistId, entryArtistNameId])
+  @@index([artistId, entryId]) // for artist's entries lookup (the unique index above leads with entryId, so it can't serve it)
   @@map("musical_entries_artists")
 }
 

@@ -1,5 +1,6 @@
 import type { FetchCountries } from "@/types/countries";
 import type {
+  CreateArtistWindowParams,
   CreateEntryWindowParams,
   GetEntryById,
   UpdateMusicalEntry,
@@ -32,6 +33,7 @@ export type API = {
   deleteRelease: DeleteRelease;
   updateMusicalEntry: UpdateMusicalEntry;
   openNewEntryWindow: (params: CreateEntryWindowParams) => void;
+  openNewArtistWindow: (params: CreateArtistWindowParams) => void;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access

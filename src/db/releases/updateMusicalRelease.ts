@@ -9,11 +9,12 @@ import { toJsonbParam } from "../utils";
 import type { DB, FormatOfRelease } from "@/types/db/database";
 import type {
   MusicalReleaseRelatedReleaseInput,
+  MusicalReleaseSpecialArtistInput,
   UpdateMusicalRelease,
 } from "@/types/releases";
 
 export const updateMusicalRelease: UpdateMusicalRelease = async (
-  { releaseId, release, formats, tagIds, relatedReleases },
+  { releaseId, release, formats, tagIds, specialArtists, relatedReleases },
   dbSource,
 ) => {
   const { notifications } = await applyWithNotificationsFor(async (trx) => {
@@ -39,6 +40,7 @@ export const updateMusicalRelease: UpdateMusicalRelease = async (
 
     await syncReleaseFormats(trx, releaseId, formats);
     await syncReleaseTags(trx, releaseId, tagIds);
+    await syncReleaseSpecialArtists(trx, releaseId, specialArtists);
     await syncReleaseRelatedReleases(trx, releaseId, relatedReleases);
   }, dbSource);
 
@@ -92,6 +94,35 @@ const syncReleaseTags = async (
   await trx
     .insertInto("musicalReleasesTags")
     .values(tagIds.map((tagId) => ({ releaseId, tagId })))
+    .execute();
+};
+
+const syncReleaseSpecialArtists = async (
+  trx: DbTransaction,
+  releaseId: string,
+  specialArtists: MusicalReleaseSpecialArtistInput[],
+) => {
+  await trx
+    .deleteFrom("musicalReleaseSpecialArtists")
+    .where("releaseId", "=", releaseId)
+    .execute();
+
+  if (specialArtists.length === 0) {
+    return;
+  }
+
+  await trx
+    .insertInto("musicalReleaseSpecialArtists")
+    .values(
+      specialArtists.map(
+        ({ artistId, entryArtistAltNameId, isReleasesMainArtist }) => ({
+          releaseId,
+          artistId,
+          entryArtistNameId: entryArtistAltNameId,
+          isReleasesMainArtist,
+        }),
+      ),
+    )
     .execute();
 };
 

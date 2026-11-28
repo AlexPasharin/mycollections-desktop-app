@@ -17,14 +17,17 @@ import {
   UPDATE_MUSICAL_RELEASE,
   DELETE_RELEASE,
   OPEN_ENTRY_WINDOW,
+  OPEN_ARTIST_WINDOW,
 } from "@/appConstants/ipcEvents";
 import type { DbSource } from "@/db/db-source";
 import type {
+  CreateArtistWindowParams,
   CreateEntryWindowParams,
   UpdateMusicalEntryInput,
 } from "@/types/entries";
 import type {
   CreateMusicalReleaseInput,
+  GetEntryReleasesOptions,
   UpdateMusicalReleaseInput,
 } from "@/types/releases";
 
@@ -40,8 +43,11 @@ const api = {
     ipcRenderer.invoke(FETCH_ENTRY_TYPES, dbSource),
   getEntryById: (entryId: string, dbSource: DbSource) =>
     ipcRenderer.invoke(GET_ENTRY_BY_ID, entryId, dbSource),
-  getEntryReleases: (entryId: string, dbSource: DbSource) =>
-    ipcRenderer.invoke(GET_ENTRY_RELEASES, entryId, dbSource),
+  getEntryReleases: (
+    entryId: string,
+    dbSource: DbSource,
+    options?: GetEntryReleasesOptions,
+  ) => ipcRenderer.invoke(GET_ENTRY_RELEASES, entryId, dbSource, options),
   getEntryReleaseTagIds: (entryId: string, dbSource: DbSource) =>
     ipcRenderer.invoke(GET_ENTRY_RELEASE_TAG_IDS, entryId, dbSource),
   getReleaseById: (releaseId: string, dbSource: DbSource) =>
@@ -60,6 +66,8 @@ const api = {
     ipcRenderer.invoke(UPDATE_MUSICAL_ENTRY, input, dbSource),
   openNewEntryWindow: (params: CreateEntryWindowParams) =>
     ipcRenderer.send(OPEN_ENTRY_WINDOW, params),
+  openNewArtistWindow: (params: CreateArtistWindowParams) =>
+    ipcRenderer.send(OPEN_ARTIST_WINDOW, params),
 } as const satisfies API;
 
 contextBridge.exposeInMainWorld("api", api);

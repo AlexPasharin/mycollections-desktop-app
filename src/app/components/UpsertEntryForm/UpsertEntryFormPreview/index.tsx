@@ -55,7 +55,7 @@ const UpsertEntryFormPreview: FC<UpsertEntryFormPreviewProps> = ({
           <ul className="mt-[0.2rem] pl-[1.1rem]">
             {form.artists.map((row) => {
               const altNameId = nullIfEmpty(row.entryArtistAltNameId.trim());
-              const mainLabel = row.isEntriesMainArtist ? " (main)" : "";
+              const mainLabel = row.isMainArtist ? " (main)" : "";
 
               return (
                 <li key={row.id}>

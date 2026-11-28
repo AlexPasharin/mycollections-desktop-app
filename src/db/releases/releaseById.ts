@@ -11,6 +11,7 @@ import type {
   RelatedReleaseItem,
   ReleaseByIdResult,
   ReleaseFormatOfReleaseItem,
+  ReleaseSpecialArtistItem,
 } from "@/types/releases";
 import type { TagListItem } from "@/types/tags";
 import { parseStringAsGeneralizedDate } from "@/utils/date";
@@ -105,9 +106,10 @@ export const getReleaseById: GetReleaseById = async (releaseId, dbSource) => {
     ...rest
   } = release;
 
-  const [parentReleases, childReleases] = await Promise.all([
+  const [parentReleases, childReleases, specialArtists] = await Promise.all([
     fetchParentReleases(releaseId, dbSource),
     fetchChildReleases(releaseId, dbSource),
+    fetchReleaseSpecialArtists(releaseId, dbSource),
   ]);
 
   return {
@@ -120,10 +122,38 @@ export const getReleaseById: GetReleaseById = async (releaseId, dbSource) => {
     countries: getReleaseCountries(countries),
     catalogueNumbers: getReleaseCatNumbers(catalogueNumbers),
     matrixRunout: getReleaseMatrixRunout(matrixRunout),
+    specialArtists,
     parentReleases,
     childReleases,
   };
 };
+
+const fetchReleaseSpecialArtists = (
+  releaseId: string,
+  dbSource: DbSource,
+): Promise<ReleaseSpecialArtistItem[]> =>
+  dbClient(dbSource)
+    .selectFrom("musicalReleaseSpecialArtists")
+    .innerJoin(
+      "artists",
+      "musicalReleaseSpecialArtists.artistId",
+      "artists.artistId",
+    )
+    .leftJoin(
+      "alternativeArtistNames",
+      "musicalReleaseSpecialArtists.entryArtistNameId",
+      "alternativeArtistNames.nameId",
+    )
+    .where("musicalReleaseSpecialArtists.releaseId", "=", releaseId)
+    .select([
+      "musicalReleaseSpecialArtists.artistId",
+      "musicalReleaseSpecialArtists.entryArtistNameId as entryArtistAltNameId",
+      "musicalReleaseSpecialArtists.isReleasesMainArtist",
+      sql<string>`coalesce(${sql.ref("alternativeArtistNames.name")}, ${sql.ref("artists.name")})`.as(
+        "artistName",
+      ),
+    ])
+    .execute();
 
 /** Parses and validates release countries JSON.
  * On success returns the validated value (country codes); on failure returns the raw JSON and an error message.

@@ -7,14 +7,11 @@ import {
 } from "react";
 
 import UpsertEntryAltNamesSection from "./UpsertEntryAltNamesSection";
-import UpsertEntryArtistsSection from "./UpsertEntryArtistsSection";
 import UpsertEntryFormPreview from "./UpsertEntryFormPreview";
 import {
   defaultAltNameRow,
-  defaultArtistRow,
   defaultRelatedEntryRow,
   initialUpsertEntryFormDraft,
-  type UpsertEntryArtistRow,
   type UpsertEntryFormDraft,
   type UpsertEntryFormEntry,
   type UpsertEntryFormPersistedState,
@@ -32,6 +29,11 @@ import ErrorMessages from "@/app/components/ErrorMessages";
 import AddTagsFormSection from "@/app/components/Form/AddTagsFormSection";
 import GeneralizedDateFormInput from "@/app/components/GeneralizedDateFormInput";
 import NotificationMessages from "@/app/components/NotificationMessages";
+import UpsertArtistsSection from "@/app/components/UpsertArtistsSection";
+import {
+  defaultArtistRow,
+  type UpsertArtistRow,
+} from "@/app/components/UpsertArtistsSection/upsertArtistRow";
 import type { DbSource } from "@/db/db-source";
 import { ALL_DB_SOURCES, dbSourceLabel } from "@/db/db-source-options";
 import useFormState from "@/hooks/useFormState";
@@ -234,7 +236,7 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
 
   const updateArtistRow = (
     rowId: string,
-    patch: Partial<Omit<UpsertEntryArtistRow, "id">>,
+    patch: Partial<Omit<UpsertArtistRow, "id">>,
   ) => {
     setFieldValue("artists", (prev) =>
       prev.artists.value.map((row) =>
@@ -432,7 +434,10 @@ const UpsertEntryForm: FC<UpsertEntryFormProps> = (props) => {
 
         <FormSectionsDivider />
 
-        <UpsertEntryArtistsSection
+        <UpsertArtistsSection
+          heading="Artists"
+          idPrefix="upsert-entry-artist"
+          notificationsId="upsert-entry-artists-notifications"
           artists={formState.artists.value}
           errors={formState.artists.errors}
           notifications={formState.artists.notifications}

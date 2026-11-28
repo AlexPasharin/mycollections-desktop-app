@@ -11,6 +11,7 @@ model Artist {
   entries                EntryArtist[]
   alternativeArtistNames AlternativeArtistName[]
   musicalMerchArtists    MusicalMerchArtist[]
+  releaseSpecialArtists  ReleaseSpecialArtist[]
 
   @@unique(name)
   @@map("artists")
@@ -21,8 +22,9 @@ model AlternativeArtistName {
   name     String
   artistId String @map("artist_id") @db.Uuid
 
-  artist              Artist        @relation(fields: [artistId], references: [id])
-  EntryArtistRelation EntryArtist[]
+  artist                Artist                 @relation(fields: [artistId], references: [id])
+  entryArtists          EntryArtist[]
+  releaseSpecialArtists ReleaseSpecialArtist[]
 
   @@unique([name, artistId])
   @@map("alternative_artist_names")

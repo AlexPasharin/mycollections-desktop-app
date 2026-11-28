@@ -1,5 +1,7 @@
 import type { GetArtistById, UpdateArtist } from "@/types/artists";
 import type {
+  FetchArtistEntriesGroupedByType,
+  FetchArtistEntriesOfType,
   CreateArtistWindowParams,
   CreateEntryWindowParams,
   CreateMusicalEntry,
@@ -12,6 +14,8 @@ export type API = {
   getArtistById: GetArtistById;
   updateArtist: UpdateArtist;
   searchEntries: SearchEntries;
+  fetchArtistEntriesGroupedByType: FetchArtistEntriesGroupedByType;
+  fetchArtistEntriesOfType: FetchArtistEntriesOfType;
   fetchTags: FetchTags;
   fetchEntryTypes: FetchEntryTypes;
   createMusicalEntry: CreateMusicalEntry;

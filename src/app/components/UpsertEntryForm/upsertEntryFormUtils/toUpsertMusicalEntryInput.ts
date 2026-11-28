@@ -1,10 +1,10 @@
 import type {
   UpsertEntryAltNameRow,
-  UpsertEntryArtistRow,
   UpsertEntryRelatedEntryRow,
   ValidatedUpsertEntryFormDraft,
 } from "./formValues";
 
+import type { UpsertArtistRow } from "@/app/components/UpsertArtistsSection/upsertArtistRow";
 import type {
   MusicalEntryArtistInput,
   MusicalEntryRelatedEntryInput,
@@ -61,12 +61,12 @@ export const toUpsertMusicalEntryInput = ({
 });
 
 export const toArtistsFromForm = (
-  rows: UpsertEntryArtistRow[],
+  rows: UpsertArtistRow[],
 ): MusicalEntryArtistInput[] =>
-  rows.map(({ artistId, entryArtistAltNameId, isEntriesMainArtist }) => ({
+  rows.map(({ artistId, entryArtistAltNameId, isMainArtist }) => ({
     artistId,
     entryArtistAltNameId: nullIfEmpty(entryArtistAltNameId),
-    isEntriesMainArtist,
+    isEntriesMainArtist: isMainArtist,
   }));
 
 export const toRelatedEntriesFromForm = (
