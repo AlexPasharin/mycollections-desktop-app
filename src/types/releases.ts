@@ -33,9 +33,15 @@ export type EntryRelease = {
   formats: string[];
 };
 
+export type GetEntryReleasesOptions = {
+  /** When set, only releases that list this artist as a special artist are returned. */
+  specialArtistId?: string;
+};
+
 export type GetEntryReleases = (
   entryId: string,
   dbSource: DbSource,
+  options?: GetEntryReleasesOptions,
 ) => Promise<EntryRelease[]>;
 
 export type GetEntryReleaseTagIds = (

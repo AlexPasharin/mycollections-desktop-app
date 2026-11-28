@@ -33,6 +33,9 @@ type EntryProps = {
 const readFocusedReleaseIdFromUrl = (): string | null =>
   new URLSearchParams(window.location.search).get("releaseId");
 
+const readSpecialArtistIdFromUrl = (): string | null =>
+  new URLSearchParams(window.location.search).get("specialArtist");
+
 type EntryTab =
   | { id: "releases" | "editEntry"; data?: never }
   | {
@@ -75,7 +78,12 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
   const [focusedReleaseId, setFocusedReleaseId] = useState<string | null>(
     readFocusedReleaseIdFromUrl,
   );
+  const [specialArtistId, setSpecialArtistId] = useState<string | null>(
+    readSpecialArtistIdFromUrl,
+  );
   const isFocusedReleaseView = focusedReleaseId !== null;
+  const isSpecialArtistView = specialArtistId !== null;
+  const isRestrictedReleasesView = isFocusedReleaseView || isSpecialArtistView;
   const [activeTab, setActiveTab] = useState<EntryTab>(
     entryTabInitialState("releases"),
   );
@@ -378,8 +386,10 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
   const handleShowFullEntryWindow = () => {
     const url = new URL(window.location.href);
     url.searchParams.delete("releaseId");
+    url.searchParams.delete("specialArtist");
     window.history.replaceState(null, "", url.toString());
     setFocusedReleaseId(null);
+    setSpecialArtistId(null);
 
     setActiveTab(entryTabInitialState("releases"));
   };
@@ -392,6 +402,7 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
       countriesLoading={countriesLoading}
       countriesLoadFailed={countriesLoadFailed}
       focusedReleaseId={focusedReleaseId}
+      specialArtistId={specialArtistId}
       onShowFullEntryWindow={handleShowFullEntryWindow}
       latestAddedReleaseId={latestAddedReleaseId}
       latestUpdatedReleaseId={latestUpdatedReleaseId}
@@ -419,7 +430,7 @@ const Entry: FC<EntryProps> = ({ entry, primaryDbSource, onEntryUpdated }) => {
       <EntryArtists artists={entry.artists} primaryDbSource={primaryDbSource} />
       <EntryDetailsPanel entry={entry} primaryDbSource={primaryDbSource} />
 
-      {isFocusedReleaseView ? (
+      {isRestrictedReleasesView ? (
         entryReleasesPanel
       ) : (
         <Tabs

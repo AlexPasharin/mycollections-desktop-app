@@ -1,5 +1,7 @@
 import { sql, type Kysely } from "kysely";
 
+import { selectArtistRelatedEntryIds } from "./utils";
+
 import { dbClient } from "../client/kysely";
 
 import { ENTRIES_WITHOUT_TYPE_GROUP_LABEL } from "@/constants";
@@ -28,7 +30,7 @@ export const fetchArtistEntriesGroupedByType: FetchArtistEntriesGroupedByType =
         .where(
           "typesOfMusicalEntries.entryId",
           "in",
-          selectArtistEntryIds(db, artistId),
+          selectArtistRelatedEntryIds(db, artistId),
         )
         .select([
           "musicalEntryTypes.entryTypeId as typeId",
@@ -85,7 +87,7 @@ export const fetchArtistEntriesOfType: FetchArtistEntriesOfType = async (
           .where(
             "musicalEntries.entryId",
             "in",
-            selectArtistEntryIds(db, artistId),
+            selectArtistRelatedEntryIds(db, artistId),
           )
           .where(
             "musicalEntries.entryId",
@@ -105,10 +107,28 @@ export const fetchArtistEntriesOfType: FetchArtistEntriesOfType = async (
   }
 
   const rows = await query
-    .select([
+    .select((eb) => [
       "musicalEntries.entryId as entryId",
       "musicalEntries.mainName as mainName",
       "musicalEntries.originalReleaseDate as originalReleaseDate",
+
+      // Same membership check as selectArtistEntryIds, folded into this page query
+      // so we avoid a second round-trip after the related-ids filter.
+      eb
+        .not(
+          eb.exists(
+            eb
+              .selectFrom("musicalEntriesArtists")
+              .select("musicalEntriesArtists.entryId")
+              .where("musicalEntriesArtists.artistId", "=", artistId)
+              .whereRef(
+                "musicalEntriesArtists.entryId",
+                "=",
+                "musicalEntries.entryId",
+              ),
+          ),
+        )
+        .as("viaSpecialArtistOnly"),
     ])
     .orderBy(
       sql`generalised_date_to_date(${sql.ref("musicalEntries.originalReleaseDate")}, true)`,
@@ -122,26 +142,25 @@ export const fetchArtistEntriesOfType: FetchArtistEntriesOfType = async (
     .orderBy("musicalEntries.entryId")
     .execute();
 
-  return rows.map(({ entryId, mainName, originalReleaseDate }) => ({
-    entryId,
-    mainName,
-    originalReleaseDate: parseStringAsGeneralizedDate(originalReleaseDate),
-  }));
+  return rows.map(
+    ({ entryId, mainName, originalReleaseDate, viaSpecialArtistOnly }) => ({
+      entryId,
+      mainName,
+      originalReleaseDate: parseStringAsGeneralizedDate(originalReleaseDate),
+      viaSpecialArtistOnly: viaSpecialArtistOnly === true,
+    }),
+  );
 };
-
-// May return the same entry id several times (unique constraint is on entry, artist AND entry's artist name).
-// It is only safe to use in "IN (subquery)" conditions, which ignore duplicates; joining to it would require "distinct".
-const selectArtistEntryIds = (db: Kysely<DB>, artistId: string) =>
-  db
-    .selectFrom("musicalEntriesArtists")
-    .select("musicalEntriesArtists.entryId")
-    .where("musicalEntriesArtists.artistId", "=", artistId);
 
 // Entries of the artist that have no type at all
 const selectArtistUntypedEntries = (db: Kysely<DB>, artistId: string) =>
   db
     .selectFrom("musicalEntries")
-    .where("musicalEntries.entryId", "in", selectArtistEntryIds(db, artistId))
+    .where(
+      "musicalEntries.entryId",
+      "in",
+      selectArtistRelatedEntryIds(db, artistId),
+    )
     .where((eb) =>
       eb.not(
         eb.exists(

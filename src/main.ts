@@ -87,6 +87,7 @@ import type {
 } from "@/types/labels";
 import type {
   CreateMusicalReleaseInput,
+  GetEntryReleasesOptions,
   UpdateMusicalReleaseInput,
 } from "@/types/releases";
 import type { CreateTagInput, CreateTagsWindowParams } from "@/types/tags";
@@ -125,8 +126,14 @@ await app.whenReady().then(async () => {
   ipcMain.handle(GET_ENTRY_BY_ID, (_, entryId: string, dbSource: DbSource) =>
     getEntryById(entryId, dbSource),
   );
-  ipcMain.handle(GET_ENTRY_RELEASES, (_, entryId: string, dbSource: DbSource) =>
-    getEntryReleases(entryId, dbSource),
+  ipcMain.handle(
+    GET_ENTRY_RELEASES,
+    (
+      _,
+      entryId: string,
+      dbSource: DbSource,
+      options?: GetEntryReleasesOptions,
+    ) => getEntryReleases(entryId, dbSource, options),
   );
   ipcMain.handle(
     GET_ENTRY_RELEASE_TAG_IDS,
